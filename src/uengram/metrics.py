@@ -52,8 +52,21 @@ def _norm_w(w) -> np.ndarray:
     return w / w.sum()
 
 
+def _cross_kernel_points(w1, mu1, w2, mu2, h, chunk=2048) -> float:
+    """Zero-variance fast path: RBF Gram blocks via BLAS."""
+    sq1, sq2 = np.sum(mu1 * mu1, axis=1), np.sum(mu2 * mu2, axis=1)
+    total = 0.0
+    for i in range(0, mu1.shape[0], chunk):
+        for j in range(0, mu2.shape[0], chunk):
+            d2 = sq1[i : i + chunk, None] + sq2[None, j : j + chunk] - 2.0 * mu1[i : i + chunk] @ mu2[j : j + chunk].T
+            total += float(w1[i : i + chunk] @ np.exp(-np.maximum(d2, 0.0) / (2.0 * h * h)) @ w2[j : j + chunk])
+    return total
+
+
 def _cross_kernel(w1, mu1, v1, w2, mu2, v2, h, chunk=512) -> float:
     h2 = h * h
+    if not v1.any() and not v2.any():
+        return _cross_kernel_points(w1, mu1, w2, mu2, h)
     total = 0.0
     for i in range(0, mu1.shape[0], chunk):
         m1, a1, w1c = mu1[i : i + chunk], v1[i : i + chunk], w1[i : i + chunk]

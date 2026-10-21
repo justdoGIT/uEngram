@@ -18,7 +18,7 @@ EMPTY, CAND, EPI, SEM, SUPER = lc.EMPTY, lc.CAND, lc.EPI, lc.SEM, lc.SUPER
 class EngramConfig:
     B_sem: int = 192
     B_epi: int = 64
-    alpha_gate: float = 1e-3
+    alpha_gate: float = 1e-4
     beta_min: float = 0.01
     kappa0: float = 10.0
     m_promote: int = 5
