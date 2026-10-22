@@ -1,6 +1,6 @@
 #!/bin/sh
 # Controlled, temporary faults for the uengram-host validation campaign.
-#   fault-inject.sh check                          busy share over 5 s, slurm jobs here, MemAvailable MB
+#   fault-inject.sh check                          busy share over 5 s, MemAvailable MB (Slurm is asked on msi)
 #   fault-inject.sh spin FRACTION SECONDS          nice-19 busy loops on FRACTION of the CPUs
 #   fault-inject.sh mem GB SECONDS          (root) GB working set inside a 1 GiB memory cgroup (swap thrash)
 #   fault-inject.sh oom                     (root) one OOM kill inside a 256 MiB cgroup without swap
@@ -51,12 +51,8 @@ busy_share() { # share of CPU time not idle/iowait over 5 s
 
 case "$1" in
 check)
-	jobs=0
-	if command -v squeue >/dev/null 2>&1; then
-		jobs="$(squeue -h -w "$(hostname)" 2>/dev/null | wc -l)"
-	fi
 	avail="$(awk '/^MemAvailable:/ { print int($2 / 1024) }' /proc/meminfo)"
-	echo "busy=$(busy_share) slurm_jobs=$jobs mem_avail_mb=$avail"
+	echo "busy=$(busy_share) mem_avail_mb=$avail"
 	;;
 spin)
 	n="$(awk -v f="$2" -v c="$(nproc)" 'BEGIN { n = int(f * c + 0.5); print n < 1 ? 1 : n }')"

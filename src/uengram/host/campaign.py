@@ -128,14 +128,23 @@ def _push_helper(host: str) -> None:
     subprocess.run(["scp", "-q", PACKAGED_HELPER, f"{host}:{HELPER}"], check=True, timeout=60)
 
 
-def _gate(host: str) -> tuple[bool, str]:
+def _slurm_jobs(name: str) -> int:
+    """Jobs on node `name`, asked from here (msi runs slurmctld; a worker's own
+    squeue can stall a minute when its client config is missing)."""
+    r = subprocess.run(["squeue", "-h", "-w", name], capture_output=True, text=True, timeout=30)
+    if r.returncode != 0:
+        raise RuntimeError(f"squeue failed: {r.stderr.strip()[:200]}")  # unknown: postpone
+    return len(r.stdout.splitlines())
+
+
+def _gate(name: str, host: str) -> tuple[bool, str]:
     r = _ssh(host, f"sh {HELPER} check", timeout=60)
     if r.returncode != 0:
         return False, f"check failed: {r.stderr.strip()[:200]}"
     kv = dict(x.split("=") for x in r.stdout.split())
-    if float(kv["busy"]) > 0.5 or int(kv["slurm_jobs"]) > 0:
-        return False, r.stdout.strip()
-    return True, r.stdout.strip()
+    jobs = _slurm_jobs(name)
+    why = f"{r.stdout.strip()} slurm_jobs={jobs}"
+    return float(kv["busy"]) <= 0.5 and jobs == 0, why
 
 
 def _execute(camp: dict, f: dict) -> dict:
@@ -179,16 +188,16 @@ def _run_due_faults(directory: str, camp: dict) -> None:
         last_end = max((g["end"] for g in camp["schedule"] if "end" in g), default=0.0)
         if _now() < last_end + FAULT_GAP:
             return  # a postponed fault waits until the previous one has faded
-        hosts = [camp["nodes"][f["node"]]["ssh"]] + ([camp["nodes"][f["peer"]]["ssh"]] if f["peer"] else [])
+        names = [f["node"]] + ([f["peer"]] if f["peer"] else [])
         reasons = []
         try:
-            for h in hosts:
-                _push_helper(h)
-            for h in hosts if f["type"] != "net" else hosts[:1]:  # the sender must be idle; the receiver only listens
-                good, why = _gate(h)
-                reasons.append(f"{h}: {why}")
+            for n in names:
+                _push_helper(camp["nodes"][n]["ssh"])
+            for n in names if f["type"] != "net" else names[:1]:  # the sender must be idle; the receiver only listens
+                good, why = _gate(n, camp["nodes"][n]["ssh"])
+                reasons.append(f"{n}: {why}")
                 if not good:
-                    raise RuntimeError(f"{h} busy: {why}")
+                    raise RuntimeError(f"{n} busy: {why}")
         except (OSError, RuntimeError, ValueError, KeyError, subprocess.SubprocessError) as e:
             f["postponed"] += 1
             f["planned"] = _now() + 600

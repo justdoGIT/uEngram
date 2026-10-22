@@ -50,13 +50,13 @@ def test_plan_respects_each_nodes_fault_list_and_pairs_network_faults(camp):
 
 
 class Fleet:
-    """Stands in for ssh: gate answers per host, a fault takes `dur` seconds."""
+    """Stands in for ssh: gate answers per node, a fault takes DURATION seconds."""
 
     def __init__(self, monkeypatch, now, busy=()):
         self.now, self.busy, self.ran = now, set(busy), []
         monkeypatch.setattr(cp, "_now", lambda: self.now)
         monkeypatch.setattr(cp, "_push_helper", lambda host: None)
-        monkeypatch.setattr(cp, "_gate", lambda host: (host not in self.busy, f"busy={host in self.busy}"))
+        monkeypatch.setattr(cp, "_gate", lambda name, host: (name not in self.busy, f"busy={name in self.busy}"))
 
         def execute(camp, f):
             self.ran.append(f["id"])
