@@ -57,8 +57,9 @@ NODES = {
     # asus: no disk faults on its failing HDD
     "asus": {"ssh": "asus-worker", "ip": "192.168.1.5",
              "faults": ["cpu", "mem", "oom", "net", "power", "netem", "leak"]},
+    # lenovo: no power faults, its RAPL power-limit zone is disabled by firmware (enabled=0, writes return EIO)
     "lenovo": {"ssh": "lenovo-worker", "ip": "192.168.1.4",
-               "faults": ["cpu", "mem", "oom", "disk", "net", "power", "netem", "leak"]},
+               "faults": ["cpu", "mem", "oom", "disk", "net", "netem", "leak"]},
     "gigabyte": {"ssh": "gigabyte-worker", "ip": "192.168.1.6",
                  "faults": ["cpu", "mem", "oom", "disk", "net", "power", "netem", "leak"]},
 }

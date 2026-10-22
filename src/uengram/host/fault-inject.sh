@@ -59,12 +59,15 @@ busy_share() { # share of CPU time not idle/iowait over 5 s
 
 spin_all() { # FRACTION SECONDS: nice-19 busy loops on FRACTION of the CPUs
 	n="$(awk -v f="$1" -v c="$(nproc)" 'BEGIN { n = int(f * c + 0.5); print n < 1 ? 1 : n }')"
+	dur="$2"
+	set --
 	i=0
 	while [ "$i" -lt "$n" ]; do
-		timed "$2" nice -n 19 sh -c 'while :; do :; done' &
+		timed "$dur" nice -n 19 sh -c 'while :; do :; done' &
+		set -- "$@" "$!"
 		i=$((i + 1))
 	done
-	wait
+	wait "$@" # only the loops: a bare wait would also wait for a detached restore timer (60 s longer)
 }
 
 clear_netem() { # DEV: remove our netem if it is still there; the kernel's default root qdisc returns
@@ -107,7 +110,7 @@ while time.time() - t < $3:
 powercap)
 	old="$(cat "$rapl/constraint_0_power_limit_uw")"
 	cap="$(awk -v f="$2" -v t="$(cat "$rapl/constraint_0_max_power_uw")" 'BEGIN { printf "%d", f * t }')"
-	setsid sh "$0" unpowercap "$old" "$(($3 + 60))" >/dev/null 2>&1 &
+	setsid sh "$0" unpowercap "$old" "$(($3 + 60))" </dev/null >/dev/null 2>&1 &
 	trap 'echo "$old" >"$rapl/constraint_0_power_limit_uw"' EXIT
 	trap 'exit 1' INT TERM HUP
 	echo "$cap" >"$rapl/constraint_0_power_limit_uw"
@@ -120,7 +123,7 @@ unpowercap)
 	;;
 netem)
 	dev="$(ip route get "$4" | awk '{ for (i = 1; i < NF; i++) if ($i == "dev") { print $(i + 1); exit } }')"
-	setsid sh "$0" unnetem "$dev" "$(($7 + 60))" >/dev/null 2>&1 &
+	setsid sh "$0" unnetem "$dev" "$(($7 + 60))" </dev/null >/dev/null 2>&1 &
 	trap 'clear_netem "$dev"' EXIT
 	trap 'exit 1' INT TERM HUP
 	tc qdisc replace dev "$dev" root netem delay "${3}ms" loss "${2}%"
