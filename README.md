@@ -7,6 +7,7 @@ A reference implementation and benchmark of a deterministic, fixed-budget memory
 - `docs/RESULTS.md`: benchmark tables and findings (v2; v1 kept in `results/v1/`).
 - `docs/IMPROVEMENT-ANALYSIS.md`: the diagnostics that motivated v2.
 - `docs/research-*.md`: literature notes (machine-state mathematics, anomaly-detection evaluation, condition-monitoring features, CMAPSS practice).
+- `docs/HOST-TELEMETRY.md`: uEngram on running Linux hosts (the Void cluster): the 1 Hz snapshot, the attribute schema with one owner per measured field, the per-signal mathematics, deployment, and cluster results; `docs/research-host-state.md` is its literature note.
 
 ## Environment
 
@@ -46,11 +47,29 @@ uv run python -m bench.report --out docs/RESULTS.md
 
 Keep `--jobs` at 2 or below; the host has about 1 GB of RAM headroom.
 
+## Host telemetry (cluster nodes)
+
+```bash
+# probe all sources on this node (needs CAP_PERFMON + CAP_DAC_READ_SEARCH, see docs/HOST-TELEMETRY.md)
+python3 -m uengram.host probe
+# record, commission, replay, run, cluster view
+python3 -m uengram.host record --out ticks.jsonl
+uv run python -m uengram.host commission --ticks ticks.jsonl --model model.pkl
+uv run python -m uengram.host replay --model model.pkl --ticks more.jsonl --events events.jsonl
+python3 -m uengram.host cluster --nodes msi-worker hp asus-worker lenovo-worker gigabyte-worker
+# synthetic validation of the host pipeline
+uv run python -m bench.run_host_synth --seeds 0-19 --jobs 2 --out results/host_synth.jsonl
+# install the runit service on nodes (sudo via kepr)
+deploy/install-node.sh --numpy NODE...
+```
+
 ## Layout
 
 ```
 src/uengram/   library: stats, metrics, synth, encoders (dsp, ctx, cnn), ledger, store, baselines, engine, lifecycle, cmapss
-bench/         harness: provenance, evaluate, common, run_synth, run_cmapss, report
+src/uengram/host/  host telemetry: schema, perf, sources, collector (stdlib); features, encoder, events, node, cluster, synth (numpy)
+bench/         harness: provenance, evaluate, common, run_synth, run_cmapss, run_host_synth, report
+deploy/        runit service and node installer for uengram-hostd
 tests/         unit and behaviour tests
 results/       committed run outputs (JSONL)
 docs/          plan, explainer, results, improvement analysis, research notes, architecture notes
