@@ -2,6 +2,7 @@ import numpy as np
 
 from uengram import lifecycle as lc
 from uengram.engine import Engram, EngramConfig
+from uengram.stats import ewma_inflation
 
 D = 16
 SIG = 0.5
@@ -181,6 +182,61 @@ def test_slow_drift_tracked_without_flags():
     assert sum(r["type"] == "checkpoint" for r in eng.lineage) >= 3
 
 
+def _wander(rng, T, rho=0.9, tau=1.0):
+    """One state whose mean wanders (AR(1), sd tau*SIG) under white noise SIG."""
+    m, out = np.zeros(D), []
+    for _ in range(T):
+        m = rho * m + rng.normal(0, tau * SIG * np.sqrt(1 - rho ** 2), D)
+        out.append(m + rng.normal(0, SIG, D))
+    return np.array(out)
+
+
+def test_calibrated_step_detector_ignores_correlated_noise():
+    for seed in range(3):
+        rng = np.random.default_rng(seed)
+        infl = ewma_inflation(_wander(rng, 4000), EngramConfig.step_lambda, None)
+        z = _wander(rng, 2000)
+        steps = {}
+        for name, f in (("raw", None), ("calibrated", infl)):
+            eng = Engram(EngramConfig(), D, SIG * np.ones(D), 1536, step_inflation=f)
+            steps[name] = sum(eng.ingest(z[t], t, t).action == "step_change" for t in range(2000))
+        assert steps["raw"] >= 20  # the independence assumption fails without calibration
+        assert steps["calibrated"] == 0
+
+
+def test_calibrated_engine_still_follows_persistent_shift():
+    for seed in range(3):
+        rng = np.random.default_rng(seed)
+        infl = ewma_inflation(_wander(rng, 4000), EngramConfig.step_lambda, None)
+        z = _wander(rng, 2300)
+        z[2000:, :4] += 5.0 * SIG
+        eng = Engram(EngramConfig(), D, SIG * np.ones(D), 1536, step_inflation=infl)
+        for t in range(2300):
+            eng.ingest(z[t], t, t)
+        target = np.r_[np.full(4, 5.0 * SIG), np.zeros(D - 4)]
+        top = eng.recall(target, 2299, 1, "current")[0]
+        k = int(np.flatnonzero(eng.item_id == top)[0])
+        assert eng.kind[k] == lc.SEM
+        assert np.abs(eng.mu[k, :4] - 5.0 * SIG).max() < 1.5 * SIG
+
+
+def test_health_grows_with_drift_the_memory_accepts():
+    rng = np.random.default_rng(0)
+    eng = make()
+    for t in range(500):
+        eng.ingest(pt(rng), t, t)
+    eng.set_reference(*eng.reference())
+    T, scores, health = 10_000, [], []
+    for t in range(500, 500 + T):
+        r = eng.ingest(pt(rng, 6.0 * (t - 500) / T), t, t)
+        scores.append(r.score)
+        health.append(r.health)
+    # the adaptive memory follows the drift, so novelty stays normal ...
+    assert np.median(scores[-500:]) < eng.tau
+    # ... while the distance to the frozen healthy reference keeps growing
+    assert np.median(health[:500]) < eng.tau < np.median(health[-500:])
+
+
 def test_recall_current_prefers_live_over_superseded():
     eng = make()
     for kind, off in ((lc.SEM, 0.0), (lc.SUPER, 0.0)):
@@ -192,3 +248,23 @@ def test_recall_current_prefers_live_over_superseded():
     q = np.zeros(D)
     assert eng.recall(q, 200, 5, "current") == [0]
     assert set(eng.recall(q, 200, 5, "history")) == {0, 1}
+
+
+def test_unique_event_outlives_recurring_novelties_when_budget_overflows():
+    # A unique extreme event and a family of mutually similar novelties are all
+    # far from normal; retention priority must prefer the unique one.
+    rng = np.random.default_rng(0)
+    eng = make(B_epi=3)
+    unique = None
+    for t in range(700):
+        z = pt(rng)
+        if t == 100:
+            z[0] += 60.0
+        elif t >= 200 and t % 50 == 0:
+            z[0] += 20.0
+            z[1] += 6.0 * ((t - 200) // 50)  # each member 12 sd from the previous one
+        r = eng.ingest(z, t, t)
+        if t == 100:
+            unique = r.item_id
+        assert count(eng, lc.CAND, lc.EPI) <= 3
+    assert unique in set(eng.items().ids.tolist())

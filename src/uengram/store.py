@@ -12,9 +12,12 @@ from .ledger import WriteLedger
 @dataclass
 class IngestResult:
     item_id: int
-    score: float  # prequential novelty, computed before the update
-    flagged: bool | None
+    score: float  # prequential novelty vs normal states, computed before the update
+    flagged: bool | None  # alarm (None for stores without alarm logic)
     action: str
+    # distance from a frozen healthy reference (NaN without one); grows with
+    # wear that the adaptive memory has learned to treat as normal
+    health: float = float("nan")
 
 
 @dataclass

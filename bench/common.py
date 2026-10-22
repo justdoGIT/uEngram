@@ -9,7 +9,7 @@ import numpy as np
 from uengram.baseline_reference import ReferenceBaseline
 from uengram.baselines import FIFOStore, NaiveStore, ReservoirStore
 from uengram.engine import Engram, EngramConfig
-from uengram.stats import conformal_threshold
+from uengram.stats import conformal_threshold, ewma_inflation
 
 ALL_METHODS = ("naive", "fifo", "reservoir", "reference_labelfree", "reference_oracle",
                "uengram", "uengram_fixedvar", "uengram_nopromo", "uengram_frozen",
@@ -18,7 +18,7 @@ CAL_WARMUP = 200
 
 
 def make_store(method: str, B: int, d: int, sigma0: np.ndarray, raw_bytes: int,
-               seed: int, cfg_over: dict | None = None):
+               seed: int, cfg_over: dict | None = None, step_inflation: np.ndarray | None = None):
     over = dict(cfg_over or {})
     if method == "naive":
         return NaiveStore(d, raw_bytes)
@@ -35,16 +35,23 @@ def make_store(method: str, B: int, d: int, sigma0: np.ndarray, raw_bytes: int,
                    "uengram_nostep": {"use_step_detect": False}}[method]
         b_epi = B // 4
         cfg = EngramConfig(B_sem=B - b_epi, B_epi=b_epi, **{**over, **variant})
-        return Engram(cfg, d, sigma0, raw_bytes, name=method)
+        return Engram(cfg, d, sigma0, raw_bytes, name=method, step_inflation=step_inflation)
     raise ValueError(f"unknown method {method}")
 
 
+def measure_step_inflation(Ztrain: np.ndarray, groups: np.ndarray | None = None) -> np.ndarray:
+    """EWMA variance inflation of the encoder's training latents at the engine's
+    step-detector lambda; uEngram scales its step detector input by it."""
+    return ewma_inflation(Ztrain, EngramConfig.step_lambda, groups)
+
+
 def calibrate_alarm(method: str, B: int, d: int, sigma0: np.ndarray, raw_bytes: int,
-                    seed: int, Zcal: np.ndarray, alpha: float, cfg_over: dict | None = None) -> float:
+                    seed: int, Zcal: np.ndarray, alpha: float, cfg_over: dict | None = None,
+                    step_inflation: np.ndarray | None = None) -> float:
     """Conformal alarm threshold for a uEngram variant: run a fresh engine over a
     fault-free commissioning stream and take the split-conformal (1-alpha)
     quantile of its normal-state scores after a warm-up."""
-    store = make_store(method, B, d, sigma0, raw_bytes, seed, cfg_over)
+    store = make_store(method, B, d, sigma0, raw_bytes, seed, cfg_over, step_inflation)
     scores = np.array([store.ingest(z, t, t).score for t, z in enumerate(Zcal)])
     return conformal_threshold(scores[CAL_WARMUP:], alpha)
 

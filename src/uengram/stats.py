@@ -89,6 +89,42 @@ def robust_noise_sigma(z: np.ndarray, lag: int, groups: np.ndarray | None) -> np
     return np.maximum(1.4826 * mad / math.sqrt(2.0), 1e-6)
 
 
+def _segments(z: np.ndarray, groups: np.ndarray | None, alpha: float = 1e-3) -> np.ndarray:
+    """Group ids that also break at abrupt changes (state switches, steps,
+    anomaly onsets): lag-1 differences whose Mahalanobis distance under the
+    robust noise covariance exceeds the chi2_d quantile at alpha."""
+    g = np.zeros(len(z), dtype=np.int64) if groups is None else np.asarray(groups)
+    delta = (z[1:] - z[:-1]) / math.sqrt(2.0)
+    d2 = np.einsum("ij,jk,ik->i", delta, np.linalg.inv(robust_noise_cov(z, 1, groups)), delta)
+    brk = (d2 > chi2_isf(alpha, z.shape[1])) | (g[1:] != g[:-1])
+    return np.r_[0, np.cumsum(brk)]
+
+
+def ewma_inflation(z: np.ndarray, lam: float, groups: np.ndarray | None) -> np.ndarray:
+    """Per-dimension variance inflation of an EWMA(lam) of z over independent
+    samples: Var(EWMA) / (lam / (2 - lam) Var(z)); 1 for white noise, larger
+    when slow within-state variation correlates successive samples.
+
+    Measured within segments free of abrupt changes (_segments), from robust
+    lag-L differences with L twice the EWMA memory b = (2 - lam) / lam. The
+    EWMA restarts in each segment and its first b samples are skipped."""
+    z = np.asarray(z, dtype=np.float64)
+    b = (2.0 - lam) / lam
+    lag = int(math.ceil(2.0 * b))
+    g = _segments(z, groups)
+    y = np.empty_like(z)
+    age = np.empty(len(z), dtype=np.int64)
+    for t in range(len(z)):
+        if t == 0 or g[t] != g[t - 1]:
+            y[t], age[t] = z[t], 0
+        else:
+            y[t], age[t] = lam * z[t] + (1.0 - lam) * y[t - 1], age[t - 1] + 1
+    warm = age >= b
+    var_y = robust_noise_sigma(y[warm], lag, g[warm]) ** 2
+    var_z = robust_noise_sigma(z, lag, g) ** 2
+    return var_y * b / var_z
+
+
 def robust_noise_cov(z: np.ndarray, lag: int, groups: np.ndarray | None,
                      trim: float = 0.975, iters: int = 5,
                      floor: np.ndarray | None = None) -> np.ndarray:

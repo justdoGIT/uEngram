@@ -213,6 +213,32 @@ Calibrating on the monitored stream itself would include its faults (2 to 3% of 
 
 ---
 
+## 7c. Health: distance from a frozen healthy reference
+
+### Plain words
+The memory is built to follow slow wear: "normal" is whatever the machine does now. That is right for deciding what is routine and wrong for asking how far the machine has degraded, because the novelty score stays low while the machine wears out. A copy of the normal states taken while the machine is known to be healthy, frozen and never updated, answers the second question: how far is this window from the nearest healthy state?
+
+### Why it exists
+On CMAPSS every engine runs to failure. End-of-life windows are not novel to a memory that has absorbed the degradation of earlier units: v2 novelty separated end-of-life from healthy windows with AUROC 0.59 (both encoders). Distance to a healthy reference separates the same windows with AUROC 0.999 (seed 0, DSP and CNN; all seeds in `docs/RESULTS.md`).
+
+### The math
+Run an engine over a commissioning stream (CMAPSS: the first 30 windows of each of the 50 training units, assumed healthy, no labels). Freeze the means $\mu_k$ and predictive variances $v_k$ of up to $B_{ref}=32$ semantic slots with the largest $n$. Health score: $h_t=\min_k \sum_j (z_{tj}-\mu_{kj})^2/v_{kj}$; NaN without a reference. The reference costs $2d\cdot 4$ bytes per state, written once through the ledger.
+
+### Why this and not the obvious alternative
+Making the adaptive memory slower does not answer the question: its novelty still measures distance to everything stored, including the late-life states of earlier units (naive kNN novelty: AUROC 0.552, `docs/IMPROVEMENT-ANALYSIS.md` section 5). A supervised health index is as discriminative but needs run-to-failure labels; the frozen reference needs only a period declared healthy, like the alarm calibration (7b).
+
+### Remaining useful life from health
+RUL needs labels: a unit's RUL is known only once it has failed. A lookup table fitted offline on run-to-failure data maps health to RUL: 20 bins at the quantiles of $\log h$, each storing the mean $\log h$ and the mean RUL of its fitting windows; prediction interpolates linearly between bin centres and holds the end values outside them. On the device this is 20 pairs (160 bytes) and one interpolation after the health score. On CMAPSS the table is fitted on the stream units' windows, the same labels the memory-lookup RUL uses, and applied to the last window of each test unit (metric `rul_rmse_health`).
+
+The alternative was to keep life-stage resolution inside the memory by storing every drift checkpoint (section 10) as a retrievable item that carries the RUL of the windows absorbed since the previous checkpoint. Measured on seed 0: checkpoints as items gave RMSE 35.5 (DSP) / 39.4 (CNN) with 32 / 46 extra items (5 to 7 KB); the health table gave 25.5 / 26.0 in 160 bytes. Checkpoint items each average a long stretch of life (prediction standard deviation 13.5 / 8.6 against a truth of 41.6), while the table follows the health score (33.6 / 33.4). Checkpoint items would also need RUL labels attached to windows inside the memory, which a device does not have when the windows arrive.
+
+Health is one number, so units that have not yet started to degrade all get similar RUL; a regression on the full deviation vector could separate more (`docs/IMPROVEMENT-ANALYSIS.md` section 5: ridge health index on window mean/slope features, RMSE 18.5), but it is not implemented.
+
+### Where in code
+`src/uengram/engine.py:Engram.reference, Engram.set_reference, Engram.health`; `IngestResult.health` in `src/uengram/store.py`; `src/uengram/health.py:HealthRUL`; commissioning and the RUL table fit in `bench/run_cmapss.py:run_one`; metrics `health_auroc`, `health_ap`, `rul_rmse_health`, `rul_mae_health`.
+
+---
+
 ## 8. Absorption: exponentially weighted mean/variance, adaptive step, variance shrinkage
 
 ### Plain words
@@ -292,13 +318,42 @@ A repair shifts the normal readings a little, often by less than the gate's widt
 In v1 the maintenance step (4.6 to 10 noise units, gate radius 6.8) was absorbed gradually, so the pre-maintenance baseline kept answering "what is normal now" (`stale_at1` 0.61 with DSP).
 
 ### The math
-For each semantic slot, on every absorbed window: standardised innovation $e_t=(z_t-\mu)/\sqrt{v}$ (predictive variance, before the update), multivariate EWMA $Z_t=\lambda e_t+(1-\lambda)Z_{t-1}$, statistic $T^2=\frac{2-\lambda}{\lambda}\lVert Z_t\rVert^2$ ([Lowry et al. 1992](https://doi.org/10.1080/00401706.1992.10485232)). With no change, $e$ has independent unit-variance components (section 4) and $T^2$ is approximately $\chi^2_d$; alarm when $T^2 > \chi^2_{d,\mathrm{isf}}(10^{-6}) = 58.3$ and the slot has $n \ge 2/\lambda$. $\lambda = 0.1$. Simulated in 16-d: about 1 false alarm per $10^6$ windows; median delay 8, 4 and 3 windows for persistent 3, 5 and 8 sigma shifts; a decaying transition ramp (6, 3, 1.5, 0.75 sigma) never alarms. On alarm: make room in the semantic group, start a new semantic slot at the current window (variance prior copied from the old slot), and supersede the old slot (lineage `supersede` with cause `step`, event `("supersede", old, new)`).
+For each semantic slot, on every absorbed window: standardised innovation $e_t=(z_t-\mu)/\sqrt{v}$ (predictive variance, before the update), multivariate EWMA $Z_t=\lambda e_t+(1-\lambda)Z_{t-1}$, statistic $T^2=\frac{2-\lambda}{\lambda}\lVert Z_t\rVert^2$ ([Lowry et al. 1992](https://doi.org/10.1080/00401706.1992.10485232)). With no change and innovations independent in time, $e$ has unit-variance components (section 4) and $T^2$ is approximately $\chi^2_d$; section 10c restores this when the encoder's noise is correlated in time. Alarm when $T^2 > \chi^2_{d,\mathrm{isf}}(10^{-6}) = 58.3$ and the slot has $n \ge 2/\lambda$. $\lambda = 0.1$. Simulated in 16-d: about 1 false alarm per $10^6$ windows; median delay 8, 4 and 3 windows for persistent 3, 5 and 8 sigma shifts; a decaying transition ramp (6, 3, 1.5, 0.75 sigma) never alarms. On alarm: make room in the semantic group, start a new semantic slot at the current window (variance prior copied from the old slot), and supersede the old slot (lineage `supersede` with cause `step`, event `("supersede", old, new)`).
 
 ### Why this and not the obvious alternative
 A per-dimension CUSUM needs a known shift direction and 32 one-sided charts whose false alarms add up; Crosier's multivariate CUSUM needs simulated thresholds. The MEWMA statistic is direction-free with an approximately $\chi^2$ threshold. A faster EWMA step ($\beta_{\min}$) would chase a repair over about $1/\beta$ windows instead of recognising it, and blur the before/after states.
 
 ### Where in code
 `src/uengram/engine.py:Engram._step_detected`, `src/uengram/lifecycle.py:split_on_step`; ablation `uengram_nostep`.
+
+---
+
+## 10c. Calibrating the step detector to correlated noise
+
+### Plain words
+The step detector averages the last ~19 deviations of a state and assumes they are independent, so that noise averages out. When the encoder's noise is correlated in time (overlapping windows, slow transients), it does not average out, and the detector reads ordinary fluctuations as repairs. The engine measures once, on training data, how much more an average of the real noise varies than an average of independent noise, and shrinks the detector's input by that factor.
+
+### Why it exists
+CMAPSS windows of 16 cycles at stride 1 share 15 of their 16 cycles. On the 50 stream units the v2 engine fired 493 (DSP) and 356 (CNN) step changes (seed 0). Each one superseded a state; superseded slots are the first evicted when the semantic group is full, and the record of end-of-life windows went with them: end-of-life retention 0.40 (DSP) and 0.46 (CNN). On the synthetic stream the CNN latent superseded 155 states in 20,000 windows (DSP: 5).
+
+### The math
+For an EWMA $y_t=\lambda z_t+(1-\lambda)y_{t-1}$ of independent samples, $\mathrm{Var}(y)=\frac{\lambda}{2-\lambda}\mathrm{Var}(z)$. Correlation in time multiplies this by the inflation
+$$f_j=\frac{\mathrm{Var}(y_j)}{\frac{\lambda}{2-\lambda}\mathrm{Var}(z_j)}.$$
+For AR(1) wander with coefficient $\rho$ and variance $\tau^2$ on top of unit white noise, $f=\bigl(1+\tau^2\tfrac{1+a}{1-a}\bigr)/(1+\tau^2)$ with $a=\rho(1-\lambda)$, i.e. 5.3 for $\rho=0.9$, $\tau=1$. Estimation on the encoder's training latents: cut the sequence wherever a lag-1 difference has Mahalanobis $D^2>\chi^2_{d,\mathrm{isf}}(10^{-3})$ under the robust noise covariance (state switches, steps, fault onsets); restart the EWMA in each segment and skip its first $b=(2-\lambda)/\lambda=19$ samples; estimate both variances from robust lag-$2b$ differences within segments (section 5). The engine feeds $e_{tj}/\sqrt{\max(f_j,1)}$ to the MEWMA and keeps the threshold $\chi^2_{d,\mathrm{isf}}(10^{-6})$. Measured medians: CMAPSS DSP 6.6, CNN 2.5; synthetic DSP 0.96, ctx 1.00, CNN 1.19. Seed 0 effect on CMAPSS: 2 (DSP) and 6 (CNN) step changes, end-of-life retention 1.00 for both, 85% fewer writes.
+
+### Why this and not the obvious alternative
+- *Track wear with a level-plus-rate Kalman filter* (the first hypothesis: wear outruns a slot it visits only part of the time, and the lag looks like a step). Rates estimated from intermittent visits were weak, the rate uncertainty widened the gates of stale states, and faults hid behind them (context-encoder AUROC 1.00 to 0.82, seed 0). Learning the process noise from squared innovations ran away in one dimension (DSP: up to 600 times what its drift needs). A lag-feedback gain on the EW step took CNN supersessions only from 155 to 115. The CNN latent's slow motion inside one regime was not wear: its 25-window block means move 3 to 4 times the noise floor and back, with a path 3 to 10 times the net displacement.
+- *A long-lag noise scale* ($\sigma$ at lag 19 over $\sigma_0$) under-corrects: for AR(1) at $\rho=0.9$, $\tau=1$ it gives a variance ratio of 1.9 where the inflation is 5.3, and leaves 18 to 57 false steps per 2,000 windows.
+- *Unsegmented estimation.* Synthetic regimes last 24 windows (median), so 54% of lag-38 pairs straddle a switch and the MAD breaks down. $f$ came out 7 to 10 on the regime dimensions, and the first supersession after maintenance moved from 29 to 92 windows (DSP).
+- *A lower `step_alpha`* rescales every dimension alike, whatever its correlation.
+
+### Limits
+On the synthetic stream the CNN still supersedes 101 states (seed 0, from 155). The cause is the coolant transient after each regime switch, which the CNN latent encodes at hundreds of noise units: $D^2$ between successive windows is 562, 166, 68 and 21 at 1, 2, 3 and 5 windows after a switch, while switches themselves are about 21,000. No label-free segmentation threshold separates those cases, and skipping a slot's first windows after re-entry only reached 120. The fix belongs in the encoder: the context encoder (section 3b) predicts the transient, and its successive-window $D^2$ after a switch is 16, the noise level.
+
+On CMAPSS the false steps had been doing useful work for RUL lookup: they cut each degradation run into short segments, so a recalled item carried a narrow RUL range (seed 0: within-item RUL standard deviation 3.3 to 4.0 cycles over 193 items). Calibrated, the memory tracks degradation as drift of 9 to 17 states, each spanning nearly the whole life, and RUL lookup falls to the constant-prediction RMSE (42; v2 21 to 23). RUL now comes from the health score through a lookup table (section 7c); storing drift checkpoints as retrievable items was measured and rejected there.
+
+### Where in code
+`src/uengram/stats.py:ewma_inflation, _segments`; `Engram(step_inflation=...)`, `Engram._step_detected`; `bench/common.py:measure_step_inflation`, called by `bench/run_synth.py` and `bench/run_cmapss.py`.
 
 ---
 
@@ -316,6 +371,8 @@ $$\frac{n_in_j}{n_i+n_j}\sum_k\frac{(\mu_{ik}-\mu_{jk})^2}{\sigma_{0,k}^2}.$$
 This is exactly the increase in total within-cluster variance caused by the merge, so greedy Ward merging keeps the stored mixture closest to the data it summarises. Episodic group full: evict the kind-2 slot with the lowest
 $$\text{importance}=\text{surprisal}\cdot(1+\ln n)\cdot2^{-(t-t_{last})/h_{epi}}$$
 ($h_{epi}=20000$); if there is no episodic slot, evict the oldest candidate.
+
+The surprisal used here is the slot's **rarity** at creation: $-\log_{10}$ of the $\chi^2_d$ tail at the distance to the nearest stored slot of *any* kind. It is deliberately not the alarm score, which is measured against normal states only (section 7). A pattern that keeps recurring (a regime transition seen through the CNN encoder) is far from normal but close to its own earlier copies, so it ranks below a unique event such as a seizure. With the alarm score in this role, CNN transition candidates tied seizures at the 300-decade cap, and the older seizures were evicted: seizure recall was 0 versus 1.0 with rarity (seed 0, `docs/IMPROVEMENT-ANALYSIS.md` follow-up; regression test `test_unique_event_outlives_recurring_novelties_when_budget_overflows`).
 
 ### Why this and not the obvious alternative
 The doc's density-based utility `mean(max(sim,0))·log1p(mass)` has no stated objective. Ward cost is the standard minimum-variance clustering criterion. Keeping the episodic and semantic budgets separate means a flood of routine states can never evict a seizure.
@@ -411,13 +468,58 @@ so uEngram's slots can be compared as Gaussians with their variances, and point 
 
 **Bootstrap.** Percentile bootstrap of the mean over seeds (2000 resamples, 95%). Paired differences resample seed indices jointly, so a seed that is hard for every method does not widen the CI of the difference. A `*` means the CI excludes 0. With 5-10 seeds, CIs are wide; treat them as indications, not proofs.
 
-**Alarms and supersession.** `false_flag_rate_era0/era1` is the share of normal windows that alarm before and after maintenance, to compare with the calibrated $\alpha = 0.01$. `supersede_delay_maint` is the number of windows from maintenance to the first supersession. `results/v1/` keeps the first benchmark; the report pairs uEngram v1 and v2 on the same seeds.
+**Alarms and supersession.** `false_flag_rate_era0/era1` is the share of normal windows that alarm before and after maintenance, to compare with the calibrated $\alpha = 0.01$. `supersede_delay_maint` is the number of windows from maintenance until the first supersession of a slot that received windows in the 200 windows before maintenance (NaN if that never happens); supersessions of unrelated dormant slots do not count. `results/v1/` keeps the first benchmark; the report pairs uEngram v1 and v2 on the same seeds.
 
 ### Why this and not the obvious alternative
 Accuracy/F1 alone hides the imbalance; plain MSE between centroids ignores spread; a normal-approximation CI on 10 seeds is unreliable for bounded metrics like recall.
 
 ### Where in code
 `src/uengram/metrics.py`, `bench/evaluate.py`, `bench/report.py`.
+
+---
+
+## 16. Real-data benchmark: MetroPT-3 protocol (fixed before any result)
+
+### Plain words
+Synthetic data and the simulated CMAPSS engines cannot show that the memory works on a real machine. MetroPT-3 is seven months of logs from the air compressor of a metro train in Porto, with four reported air-leak intervals. The original protocol was committed in `434eea3` before any detection result. Its first smoke stopped during training-only calibration; the amendment below resolves that failure before examining failure-month scores. Splits, labels, methods and P1–P3 are not tuned to test outcomes.
+
+### Data and windows
+[MetroPT-3](https://archive.ics.uci.edu/dataset/791/metropt+3+dataset), 1 Feb to 1 Sep 2020, the 7 analog channels (TP2, TP3, H1, DV pressure, reservoirs, oil temperature, motor current) at about one sample per 10 s. The 8 binary valve channels are excluded: they are often constant within a window (zero spread) and mostly mirror the pressures and current. Windows are 60 samples (about 10 minutes), non-overlapping, and never span a logging gap longer than 60 s: 25,126 windows in 291 gap-free segments. Samples are treated as equally spaced (spacing 8 to 13 s).
+
+### Splits
+- Encoder fit and frozen healthy reference (section 7c): windows ending before 22 Feb. Step calibration uses only these commissioning windows, as specified in the amendment below.
+- Alarm calibration: windows wholly within 22 Feb to 1 Mar. Every method's threshold is the split-conformal quantile at $\alpha=0.01$ of calibration scores after a 200-window warm-up (250 for Half-Space Trees), without failure labels. Calibration and test use separate fresh model states; MemStream's fitted encoder and initial memory are shared by independent clones.
+- Test stream: 1 Mar to 1 Sep, 21,556 windows.
+
+### Labels
+A window is positive when it overlaps one of the four reported air-leak intervals (144, 41, 287 and 27 windows). It is a clean negative when it lies outside every [report start − 24 h, report end + 48 h]: a leak develops before it is reported and persists until repaired. Other windows are not scored. Maintenance times in the published table are inconsistent (the second report's maintenance date precedes it) and are not used.
+
+### Methods
+All methods see the same encoded windows (16-d latents; encoders `dsp` and `cnn`, seeds 0 to 4). DSP encoding is deterministic; its repetitions exercise stochastic reservoir, HST and MemStream baselines and do not create independent machines. Item stores use B = 256 (uEngram 192 + 64). This is not a byte-equated comparison with trees or neural-network memory.
+- `naive`, `fifo`, `reservoir`, `reference_labelfree`, `uengram`, `uengram_frozen` as in the other benchmarks; uEngram with the measured step inflation and the frozen reference.
+- Half-Space Trees ([Tan et al. 2011](https://www.ijcai.org/Proceedings/11/Papers/254.pdf), River implementation): River defaults (10 trees, height 8, window 250), feature limits = per-dimension min and max of the encoder-fit latents, score then learn on every window.
+- MemStream ([Bhatia et al. 2022](https://arxiv.org/abs/2106.03837)), a port of the reference `memstream.py`: autoencoder Linear(16, 32) + tanh / Linear(32, 16) trained for 5,000 full-batch Adam steps (learning rate 0.01, input noise 0.001) on the first 256 encoder-fit windows, memory of 256 encodings initialised from them, score = minimum L1 distance to the memory, first-in-first-out memory update when score ≤ β. The reference picks β per dataset from labelled results; here β is the 99th percentile of the calibration-week scores against the initial memory, without updates.
+- DenStream is not included: River's implementation clusters but gives no outlier score, and any score would be an invented rule.
+
+### Metrics
+- Window AUROC and AP of each method's score, positives against clean negatives; for uEngram also of the health score.
+- Failure detected: at least one alarm window overlaps its report interval. Signed lead time uses the window's **end**, when the alert becomes available: first alert in [report start − 24 h, report end], relative to report start. Negative means earlier. An early alert is an association, not proof of predicting the leak; it does not by itself satisfy report-overlap detection.
+- False-alarm episodes: alerts outside the buffered report intervals, merged when strictly less than 1 h apart, per week of observed clean-negative window time. Unreported windows are not independently verified healthy. Missing scores and HST's 250-window test warm-up are excluded from both scoring and observed exposure; logging gaps are not counted as observed uptime.
+- Retention (stores): failures represented by at least one absorbed window's provenance in a live item at stream end. This does not prove that a raw fault exemplar survives or that a query retrieves it.
+- Footprint and cost: live items, modelled persistent index/raw bytes and writes, ingest latency p99. HST/MemStream persistence and retention are n/a, not zero-cost detectors. MemStream's raw/encoded memory and encoder parameter bytes are recorded separately. Python RAM, encoder energy, real flash endurance and communication cost are not measured.
+
+### Pass criteria (uEngram, `dsp` encoder)
+P1: all 4 failures detected. P2: at most 1 false-alarm episode per week. P3: all 4 failures retained at the end of the stream. The same numbers are reported for the `cnn` encoder and every baseline. A difference between methods counts only when its paired 95% bootstrap CI over seeds excludes 0; with the deterministic `dsp` encoder most methods do not vary with the seed, so `dsp` comparisons are single runs.
+
+### Pre-test amendment: commissioning innovation calibration
+The raw-latent estimator in section 10c requires warmed-up lag-38 pairs inside uninterrupted state runs. Training-only diagnosis found 2,658 fit windows in 26 logging segments, but abrupt-change segmentation produced 1,000 runs, longest 36: there are no valid lag-38 pairs. Assuming inflation 1 would conceal missing evidence. For this benchmark only, collect the actual standardized semantic-slot innovations in visit order from a commissioning engine, with step splits held off during the declared-healthy fit. Each item identity has its own sequence; merges and logging gaps restart it. Apply an EWMA with the engine's $\lambda=0.1$, skip its first $\lceil(2-\lambda)/\lambda\rceil=19$ visits, and pool the remaining vectors $Y$. Estimate $f_j=\frac{2-\lambda}{\lambda}[1.4826\,\mathrm{median}(|Y_j|)]^2$. This directly measures the null EWMA scale relative to unit independent innovations, without subtracting a persistent commissioning bias or requiring long raw-state dwells. The engine still clamps $f_j$ below at 1. Fit each uEngram variant separately; fewer than 10 warmed-up samples is an error. The original synthetic and CMAPSS calibration paths remain unchanged.
+
+This empirical variance match does **not** prove a $\chi^2$ sequential false-alarm rate under arbitrary dependence or non-Gaussian noise. The alarm calibration's exchangeability condition is also unverified. P2 therefore measures the actual reported-interval false-alarm burden rather than asserting a nominal guarantee.
+
+Average precision now groups equal scores at one threshold. A constant score must have AP equal to prevalence, independent of label order; the earlier implementation did not. Historical synthetic/CMAPSS JSONL files are retained as originally generated and have not been recomputed for this correction. MetroPT uses the corrected metric.
+
+### Where in code
+`src/uengram/metropt.py` (download, cache, windows, labels), `src/uengram/stream_baselines.py` (Half-Space Trees, MemStream), `bench/metropt_calibration.py` (commissioning step calibration), `bench/metropt_eval.py` (window, event and false-alarm metrics), `bench/run_metropt.py` (splits, threshold calibration, streaming), `bench/report.py` (MetroPT tables and P1–P3).
 
 ---
 
@@ -438,3 +540,10 @@ Accuracy/F1 alone hides the imbalance; plain MSE between centroids ignores sprea
 - Context encoder with a learned thermal-lag residual (section 3b).
 - Robust full noise-covariance whitening in every encoder (section 4); the encoder test now pins "noise covariance = I" instead of "total covariance = I".
 - `synth.generate(anomalies=False, maint_frac>=1)` provides the fault-free commissioning stream.
+
+### v3 changes
+
+- Step detector input scaled by the measured EWMA variance inflation of the encoder's training latents (section 10c).
+- Frozen healthy reference and health score; CMAPSS commissioning from the first 30 windows of each training unit (section 7c).
+- RUL from the health score through a 20-bin lookup table fitted on run-to-failure data (section 7c); drift checkpoints as retrievable RUL items were measured and rejected.
+- Level-plus-rate Kalman wear tracking (`docs/IMPROVEMENT-ANALYSIS.md` item 9), learned process noise and a lag-feedback gain were implemented, measured and removed (section 10c).

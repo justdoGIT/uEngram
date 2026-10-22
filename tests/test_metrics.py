@@ -23,6 +23,14 @@ def test_average_precision_hand_case():
     assert abs(ap - (1 + 2 / 3) / 2) < 1e-12
 
 
+def test_average_precision_treats_tied_scores_as_one_threshold():
+    # A constant score has no ranking information: AP equals prevalence,
+    # independent of the input order of labels.
+    for y in ([True, True, False, False], [False, False, True, True]):
+        assert metrics.average_precision(np.ones(4), y) == 0.5
+    assert metrics.average_precision([2, 1, 1], [True, True, False]) == (1 + 2 / 3) / 2
+
+
 def test_mmd_identical_zero_and_pointset_vstat():
     rng = np.random.default_rng(1)
     a = rng.normal(size=(40, 3))

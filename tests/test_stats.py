@@ -80,6 +80,37 @@ def test_robust_noise_sigma_groups_and_few_pairs():
     assert abs(s[0] - 1.0) < 0.2
 
 
+def _ar1(rng, T, d, rho, tau):
+    m, out = np.zeros(d), []
+    for _ in range(T):
+        m = rho * m + rng.normal(0, tau * np.sqrt(1 - rho ** 2), d)
+        out.append(m + rng.normal(0, 1.0, d))
+    return np.array(out)
+
+
+def test_ewma_inflation_white_noise_and_ar1():
+    rng = np.random.default_rng(4)
+    lam = 0.1
+    f = stats.ewma_inflation(rng.normal(size=(8000, 4)), lam, None)
+    assert np.all(np.abs(f - 1.0) < 0.15)
+    rho, tau = 0.9, 1.0
+    a = rho * (1 - lam)
+    theory = (1 + tau ** 2 * (1 + a) / (1 - a)) / (1 + tau ** 2)  # about 5.3
+    f = stats.ewma_inflation(_ar1(rng, 8000, 4, rho, tau), lam, None)
+    assert np.all(np.abs(f / theory - 1.0) < 0.2)
+
+
+def test_ewma_inflation_ignores_state_switches():
+    # white noise around levels that switch every ~30 samples (like regime
+    # changes): the switches are not within-state correlation
+    rng = np.random.default_rng(5)
+    T, d = 8000, 4
+    switch = rng.random(T) < 1 / 30
+    level = rng.normal(0, 20.0, size=(int(switch.sum()) + 1, d))[np.cumsum(switch)]
+    f = stats.ewma_inflation(level + rng.normal(size=(T, d)), 0.1, None)
+    assert np.all(np.abs(f - 1.0) < 0.25)
+
+
 def test_ward_cost():
     n = np.array([2, 3])
     mu = np.array([[0.0, 0.0], [2.0, 0.0]])
