@@ -52,24 +52,27 @@ Keep `--jobs` at 2 or below; the host has about 1 GB of RAM headroom.
 ```bash
 # probe all sources on this node (needs CAP_PERFMON + CAP_DAC_READ_SEARCH, see docs/HOST-TELEMETRY.md)
 python3 -m uengram.host probe
-# record, commission, replay, run, cluster view
-python3 -m uengram.host record --out ticks.jsonl
-uv run python -m uengram.host commission --ticks ticks.jsonl --model model.pkl
+# record (a single file, or daily spool files), commission, replay, run, cluster view
+python3 -m uengram.host record --spool ~/.local/state/uengram-host/spool
+uv run python -m uengram.host commission --ticks ~/.local/state/uengram-host/spool/ticks-*.jsonl* --model model.pkl
 uv run python -m uengram.host replay --model model.pkl --ticks more.jsonl --events events.jsonl
 python3 -m uengram.host cluster --nodes msi-worker hp asus-worker lenovo-worker gigabyte-worker
 # synthetic validation of the host pipeline
 uv run python -m bench.run_host_synth --seeds 0-19 --jobs 2 --out results/host_synth.jsonl
-# install the runit service on nodes (sudo via kepr)
+# install the runit service on nodes (sudo via kepr); --campaign adds the campaign runner (msi only)
 deploy/install-node.sh --numpy NODE...
+# 7-day live validation campaign: record 3 days, commission, scheduled faults 4 days, report
+python3 -m uengram.host campaign plan --dir ~/Backup/uengram-host/campaign
+python3 -m uengram.host campaign status --dir ~/Backup/uengram-host/campaign
 ```
 
 ## Layout
 
 ```
 src/uengram/   library: stats, metrics, synth, encoders (dsp, ctx, cnn), ledger, store, baselines, engine, lifecycle, cmapss
-src/uengram/host/  host telemetry: schema, perf, sources, collector (stdlib); features, encoder, events, node, cluster, synth (numpy)
+src/uengram/host/  host telemetry: schema, perf, sources, collector (stdlib); features, encoder, events, node, cluster, synth (numpy); campaign, validate, validate_variants
 bench/         harness: provenance, evaluate, common, run_synth, run_cmapss, run_host_synth, report
-deploy/        runit service and node installer for uengram-hostd
+deploy/        runit services (uengram-hostd, uengram-campaign) and the node installer
 tests/         unit and behaviour tests
 results/       committed run outputs (JSONL)
 docs/          plan, explainer, results, improvement analysis, research notes, architecture notes

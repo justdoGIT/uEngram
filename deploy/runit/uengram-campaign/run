@@ -1,0 +1,24 @@
+#!/bin/sh
+# uengram-campaign (msi only): advance the validation campaign once a minute
+# (uengram-host campaign tick; see src/uengram/host/campaign.py). Runs as kk
+# for the fleet ssh keys and kepr, which pipes the sudo password to the nodes
+# for memory/OOM/disk faults and service restarts. Output: <dir>/campaign.log.
+exec 2>&1
+# shellcheck source=/dev/null
+[ -r /etc/default/uengram-campaign ] && . /etc/default/uengram-campaign
+user="${UENGRAM_USER:-kk}"
+home="/home/$user"
+src="${UENGRAM_SRC:-$home/.local/share/uengram-host/src}"
+dir="${UENGRAM_CAMPAIGN:-$home/Backup/uengram-host/campaign}"
+if [ ! -r "$dir/campaign.json" ]; then
+	echo "uengram-campaign: no $dir/campaign.json (uengram-host campaign plan --dir $dir)"
+	exec sleep 600
+fi
+log="$dir/campaign.log"
+chpst -u "$user:$user" touch "$log" # owned by kk; root only appends below
+while :; do
+	chpst -u "$user:$user" env HOME="$home" XDG_RUNTIME_DIR=/run/user/1000 PYTHONPATH="$src" \
+		PATH=/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin \
+		python3 -m uengram.host campaign tick --dir "$dir" >>"$log" 2>&1
+	sleep 60
+done

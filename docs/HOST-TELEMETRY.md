@@ -123,16 +123,41 @@ The OOM miss is explained, not silently wrong: the fault lasted one 32 s window 
 ## 7. Operation
 
 ```bash
-# record a commissioning run (as root via runit, or by hand)
+# record a commissioning run (as root via runit, or by hand) into daily spool files
 setpriv --reuid=kk --regid=kk --init-groups --inh-caps=+perfmon,+dac_read_search \
-  --ambient-caps=+perfmon,+dac_read_search -- python3 -m uengram.host record --out ticks-$(hostname).jsonl
-# fit, seed and calibrate (numpy)
-python -m uengram.host commission --ticks ticks-$(hostname).jsonl --model model-$(hostname).pkl
+  --ambient-caps=+perfmon,+dac_read_search -- python3 -m uengram.host record --spool ~/.local/state/uengram-host/spool
+# fit, seed and calibrate (numpy); leave out known-bad intervals (epoch seconds)
+python -m uengram.host commission --ticks ~/.local/state/uengram-host/spool/ticks-*.jsonl* \
+  --model model-$(hostname).pkl --exclude 1792667600:1792669400
 # replay recorded ticks through a model; run online; read state; cluster view
 python -m uengram.host replay --model M --ticks F --events out.jsonl
-python -m uengram.host run --model M
+python -m uengram.host run --model M --spool ~/.local/state/uengram-host/spool
 python -m uengram.host status
 python -m uengram.host cluster --nodes msi-worker hp asus-worker lenovo-worker gigabyte-worker
 ```
 
 Commission on at least 24 h covering the usual workloads; with less, the conformal threshold has few calibration scores and the episodic budget absorbs states that a longer run would have seen as recurring.
+
+The runit service (`deploy/runit/uengram-hostd/run`) keeps every tick in `~/.local/state/uengram-host/spool/ticks-<host>-YYYYMMDD.jsonl` in both modes: one file per UTC day (86400 is a multiple of 32, so no window straddles two files), finished days gzipped in a background thread, 14 days kept (measured on hp: 724 B/tick, ~62 MB/day raw, ~8 MB gzipped). On msi, whose `/home` is nearly full, `spool` is a symlink to `/home/kk/Backup/uengram-host/spool`. To replace a running node's model, stop the service first: the daemon saves its in-memory model on SIGTERM and would overwrite a model copied in while it runs.
+
+## 8. Live validation campaign
+
+`uengram.host.campaign` runs the week-long check of §6 on the real fleet, unattended; the `uengram-campaign` runit service on msi calls `campaign tick` once a minute (idempotent, file-locked, so reboots lose nothing). Data and results live in `~/Backup/uengram-host/campaign/` (`campaign.json`, `faults.jsonl`, `campaign.log`, `models/`, `nodes/<name>/{spool,events.jsonl}`, `report.md`, `report.json`).
+
+| phase | what happens |
+|---|---|
+| record, days 0–3 | the nodes run as usual; the campaign injects nothing |
+| commission, at day 3 | spools are rsynced to msi; every node is commissioned on its own 3 days (`commission_from_spool`, same split and α as the CLI); the service is stopped, the model copied, the service started |
+| test, days 3–7 | scheduled faults, one at a time fleet-wide, each logged with its real start and end in `faults.jsonl` |
+| report, after day 7 | spools and online events collected again; `validate.write_report` |
+
+**Fault matrix.** Per node 4 faults/day for 4 days, cycling through every (type, level) cell the node allows, at random times ≥ 13 min apart fleet-wide and ≥ 45 min apart on any one node, never in the first hour after deployment: `cpu` nice-19 spin on 25/50/100 % of the CPUs; `mem` 1.25/1.75/2.5 GB working set in a 1 GiB cgroup (swap thrash); `oom` one OOM kill in a 256 MiB swapless cgroup; `disk` O_DIRECT sequential read of the first disk at 10/40 MB/s or unpaced (read-only); `net` a TCP stream of zeros to another node at 2/8 MB/s or unpaced. Each lasts 180 s (`src/uengram/host/fault-inject.sh`). Exclusions: no disk faults on asus (failing HDD); only cpu, oom and net on the msi desktop. Safety gate: a fault is postponed 10 min while its node is > 50 % busy or runs a Slurm job, and skipped after 6 postponements; a postponed fault also waits 10 min after the previous fault ended. Memory faults run inside `/sys/fs/cgroup/guards/uengram-*`, created and removed by the helper.
+
+**Report.** The test-phase spool of every node is replayed through its deployed model from the deployed state, which is exactly what the daemon computed; section 3 of the report checks that against the daemon's own `events.jsonl` (a daemon restart rewinds up to 49 windows of learning, which shows up as a share below 1).
+
+1. *Calibration*: on windows more than 2 windows away from any fault touching the node, the latent, event, saturation and any-channel alarm rates, the share of conformal p-values ≤ a, and the KS distance of the p-values from uniform. Alarms come in bursts, so intervals are a moving-block bootstrap (1 h blocks, at least 20 per series), not binomial; a rate of exactly 0 gets the rule of three over the blocks.
+2. *Detection*: per fault type, level and role (target, or the receiving peer of a network fault), the share detected by any channel with a Wilson interval, the latent and event shares, whether a saturation flag named the expected resource (cpu/mem/disk), whether the D² attribution named the expected modality, whether an OOM kill reached the event channel, and the median delay from fault start to the end of the first firing window. A window counts if it overlaps the fault or is the window right after it (the on-delay fires one window late).
+3. *Online vs offline* as above.
+4. *Ablations and baselines*: every ablation is re-commissioned on the same 3 days with one part off (`node.Options`: thermal residual, Q coordinate, on-delay, event channel, saturation flags) and replayed on the same test data. Baselines share the deployed encoder, the commissioning split, the four-phase calibration, the on-delay and α/2, so only the detector differs: saturation flags alone, the largest robust z of any single feature, and one Gaussian over all commissioning latents (Hotelling T², no memory of separate states).
+
+On the synthetic one-node campaign of `tests/test_host_validate.py` (4 h commissioning, 1 h test, one spin, one thrash, one OOM kill) all three faults are found with the expected channel and modality and the replay matches the tick-by-tick daemon on 112 of 112 windows; the max-z and single-Gaussian baselines find the spin and the thrash but not the OOM kill, which only the count model sees.
