@@ -90,7 +90,8 @@ def robust_noise_sigma(z: np.ndarray, lag: int, groups: np.ndarray | None) -> np
 
 
 def robust_noise_cov(z: np.ndarray, lag: int, groups: np.ndarray | None,
-                     trim: float = 0.975, iters: int = 5) -> np.ndarray:
+                     trim: float = 0.975, iters: int = 5,
+                     floor: np.ndarray | None = None) -> np.ndarray:
     """Full within-state noise covariance from lag differences, robust to the
     jumps caused by regime switches, steps and anomalies.
 
@@ -98,18 +99,23 @@ def robust_noise_cov(z: np.ndarray, lag: int, groups: np.ndarray | None,
     is unchanged. Reweighted trimming: keep differences with Mahalanobis
     distance <= the chi2_d `trim` quantile, re-estimate, repeat; then rescale by
     trim / P(chi2_{d+2} <= q), the Gaussian consistency factor for trimming.
+
+    `floor` (a d x d covariance) is added at every step: variation below the
+    measurement resolution counts as noise even where the data never moved,
+    which keeps the estimate invertible for zero-inflated features.
     """
     D = _diff_pairs(z, lag, groups) / math.sqrt(2.0)
     n, d = D.shape
     if n < max(10, 2 * d):
         raise ValueError("too few difference pairs for noise covariance")
+    F = np.zeros((d, d)) if floor is None else np.asarray(floor, dtype=np.float64)
     q = chi2_isf(1.0 - trim, d)
     cons = trim / (1.0 - math.exp(float(chi2_logsf(q, d + 2))))
     s = robust_noise_sigma(z, lag, groups)
-    C = np.diag(s * s)
+    C = np.diag(s * s) + F
     for _ in range(iters):
         d2 = np.einsum("ij,jk,ik->i", D, np.linalg.inv(C), D)
-        C = np.cov(D[d2 <= q], rowvar=False) * cons
+        C = np.cov(D[d2 <= q], rowvar=False) * cons + F
     return C
 
 
