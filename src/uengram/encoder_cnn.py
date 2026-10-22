@@ -3,8 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .encoders import Whitener
-from .stats import robust_noise_sigma
+from .encoders import fit_projection
 
 
 class CNNEncoder:
@@ -50,8 +49,7 @@ class CNNEncoder:
                 loss.backward()
                 opt.step()
         self.enc.eval()
-        self.whitener = Whitener().fit(self._latent(x), self.d)
-        self.sigma0 = robust_noise_sigma(self.encode(x), noise_lag, groups)
+        self.whitener, self.noise, self.sigma0 = fit_projection(self._latent(x), self.d, noise_lag, groups)
         return self
 
     def _latent(self, windows) -> np.ndarray:
@@ -66,4 +64,4 @@ class CNNEncoder:
 
     def encode(self, windows, sequential: bool = True) -> np.ndarray:
         """`sequential` is accepted for protocol compatibility; windows are independent here."""
-        return self.whitener.transform(self._latent(windows))
+        return self.noise.transform(self.whitener.transform(self._latent(windows)))

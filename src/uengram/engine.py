@@ -21,8 +21,10 @@ class EngramConfig:
     alpha_gate: float = 1e-4
     beta_min: float = 0.01
     kappa0: float = 10.0
-    m_promote: int = 5
+    m_promote: int = 5  # candidate probation: M hits within N steps of creation
     n_promote: int = 8
+    m_reconfirm: int = 20  # episodic -> semantic: a sustained dwell of M hits within N steps
+    n_reconfirm: int = 30
     consolidate_every: int = 200
     db_merge: float = 0.5
     t_dormant: int = 2000
@@ -69,7 +71,8 @@ class Engram:
         self.item_id = np.full(cap, -1, dtype=np.int64)
         self.superseded_by = np.full(cap, -1, dtype=np.int64)
         self.ewma_e = np.zeros((cap, d))  # step-detector state per slot
-        self.hits = np.full((cap, cfg.m_promote), lc.NO_HIT, dtype=np.int64)  # last M hit times
+        ring = max(cfg.m_promote, cfg.m_reconfirm)
+        self.hits = np.full((cap, ring), lc.NO_HIT, dtype=np.int64)  # last hit times, oldest first
         self.exemplars: dict[int, list[int]] = {}
         self.lineage: deque = deque(maxlen=256)
         self.events: list[tuple] = []
@@ -163,8 +166,14 @@ class Engram:
         self.ledger.write_now(iid, self.raw_window_bytes)
         self.hits[k, :-1] = self.hits[k, 1:]
         self.hits[k, -1] = t
-        # M-of-N at any time: the last M hits fall within N steps
-        if (cfg.use_promotion and t - self.hits[k, 0] <= cfg.n_promote
+        # Candidates confirm a new state by M hits within N steps of creation.
+        # An episodic slot is promoted only by a sustained dwell: operating
+        # states persist, while bursts of a recurring fault stay short.
+        if self.kind[k] == CAND:
+            m, n_win = cfg.m_promote, cfg.n_promote
+        else:
+            m, n_win = cfg.m_reconfirm, cfg.n_reconfirm
+        if (cfg.use_promotion and t - self.hits[k, -m] <= n_win
                 and lc.make_semantic_room(self, t)):
             self.kind[k] = SEM
             self.ckpt_mu[k] = self.mu[k]

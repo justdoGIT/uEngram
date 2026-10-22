@@ -7,7 +7,7 @@ import time
 
 import numpy as np
 
-from bench.common import ALL_METHODS, dump, make_store, parse_seeds, run_stream
+from bench.common import ALL_METHODS, calibrate_alarm, dump, make_store, parse_seeds, run_stream
 from bench.evaluate import evaluate_run
 from bench.provenance import Provenance
 from uengram import synth
@@ -16,40 +16,58 @@ from uengram.metrics import median_heuristic
 
 RAW_BYTES = synth.C * synth.K * 4
 SWEEP_METHODS = ("fifo", "reservoir", "uengram")
+TEMP_CH, RPM_CH = synth.CHANNELS.index("coolant_temp"), synth.CHANNELS.index("rpm")
 
 
 def make_encoder(name: str, seed: int):
     if name == "dsp":
         return DSPEncoder()
+    if name == "ctx":
+        from uengram.encoder_ctx import ContextEncoder
+
+        return ContextEncoder(lag_channels=(TEMP_CH,), drive_channel=RPM_CH)
     from uengram.encoder_cnn import CNNEncoder
 
     return CNNEncoder(seed=seed)
 
 
 def run_one(task):
-    seed, enc_name, T, methods, budgets, tag = task
+    seed, enc_name, T, methods, budgets, tag, alarm_alpha, cal_T = task
     train = synth.generate(8000, seed + 10_000)
     enc = make_encoder(enc_name, seed).fit(train.windows, 1, None)
     stream = synth.generate(T, seed)
     probe = synth.make_probe(seed, T)
-    Z, PZ = enc.encode(stream.windows), enc.encode(probe.windows)
+    # fault-free commissioning run, used only to calibrate uEngram's alarm threshold
+    cal = synth.generate(cal_T, seed + 30_000, maint_frac=1.0, anomalies=False)
+    Z, PZ, Zcal = enc.encode(stream.windows), enc.encode(probe.windows, sequential=False), enc.encode(cal.windows)
     h = median_heuristic(Z[-2000:])
+    t_m = int(0.6 * T)
     lines = []
     for B in budgets:
         for method in methods:
             t0 = time.time()
-            store = make_store(method, B, enc.d, enc.sigma0, RAW_BYTES, seed)
+            over, extra = {}, {}
+            if method.startswith("uengram"):
+                thr = calibrate_alarm(method, B, enc.d, enc.sigma0, RAW_BYTES, seed, Zcal, alarm_alpha)
+                over, extra = {"alarm_threshold": thr}, {"alarm_threshold": thr}
+            store = make_store(method, B, enc.d, enc.sigma0, RAW_BYTES, seed, over)
             prov = Provenance()
+            sup_t: list[int] = []
 
-            def record(t, res, store=store, prov=prov):
+            def record(t, res, store=store, prov=prov, sup_t=sup_t):
                 if res.item_id != -1:
                     prov.record(res.item_id, int(stream.anomaly[t]), int(stream.regime[t]),
                                 int(stream.era[t]), int(stream.event_id[t]))
-                prov.apply(store.drain_events())
+                evs = store.drain_events()
+                sup_t.extend(t for e in evs if e[0] == "supersede")
+                prov.apply(evs)
 
             oracle = (stream.anomaly > 0) * 0.8 + 0.1 if method == "reference_oracle" else None
             scores, flags, lat = run_stream(store, Z, record, oracle)
             m = evaluate_run(store, prov, stream, Z, PZ, probe, scores, flags, h, lat)
+            after = [t - t_m for t in sup_t if t >= t_m]
+            m.update(extra, n_supersede=len(sup_t),
+                     supersede_delay_maint=float(min(after)) if after else float("nan"))
             lines.append({"dataset": "synth", "seed": seed, "encoder": enc_name,
                           "method": method, "budget": B, "metrics": m})
             print(f"[{tag}] seed={seed} enc={enc_name} method={method} B={B} "
@@ -61,12 +79,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", default="0-9")
     ap.add_argument("--T", type=int, default=20000)
-    ap.add_argument("--encoders", default="dsp,cnn")
+    ap.add_argument("--encoders", default="dsp,ctx,cnn")
     ap.add_argument("--methods", default=",".join(ALL_METHODS))
     ap.add_argument("--budget", type=int, default=256)
     ap.add_argument("--jobs", type=int, default=2)
     ap.add_argument("--out", default="results/synth_runs.jsonl")
     ap.add_argument("--sweep-budgets", default=None)
+    ap.add_argument("--alarm-alpha", type=float, default=0.01)
+    ap.add_argument("--cal-T", type=int, default=4000)
     ap.add_argument("--quick", action="store_true")
     a = ap.parse_args()
     if a.quick:
@@ -76,7 +96,8 @@ def main():
     tag = "run_synth"
     if a.sweep_budgets:
         methods, budgets, tag = SWEEP_METHODS, tuple(int(b) for b in a.sweep_budgets.split(",")), "sweep"
-    tasks = [(s, e, a.T, methods, budgets, tag) for s in parse_seeds(a.seeds) for e in a.encoders.split(",")]
+    tasks = [(s, e, a.T, methods, budgets, tag, a.alarm_alpha, a.cal_T)
+             for s in parse_seeds(a.seeds) for e in a.encoders.split(",")]
     open(a.out, "w").close()
     with mp.get_context("spawn").Pool(a.jobs) as pool:
         for lines in pool.imap_unordered(run_one, tasks):

@@ -1,9 +1,9 @@
-"""Window encoders: whitening and the DSP+PCA encoder."""
+"""Window encoders: PCA whitening, noise whitening, and the DSP+PCA encoder."""
 from __future__ import annotations
 
 import numpy as np
 
-from .stats import robust_noise_sigma
+from .stats import robust_noise_cov, robust_noise_sigma
 
 
 class Whitener:
@@ -24,6 +24,36 @@ class Whitener:
         return (np.asarray(F, dtype=np.float64) - self.m) @ self.V / np.sqrt(self.lam)
 
 
+class NoiseWhitener:
+    """Make within-state noise uncorrelated with unit variance.
+
+    PCA whitening decorrelates the *total* spread, which is dominated by
+    differences between operating states. Noise inside a state can still be
+    correlated across dimensions (one physical fluctuation moving several
+    features), and a per-dimension distance would then count it several
+    times. With N the robust noise covariance from successive differences,
+    z -> z N^{-1/2} (symmetric root, minimal rotation) counts each correlated
+    fluctuation once and amplifies combinations that are normally consistent.
+    """
+
+    def fit(self, z: np.ndarray, noise_lag: int, groups: np.ndarray | None) -> "NoiseWhitener":
+        lam, V = np.linalg.eigh(robust_noise_cov(z, noise_lag, groups))
+        lam = np.maximum(lam, 1e-12 * lam.max())
+        self.W = (V / np.sqrt(lam)) @ V.T
+        return self
+
+    def transform(self, z: np.ndarray) -> np.ndarray:
+        return np.asarray(z, dtype=np.float64) @ self.W
+
+
+def fit_projection(X: np.ndarray, d: int, noise_lag: int, groups: np.ndarray | None):
+    """PCA-whiten X to d dims, then noise-whiten. Returns (whitener, noise, sigma0)."""
+    whitener = Whitener().fit(X, d)
+    Zp = whitener.transform(X)
+    noise = NoiseWhitener().fit(Zp, noise_lag, groups)
+    return whitener, noise, robust_noise_sigma(noise.transform(Zp), noise_lag, groups)
+
+
 def band_features(windows: np.ndarray) -> np.ndarray:
     """Per channel: mean, log std, 4 log band energies -> [N, 6*C]."""
     x = np.asarray(windows, dtype=np.float64)
@@ -38,21 +68,25 @@ def band_features(windows: np.ndarray) -> np.ndarray:
 
 
 class DSPEncoder:
-    """Hand-built spectral features, robust standardisation, PCA whitening."""
+    """Hand-built spectral features, robust standardisation, PCA + noise whitening."""
 
     def __init__(self, d: int = 16):
         self.d = d
 
+    def _raw(self, windows, sequential: bool) -> np.ndarray:
+        return band_features(windows)
+
     def fit(self, train_windows, noise_lag: int, groups: np.ndarray | None) -> "DSPEncoder":
-        F = band_features(train_windows)
+        F = self._raw(train_windows, True)
         self.med = np.median(F, axis=0)
         q75, q25 = np.percentile(F, [75, 25], axis=0)
         self.scale = np.maximum((q75 - q25) / 1.349, 1e-6)
-        self.whitener = Whitener().fit((F - self.med) / self.scale, self.d)
-        self.sigma0 = robust_noise_sigma(self.encode(train_windows), noise_lag, groups)
+        self.whitener, self.noise, self.sigma0 = fit_projection(
+            (F - self.med) / self.scale, self.d, noise_lag, groups)
         return self
 
     def encode(self, windows, sequential: bool = True) -> np.ndarray:
-        """`sequential` is accepted for protocol compatibility; windows are independent here."""
-        F = (band_features(windows) - self.med) / self.scale
-        return self.whitener.transform(F)
+        """`sequential=False` marks independent windows (only matters for
+        encoders with temporal context)."""
+        F = (self._raw(windows, sequential) - self.med) / self.scale
+        return self.noise.transform(self.whitener.transform(F))

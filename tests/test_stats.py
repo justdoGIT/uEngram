@@ -98,3 +98,18 @@ def test_conformal_threshold_rank_and_coverage():
         cal, new = rng.standard_normal(200), rng.standard_normal(200)
         exceed.append(np.mean(new > stats.conformal_threshold(cal, 0.05)))
     assert np.mean(exceed) <= 0.05 + 0.005
+
+
+def test_robust_noise_cov_recovers_correlated_noise():
+    rng = np.random.default_rng(5)
+    T = 8000
+    true = np.array([[1.0, 0.8, 0.0, 0.0],
+                     [0.8, 1.0, 0.0, 0.0],
+                     [0.0, 0.0, 0.25, -0.1],
+                     [0.0, 0.0, -0.1, 0.25]])
+    noise = rng.standard_normal((T, 4)) @ np.linalg.cholesky(true).T
+    levels = np.repeat(rng.normal(0, 10, size=(T // 50, 4)), 50, axis=0)  # state switches
+    jumps = np.cumsum((rng.random((T, 1)) < 0.03) * rng.normal(0, 20, size=(T, 4)), axis=0)
+    C = stats.robust_noise_cov(levels + jumps + noise, 1, None)
+    assert np.abs(C - true).max() < 0.08
+    assert stats.robust_noise_cov(noise, 1, None)[0, 1] > 0.7  # correlation kept, not discarded

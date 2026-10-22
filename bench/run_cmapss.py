@@ -45,7 +45,7 @@ def run_one(task):
     enc = make_encoder(enc_name, seed).fit(Wtr, K, Utr)
     Ws, Us, Rs = cmapss.windows(train[(train[:, 0] > 50) & (train[:, 0] <= units_hi)], K)
     Wt, _, _ = cmapss.windows(test, K, last_only=True)
-    Z, Zt = enc.encode(Ws), enc.encode(Wt)
+    Z, Zt = enc.encode(Ws), enc.encode(Wt, sequential=False)
     T = len(Z)
     h = median_heuristic(Z[-2000:])
     pos, neg = Rs <= EOL, Rs > HEALTHY

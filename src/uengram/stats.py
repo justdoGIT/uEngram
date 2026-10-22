@@ -70,18 +70,47 @@ def conformal_threshold(scores: np.ndarray, alpha: float) -> float:
     return float(s[k - 1]) if k <= m else float("inf")
 
 
-def robust_noise_sigma(z: np.ndarray, lag: int, groups: np.ndarray | None) -> np.ndarray:
-    """Per-dimension noise std from MAD of lag-`lag` successive differences."""
+def _diff_pairs(z: np.ndarray, lag: int, groups: np.ndarray | None) -> np.ndarray:
+    """Lag-`lag` differences, keeping only pairs inside the same group."""
     z = np.asarray(z, dtype=np.float64)
     delta = z[lag:] - z[:-lag]
     if groups is not None:
-        keep = groups[lag:] == groups[:-lag]
-        delta = delta[keep]
+        delta = delta[groups[lag:] == groups[:-lag]]
+    return delta
+
+
+def robust_noise_sigma(z: np.ndarray, lag: int, groups: np.ndarray | None) -> np.ndarray:
+    """Per-dimension noise std from MAD of lag-`lag` successive differences."""
+    delta = _diff_pairs(z, lag, groups)
     if delta.shape[0] < 10:
         raise ValueError("fewer than 10 difference pairs for noise estimate")
     med = np.median(delta, axis=0)
     mad = np.median(np.abs(delta - med), axis=0)
     return np.maximum(1.4826 * mad / math.sqrt(2.0), 1e-6)
+
+
+def robust_noise_cov(z: np.ndarray, lag: int, groups: np.ndarray | None,
+                     trim: float = 0.975, iters: int = 5) -> np.ndarray:
+    """Full within-state noise covariance from lag differences, robust to the
+    jumps caused by regime switches, steps and anomalies.
+
+    Delta = (z[t+lag] - z[t]) / sqrt(2) has the noise covariance when the state
+    is unchanged. Reweighted trimming: keep differences with Mahalanobis
+    distance <= the chi2_d `trim` quantile, re-estimate, repeat; then rescale by
+    trim / P(chi2_{d+2} <= q), the Gaussian consistency factor for trimming.
+    """
+    D = _diff_pairs(z, lag, groups) / math.sqrt(2.0)
+    n, d = D.shape
+    if n < max(10, 2 * d):
+        raise ValueError("too few difference pairs for noise covariance")
+    q = chi2_isf(1.0 - trim, d)
+    cons = trim / (1.0 - math.exp(float(chi2_logsf(q, d + 2))))
+    s = robust_noise_sigma(z, lag, groups)
+    C = np.diag(s * s)
+    for _ in range(iters):
+        d2 = np.einsum("ij,jk,ik->i", D, np.linalg.inv(C), D)
+        C = np.cov(D[d2 <= q], rowvar=False) * cons
+    return C
 
 
 def ew_update(mu, S, x, alpha):

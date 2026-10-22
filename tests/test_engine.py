@@ -67,20 +67,22 @@ def test_sporadic_recurrence_never_promoted_and_never_masked():
     assert all(r.flagged and r.score > eng.tau for r in recur_res)
 
 
-def test_episodic_slot_promoted_when_state_recurs_densely():
+def test_episodic_promotion_needs_sustained_dwell_not_a_burst():
     rng = np.random.default_rng(0)
     eng = make()
     first = None
     for t in range(1100):
-        off = 20.0 if t == 100 or 1000 <= t < 1005 else 0.0
+        # t=100: first sighting (expires to episodic); t=600-605: a 6-window
+        # burst (two fault events back to back); t=1000-1019: a sustained dwell
+        off = 20.0 if t == 100 or 600 <= t < 606 or 1000 <= t < 1020 else 0.0
         r = eng.ingest(pt(rng, off), t, t)
         if t == 100:
             first = r.item_id
-        if t == 200:
+        if t in (200, 700):
             assert eng.kind[np.flatnonzero(eng.item_id == first)[0]] == lc.EPI
-        if t == 1003:
+        if t == 1018:
             assert r.action == "absorb_episodic"
-        if t == 1004:
+        if t == 1019:
             assert r.action == "promote" and r.item_id == first
     assert eng.kind[np.flatnonzero(eng.item_id == first)[0]] == lc.SEM
 

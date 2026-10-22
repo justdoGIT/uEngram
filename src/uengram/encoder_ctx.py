@@ -22,8 +22,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .encoders import DSPEncoder, Whitener, band_features
-from .stats import robust_noise_sigma
+from .encoders import DSPEncoder, band_features
 
 TRIM_ITERS = 6
 TRIM_K = 4.0
@@ -67,13 +66,14 @@ class ContextEncoder(DSPEncoder):
                 prev_ramp, prev_u = ramps[t].copy(), drive[t]
         return r
 
-    def _assemble(self, F, resid, logstd) -> np.ndarray:
+    def _raw(self, windows, sequential: bool) -> np.ndarray:
+        F, drive, ramps, logstd = self._parts(windows)
         drop = set(self.lag_channels)
         keep = [i for i in range(F.shape[1]) if i // 6 not in drop]
-        return np.column_stack([F[:, keep], resid, logstd])
+        return np.column_stack([F[:, keep], self._residuals(drive, ramps, sequential), logstd])
 
     def fit(self, train_windows, noise_lag: int, groups: np.ndarray | None) -> "ContextEncoder":
-        F, drive, ramps, logstd = self._parts(train_windows)
+        _, drive, ramps, _ = self._parts(train_windows)
         prev_ramp = np.vstack([ramps[:1], ramps[:-1]])
         prev_u = np.r_[drive[:1], drive[:-1]]
         b, rscale = [], []
@@ -89,19 +89,8 @@ class ContextEncoder(DSPEncoder):
             b.append(coef)
             rscale.append(max(scale, 1e-9))
         self.b, self.rscale = np.array(b), np.array(rscale)
-        P = self._assemble(F, self._residuals(drive, ramps, True), logstd)
-        self.med = np.median(P, axis=0)
-        q75, q25 = np.percentile(P, [75, 25], axis=0)
-        self.scale = np.maximum((q75 - q25) / 1.349, 1e-6)
-        self.whitener = Whitener().fit((P - self.med) / self.scale, self.d)
-        self.sigma0 = robust_noise_sigma(self.encode(train_windows), noise_lag, groups)
-        return self
+        return super().fit(train_windows, noise_lag, groups)  # standardise, PCA, noise-whiten
 
     def lag_coefficient(self, j: int = 0) -> float:
         """Estimated first-order lag a for lag channel j (b0 = 1 - a)."""
         return float(1.0 - self.b[j, 0])
-
-    def encode(self, windows, sequential: bool = True) -> np.ndarray:
-        F, drive, ramps, logstd = self._parts(windows)
-        P = self._assemble(F, self._residuals(drive, ramps, sequential), logstd)
-        return self.whitener.transform((P - self.med) / self.scale)
