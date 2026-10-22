@@ -15,7 +15,7 @@ SYNTH_COLS = ["items_end", "writes", "write_reduction_pct", "event_recall", "sei
               "type_recall", "auroc", "ap", "f1", "false_flag_rate_era0", "false_flag_rate_era1",
               "stale_at1", "type_prec_at1", "supersede_delay_maint", "mmd2_current", "lat_p99_us"]
 CMAPSS_COLS = ["items_end", "writes", "auroc", "ap", "health_auroc", "health_ap", "rul_rmse",
-               "eol_retention", "mmd2_current"]
+               "rul_rmse_health", "eol_retention", "mmd2_current"]
 PAIRED = ["event_recall", "auroc", "ap", "false_flag_rate_era1", "stale_at1", "mmd2_current", "writes"]
 SWEEP_COLS = ["items_end", "writes", "event_recall", "seizure_recall", "auroc", "stale_at1", "mmd2_current"]
 PREV, CUR = "v2", "v3"  # the previous benchmark lives in results/<PREV>/

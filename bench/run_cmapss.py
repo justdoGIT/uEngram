@@ -12,6 +12,7 @@ from bench.evaluate import footprint, latency, mmd_metrics
 from bench.provenance import Provenance
 from bench.run_synth import make_encoder
 from uengram import cmapss
+from uengram.health import HealthRUL
 from uengram.metrics import auroc, average_precision, median_heuristic
 
 METHODS = "naive,fifo,reservoir,reference_labelfree,uengram,uengram_frozen"
@@ -88,6 +89,14 @@ def run_one(task):
         err = pred[ok] - rul_true[ok]
         m["rul_rmse"] = float(np.sqrt(np.mean(err ** 2))) if ok.any() else float("nan")
         m["rul_mae"] = float(np.mean(np.abs(err))) if ok.any() else float("nan")
+        # RUL from the health score: a table fitted on the labelled stream windows
+        # (the labels the lookup above uses), applied to the test units' last windows
+        if has_health:
+            err_h = HealthRUL().fit(health, Rs).predict(store.health(Zt)) - rul_true
+            m["rul_rmse_health"] = float(np.sqrt(np.mean(err_h ** 2)))
+            m["rul_mae_health"] = float(np.mean(np.abs(err_h)))
+        else:
+            m["rul_rmse_health"] = m["rul_mae_health"] = float("nan")
         live_eol = set()
         for i in store.items().ids.tolist():
             if i in prov.items:

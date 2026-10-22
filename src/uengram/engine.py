@@ -122,6 +122,14 @@ class Engram:
         self.ref_var = np.array(var, dtype=np.float64).reshape(-1, self.d)
         self.ledger.write_now(-1, len(self.ref_mu) * 2 * self.d * 4)
 
+    def health(self, z) -> np.ndarray:
+        """Health score of each row of z: min Mahalanobis D^2 to the frozen
+        healthy reference; NaN without a reference."""
+        z = np.atleast_2d(np.asarray(z, dtype=np.float64))
+        if not len(self.ref_mu):
+            return np.full(len(z), np.nan)
+        return np.min(np.sum((z[:, None, :] - self.ref_mu[None]) ** 2 / self.ref_var[None], axis=2), axis=1)
+
     def _alloc(self) -> int:
         return int(np.flatnonzero(self.kind == EMPTY)[0])
 
@@ -163,8 +171,7 @@ class Engram:
             res = self._absorb(chosen, z, t, raw_idx, score, alarm)
         else:
             res = self._new_slot(z, t, raw_idx, score, alarm, rarity)
-        if len(self.ref_mu):
-            res.health = float(np.min(np.sum((z - self.ref_mu) ** 2 / self.ref_var, axis=1)))
+        res.health = float(self.health(z)[0])
 
         stale = np.flatnonzero((self.kind == CAND) & (t - self.t_created > cfg.n_promote))
         for i in stale:
