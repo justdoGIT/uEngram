@@ -227,8 +227,15 @@ Run an engine over a commissioning stream (CMAPSS: the first 30 windows of each 
 ### Why this and not the obvious alternative
 Making the adaptive memory slower does not answer the question: its novelty still measures distance to everything stored, including the late-life states of earlier units (naive kNN novelty: AUROC 0.552, `docs/IMPROVEMENT-ANALYSIS.md` section 5). A supervised health index is as discriminative but needs run-to-failure labels; the frozen reference needs only a period declared healthy, like the alarm calibration (7b).
 
+### Remaining useful life from health
+RUL needs labels: a unit's RUL is known only once it has failed. A lookup table fitted offline on run-to-failure data maps health to RUL: 20 bins at the quantiles of $\log h$, each storing the mean $\log h$ and the mean RUL of its fitting windows; prediction interpolates linearly between bin centres and holds the end values outside them. On the device this is 20 pairs (160 bytes) and one interpolation after the health score. On CMAPSS the table is fitted on the stream units' windows, the same labels the memory-lookup RUL uses, and applied to the last window of each test unit (metric `rul_rmse_health`).
+
+The alternative was to keep life-stage resolution inside the memory by storing every drift checkpoint (section 10) as a retrievable item that carries the RUL of the windows absorbed since the previous checkpoint. Measured on seed 0: checkpoints as items gave RMSE 35.5 (DSP) / 39.4 (CNN) with 32 / 46 extra items (5 to 7 KB); the health table gave 25.5 / 26.0 in 160 bytes. Checkpoint items each average a long stretch of life (prediction standard deviation 13.5 / 8.6 against a truth of 41.6), while the table follows the health score (33.6 / 33.4). Checkpoint items would also need RUL labels attached to windows inside the memory, which a device does not have when the windows arrive.
+
+Health is one number, so units that have not yet started to degrade all get similar RUL; a regression on the full deviation vector could separate more (`docs/IMPROVEMENT-ANALYSIS.md` section 5: ridge health index on window mean/slope features, RMSE 18.5), but it is not implemented.
+
 ### Where in code
-`src/uengram/engine.py:Engram.reference, Engram.set_reference`; `IngestResult.health` in `src/uengram/store.py`; commissioning in `bench/run_cmapss.py:run_one`; metrics `health_auroc`, `health_ap`.
+`src/uengram/engine.py:Engram.reference, Engram.set_reference, Engram.health`; `IngestResult.health` in `src/uengram/store.py`; `src/uengram/health.py:HealthRUL`; commissioning and the RUL table fit in `bench/run_cmapss.py:run_one`; metrics `health_auroc`, `health_ap`, `rul_rmse_health`, `rul_mae_health`.
 
 ---
 
@@ -343,7 +350,7 @@ For AR(1) wander with coefficient $\rho$ and variance $\tau^2$ on top of unit wh
 ### Limits
 On the synthetic stream the CNN still supersedes 101 states (seed 0, from 155). The cause is the coolant transient after each regime switch, which the CNN latent encodes at hundreds of noise units: $D^2$ between successive windows is 562, 166, 68 and 21 at 1, 2, 3 and 5 windows after a switch, while switches themselves are about 21,000. No label-free segmentation threshold separates those cases, and skipping a slot's first windows after re-entry only reached 120. The fix belongs in the encoder: the context encoder (section 3b) predicts the transient, and its successive-window $D^2$ after a switch is 16, the noise level.
 
-On CMAPSS the false steps had been doing useful work for RUL lookup: they cut each degradation run into short segments, so a recalled item carried a narrow RUL range (seed 0: within-item RUL standard deviation 3.3 to 4.0 cycles over 193 items). Calibrated, the memory tracks degradation as drift of 9 to 17 states, each spanning nearly the whole life, and RUL lookup falls to the constant-prediction RMSE (42; v2 21 to 23). Keeping life-stage resolution without spurious steps would need a different mechanism, for example drift checkpoints as retrievable items; it is not implemented (`docs/RESULTS.md`, CMAPSS findings).
+On CMAPSS the false steps had been doing useful work for RUL lookup: they cut each degradation run into short segments, so a recalled item carried a narrow RUL range (seed 0: within-item RUL standard deviation 3.3 to 4.0 cycles over 193 items). Calibrated, the memory tracks degradation as drift of 9 to 17 states, each spanning nearly the whole life, and RUL lookup falls to the constant-prediction RMSE (42; v2 21 to 23). RUL now comes from the health score through a lookup table (section 7c); storing drift checkpoints as retrievable items was measured and rejected there.
 
 ### Where in code
 `src/uengram/stats.py:ewma_inflation, _segments`; `Engram(step_inflation=...)`, `Engram._step_detected`; `bench/common.py:measure_step_inflation`, called by `bench/run_synth.py` and `bench/run_cmapss.py`.
@@ -493,4 +500,5 @@ Accuracy/F1 alone hides the imbalance; plain MSE between centroids ignores sprea
 
 - Step detector input scaled by the measured EWMA variance inflation of the encoder's training latents (section 10c).
 - Frozen healthy reference and health score; CMAPSS commissioning from the first 30 windows of each training unit (section 7c).
+- RUL from the health score through a 20-bin lookup table fitted on run-to-failure data (section 7c); drift checkpoints as retrievable RUL items were measured and rejected.
 - Level-plus-rate Kalman wear tracking (`docs/IMPROVEMENT-ANALYSIS.md` item 9), learned process noise and a lag-feedback gain were implemented, measured and removed (section 10c).

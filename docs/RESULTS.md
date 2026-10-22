@@ -103,14 +103,14 @@ uEngram v3 adds: the step detector's input is scaled by the EWMA variance inflat
 
 ## CMAPSS FD001, encoder `cnn`
 
-| method | n | items_end | writes | auroc | ap | health_auroc | health_ap | rul_rmse | eol_retention | mmd2_current |
-|---|---|---|---|---|---|---|---|---|---|---|
-| naive | 5 | 9972 [9972, 9972] | 9972 [9972, 9972] | 0.832 [0.825, 0.839] | 0.536 [0.524, 0.547] | n/a | n/a | 23.9 [23.5, 24.3] | 1 [1, 1] | 0 [0, 0] |
-| fifo | 5 | 256 [256, 256] | 9972 [9972, 9972] | 0.822 [0.815, 0.828] | 0.443 [0.43, 0.457] | n/a | n/a | 37.6 [36.9, 38.2] | 0.04 [0.04, 0.04] | 0.0779 [0.0766, 0.0791] |
-| reservoir | 5 | 256 [256, 256] | 1211 [1189, 1243] | 0.82 [0.802, 0.84] | 0.586 [0.539, 0.638] | n/a | n/a | 23.5 [22.7, 24.4] | 0.432 [0.38, 0.476] | 0.00957 [0.0048, 0.0182] |
-| reference_labelfree | 5 | 256 [256, 256] | 6449 [6263, 6698] | 0.114 [0.103, 0.126] | 0.0802 [0.0796, 0.0809] | n/a | n/a | 38.7 [35, 41.8] | 0.252 [0.136, 0.348] | n/a (sphere space) |
-| uengram | 5 | 17.2 [9.8, 25] | 370 [335, 413] | 0.698 [0.671, 0.727] | 0.265 [0.241, 0.293] | 0.998 [0.998, 0.998] | 0.992 [0.991, 0.993] | 42 [40.9, 42.9] | 1 [1, 1] | 0.0768 [0.027, 0.127] |
-| uengram_frozen | 5 | 38.8 [30, 48] | 497 [445, 550] | 0.664 [0.638, 0.707] | 0.262 [0.237, 0.298] | 0.998 [0.998, 0.999] | 0.993 [0.991, 0.994] | 36.5 [33.2, 39.7] | 1 [1, 1] | 0.00607 [0.00444, 0.00846] |
+| method | n | items_end | writes | auroc | ap | health_auroc | health_ap | rul_rmse | rul_rmse_health | eol_retention | mmd2_current |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| naive | 5 | 9972 [9972, 9972] | 9972 [9972, 9972] | 0.832 [0.825, 0.839] | 0.536 [0.524, 0.547] | n/a | n/a | 23.9 [23.5, 24.3] | n/a | 1 [1, 1] | 0 [0, 0] |
+| fifo | 5 | 256 [256, 256] | 9972 [9972, 9972] | 0.822 [0.815, 0.828] | 0.443 [0.43, 0.457] | n/a | n/a | 37.6 [36.9, 38.2] | n/a | 0.04 [0.04, 0.04] | 0.0779 [0.0766, 0.0791] |
+| reservoir | 5 | 256 [256, 256] | 1211 [1189, 1243] | 0.82 [0.802, 0.84] | 0.586 [0.539, 0.638] | n/a | n/a | 23.5 [22.7, 24.4] | n/a | 0.432 [0.38, 0.476] | 0.00957 [0.0048, 0.0182] |
+| reference_labelfree | 5 | 256 [256, 256] | 6449 [6263, 6698] | 0.114 [0.103, 0.126] | 0.0802 [0.0796, 0.0809] | n/a | n/a | 38.7 [35, 41.8] | n/a | 0.252 [0.136, 0.348] | n/a (sphere space) |
+| uengram | 5 | 17.2 [9.8, 25] | 370 [335, 413] | 0.698 [0.671, 0.727] | 0.265 [0.241, 0.293] | 0.998 [0.998, 0.998] | 0.992 [0.991, 0.993] | 42 [40.9, 42.9] | 26.4 [26, 27] | 1 [1, 1] | 0.0768 [0.027, 0.127] |
+| uengram_frozen | 5 | 38.8 [30, 48] | 497 [445, 550] | 0.664 [0.638, 0.707] | 0.262 [0.237, 0.298] | 0.998 [0.998, 0.999] | 0.993 [0.991, 0.994] | 36.5 [33.2, 39.7] | 26.2 [25.4, 27.1] | 1 [1, 1] | 0.00607 [0.00444, 0.00846] |
 
 ### Paired differences (CMAPSS FD001, `cnn`)
 
@@ -126,14 +126,14 @@ uEngram v3 adds: the step detector's input is scaled by the EWMA variance inflat
 
 ## CMAPSS FD001, encoder `dsp`
 
-| method | n | items_end | writes | auroc | ap | health_auroc | health_ap | rul_rmse | eol_retention | mmd2_current |
-|---|---|---|---|---|---|---|---|---|---|---|
-| naive | 5 | 9972 [9972, 9972] | 9972 [9972, 9972] | 0.697 [0.697, 0.697] | 0.267 [0.267, 0.267] | n/a | n/a | 25.8 [25.8, 25.8] | 1 [1, 1] | 0 [0, 0] |
-| fifo | 5 | 256 [256, 256] | 9972 [9972, 9972] | 0.696 [0.696, 0.696] | 0.257 [0.257, 0.257] | n/a | n/a | 36.2 [36.2, 36.2] | 0.04 [0.04, 0.04] | 0.064 [0.064, 0.064] |
-| reservoir | 5 | 256 [256, 256] | 1211 [1189, 1243] | 0.704 [0.701, 0.707] | 0.421 [0.4, 0.44] | n/a | n/a | 24.2 [23.6, 25] | 0.432 [0.38, 0.476] | 0.0108 [0.00505, 0.0213] |
-| reference_labelfree | 5 | 256 [256, 256] | 5514 [5514, 5514] | 0.228 [0.228, 0.228] | 0.089 [0.089, 0.089] | n/a | n/a | 33.9 [33.9, 33.9] | 0.06 [0.06, 0.06] | n/a (sphere space) |
-| uengram | 5 | 9 [9, 9] | 329 [329, 329] | 0.684 [0.684, 0.684] | 0.246 [0.246, 0.246] | 0.999 [0.999, 0.999] | 0.995 [0.995, 0.995] | 42.1 [42.1, 42.1] | 1 [1, 1] | 0.09 [0.09, 0.09] |
-| uengram_frozen | 5 | 41 [41, 41] | 581 [581, 581] | 0.615 [0.615, 0.615] | 0.192 [0.192, 0.192] | 1 [1, 1] | 0.998 [0.998, 0.998] | 31.5 [31.5, 31.5] | 1 [1, 1] | 0.00845 [0.00845, 0.00845] |
+| method | n | items_end | writes | auroc | ap | health_auroc | health_ap | rul_rmse | rul_rmse_health | eol_retention | mmd2_current |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| naive | 5 | 9972 [9972, 9972] | 9972 [9972, 9972] | 0.697 [0.697, 0.697] | 0.267 [0.267, 0.267] | n/a | n/a | 25.8 [25.8, 25.8] | n/a | 1 [1, 1] | 0 [0, 0] |
+| fifo | 5 | 256 [256, 256] | 9972 [9972, 9972] | 0.696 [0.696, 0.696] | 0.257 [0.257, 0.257] | n/a | n/a | 36.2 [36.2, 36.2] | n/a | 0.04 [0.04, 0.04] | 0.064 [0.064, 0.064] |
+| reservoir | 5 | 256 [256, 256] | 1211 [1189, 1243] | 0.704 [0.701, 0.707] | 0.421 [0.4, 0.44] | n/a | n/a | 24.2 [23.6, 25] | n/a | 0.432 [0.38, 0.476] | 0.0108 [0.00505, 0.0213] |
+| reference_labelfree | 5 | 256 [256, 256] | 5514 [5514, 5514] | 0.228 [0.228, 0.228] | 0.089 [0.089, 0.089] | n/a | n/a | 33.9 [33.9, 33.9] | n/a | 0.06 [0.06, 0.06] | n/a (sphere space) |
+| uengram | 5 | 9 [9, 9] | 329 [329, 329] | 0.684 [0.684, 0.684] | 0.246 [0.246, 0.246] | 0.999 [0.999, 0.999] | 0.995 [0.995, 0.995] | 42.1 [42.1, 42.1] | 25.5 [25.5, 25.5] | 1 [1, 1] | 0.09 [0.09, 0.09] |
+| uengram_frozen | 5 | 41 [41, 41] | 581 [581, 581] | 0.615 [0.615, 0.615] | 0.192 [0.192, 0.192] | 1 [1, 1] | 0.998 [0.998, 0.998] | 31.5 [31.5, 31.5] | 24.5 [24.5, 24.5] | 1 [1, 1] | 0.00845 [0.00845, 0.00845] |
 
 ### Paired differences (CMAPSS FD001, `dsp`)
 
@@ -265,6 +265,7 @@ Means over seeds from the tables above: synthetic 10 seeds per encoder, budget s
 | step detector calibrated to the measured EWMA variance inflation | uEngram v2 vs v3, paired, CMAPSS | step supersessions per run 493 → 2 (DSP) and 356 → 6 (CNN, seed 0). `eol_retention` 0.40 → **1.00** (DSP), 0.47 → **1.00** (CNN); writes 2,010 → 329 and 1,579 → 370; novelty AUROC 0.592 → 0.684 and 0.583 → 0.698. In v2 the end-of-life windows were lost when superseded slots were evicted (693 DSP and 583 CNN unit-memberships, seed 0). |
 | same, synthetic | uEngram v2 vs v3, paired | Measured inflation is close to 1 (median 0.96 DSP, 1.00 ctx, 1.19 CNN), so little changes. CNN: supersessions per run 155 → 116, slots 222 → 183, AP 0.887 → 0.892*; event recall unchanged (0.264 → 0.262). DSP: the pre-maintenance state is retired later on matched seeds (+286 windows [0, 767]; seed 2 78 → 1,999, seed 5 167 → 537, seed 4 retired at 7,399 in v2 and not within the stream in v3); `stale_at1` unchanged at 0.001. |
 | frozen healthy reference + health score | CMAPSS `health_auroc`, `health_ap` | end-of-life vs healthy windows: AUROC **0.999** / AP 0.995 (DSP), **0.998** / 0.992 (CNN), from a label-free commissioning stream. Novelty from any store tops out at 0.832 (naive, CNN). |
+| RUL from the health score (20-bin lookup table) | CMAPSS `rul_rmse_health` vs `rul_rmse` | RMSE 42.1 → **25.5** (DSP), 42.0 → **26.4** (CNN) with a 160-byte table. Drift checkpoints stored as RUL items reached only 35.5 / 39.4 with 32 / 46 extra items (seed 0, `docs/EXPLAINED.md` section 7c). Every other CMAPSS metric is identical to the run without the table. |
 | level-plus-rate Kalman wear tracking, learned process noise, lag-feedback gain | seed-0 diagnostics, not shipped | rejected; numbers in `docs/EXPLAINED.md` section 10c |
 
 ### What each v2 change did (synthetic stream, v2 runs in `results/v2/`)
@@ -294,7 +295,7 @@ Means over seeds from the tables above: synthetic 10 seeds per encoder, budget s
 - Average precision >= 0.95: met on DSP (0.995) and ctx (0.967); CNN 0.892.
 - Catching anomalies at about a 1% false-alarm budget: window-level alarm recall 0.997 / 1.000 / 0.946 at realised false-alarm rates of 1.1 to 1.8% (per seed 0.2% to 2.5%). The 1% target is exceeded slightly, more after maintenance; [INFERENCE] wear drift and the maintenance step break the exchangeability that conformal calibration assumes.
 - Rare-event retention: DSP and ctx keep every anomaly event and every seizure in about 40 slots (FIFO and reservoir keep at most 2.2% of events with 256). CNN keeps all seizures and every fault type but only 26.2% of events.
-- End-of-life detection on CMAPSS: the health score reaches AUROC 0.998 to 0.999; novelty does not (best 0.832).
+- End-of-life detection on CMAPSS: the health score reaches AUROC 0.998 to 0.999; novelty does not (best 0.832). RUL from health: RMSE 25.5 (DSP) / 26.4 (CNN).
 - These are results on our own synthetic generator, whose anomalies are strong by design. They do not transfer to field data without validation on real labelled machinery data (`docs/IMPROVEMENT-ANALYSIS.md`, item 11).
 
 ### Budget sweep
@@ -305,12 +306,13 @@ uEngram reaches AUROC 1.0 at every budget. At B=64 it keeps 91.9% of events and 
 
 - **Health replaces novelty for end-of-life detection.** Distance to the frozen healthy reference gives AUROC 0.999 (DSP) and 0.998 (CNN); `uengram_frozen` 1.000 and 0.998. Novelty improved with the calibrated step detector (0.684 DSP, 0.698 CNN) but stays at or below naive (0.697 / 0.832) and reservoir (0.704 / 0.820): every unit runs to failure, so late-life windows resemble stored late-life windows of earlier units.
 - **End-of-life retention 1.00** for uEngram on both encoders (v2 0.40 / 0.47), in 9 to 17 slots and 329 to 370 writes; reservoir keeps 0.43 with 256 slots.
-- **RUL prediction regressed to the constant-prediction level:** RMSE 22.9 → **42.1** (DSP) and 21.4 → **42.0** (CNN); predicting the mean stream RUL for every test unit gives 42.7. Seed-0 diagnostic: in v2 each of 193 items held windows within a RUL standard deviation of 3.3 (DSP) / 4.0 (CNN) cycles, and predictions had a standard deviation of 38 (truth 42). In v3 each of 9 / 15 items spans nearly the whole range (38.5 / 41.3 of 41.8) and predictions collapse to a standard deviation of 1.8 / 0.5. v2's RUL accuracy came from the false steps, which cut every degradation run into short life-stage segments. A correctly calibrated memory tracks slow degradation as drift of one state (with lineage checkpoints), and a state lookup then cannot say how far along a unit is. `uengram_frozen` (no drift tracking) keeps 41 / 39 slots and reaches 31.5 / 36.5. Naive (25.8 / 23.9) and reservoir (24.2 / 23.5) are now best. `mmd2_current` rose for the same reason (0.0003 → 0.09 DSP).
-- Published FD001 results are 11.4 to 16.1 (`docs/research-cmapss.md`); a memory lookup is not a trained RUL regressor.
+- **RUL by memory lookup regressed to the constant-prediction level:** RMSE 22.9 → 42.1 (DSP) and 21.4 → 42.0 (CNN); predicting the mean stream RUL for every test unit gives 42.7. Seed-0 diagnostic: in v2 each of 193 items held windows within a RUL standard deviation of 3.3 (DSP) / 4.0 (CNN) cycles, and predictions had a standard deviation of 38 (truth 42). In v3 each of 9 / 15 items spans nearly the whole range (38.5 / 41.3 of 41.8) and predictions collapse to a standard deviation of 1.8 / 0.5. v2's RUL accuracy came from the false steps, which cut every degradation run into short life-stage segments. A correctly calibrated memory tracks slow degradation as drift of one state (with lineage checkpoints), and a state lookup then cannot say how far along a unit is. `mmd2_current` rose for the same reason (0.0003 → 0.09 DSP).
+- **RUL from the health score** recovers most of it: `rul_rmse_health` **25.5** (DSP) and **26.4** [26.0, 27.0] (CNN); MAE 20.3 / 20.9. Paired over seeds against the lookup RUL of the baselines: DSP −0.35 vs naive (25.8) and +1.26 [0.47, 1.84] vs reservoir (24.2); CNN +2.5 [2.0, 3.0] vs naive (23.9) and +2.9 [1.9, 4.2] vs reservoir (23.5). It stays 2.6 (DSP) / 5.0 (CNN) above v2's step-segmented lookup. uEngram gets there from 9 to 17 items, 329 to 370 writes and a 160-byte table; naive stores 9,972 windows, reservoir 256 with 1,211 writes. `uengram_frozen` reaches 24.5 / 26.2 from health (31.5 / 36.5 by lookup). [INFERENCE] Health is one number: units that have not started to degrade all map to similar RUL, which a regression on the full deviation vector could separate.
+- Published FD001 results are 11.4 to 16.1 (`docs/research-cmapss.md`); neither a memory lookup nor a one-dimensional health table is a trained RUL regressor.
 
 ### Where uEngram still loses or is unresolved
 
-- **RUL from memory lookup on CMAPSS** (previous section): RMSE 42, worse than naive and reservoir. A store that keeps life-stage resolution without spurious steps (for example drift checkpoints as retrievable items, or RUL regressed on the health score) is not implemented.
+- **RUL on CMAPSS:** from the health score 25.5 / 26.4, level with naive on DSP but 1.3 to 2.9 above reservoir and 2.5 above naive on CNN; memory lookup is at the constant-prediction level (42). A regression on the full deviation from the healthy reference (`docs/IMPROVEMENT-ANALYSIS.md` section 5: ridge health index, 18.5) is not implemented.
 - **CNN encoder retention and writes.** `event_recall` 0.262, write reduction 65.8%, 183 slots; the step detector still fires about 116 times per CNN run versus 3 to 6 for DSP/ctx (`uengram_nostep`: 71 slots, 68.4%). v2's hypothesis that wear drift looks like steps was refuted: wear tracking did not remove the steps, and the CNN latent's within-regime motion is not wear (`docs/EXPLAINED.md` section 10c). The remaining steps come from coolant transients after regime switches, which the CNN latent encodes at hundreds of noise units and which no label-free segmentation threshold separates from switches. The context encoder removes them (successive-window $D^2$ after a switch 16, the noise level).
 - **Writes on DSP:** 86.2%, below 90%. The context encoder is the only configuration above 90%.
 - **Doc engine behaviour depends on the encoder space.** `reference_labelfree` keeps every event with 27 slots in noise-whitened CNN space but has AUROC 0.944 and AP 0.236. On DSP its AUROC is 0.318.
