@@ -84,7 +84,7 @@ def campaign_dir(tmp_path_factory):
               for i, (a, (lo, hi)) in enumerate(ONSETS.items())]
     with open(os.path.join(d, "faults.jsonl"), "w") as f:
         f.writelines(json.dumps(x) + "\n" for x in faults)
-    camp = {"start": start, "commission": t_comm, "end": end, "alpha": 0.01,
+    camp = {"start": start, "clean_split": start + 3 * 3600, "commission": t_comm, "end": end, "alpha": 0.01,
             "nodes": {"synth": {"ssh": "synth", "ip": "", "faults": ["cpu", "mem", "oom"]}},
             "schedule": faults, "commissioned": {"synth": {"deployed": t_comm}}, "report": None}
     with open(os.path.join(d, "campaign.json"), "w") as f:
@@ -112,8 +112,9 @@ def test_offline_replay_equals_the_online_daemon(campaign_dir):
     assert c["identical"] == 1.0
 
 
-def test_normal_windows_are_calibrated(campaign_dir):
-    cal = campaign_dir[0]["calibration"]["synth"]
+@pytest.mark.parametrize("part", ["clean_week", "calibration"])
+def test_normal_windows_are_calibrated(campaign_dir, part):
+    cal = campaign_dir[0][part]["synth"]
     assert cal["normal_windows"] > 50
     rate, lo, hi = cal["latent"]
     assert lo <= rate <= hi and rate <= 0.02

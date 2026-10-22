@@ -4,10 +4,13 @@ Reads <dir>/campaign.json, faults.jsonl (ground truth written by the
 campaign), models/, and nodes/<name>/{spool/, events.jsonl}. For every node it
 replays the test phase through the deployed model and answers:
 
-1. Calibration: on windows at least MARGIN windows away from any injected
-   fault, how often does each channel fire, and are the conformal p-values
-   calibrated (share of p <= a against a)? Alarms are serially dependent, so
-   intervals come from a moving-block bootstrap (blocks of ~1 h), not iid.
+1. Calibration: how often does each channel fire without a fault, and are the
+   conformal p-values calibrated (share of p <= a against a)? (a) On the clean
+   recording week: commissioned offline on its first days, replayed on the
+   rest, nothing injected. (b) On the fault week, deployed model, windows at
+   least MARGIN windows away from any fault on the node. Alarms are serially
+   dependent, so intervals come from a moving-block bootstrap (blocks of
+   ~1 h), not iid.
 2. Detection: per fault type and strength, the share detected by any channel
    (Wilson interval), the delay, whether D2 attribution named the expected
    modality and whether a saturation flag named the expected resource.
@@ -212,12 +215,38 @@ def _detection_table(rows: list[dict]) -> list[str]:
     return out
 
 
+def _calibration_table(cal: dict) -> list[str]:
+    out = ["| node | normal windows | latent | event | saturation | any | p <= alpha/2 | p <= 0.05 | KS D |",
+           "|---|---|---|---|---|---|---|---|---|"]
+    for name, c in cal.items():
+        if "error" in c:
+            out.append(f"| {name} | {c['error']} |" + " |" * 7)
+            continue
+        pa = list(c["p_le"].values())
+        out.append(f"| {name} | {c['normal_windows']} | {_fmt(c['latent'])} | {_fmt(c['event'])} | "
+                   f"{_fmt(c['saturation'])} | {_fmt(c['any'])} | {_fmt(pa[0])} | {_fmt(pa[1])} | "
+                   f"{c['ks_d']:.3f} |")
+    return out
+
+
+def clean_check(meta: dict, cols, camp: dict, K: int) -> dict:
+    """False alarms with no fault anywhere: commission offline on the first
+    days of the recording week, replay the rest of it."""
+    try:
+        node = NodeMemory.commission(between(cols, camp["start"], camp["clean_split"]), meta,
+                                     window=K, alpha=camp["alpha"])
+    except ValueError as e:
+        return {"error": str(e)}
+    recs = replay(node, between(cols, camp["clean_split"], camp["commission"]))
+    return calibration(recs, [], "", K, camp["alpha"])
+
+
 def write_report(directory: str, variants: tuple[str, ...] | None = None) -> str:
     from .validate_variants import run_variants, variant_table
     with open(os.path.join(directory, "campaign.json")) as f:
         camp = json.load(f)
     faults, alpha = load_faults(directory), camp["alpha"]
-    recs_by_node, cal, cons, var_rows, K, skipped = {}, {}, {}, {}, 32, {}
+    recs_by_node, cal, clean, cons, var_rows, K, skipped = {}, {}, {}, {}, {}, 32, {}
     for name in camp["nodes"]:
         dep = (camp.get("commissioned") or {}).get(name, {})
         model = os.path.join(directory, "models", f"model-{name}.pkl")
@@ -228,6 +257,7 @@ def write_report(directory: str, variants: tuple[str, ...] | None = None) -> str
         t_dep = dep.get("deployed", camp["commission"])
         meta, cols = load_columns(directory, name)
         test, comm = between(cols, t_dep, camp["end"]), between(cols, camp["start"], camp["commission"])
+        clean[name] = clean_check(meta, cols, camp, node.K)
         del cols
         recs, K = replay(node, test), node.K
         recs_by_node[name] = recs
@@ -246,16 +276,13 @@ def write_report(directory: str, variants: tuple[str, ...] | None = None) -> str
              f"{fmt(camp['end'])}. Faults: {done} executed of {len(camp['schedule'])} scheduled. "
              f"alpha = {alpha} (latent alpha/2; event counters alpha/2, Bonferroni over the counters).", "",
              *([f"Nodes left out: {skipped}.", ""] if skipped else []),
-             "## 1. Calibration on normal windows", "",
+             "## 1. Calibration", "",
              "Pass: the latent and event rates are each at most alpha/2 inside the CI (saturation "
              "flags have their own rank bound); the share of p <= a is close to a.", "",
-             "| node | normal windows | latent | event | saturation | any | p <= alpha/2 | p <= 0.05 | KS D |",
-             "|---|---|---|---|---|---|---|---|---|"]
-    for name, c in cal.items():
-        pa = list(c["p_le"].values())
-        lines.append(f"| {name} | {c['normal_windows']} | {_fmt(c['latent'])} | {_fmt(c['event'])} | "
-                     f"{_fmt(c['saturation'])} | {_fmt(c['any'])} | {_fmt(pa[0])} | {_fmt(pa[1])} | "
-                     f"{c['ks_d']:.3f} |")
+             f"### 1a. Clean week: commissioned offline on {fmt(camp['start'])} to {fmt(camp['clean_split'])}, "
+             f"replayed to {fmt(camp['commission'])}; nothing injected", "", *_calibration_table(clean), "",
+             "### 1b. Fault week, deployed model, windows more than 2 windows from any fault on the node", "",
+             *_calibration_table(cal)]
     lines += ["", "## 2. Detection of injected faults", "",
               "Pass: detection rises with strength; the saturation flag names the resource for "
               "cpu/mem/disk; OOM is caught by the event channel.", ""] + _detection_table(det)
@@ -269,6 +296,7 @@ def write_report(directory: str, variants: tuple[str, ...] | None = None) -> str
     with open(path, "w") as f:
         f.write("\n".join(lines) + "\n")
     with open(os.path.join(directory, "report.json"), "w") as f:
-        json.dump({"calibration": cal, "detection": det, "consistency": cons, "skipped": skipped},
+        json.dump({"clean_week": clean, "calibration": cal, "detection": det, "consistency": cons,
+                   "skipped": skipped},
                   f, indent=1, default=str)
     return path

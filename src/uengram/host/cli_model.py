@@ -82,8 +82,8 @@ def _campaign(args) -> int:
     d = os.path.expanduser(args.dir)
     if args.action == "plan":
         start = time.time() if args.start == "now" else float(args.start)
-        camp = campaign.plan(d, start, args.commission_days, args.test_days, args.per_node_per_day,
-                             args.seed, alpha=args.alpha)
+        camp = campaign.plan(d, start, args.record_days, args.test_days, args.per_type, args.seed,
+                             alpha=args.alpha, clean_days=args.clean_days)
         print(f"{len(camp['schedule'])} faults planned")
         print(campaign.status(d))
     elif args.action == "tick":  # the campaign service appends this to <dir>/campaign.log
@@ -129,9 +129,11 @@ def add_model_commands(sub) -> dict:
     g.add_argument("action", choices=["plan", "tick", "status", "report"])
     g.add_argument("--dir", required=True)
     g.add_argument("--start", default="now", help="plan: epoch seconds or 'now'")
-    g.add_argument("--commission-days", type=float, default=3)
-    g.add_argument("--test-days", type=float, default=4)
-    g.add_argument("--per-node-per-day", type=int, default=4)
+    g.add_argument("--record-days", type=float, default=7, help="plan: fault-free recording before commissioning")
+    g.add_argument("--clean-days", type=float, default=3,
+                   help="plan: the report's offline false-alarm check commissions on these first days")
+    g.add_argument("--test-days", type=float, default=7, help="plan: fault week(s) after commissioning")
+    g.add_argument("--per-type", type=int, default=10, help="plan: faults per node and fault type")
     g.add_argument("--seed", type=int, default=0)
     g.add_argument("--alpha", type=float, default=0.01)
     g.add_argument("--variants", nargs="*", help="report: subset of uengram.host.validate_variants.ALL")

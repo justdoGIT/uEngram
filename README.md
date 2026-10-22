@@ -61,7 +61,7 @@ python3 -m uengram.host cluster --nodes msi-worker hp asus-worker lenovo-worker 
 uv run python -m bench.run_host_synth --seeds 0-19 --jobs 2 --out results/host_synth.jsonl
 # install the runit service on nodes (sudo via kepr); --campaign adds the campaign runner (msi only)
 deploy/install-node.sh --numpy NODE...
-# 7-day live validation campaign: record 3 days, commission, scheduled faults 4 days, report
+# 14-day live validation campaign: record a clean week, commission on it, fault week, report
 python3 -m uengram.host campaign plan --dir ~/Backup/uengram-host/campaign
 python3 -m uengram.host campaign status --dir ~/Backup/uengram-host/campaign
 ```

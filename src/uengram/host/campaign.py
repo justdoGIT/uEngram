@@ -5,12 +5,16 @@
             `uengram-campaign` calls it every minute, so a reboot loses nothing)
     status  print the phase and fault counts
 
-Phases: [start, commission) the nodes record with whatever model they run;
-at `commission` every node is re-commissioned on its own spool from that
-period and the models are deployed; during the test phase faults run on
-schedule, one at a time fleet-wide, each logged with its actual start and end
-in faults.jsonl; after `end` the spools and online events are collected and
-the report is written (uengram.host.validate).
+Phases (defaults): [start, commission) = 7 days in which the nodes record and
+nothing is injected. The report uses that week for the clean false-alarm
+check: commission offline on its first `clean_days` (3), replay the rest.
+At `commission` every node is commissioned on its own whole week, which
+covers the daily cycle, and the models are deployed. During the fault week
+[commission, end) faults run on schedule, one at a time fleet-wide, each
+logged with its actual start and end in faults.jsonl: every fault type the
+node allows `per_type` (10) times, cycling over its strengths. After `end`
+the spools and online events are collected and the report is written
+(uengram.host.validate).
 
 Safety: memory faults are confined to cgroups; CPU loops run at nice 19; disk
 faults only read; a fault is postponed by 10 minutes while the node is >50 %
@@ -49,18 +53,20 @@ def _now() -> float:
     return time.time()
 
 
-def plan(directory: str, start: float, commission_days: float = 3, test_days: float = 4,
-         per_node_per_day: int = 4, seed: int = 0, nodes: dict | None = None, alpha: float = 0.01) -> dict:
+def plan(directory: str, start: float, record_days: float = 7, test_days: float = 7, per_type: int = 10,
+         seed: int = 0, nodes: dict | None = None, alpha: float = 0.01, clean_days: float = 3) -> dict:
     nodes = nodes or NODES
+    if not 0 < clean_days < record_days:
+        raise ValueError("clean_days must lie inside the recording week")
     rng = random.Random(seed)
-    t_c, t_end = start + commission_days * DAY, start + (commission_days + test_days) * DAY
+    t_c, t_end = start + record_days * DAY, start + (record_days + test_days) * DAY
     first, last = t_c + 3600, t_end - 1800  # leave the first hour to the freshly deployed models
-    want = []  # (node, type, level), balanced over types and levels per node
+    want = []  # (node, type, level): per_type of each allowed type, cycling over its levels
     for name, cfg in nodes.items():
-        cells = [(f, lv) for f in cfg["faults"] for lv in LEVELS[f]]
-        rng.shuffle(cells)
-        n = int(per_node_per_day * test_days)
-        want += [(name, *cells[i % len(cells)]) for i in range(n)]
+        for ftype in cfg["faults"]:
+            levels = list(LEVELS[ftype])
+            rng.shuffle(levels)
+            want += [(name, ftype, levels[i % len(levels)]) for i in range(per_type)]
     rng.shuffle(want)
     busy: dict[str, list[float]] = {n: [] for n in nodes}
     sched, t_all = [], []
@@ -83,9 +89,9 @@ def plan(directory: str, start: float, commission_days: float = 3, test_days: fl
         sched.append({"id": i, "type": ftype, "level": level, "node": node, "peer": peer,
                       "planned": round(t, 1), "status": "pending", "postponed": 0})
     sched.sort(key=lambda f: f["planned"])
-    camp = {"start": start, "commission": t_c, "end": t_end, "alpha": alpha, "nodes": nodes,
-            "levels": LEVELS, "duration_s": DURATION, "schedule": sched, "commissioned": None,
-            "report": None}
+    camp = {"start": start, "clean_split": start + clean_days * DAY, "commission": t_c, "end": t_end,
+            "alpha": alpha, "nodes": nodes, "levels": LEVELS, "duration_s": DURATION, "schedule": sched,
+            "commissioned": None, "report": None}
     os.makedirs(directory, exist_ok=True)
     _save(directory, camp)
     return camp

@@ -15,19 +15,22 @@ START = 1_800_000_000.0
 
 @pytest.fixture
 def camp(tmp_path):
-    return str(tmp_path), cp.plan(str(tmp_path), START, 3, 4, 4, seed=3, nodes=NODES)
+    return str(tmp_path), cp.plan(str(tmp_path), START, record_days=7, test_days=7, per_type=10, seed=3,
+                                  nodes=NODES, clean_days=3)
 
 
 def test_plan_spaces_faults_and_stays_in_the_test_phase(camp):
     _, c = camp
     s = c["schedule"]
-    assert len(s) > 0.8 * 3 * 4 * 4  # a few may not fit; most must
+    asked = 10 * sum(len(cfg["faults"]) for cfg in NODES.values())
+    assert len(s) > 0.9 * asked  # a few may not fit; most must
     t = sorted(f["planned"] for f in s)
     assert all(b - a >= cp.DURATION + cp.FAULT_GAP for a, b in zip(t, t[1:]))
     for name in NODES:
         mine = sorted(f["planned"] for f in s if name in (f["node"], f["peer"]))
         assert all(b - a >= cp.NODE_GAP for a, b in zip(mine, mine[1:]))
     assert min(t) >= c["commission"] + 3600 and max(t) <= c["end"] - 1800
+    assert c["start"] < c["clean_split"] < c["commission"]  # the clean week is fault-free
 
 
 def test_plan_respects_each_nodes_fault_list_and_pairs_network_faults(camp):
@@ -38,9 +41,12 @@ def test_plan_respects_each_nodes_fault_list_and_pairs_network_faults(camp):
             assert f["peer"] != f["node"] and "net" in NODES[f["peer"]]["faults"]
         else:
             assert f["peer"] is None
-    # node b has 5 fault types and 13 (type, level) cells: its 16 faults cover every cell
-    cells = {(f["type"], f["level"]) for f in c["schedule"] if f["node"] == "b"}
-    assert len(cells) == sum(len(cp.LEVELS[x]) for x in NODES["b"]["faults"])
+    # every node runs each of its fault types per_type times, covering every strength
+    for name, cfg in NODES.items():
+        mine = [f for f in c["schedule"] if f["node"] == name]
+        for ftype in cfg["faults"]:
+            got = [f["level"] for f in mine if f["type"] == ftype]
+            assert len(got) >= 8 and set(got) == set(cp.LEVELS[ftype])
 
 
 class Fleet:
