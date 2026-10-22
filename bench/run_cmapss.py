@@ -7,7 +7,7 @@ import time
 
 import numpy as np
 
-from bench.common import dump, make_store, parse_seeds, run_stream
+from bench.common import dump, make_store, measure_step_inflation, parse_seeds, run_stream
 from bench.evaluate import footprint, latency, mmd_metrics
 from bench.provenance import Provenance
 from bench.run_synth import make_encoder
@@ -19,6 +19,7 @@ CFG_OVER = {"t_dormant": 400}
 K, C = 16, len(cmapss.SENSORS)
 RAW_BYTES = C * K * 4
 EOL, HEALTHY = 20, 75
+COMMISSION = 30  # windows per training unit in the commissioning stream
 
 
 def rul_predict(store, prov, Zt, T) -> np.ndarray:
@@ -43,6 +44,12 @@ def run_one(task):
     rul_true = np.loadtxt("data/cmapss/RUL_FD001.txt")
     Wtr, Utr, _ = cmapss.windows(train[train[:, 0] <= 50], K)
     enc = make_encoder(enc_name, seed).fit(Wtr, K, Utr)
+    Ztr = enc.encode(Wtr)
+    infl = measure_step_inflation(Ztr, Utr)
+    # commissioning stream: the first COMMISSION windows of every training unit,
+    # assumed healthy without labels; uEngram freezes its normal states as the
+    # healthy reference for the health score
+    Zc = Ztr[np.concatenate([np.flatnonzero(Utr == u)[:COMMISSION] for u in np.unique(Utr)])]
     Ws, Us, Rs = cmapss.windows(train[(train[:, 0] > 50) & (train[:, 0] <= units_hi)], K)
     Wt, _, _ = cmapss.windows(test, K, last_only=True)
     Z, Zt = enc.encode(Ws), enc.encode(Wt, sequential=False)
@@ -54,18 +61,28 @@ def run_one(task):
     lines = []
     for method in methods:
         t0 = time.time()
-        store = make_store(method, 256, enc.d, enc.sigma0, RAW_BYTES, seed, CFG_OVER)
+        store = make_store(method, 256, enc.d, enc.sigma0, RAW_BYTES, seed, CFG_OVER, infl)
+        if method.startswith("uengram"):
+            ref = make_store(method, 256, enc.d, enc.sigma0, RAW_BYTES, seed, CFG_OVER, infl)
+            for t, z in enumerate(Zc):
+                ref.ingest(z, t, t)
+            store.set_reference(*ref.reference())
         prov = Provenance()
+        health = np.full(T, np.nan)
 
-        def record(t, res, store=store, prov=prov):
+        def record(t, res, store=store, prov=prov, health=health):
             if res.item_id != -1:
                 prov.record(res.item_id, rul=float(Rs[t]), unit=int(Us[t]), eol=bool(Rs[t] <= EOL))
             prov.apply(store.drain_events())
+            health[t] = res.health
 
         scores, _, lat = run_stream(store, Z, record)
         m = footprint(store, T)
         m["auroc"] = auroc(scores[keep], pos[keep])
         m["ap"] = average_precision(scores[keep], pos[keep])
+        has_health = not np.isnan(health).all()
+        m["health_auroc"] = auroc(health[keep], pos[keep]) if has_health else float("nan")
+        m["health_ap"] = average_precision(health[keep], pos[keep]) if has_health else float("nan")
         pred = rul_predict(store, prov, Zt, T)
         ok = ~np.isnan(pred)
         err = pred[ok] - rul_true[ok]

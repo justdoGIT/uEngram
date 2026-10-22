@@ -5,9 +5,8 @@ import argparse
 import multiprocessing as mp
 import time
 
-import numpy as np
-
-from bench.common import ALL_METHODS, calibrate_alarm, dump, make_store, parse_seeds, run_stream
+from bench.common import (ALL_METHODS, calibrate_alarm, dump, make_store, measure_step_inflation,
+                          parse_seeds, run_stream)
 from bench.evaluate import evaluate_run
 from bench.provenance import Provenance
 from uengram import synth
@@ -35,6 +34,7 @@ def run_one(task):
     seed, enc_name, T, methods, budgets, tag, alarm_alpha, cal_T = task
     train = synth.generate(8000, seed + 10_000)
     enc = make_encoder(enc_name, seed).fit(train.windows, 1, None)
+    infl = measure_step_inflation(enc.encode(train.windows))
     stream = synth.generate(T, seed)
     probe = synth.make_probe(seed, T)
     # fault-free commissioning run, used only to calibrate uEngram's alarm threshold
@@ -48,9 +48,10 @@ def run_one(task):
             t0 = time.time()
             over, extra = {}, {}
             if method.startswith("uengram"):
-                thr = calibrate_alarm(method, B, enc.d, enc.sigma0, RAW_BYTES, seed, Zcal, alarm_alpha)
+                thr = calibrate_alarm(method, B, enc.d, enc.sigma0, RAW_BYTES, seed, Zcal, alarm_alpha,
+                                      step_inflation=infl)
                 over, extra = {"alarm_threshold": thr}, {"alarm_threshold": thr}
-            store = make_store(method, B, enc.d, enc.sigma0, RAW_BYTES, seed, over)
+            store = make_store(method, B, enc.d, enc.sigma0, RAW_BYTES, seed, over, infl)
             prov = Provenance()
             sup_t: list[int] = []
             active_pre: set[int] = set()  # items that received windows just before maintenance
