@@ -38,3 +38,8 @@ def test_probe_composition():
     assert (p.anomaly == 0).sum() == 90
     assert all((p.anomaly == k).sum() == 30 for k in (1, 2, 3, 4))
     assert (p.era == 1).all()
+
+
+def test_fault_free_stream():
+    s = synth.generate(3000, seed=5, maint_frac=1.0, anomalies=False)
+    assert (s.anomaly == 0).all() and (s.event_id == -1).all() and (s.era == 0).all()

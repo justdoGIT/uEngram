@@ -86,3 +86,15 @@ def test_ward_cost():
     c = stats.ward_cost_pairwise(n, mu, np.array([1.0, 4.0]))
     assert math.isclose(c[0, 1], 2 * 3 / 5 * 4.0, rel_tol=1e-9)
     assert np.isinf(c[0, 0])
+
+
+def test_conformal_threshold_rank_and_coverage():
+    s = np.arange(1, 100, dtype=float)  # m = 99
+    assert stats.conformal_threshold(s, 0.1) == 90.0  # ceil(0.9 * 100) = 90th smallest
+    assert stats.conformal_threshold(s, 0.001) == float("inf")  # m too small
+    rng = np.random.default_rng(4)
+    exceed = []
+    for _ in range(400):
+        cal, new = rng.standard_normal(200), rng.standard_normal(200)
+        exceed.append(np.mean(new > stats.conformal_threshold(cal, 0.05)))
+    assert np.mean(exceed) <= 0.05 + 0.005

@@ -7,6 +7,51 @@ from .stats import bhattacharyya_diag, bhattacharyya_pairwise, merge_moments, wa
 
 EMPTY, CAND, EPI, SEM, SUPER = 0, 1, 2, 3, 4
 MAX_DUP_MERGES = 20
+NO_HIT = -(1 << 62)  # sentinel in the per-slot hit-time ring
+
+
+def init_slot(eng, k: int, iid: int, z, t: int, kind: int) -> None:
+    """Fresh slot at index k holding the single point z."""
+    eng.mu[k], eng.S[k], eng.n[k] = z, 0.0, 1
+    eng.kind[k] = kind
+    eng.t_created[k] = eng.t_last[k] = t
+    eng.surpr[k] = 0.0
+    eng.item_id[k] = iid
+    eng.superseded_by[k] = -1
+    eng.ckpt_mu[k] = z
+    eng.ewma_e[k] = 0.0
+    eng.hits[k] = NO_HIT
+    eng.hits[k, -1] = t
+
+
+def _supersede(eng, old: int, new_iid: int, t: int, cause: str) -> None:
+    old_iid = int(eng.item_id[old])
+    eng.kind[old] = SUPER
+    eng.superseded_by[old] = new_iid
+    eng.ewma_e[old] = 0.0
+    eng.lineage.append({"type": "supersede", "old": old_iid, "new": new_iid, "t": t, "cause": cause})
+    eng.events.append(("supersede", old_iid, new_iid))
+    eng.ledger.mark_dirty(old_iid, eng.slot_bytes)
+
+
+def split_on_step(eng, k: int, z, t: int) -> int | None:
+    """A persistent shift was detected in semantic slot k: start a new semantic
+    state at z (keeping k's variance as its prior) and supersede k.
+    Returns the new item id, or None if k was merged away while making room."""
+    old_iid = int(eng.item_id[k])
+    if not make_semantic_room(eng, t):
+        return None
+    idx = np.flatnonzero(eng.item_id == old_iid)
+    if len(idx) == 0 or eng.kind[idx[0]] != SEM:
+        return None
+    k = int(idx[0])
+    j = eng._alloc()
+    new_iid = eng._new_id()
+    init_slot(eng, j, new_iid, z, t, SEM)
+    eng.S[j] = eng.S[k]
+    eng.ledger.write_now(new_iid, eng.slot_bytes)
+    _supersede(eng, k, new_iid, t, "step")
+    return new_iid
 
 
 def merge_slots(eng, a: int, b: int, t: int) -> None:
@@ -17,6 +62,7 @@ def merge_slots(eng, a: int, b: int, t: int) -> None:
         dst, src = b, a
     n, mu, var = merge_moments(eng.n[dst], eng.mu[dst], eng.S[dst], eng.n[src], eng.mu[src], eng.S[src])
     eng.mu[dst], eng.S[dst], eng.n[dst] = mu, var, n
+    eng.ewma_e[dst] = 0.0
     eng.t_created[dst] = min(eng.t_created[dst], eng.t_created[src])
     eng.t_last[dst] = max(eng.t_last[dst], eng.t_last[src])
     sid, did = int(eng.item_id[src]), int(eng.item_id[dst])
@@ -119,8 +165,4 @@ def consolidate(eng, t: int) -> None:
         gv_s = eng._gate_var(succ)
         dist = [bhattacharyya_diag(eng.mu[o], gv_o, eng.mu[s], gv_s[k]) for k, s in enumerate(succ)]
         best = int(succ[int(np.argmin(dist))])
-        eng.kind[o] = SUPER
-        eng.superseded_by[o] = eng.item_id[best]
-        eng.lineage.append({"type": "supersede", "old": int(eng.item_id[o]),
-                            "new": int(eng.item_id[best]), "t": t})
-        eng.ledger.mark_dirty(int(eng.item_id[o]), eng.slot_bytes)
+        _supersede(eng, o, int(eng.item_id[best]), t, "dormant")

@@ -79,10 +79,13 @@ def make_window(rng, regime, wear, era, temp_prev, temp_now, anomaly) -> np.ndar
     return out.astype(np.float32)
 
 
-def generate(T: int, seed: int, maint_frac: float = 0.6) -> SynthStream:
+def generate(T: int, seed: int, maint_frac: float = 0.6, anomalies: bool = True) -> SynthStream:
+    """Stream of T windows. `anomalies=False` gives a fault-free run (e.g. a
+    commissioning period for alarm calibration); `maint_frac >= 1` means no
+    maintenance inside the stream."""
     rng = np.random.default_rng(seed)
     wear, t_m = wear_curve(T, maint_frac)
-    seizure_t = {int(0.25 * T), int(0.5 * T), int(0.85 * T)}
+    seizure_t = {int(0.25 * T), int(0.5 * T), int(0.85 * T)} if anomalies else set()
 
     windows = np.empty((T, C, K), dtype=np.float32)
     regime = np.zeros(T, dtype=np.int64)
@@ -106,7 +109,7 @@ def generate(T: int, seed: int, maint_frac: float = 0.6) -> SynthStream:
             next_event += 1
         elif remaining > 0:
             event_id[t] = next_event - 1
-        elif t >= ANOM_START:
+        elif anomalies and t >= ANOM_START:
             u = rng.random()
             acc = 0.0
             for typ in (1, 2, 3):

@@ -52,6 +52,7 @@ class DSPEncoder:
         self.sigma0 = robust_noise_sigma(self.encode(train_windows), noise_lag, groups)
         return self
 
-    def encode(self, windows) -> np.ndarray:
+    def encode(self, windows, sequential: bool = True) -> np.ndarray:
+        """`sequential` is accepted for protocol compatibility; windows are independent here."""
         F = (band_features(windows) - self.med) / self.scale
         return self.whitener.transform(F)

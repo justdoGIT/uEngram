@@ -64,5 +64,6 @@ class CNNEncoder:
                 out.append(self.enc(xt[i : i + 1024]).numpy())
         return np.concatenate(out, axis=0).astype(np.float64)
 
-    def encode(self, windows) -> np.ndarray:
+    def encode(self, windows, sequential: bool = True) -> np.ndarray:
+        """`sequential` is accepted for protocol compatibility; windows are independent here."""
         return self.whitener.transform(self._latent(windows))

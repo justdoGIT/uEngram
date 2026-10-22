@@ -29,6 +29,7 @@ def test_stationary_single_semantic_slot():
         if t >= 100:
             flags.append(bool(r.flagged))
     assert count(eng, lc.SEM) == 1
+    assert count(eng, lc.SUPER) == 0  # no spurious step detections
     assert np.mean(flags) <= 0.01
 
 
@@ -47,16 +48,51 @@ def test_isolated_outlier_pinned_episodic():
     assert len(idx) == 1 and eng.kind[idx[0]] == lc.EPI
 
 
-def test_sporadic_recurrence_never_promoted():
+def test_sporadic_recurrence_never_promoted_and_never_masked():
     rng = np.random.default_rng(0)
     eng = make()
+    recur_res = []
     for t in range(500 + 300 * 10):
         recur = t >= 500 and (t - 500) % 300 == 0
         r = eng.ingest(pt(rng, 20.0 if recur else 0.0), t, t)
         assert r.action != "promote" or t < 100
+        if recur:
+            recur_res.append(r)
     far = [i for i in np.flatnonzero(eng.kind != lc.EMPTY) if eng.mu[i, 0] > 10]
     assert len(far) == 1
     assert eng.kind[far[0]] == lc.EPI and eng.n[far[0]] == 10
+    # the 2nd..10th occurrences are absorbed by the stored fault slot, yet still
+    # score as far from normal and raise an alarm
+    assert all(r.action == "absorb_episodic" for r in recur_res[1:])
+    assert all(r.flagged and r.score > eng.tau for r in recur_res)
+
+
+def test_episodic_slot_promoted_when_state_recurs_densely():
+    rng = np.random.default_rng(0)
+    eng = make()
+    first = None
+    for t in range(1100):
+        off = 20.0 if t == 100 or 1000 <= t < 1005 else 0.0
+        r = eng.ingest(pt(rng, off), t, t)
+        if t == 100:
+            first = r.item_id
+        if t == 200:
+            assert eng.kind[np.flatnonzero(eng.item_id == first)[0]] == lc.EPI
+        if t == 1003:
+            assert r.action == "absorb_episodic"
+        if t == 1004:
+            assert r.action == "promote" and r.item_id == first
+    assert eng.kind[np.flatnonzero(eng.item_id == first)[0]] == lc.SEM
+
+
+def test_alarm_threshold_independent_of_absorption():
+    rng = np.random.default_rng(0)
+    eng = make(alarm_threshold=1e9)
+    for t in range(1100):
+        r = eng.ingest(pt(rng, 20.0 if t == 1000 else 0.0), t, t)
+        assert not r.flagged
+        if t == 1000:
+            assert r.action == "new_candidate"  # still stored as novel
 
 
 def test_persistent_step_promotes_and_supersedes_old():
@@ -77,6 +113,26 @@ def test_persistent_step_promotes_and_supersedes_old():
             assert eng.kind[succ] == lc.SEM and eng.mu[succ, 0] > 6
     assert promoted is not None
     assert any(r["type"] == "supersede" for r in eng.lineage)
+
+
+def test_small_persistent_step_detected_and_superseded():
+    # +1.5 on one dim = 3 noise sd: inside the absorption gate, so only a
+    # sequential test can see it
+    rng = np.random.default_rng(0)
+    eng = make()
+    old_id, events = None, []
+    for t in range(2400):
+        if t == 1999:
+            old_id = int(eng.item_id[np.flatnonzero(eng.kind == lc.SEM)[0]])
+        eng.ingest(pt(rng, 1.5 if t >= 2000 else 0.0), t, t)
+        events += [(t, e) for e in eng.drain_events() if e[0] == "supersede"]
+    assert len(events) == 1
+    t_det, (_, old, new) = events[0]
+    assert old == old_id and 2000 <= t_det <= 2030
+    assert eng.kind[np.flatnonzero(eng.item_id == old_id)[0]] == lc.SUPER
+    j = np.flatnonzero(eng.item_id == new)[0]
+    assert eng.kind[j] == lc.SEM and abs(eng.mu[j, 0] - 1.5) < 0.3
+    assert any(r["type"] == "supersede" and r["cause"] == "step" for r in eng.lineage)
 
 
 def test_budget_invariant_with_merge_and_evict_events():

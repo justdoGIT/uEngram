@@ -56,6 +56,20 @@ def surprisal(x: float | np.ndarray, d: int) -> float:
     return min(v, 300.0)
 
 
+def conformal_threshold(scores: np.ndarray, alpha: float) -> float:
+    """Score threshold from a calibration set of normal scores.
+
+    With m calibration scores, alarming when a new score exceeds the
+    ceil((1-alpha)(m+1))-th smallest one gives P(false alarm) <= alpha for an
+    exchangeable new normal score (split-conformal p-value <= alpha).
+    Returns +inf when m is too small for the requested alpha.
+    """
+    s = np.sort(np.asarray(scores, dtype=np.float64)[~np.isnan(scores)])
+    m = len(s)
+    k = int(math.ceil((1.0 - alpha) * (m + 1)))
+    return float(s[k - 1]) if k <= m else float("inf")
+
+
 def robust_noise_sigma(z: np.ndarray, lag: int, groups: np.ndarray | None) -> np.ndarray:
     """Per-dimension noise std from MAD of lag-`lag` successive differences."""
     z = np.asarray(z, dtype=np.float64)

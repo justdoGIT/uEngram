@@ -32,6 +32,13 @@ class EngramConfig:
     flush_every: int = 50
     use_slot_var: bool = True
     use_promotion: bool = True
+    # alarm threshold on the normal-state score; None -> the chi-square gate tau.
+    # The harness sets it by conformal calibration on a normal commissioning run.
+    alarm_threshold: float | None = None
+    # multivariate EWMA step detector on semantic-slot innovations
+    step_lambda: float = 0.1
+    step_alpha: float = 1e-6
+    use_step_detect: bool = True
 
 
 class Engram:
@@ -44,6 +51,10 @@ class Engram:
         self.sigma0 = np.asarray(sigma0, dtype=np.float64)
         self.sigma0_sq = self.sigma0 ** 2
         self.tau = chi2_isf(cfg.alpha_gate, d)
+        self.alarm_tau = self.tau if cfg.alarm_threshold is None else float(cfg.alarm_threshold)
+        self.step_h = chi2_isf(cfg.step_alpha, d)
+        self.step_c = (2.0 - cfg.step_lambda) / cfg.step_lambda
+        self.step_min_n = int(np.ceil(2.0 / cfg.step_lambda))
         self.n_eff_cap = (2.0 - cfg.beta_min) / cfg.beta_min if cfg.beta_min > 0 else np.inf
         self.slot_bytes = 2 * d * 4 + 32
         cap = cfg.B_sem + cfg.B_epi
@@ -57,6 +68,8 @@ class Engram:
         self.surpr = np.zeros(cap)
         self.item_id = np.full(cap, -1, dtype=np.int64)
         self.superseded_by = np.full(cap, -1, dtype=np.int64)
+        self.ewma_e = np.zeros((cap, d))  # step-detector state per slot
+        self.hits = np.full((cap, cfg.m_promote), lc.NO_HIT, dtype=np.int64)  # last M hit times
         self.exemplars: dict[int, list[int]] = {}
         self.lineage: deque = deque(maxlen=256)
         self.events: list[tuple] = []
@@ -98,7 +111,11 @@ class Engram:
         if len(gate):
             var = self._pred_var(gate)
             d2 = np.sum((z - self.mu[gate]) ** 2 / var, axis=1)
-            score = float(d2.min())
+            # Novelty is measured against normal (semantic) states only, so a
+            # recurring fault stored in an episodic slot is not masked.
+            ref = (self.kind[gate] == SEM) if cfg.use_promotion else np.ones(len(gate), bool)
+            if ref.any():
+                score = float(d2[ref].min())
             inside = d2 <= self.tau
             if inside.any():
                 # Habit memory has priority: a point inside any semantic gate is
@@ -108,11 +125,12 @@ class Engram:
                 pool = sem_in if sem_in.any() else inside
                 nll = np.where(pool, d2 + np.sum(np.log(var), axis=1), np.inf)
                 chosen = int(gate[np.argmin(nll)])
+        alarm = bool(score > self.alarm_tau)  # NaN (no normal state yet) -> no alarm
 
         if chosen >= 0:
-            res = self._absorb(chosen, z, t, raw_idx, score)
+            res = self._absorb(chosen, z, t, raw_idx, score, alarm)
         else:
-            res = self._new_slot(z, t, raw_idx, score)
+            res = self._new_slot(z, t, raw_idx, score, alarm)
 
         stale = np.flatnonzero((self.kind == CAND) & (t - self.t_created > cfg.n_promote))
         for i in stale:
@@ -123,43 +141,57 @@ class Engram:
         self.ledger.tick(t)
         return res
 
-    def _absorb(self, k: int, z, t: int, raw_idx: int, score: float) -> IngestResult:
+    def _absorb(self, k: int, z, t: int, raw_idx: int, score: float, alarm: bool) -> IngestResult:
         cfg = self.cfg
         iid = int(self.item_id[k])
         n = int(self.n[k])
-        alpha = max(1.0 / (n + 1), cfg.beta_min) if self.kind[k] == SEM else 1.0 / (n + 1)
+        sem = self.kind[k] == SEM
+        if sem:
+            e = (z - self.mu[k]) / np.sqrt(self._pred_var(np.array([k]))[0])
+        alpha = max(1.0 / (n + 1), cfg.beta_min) if sem else 1.0 / (n + 1)
         self.mu[k], self.S[k] = ew_update(self.mu[k], self.S[k], z, alpha)
         self.n[k] = n + 1
         self.t_last[k] = t
         self.ledger.mark_dirty(iid, self.slot_bytes)
-        if self.kind[k] == SEM:
-            return IngestResult(iid, score, False, "absorb_semantic")
+        if sem:
+            if cfg.use_step_detect and self._step_detected(k, e):
+                new_iid = lc.split_on_step(self, k, z, t)
+                if new_iid is not None:
+                    return IngestResult(new_iid, score, alarm, "step_change")
+            return IngestResult(iid, score, alarm, "absorb_semantic")
         self.exemplars[iid][1] = raw_idx
         self.ledger.write_now(iid, self.raw_window_bytes)
-        if (self.kind[k] == CAND and cfg.use_promotion and self.n[k] >= cfg.m_promote
-                and t - self.t_created[k] <= cfg.n_promote and lc.make_semantic_room(self, t)):
+        self.hits[k, :-1] = self.hits[k, 1:]
+        self.hits[k, -1] = t
+        # M-of-N at any time: the last M hits fall within N steps
+        if (cfg.use_promotion and t - self.hits[k, 0] <= cfg.n_promote
+                and lc.make_semantic_room(self, t)):
             self.kind[k] = SEM
             self.ckpt_mu[k] = self.mu[k]
+            self.ewma_e[k] = 0.0
             self.exemplars.pop(iid, None)
             self.ledger.write_now(iid, self.slot_bytes)
-            return IngestResult(iid, score, True, "promote")
+            return IngestResult(iid, score, alarm, "promote")
         action = "absorb_candidate" if self.kind[k] == CAND else "absorb_episodic"
-        return IngestResult(iid, score, True, action)
+        return IngestResult(iid, score, alarm, action)
 
-    def _new_slot(self, z, t: int, raw_idx: int, score: float) -> IngestResult:
+    def _step_detected(self, k: int, e: np.ndarray) -> bool:
+        """MEWMA on standardised innovations: Z <- lam e + (1-lam) Z; alarm when
+        (2-lam)/lam * |Z|^2 exceeds the chi2_d quantile at step_alpha."""
+        lam = self.cfg.step_lambda
+        self.ewma_e[k] = lam * e + (1.0 - lam) * self.ewma_e[k]
+        return bool(self.n[k] >= self.step_min_n
+                    and self.step_c * float(self.ewma_e[k] @ self.ewma_e[k]) > self.step_h)
+
+    def _new_slot(self, z, t: int, raw_idx: int, score: float, alarm: bool) -> IngestResult:
         lc.make_episodic_room(self, t)
         k = self._alloc()
         iid = self._new_id()
-        self.mu[k], self.S[k], self.n[k] = z, 0.0, 1
-        self.kind[k] = CAND if self.cfg.use_promotion else EPI
-        self.t_created[k] = self.t_last[k] = t
+        lc.init_slot(self, k, iid, z, t, CAND if self.cfg.use_promotion else EPI)
         self.surpr[k] = 0.0 if np.isnan(score) else surprisal(score, self.d)
-        self.item_id[k] = iid
-        self.superseded_by[k] = -1
-        self.ckpt_mu[k] = z
         self.exemplars[iid] = [raw_idx, raw_idx]
         self.ledger.write_now(iid, self.slot_bytes + self.raw_window_bytes)
-        return IngestResult(iid, score, True, "new_candidate")
+        return IngestResult(iid, score, alarm, "new_candidate")
 
     # -- retrieval -------------------------------------------------------
     def recall(self, q, t_now: int, k: int, mode: str) -> list[int]:
