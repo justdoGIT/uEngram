@@ -518,9 +518,8 @@ This empirical variance match does **not** prove a $\chi^2$ sequential false-ala
 
 Average precision now groups equal scores at one threshold. A constant score must have AP equal to prevalence, independent of label order; the earlier implementation did not. Historical synthetic/CMAPSS JSONL files are retained as originally generated and have not been recomputed for this correction. MetroPT uses the corrected metric.
 
-
 ### Where in code
-`src/uengram/metropt.py` (download, cache, windows, labels), `src/uengram/stream_baselines.py` (Half-Space Trees, MemStream), `bench/run_metropt.py`.
+`src/uengram/metropt.py` (download, cache, windows, labels), `src/uengram/stream_baselines.py` (Half-Space Trees, MemStream), `bench/metropt_calibration.py` (commissioning step calibration), `bench/metropt_eval.py` (window, event and false-alarm metrics), `bench/run_metropt.py` (splits, threshold calibration, streaming), `bench/report.py` (MetroPT tables and P1–P3).
 
 ---
 

@@ -147,6 +147,96 @@ uEngram v3 adds: the step detector's input is scaled by the EWMA variance inflat
 | reference_labelfree | n/a | 0.456 [0.456, 0.456]* | 0.157 [0.157, 0.157]* | n/a | n/a | n/a | -5185 [-5185, -5185]* |
 | uengram_frozen | n/a | 0.0692 [0.0692, 0.0692]* | 0.0533 [0.0533, 0.0533]* | n/a | n/a | 0.0815 [0.0815, 0.0815]* | -252 [-252, -252]* |
 
+## MetroPT-3
+
+The benchmark scores four reported leak intervals. A positive window overlaps a report interval; clean negatives exclude each report interval plus 24 h before and 48 h after, and intervening windows are unscored. Detection requires an alarm overlapping a report interval; lead time uses the first available alarm (window end) from 24 h before report start through report end. Negative lead means earlier, not proven fault prediction. False-alarm episodes count only alarms on clean negatives (alerts strictly less than 1 h apart are merged), divided by observed clean-negative window time in weeks, excluding logging gaps and unavailable detector scores. HST's first 250 test windows are warm-up and unscored. Unreported negatives are not verified healthy; reports do not establish exact leak onset or repair times.
+
+Rows are grouped by encoder. CNN cells show mean and 95% bootstrap CI across seeds; DSP cells show seed means without inferential intervals. DSP encoding is deterministic; stochastic baselines can vary across seeds, but repetitions do not provide dataset-level uncertainty. Paired tables show uEngram minus each method; DSP differences have no inferential intervals. `n/a` means unavailable or inapplicable; HST and MemStream are detector-only, so store retention, writes, and persistent store footprint are not reported as zero. P3 tests whether live item provenance still represents each reported event; it does not establish that raw evidence remains retrievable.
+
+### Encoder `cnn`
+
+| method | n | auroc | ap | health_auroc | health_ap | failures_detected | lead_hours | false_alarm_per_week | failures_retained | items_end | writes | lat_p99_us |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| naive | 5 | 0.795 [0.71, 0.859] | 0.0764 [0.054, 0.0985] | n/a | n/a | 4 [4, 4] | -6.42 [-8.13, -4.57] | 7.99 [7.07, 8.83] | 4 [4, 4] | 21556 [21556, 21556] | 21556 [21556, 21556] | 1551 [1293, 1956] |
+| fifo | 5 | 0.649 [0.552, 0.728] | 0.0431 [0.0328, 0.0539] | n/a | n/a | 4 [4, 4] | -13.3 [-15.7, -11.5] | 16.3 [15.5, 17.1] | 0 [0, 0] | 256 [256, 256] | 21556 [21556, 21556] | 41.9 [32.4, 59.1] |
+| reservoir | 5 | 0.853 [0.79, 0.909] | 0.138 [0.0891, 0.188] | n/a | n/a | 4 [4, 4] | -14.6 [-18.6, -10.6] | 18.6 [14.4, 22.2] | 2.2 [1.6, 2.8] | 256 [256, 256] | 1410 [1389, 1447] | 48.2 [31.2, 70.5] |
+| reference_labelfree | 5 | 0.124 [0.0969, 0.159] | 0.0134 [0.0132, 0.0138] | n/a | n/a | 0 [0, 0] | -17.5 [-17.5, -17.5] | 1.37 [1.12, 1.64] | 3.4 [3, 3.8] | 256 [256, 256] | 9738 [9449, 10027] | 5044 [2413, 8350] |
+| uengram | 5 | 0.739 [0.569, 0.896] | 0.189 [0.0469, 0.385] | 0.988 [0.986, 0.99] | 0.557 [0.492, 0.624] | 3.6 [2.8, 4] | -5.95 [-12.8, 2.87] | 10.2 [7.69, 12.7] | 4 [4, 4] | 168 [159, 175] | 16363 [15427, 17749] | 1059 [367, 2277] |
+| uengram_frozen | 5 | 0.722 [0.547, 0.888] | 0.174 [0.0455, 0.36] | 0.989 [0.988, 0.99] | 0.567 [0.509, 0.642] | 3.6 [2.8, 4] | -6.17 [-8.49, -3.44] | 11.9 [9.34, 14.4] | 4 [4, 4] | 161 [149, 179] | 16888 [15685, 18310] | 494 [348, 704] |
+| hst | 5 | 0.794 [0.743, 0.846] | 0.203 [0.145, 0.245] | n/a | n/a | 3.6 [3.2, 4] | -6.94 [-12.2, -1.99] | 14.5 [9.08, 19.8] | n/a | n/a | n/a | 64.6 [43.2, 86.7] |
+| memstream | 5 | 0.516 [0.361, 0.662] | 0.156 [0.0248, 0.413] | n/a | n/a | 2.8 [2.4, 3] | -6.81 [-10.2, -3.55] | 4.28 [3.55, 4.87] | n/a | n/a | n/a | 1557 [443, 2687] |
+
+#### Persistent store footprint (bytes)
+
+| method | n | index_bytes | pinned_raw_bytes |
+|---|---|---|---|
+| naive | 5 | 1724480 [1724480, 1724480] | 0 [0, 0] |
+| fifo | 5 | 20480 [20480, 20480] | 0 [0, 0] |
+| reservoir | 5 | 20480 [20480, 20480] | 0 [0, 0] |
+| reference_labelfree | 5 | 24576 [24576, 24576] | 55776 [51072, 59808] |
+| uengram | 5 | 27200 [25696, 28320] | 137760 [132720, 143136] |
+| uengram_frozen | 5 | 26029 [24006, 28845] | 137088 [131712, 143472] |
+| hst | 5 | n/a | n/a |
+| memstream | 5 | n/a | n/a |
+
+#### Paired differences (uEngram minus method)
+
+`*` marks a paired 95% bootstrap CI excluding zero; these intervals reflect between-seed variability, not uncertainty across datasets. DSP has no meaningful CI.
+
+| method (uEngram minus method) | auroc | ap | health_auroc | health_ap | failures_detected | lead_hours | false_alarm_per_week | failures_retained | items_end | writes | lat_p99_us | index_bytes | pinned_raw_bytes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| naive | -0.0555 [-0.148, 0.037] | 0.113 [-0.00746, 0.292] | n/a | n/a | -0.4 [-1.2, 0] | 0.469 [-5.02, 7.67] | 2.21 [-0.227, 4.65] | 0 [0, 0] | -21388 [-21397, -21381]* | -5193 [-6129, -3807]* | -492 [-1379, 821] | -1697280 [-1698784, -1696160]* | 137760 [132720, 143136]* |
+| fifo | 0.0897 [0.00916, 0.168]* | 0.146 [0.0139, 0.333]* | n/a | n/a | -0.4 [-1.2, 0] | 7.4 [1.55, 15.1]* | -6.07 [-8.22, -3.72]* | 4 [4, 4]* | -87.6 [-97, -80.6]* | -5193 [-6129, -3807]* | 1017 [334, 2233]* | 6720 [5216, 7840]* | 137760 [132720, 143136]* |
+| reservoir | -0.114 [-0.222, -0.0128]* | 0.0508 [-0.0422, 0.198] | n/a | n/a | -0.4 [-1.2, 0] | 8.65 [2.75, 15.2]* | -8.43 [-10.4, -6.01]* | 1.8 [1.2, 2.4]* | -87.6 [-97, -80.6]* | 14953 [14019, 16358]* | 1011 [336, 2218]* | 6720 [5216, 7840]* | 137760 [132720, 143136]* |
+| reference_labelfree | 0.616 [0.448, 0.749]* | 0.176 [0.0337, 0.372]* | n/a | n/a | 3.6 [2.8, 4]* | 18.6 [8.3, 28.8]* | 8.83 [6.13, 11.5]* | 0.6 [0.2, 1]* | -87.6 [-97, -80.6]* | 6625 [5614, 7896]* | -3985 [-6118, -1980]* | 2624 [1120, 3744]* | 81984 [78288, 86016]* |
+| uengram_frozen | 0.0173 [0.00604, 0.0313]* | 0.0157 [0.00145, 0.0322]* | -0.000503 [-0.00138, 7.98e-06] | -0.0104 [-0.0249, 0.00411] | 0 [0, 0] | 0.224 [-4.83, 6.8] | -1.67 [-2.41, -0.847]* | 0 [0, 0] | 7 [-6.8, 19] | -524 [-1073, -41.4]* | 564 [18.7, 1564]* | 1171 [-1037, 3091] | 672 [-1344, 2688] |
+| hst | -0.0553 [-0.232, 0.101] | -0.0133 [-0.173, 0.166] | n/a | n/a | 0 [-1, 0.8] | 0.987 [-6.26, 9.05] | -4.35 [-11.6, 1.56] | n/a | n/a | n/a | 994 [314, 2197]* | n/a | n/a |
+| memstream | 0.223 [-0.0936, 0.502] | 0.0331 [-0.342, 0.333] | n/a | n/a | 0.8 [-0.2, 1.6] | 0.86 [-6.3, 9.1] | 5.92 [3.43, 8.8]* | n/a | n/a | n/a | -498 [-2203, 1208] | n/a | n/a |
+
+### Encoder `dsp`
+
+| method | n | auroc | ap | health_auroc | health_ap | failures_detected | lead_hours | false_alarm_per_week | failures_retained | items_end | writes | lat_p99_us |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| naive | 5 | 0.878 | 0.124 | n/a | n/a | 4 | -4.73 | 7.74 | 4 | 21556 | 21556 | 3339 |
+| fifo | 5 | 0.783 | 0.0767 | n/a | n/a | 4 | -11.5 | 15 | 0 | 256 | 21556 | 46 |
+| reservoir | 5 | 0.943 | 0.249 | n/a | n/a | 4 | -8.64 | 12.7 | 2.2 | 256 | 1410 | 46 |
+| reference_labelfree | 5 | 0.0847 | 0.0131 | n/a | n/a | 0 | -14.4 | 0.157 | 4 | 105 | 5315 | 146 |
+| uengram | 5 | 0.979 | 0.502 | 0.989 | 0.572 | 3 | -9.78 | 14.1 | 4 | 111 | 12873 | 609 |
+| uengram_frozen | 5 | 0.978 | 0.575 | 0.989 | 0.572 | 3 | -0.444 | 4.91 | 4 | 115 | 12614 | 739 |
+| hst | 5 | 0.899 | 0.245 | n/a | n/a | 2.6 | -6.52 | 12.8 | n/a | n/a | n/a | 47.7 |
+| memstream | 5 | 0.92 | 0.634 | n/a | n/a | 4 | -8.2 | 17 | n/a | n/a | n/a | 1010 |
+
+#### Persistent store footprint (bytes)
+
+| method | n | index_bytes | pinned_raw_bytes |
+|---|---|---|---|
+| naive | 5 | 1724480 | 0 |
+| fifo | 5 | 20480 | 0 |
+| reservoir | 5 | 20480 | 0 |
+| reference_labelfree | 5 | 10080 | 16800 |
+| uengram | 5 | 18144 | 169680 |
+| uengram_frozen | 5 | 18656 | 168000 |
+| hst | 5 | n/a | n/a |
+| memstream | 5 | n/a | n/a |
+
+#### uEngram DSP pass criteria
+
+P1 all 4 detected: FAIL; P2 ≤1 false-alarm episode per clean week: FAIL; P3 all 4 represented in live item provenance: PASS
+
+#### Paired differences (uEngram minus method)
+
+`*` marks a paired 95% bootstrap CI excluding zero; these intervals reflect between-seed variability, not uncertainty across datasets. DSP has no meaningful CI.
+
+| method (uEngram minus method) | auroc | ap | health_auroc | health_ap | failures_detected | lead_hours | false_alarm_per_week | failures_retained | items_end | writes | lat_p99_us | index_bytes | pinned_raw_bytes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| naive | 0.101 | 0.378 | n/a | n/a | -1 | -5.05 | 6.38 | 0 | -21445 | -8683 | -2730 | -1706336 | 169680 |
+| fifo | 0.196 | 0.425 | n/a | n/a | -1 | 1.76 | -0.834 | 4 | -145 | -8683 | 563 | -2336 | 169680 |
+| reservoir | 0.0358 | 0.253 | n/a | n/a | -1 | -1.14 | 1.38 | 1.8 | -145 | 11463 | 563 | -2336 | 169680 |
+| reference_labelfree | 0.894 | 0.489 | n/a | n/a | 3 | 4.58 | 14 | 0 | 6 | 7558 | 463 | 8064 | 152880 |
+| uengram_frozen | 0.00125 | -0.0728 | -5.75e-05 | -0.000188 | 0 | -9.33 | 9.2 | 0 | -4 | 259 | -130 | -512 | 1680 |
+| hst | 0.0802 | 0.257 | n/a | n/a | 0.4 | -3.26 | 1.36 | n/a | n/a | n/a | 561 | n/a | n/a |
+| memstream | 0.0587 | -0.132 | n/a | n/a | -1 | -1.58 | -2.84 | n/a | n/a | n/a | -401 | n/a | n/a |
+
 ## Budget sweep (synthetic, DSP encoder)
 
 | method | budget | n | items_end | writes | event_recall | seizure_recall | auroc | stale_at1 | mmd2_current |
@@ -256,7 +346,7 @@ Same seeds; `*` marks a paired 95% CI that excludes 0.
 
 ## Findings
 
-Means over seeds from the tables above: synthetic 10 seeds per encoder, budget sweep 5 seeds, CMAPSS 5 seeds. A hypothesis about a cause is marked `[INFERENCE]`. The analysis behind the v2 changes is in `docs/IMPROVEMENT-ANALYSIS.md`; the v3 diagnostics are in `docs/EXPLAINED.md` sections 7c and 10c.
+Means over seeds from the tables above: synthetic 10 seeds per encoder, budget sweep 5 seeds, CMAPSS 5 seeds, MetroPT-3 5 seeds per encoder. A hypothesis about a cause is marked `[INFERENCE]`. The analysis behind the v2 changes is in `docs/IMPROVEMENT-ANALYSIS.md`; the v3 diagnostics are in `docs/EXPLAINED.md` sections 7c and 10c.
 
 ### What the v3 changes did
 
@@ -296,7 +386,7 @@ Means over seeds from the tables above: synthetic 10 seeds per encoder, budget s
 - Catching anomalies at about a 1% false-alarm budget: window-level alarm recall 0.997 / 1.000 / 0.946 at realised false-alarm rates of 1.1 to 1.8% (per seed 0.2% to 2.5%). The 1% target is exceeded slightly, more after maintenance; [INFERENCE] wear drift and the maintenance step break the exchangeability that conformal calibration assumes.
 - Rare-event retention: DSP and ctx keep every anomaly event and every seizure in about 40 slots (FIFO and reservoir keep at most 2.2% of events with 256). CNN keeps all seizures and every fault type but only 26.2% of events.
 - End-of-life detection on CMAPSS: the health score reaches AUROC 0.998 to 0.999; novelty does not (best 0.832). RUL from health: RMSE 25.5 (DSP) / 26.4 (CNN).
-- These are results on our own synthetic generator, whose anomalies are strong by design. They do not transfer to field data without validation on real labelled machinery data (`docs/IMPROVEMENT-ANALYSIS.md`, item 11).
+- These are results on our own synthetic generator, whose anomalies are strong by design. They do not transfer to field data without validation on real labelled machinery data (`docs/IMPROVEMENT-ANALYSIS.md`, item 11). The first real-data check (MetroPT-3, below) meets the retention criterion but not the detection and false-alarm criteria.
 
 ### Budget sweep
 
@@ -310,11 +400,23 @@ uEngram reaches AUROC 1.0 at every budget. At B=64 it keeps 91.9% of events and 
 - **RUL from the health score** recovers most of it: `rul_rmse_health` **25.5** (DSP) and **26.4** [26.0, 27.0] (CNN); MAE 20.3 / 20.9. Paired over seeds against the lookup RUL of the baselines: DSP −0.35 vs naive (25.8) and +1.26 [0.47, 1.84] vs reservoir (24.2); CNN +2.5 [2.0, 3.0] vs naive (23.9) and +2.9 [1.9, 4.2] vs reservoir (23.5). It stays 2.6 (DSP) / 5.0 (CNN) above v2's step-segmented lookup. uEngram gets there from 9 to 17 items, 329 to 370 writes and a 160-byte table; naive stores 9,972 windows, reservoir 256 with 1,211 writes. `uengram_frozen` reaches 24.5 / 26.2 from health (31.5 / 36.5 by lookup). [INFERENCE] Health is one number: units that have not started to degrade all map to similar RUL, which a regression on the full deviation vector could separate.
 - Published FD001 results are 11.4 to 16.1 (`docs/research-cmapss.md`); neither a memory lookup nor a one-dimensional health table is a trained RUL regressor.
 
+### MetroPT-3 (real compressor; protocol in `docs/EXPLAINED.md` section 16)
+
+21,556 test windows from 1 Mar to 1 Sep 2020, with four reported air-leak intervals. Commit `ef09b74` fixed the protocol, including its training-only calibration amendment, before any test-window scores were produced. No setting was changed after seeing test results.
+
+- **Predeclared criteria (uEngram, DSP): P1 FAIL, P2 FAIL, P3 PASS.** uEngram detected 3 of 4 reports. Report 4 (27 windows) had no alarm inside its interval; one alarm 12.9 h before its start counts only toward lead time. 270 false-alarm episodes over 3,213 observed clean hours give 14.1 per week, against a limit of 1. Live item provenance retains all 4 reports: 111 items, 18,144 index bytes and 169,680 pinned raw bytes (101 raw windows).
+- **No detecting run meets P2.** In all 80 runs, the lowest false-alarm rate among runs that detected any report is 3.14 episodes per week (MemStream, CNN seed 1, 3 of 4 detected). Among method means, the lowest rate with at least 3 detected reports is `uengram_frozen` on DSP: 3/4 at 4.91. The only method below 1 per week, `reference_labelfree` (0.16 on DSP), detects no reports. For every method, α = 0.01 conformal thresholds calibrated on 22–29 Feb data fail to hold from March through August. [INFERENCE] Six months of operation are not exchangeable with one February week. The protocol cannot distinguish this from unreported faults among clean negatives.
+- **Health distance is the strongest and most stable ranking signal.** Distance to the frozen February reference gives AUROC 0.989 on DSP and 0.988 [0.986, 0.990] on CNN, with AP 0.572 / 0.557. uEngram novelty has the highest DSP AUROC (0.979), but MemStream has higher AP (0.634 vs 0.502) and detects all 4 reports on every DSP seed, with 17.0 episodes per week. Alarms use novelty, not health. A health-score alarm remains untested; this test stream is already consumed and cannot provide an unbiased check.
+- **CNN latents make uEngram novelty seed-dependent.** Across seeds, AUROC ranges from 0.432 to 0.928 (mean 0.739 [0.569, 0.896]), detection from 2 to 4 reports, and false alarms from 6.1 to 14.2 episodes per week. Paired on CNN, uEngram detects 0.8 [−0.2, 1.6] more reports than MemStream but has 5.92 [3.43, 8.80]* more false-alarm episodes per week. It has 8.43* fewer than reservoir and 6.07* fewer than FIFO. No paired detection difference excludes 0.
+- **Retention fits in a fraction of the store, but write savings are far below the synthetic result.** uEngram retains all 4 reports in all 10 runs, using 111 items on DSP and 151–179 on CNN. Reservoir retains 2.2 of 4 reports with 256 slots; FIFO retains none. Compared with naive, uEngram writes 40.3% less on DSP (12,873 vs 21,556) and 11.7–30.0% less on CNN, versus 86% less on the synthetic DSP stream. Reservoir writes 1,410.
+- **Commissioning step calibration is required on this data.** uEngram used 1,693 warmed-up innovations from 37 slot runs on DSP and 1,458–1,599 on CNN. Measured inflation is 0.95–11.0 per dimension on DSP and 0.60–13.6 on CNN; the engine clamps values below 1 to 1. The section 10c estimator cannot run because the 1,000 change-free runs contain no lag-38 pairs.
+
 ### Where uEngram still loses or is unresolved
 
 - **RUL on CMAPSS:** from the health score 25.5 / 26.4, level with naive on DSP but 1.3 to 2.9 above reservoir and 2.5 above naive on CNN; memory lookup is at the constant-prediction level (42). A regression on the full deviation from the healthy reference (`docs/IMPROVEMENT-ANALYSIS.md` section 5: ridge health index, 18.5) is not implemented.
 - **CNN encoder retention and writes.** `event_recall` 0.262, write reduction 65.8%, 183 slots; the step detector still fires about 116 times per CNN run versus 3 to 6 for DSP/ctx (`uengram_nostep`: 71 slots, 68.4%). v2's hypothesis that wear drift looks like steps was refuted: wear tracking did not remove the steps, and the CNN latent's within-regime motion is not wear (`docs/EXPLAINED.md` section 10c). The remaining steps come from coolant transients after regime switches, which the CNN latent encodes at hundreds of noise units and which no label-free segmentation threshold separates from switches. The context encoder removes them (successive-window $D^2$ after a switch 16, the noise level).
 - **Writes on DSP:** 86.2%, below 90%. The context encoder is the only configuration above 90%.
+- **Real-data alarms (MetroPT-3).** On DSP, P1 and P2 fail: 3/4 reports detected and 14.1 false-alarm episodes per week. CNN novelty AUROC varies from 0.43 to 0.93 across encoder seeds. MemStream has higher DSP AP (0.634 vs 0.502) and fewer CNN false alarms (4.28 vs 10.2 episodes per week).
 - **Doc engine behaviour depends on the encoder space.** `reference_labelfree` keeps every event with 27 slots in noise-whitened CNN space but has AUROC 0.944 and AP 0.236. On DSP its AUROC is 0.318.
 - **Retrieval of the right fault type** (`type_prec_at1`) is 0.987 (DSP), 0.902 (ctx), 0.815 (CNN), against naive 0.988 / 0.929 / 0.901.
 
@@ -324,4 +426,6 @@ uEngram reaches AUROC 1.0 at every budget. At B=64 it keeps 91.9% of events and 
 - The noise-whitening step (v2) changed every encoder, so baseline rows differ from `results/v1/`. Between v2 and v3 the baseline rows are identical; the v2-vs-v3 tables isolate uEngram.
 - The host rebooted during the first v3 CMAPSS run; that partial output was discarded and CMAPSS rerun in full. Synthetic and sweep outputs were complete and validated (300 and 60 lines, all parseable).
 - `reference_oracle` uses ground-truth labels and is not a deployable configuration.
+- MetroPT-3 has one machine and four coarse report intervals. Report times are not leak-onset times, and clean negatives are unreported windows, not verified healthy ones. On DSP, deterministic methods effectively have one run; only reservoir, HST and MemStream vary with the seed. The DSP seed-0 rows come from the full-length smoke run of commit `ef09b74`, the code that produced the other 72 rows.
+- AP now places tied scores in one threshold group (`docs/EXPLAINED.md` section 16). Synthetic and CMAPSS AP values here come from JSONL files generated with the previous tie handling; they were not recomputed. MetroPT uses the corrected metric.
 - Engine deviations from `docs/PLAN.md` and every v2 and v3 change are described in `docs/EXPLAINED.md`.

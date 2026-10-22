@@ -68,7 +68,10 @@ gap-aware windows, four reported leak intervals, detector baselines (Half-Space
 Trees and a shared-feature MemStream core), and predeclared detection,
 false-alarm and retention criteria. See [EXPLAINED section 16](docs/EXPLAINED.md#16-real-data-benchmark-metropt-3-protocol-fixed-before-any-result)
 for the protocol and its training-only calibration amendment. This is one
-machine with coarse reports, not a field-validation or revenue claim.
+machine with coarse reports, not a field-validation or revenue claim. Result:
+uEngram (DSP) keeps all 4 reports in live provenance (P3 pass) but detects 3 of
+4 and raises 14.1 false-alarm episodes per observed week (P1 and P2 fail); see
+[RESULTS](docs/RESULTS.md#metropt-3-real-compressor-protocol-in-docsexplainedmd-section-16).
 
 MetroPT-3 is distributed under CC BY 4.0: Davari et al., dataset
 [DOI:10.24432/C5VW3R](https://doi.org/10.24432/C5VW3R), description
