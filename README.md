@@ -14,7 +14,7 @@ A reference implementation and benchmark of a deterministic, fixed-budget memory
 
 ```bash
 export UV_CACHE_DIR=/home/kk/Backup/.cache/uv UV_PROJECT_ENVIRONMENT=/home/kk/Backup/venvs/uengram
-uv sync --extra cnn
+uv sync --extra cnn --extra baselines
 ```
 
 Run everything from the repository root. Long runs are tee'd to `~/.local/state/uengram/`.
@@ -24,12 +24,13 @@ Run everything from the repository root. Long runs are tee'd to `~/.local/state/
 ```bash
 mkdir -p ~/.local/state/uengram
 
-# tests (CNN test needs --extra cnn)
+# tests (cnn supplies PyTorch for CNN/MemStream; baselines supplies River/HST)
 uv run pytest -q
 
 # smoke runs
 uv run python -m bench.run_synth --quick --out /tmp/uengram_smoke.jsonl
 uv run python -m bench.run_cmapss --quick --out /tmp/uengram_cmapss_smoke.jsonl
+uv run python -m bench.run_metropt --quick --out ~/.local/state/uengram/metropt_smoke.jsonl
 
 # full synthetic benchmark: 10 seeds x 3 encoders x 10 methods
 uv run python -m bench.run_synth --seeds 0-9 --encoders dsp,ctx,cnn --jobs 2 --out results/synth_runs.jsonl 2>&1 | tee ~/.local/state/uengram/synth.log
@@ -40,6 +41,10 @@ uv run python -m bench.run_synth --seeds 0-4 --encoders dsp --sweep-budgets 64,1
 # CMAPSS FD001 (first run downloads ~12 MB into data/cmapss/)
 uv run python -m bench.run_cmapss --seeds 0-4 --encoders dsp,cnn --out results/cmapss_runs.jsonl 2>&1 | tee ~/.local/state/uengram/cmapss.log
 
+# MetroPT-3: 5 seeds x 2 encoders x 8 methods; first run downloads ~218 MB
+# The extracted data and cache require additional space (see EXPLAINED section 16).
+uv run python -m bench.run_metropt --seeds 0-4 --encoders dsp,cnn --jobs 2 --out results/metropt_runs.jsonl 2>&1 | tee ~/.local/state/uengram/metropt.log
+
 # tables
 uv run python -m bench.report --out docs/RESULTS.md
 ```
@@ -49,9 +54,25 @@ Keep `--jobs` at 2 or below; the host has about 1 GB of RAM headroom.
 ## Layout
 
 ```
-src/uengram/   library: stats, metrics, synth, encoders (dsp, ctx, cnn), ledger, store, baselines, engine, lifecycle, cmapss
-bench/         harness: provenance, evaluate, common, run_synth, run_cmapss, report
+src/uengram/   library: stats, metrics, synth, encoders, ledger, store, baselines, stream_baselines, engine, lifecycle, cmapss, metropt
+bench/         harness: provenance, evaluate, common, run_synth, run_cmapss, run_metropt, metropt_calibration, metropt_eval, report
 tests/         unit and behaviour tests
 results/       committed run outputs (JSONL)
 docs/          plan, explainer, results, improvement analysis, research notes, architecture notes
 ```
+
+## MetroPT-3 validation
+
+The real compressor benchmark has a fixed commissioning/calibration/test split,
+gap-aware windows, four reported leak intervals, detector baselines (Half-Space
+Trees and a shared-feature MemStream core), and predeclared detection,
+false-alarm and retention criteria. See [EXPLAINED section 16](docs/EXPLAINED.md#16-real-data-benchmark-metropt-3-protocol-fixed-before-any-result)
+for the protocol and its training-only calibration amendment. This is one
+machine with coarse reports, not a field-validation or revenue claim.
+
+MetroPT-3 is distributed under CC BY 4.0: Davari et al., dataset
+[DOI:10.24432/C5VW3R](https://doi.org/10.24432/C5VW3R), description
+[DOI:10.1038/s41597-022-01877-3](https://doi.org/10.1038/s41597-022-01877-3).
+The adapted MemStream core is based on
+[Stream-AD/MemStream](https://github.com/Stream-AD/MemStream), Apache-2.0;
+its license is included in `src/uengram/MemStream-LICENSE.txt`.

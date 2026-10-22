@@ -29,6 +29,7 @@ FAILURES = (
     ("2020-07-15T14:30", "2020-07-15T19:00"),
 )
 TRAIN_END = "2020-03-01T00:00"  # dataset recommendation: first month for training
+FIT_END = "2020-02-22T00:00"  # encoder fit, reference and baselines use windows ending before this
 
 
 def _failure_bounds() -> tuple[np.ndarray, np.ndarray]:

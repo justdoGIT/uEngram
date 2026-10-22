@@ -43,8 +43,11 @@ def average_precision(scores, labels_bool) -> float:
     order = np.argsort(-s, kind="stable")
     yy = y[order]
     tp = np.cumsum(yy)
-    prec = tp / np.arange(1, len(yy) + 1)
-    return float(np.sum(prec[yy]) / n_pos)
+    # A threshold selects the whole equal-score group, never an arbitrary
+    # prefix ordered by time or labels.
+    ends = np.r_[np.flatnonzero(s[order][1:] != s[order][:-1]), len(s) - 1]
+    gains = np.diff(np.r_[0, tp[ends]])
+    return float(np.sum(gains * tp[ends] / (ends + 1)) / n_pos)
 
 
 def _norm_w(w) -> np.ndarray:

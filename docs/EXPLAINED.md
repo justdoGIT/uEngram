@@ -481,21 +481,21 @@ Accuracy/F1 alone hides the imbalance; plain MSE between centroids ignores sprea
 ## 16. Real-data benchmark: MetroPT-3 protocol (fixed before any result)
 
 ### Plain words
-Synthetic data and the simulated CMAPSS engines cannot show that the memory works on a real machine. MetroPT-3 is seven months of logs from the air compressor of a metro train in Porto, with the operator's reports of four air leaks. Everything below (data, splits, labels, metrics and what counts as a pass) was written down and committed before the first run on the failure months, so the results cannot be tuned to the answers.
+Synthetic data and the simulated CMAPSS engines cannot show that the memory works on a real machine. MetroPT-3 is seven months of logs from the air compressor of a metro train in Porto, with four reported air-leak intervals. The original protocol was committed in `434eea3` before any detection result. Its first smoke stopped during training-only calibration; the amendment below resolves that failure before examining failure-month scores. Splits, labels, methods and P1–P3 are not tuned to test outcomes.
 
 ### Data and windows
 [MetroPT-3](https://archive.ics.uci.edu/dataset/791/metropt+3+dataset), 1 Feb to 1 Sep 2020, the 7 analog channels (TP2, TP3, H1, DV pressure, reservoirs, oil temperature, motor current) at about one sample per 10 s. The 8 binary valve channels are excluded: they are often constant within a window (zero spread) and mostly mirror the pressures and current. Windows are 60 samples (about 10 minutes), non-overlapping, and never span a logging gap longer than 60 s: 25,126 windows in 291 gap-free segments. Samples are treated as equally spaced (spacing 8 to 13 s).
 
 ### Splits
-- Encoder fit, step-inflation measurement (section 10c, groups = segments) and the frozen healthy reference (section 7c): windows ending before 22 Feb.
-- Alarm calibration: 22 Feb to 1 Mar. Every method's threshold is the split-conformal quantile at $\alpha=0.01$ of the scores of a fresh instance run over this week, after a 200-window warm-up (section 7b), so all alarms are set without labels.
+- Encoder fit and frozen healthy reference (section 7c): windows ending before 22 Feb. Step calibration uses only these commissioning windows, as specified in the amendment below.
+- Alarm calibration: windows wholly within 22 Feb to 1 Mar. Every method's threshold is the split-conformal quantile at $\alpha=0.01$ of calibration scores after a 200-window warm-up (250 for Half-Space Trees), without failure labels. Calibration and test use separate fresh model states; MemStream's fitted encoder and initial memory are shared by independent clones.
 - Test stream: 1 Mar to 1 Sep, 21,556 windows.
 
 ### Labels
 A window is positive when it overlaps one of the four reported air-leak intervals (144, 41, 287 and 27 windows). It is a clean negative when it lies outside every [report start − 24 h, report end + 48 h]: a leak develops before it is reported and persists until repaired. Other windows are not scored. Maintenance times in the published table are inconsistent (the second report's maintenance date precedes it) and are not used.
 
 ### Methods
-All methods see the same encoded windows (16-d latents; encoders `dsp`, deterministic, and `cnn`, seeds 0 to 4). Bounded stores use B = 256 (uEngram 192 + 64).
+All methods see the same encoded windows (16-d latents; encoders `dsp` and `cnn`, seeds 0 to 4). DSP encoding is deterministic; its repetitions exercise stochastic reservoir, HST and MemStream baselines and do not create independent machines. Item stores use B = 256 (uEngram 192 + 64). This is not a byte-equated comparison with trees or neural-network memory.
 - `naive`, `fifo`, `reservoir`, `reference_labelfree`, `uengram`, `uengram_frozen` as in the other benchmarks; uEngram with the measured step inflation and the frozen reference.
 - Half-Space Trees ([Tan et al. 2011](https://www.ijcai.org/Proceedings/11/Papers/254.pdf), River implementation): River defaults (10 trees, height 8, window 250), feature limits = per-dimension min and max of the encoder-fit latents, score then learn on every window.
 - MemStream ([Bhatia et al. 2022](https://arxiv.org/abs/2106.03837)), a port of the reference `memstream.py`: autoencoder Linear(16, 32) + tanh / Linear(32, 16) trained for 5,000 full-batch Adam steps (learning rate 0.01, input noise 0.001) on the first 256 encoder-fit windows, memory of 256 encodings initialised from them, score = minimum L1 distance to the memory, first-in-first-out memory update when score ≤ β. The reference picks β per dataset from labelled results; here β is the 99th percentile of the calibration-week scores against the initial memory, without updates.
@@ -503,13 +503,21 @@ All methods see the same encoded windows (16-d latents; encoders `dsp`, determin
 
 ### Metrics
 - Window AUROC and AP of each method's score, positives against clean negatives; for uEngram also of the health score.
-- Failure detected: at least one alarm window overlaps its report interval. Lead time: first alarm within [report start − 24 h, report end], relative to report start (descriptive).
-- False-alarm episodes: alarm windows among clean negatives, merged when less than 1 h apart, per week of clean-negative window time.
-- Retention (stores): failures with at least one window in a live item at the end of the stream.
-- Footprint and cost: items at end, writes, latency p99.
+- Failure detected: at least one alarm window overlaps its report interval. Signed lead time uses the window's **end**, when the alert becomes available: first alert in [report start − 24 h, report end], relative to report start. Negative means earlier. An early alert is an association, not proof of predicting the leak; it does not by itself satisfy report-overlap detection.
+- False-alarm episodes: alerts outside the buffered report intervals, merged when strictly less than 1 h apart, per week of observed clean-negative window time. Unreported windows are not independently verified healthy. Missing scores and HST's 250-window test warm-up are excluded from both scoring and observed exposure; logging gaps are not counted as observed uptime.
+- Retention (stores): failures represented by at least one absorbed window's provenance in a live item at stream end. This does not prove that a raw fault exemplar survives or that a query retrieves it.
+- Footprint and cost: live items, modelled persistent index/raw bytes and writes, ingest latency p99. HST/MemStream persistence and retention are n/a, not zero-cost detectors. MemStream's raw/encoded memory and encoder parameter bytes are recorded separately. Python RAM, encoder energy, real flash endurance and communication cost are not measured.
 
 ### Pass criteria (uEngram, `dsp` encoder)
 P1: all 4 failures detected. P2: at most 1 false-alarm episode per week. P3: all 4 failures retained at the end of the stream. The same numbers are reported for the `cnn` encoder and every baseline. A difference between methods counts only when its paired 95% bootstrap CI over seeds excludes 0; with the deterministic `dsp` encoder most methods do not vary with the seed, so `dsp` comparisons are single runs.
+
+### Pre-test amendment: commissioning innovation calibration
+The raw-latent estimator in section 10c requires warmed-up lag-38 pairs inside uninterrupted state runs. Training-only diagnosis found 2,658 fit windows in 26 logging segments, but abrupt-change segmentation produced 1,000 runs, longest 36: there are no valid lag-38 pairs. Assuming inflation 1 would conceal missing evidence. For this benchmark only, collect the actual standardized semantic-slot innovations in visit order from a commissioning engine, with step splits held off during the declared-healthy fit. Each item identity has its own sequence; merges and logging gaps restart it. Apply an EWMA with the engine's $\lambda=0.1$, skip its first $\lceil(2-\lambda)/\lambda\rceil=19$ visits, and pool the remaining vectors $Y$. Estimate $f_j=\frac{2-\lambda}{\lambda}[1.4826\,\mathrm{median}(|Y_j|)]^2$. This directly measures the null EWMA scale relative to unit independent innovations, without subtracting a persistent commissioning bias or requiring long raw-state dwells. The engine still clamps $f_j$ below at 1. Fit each uEngram variant separately; fewer than 10 warmed-up samples is an error. The original synthetic and CMAPSS calibration paths remain unchanged.
+
+This empirical variance match does **not** prove a $\chi^2$ sequential false-alarm rate under arbitrary dependence or non-Gaussian noise. The alarm calibration's exchangeability condition is also unverified. P2 therefore measures the actual reported-interval false-alarm burden rather than asserting a nominal guarantee.
+
+Average precision now groups equal scores at one threshold. A constant score must have AP equal to prevalence, independent of label order; the earlier implementation did not. Historical synthetic/CMAPSS JSONL files are retained as originally generated and have not been recomputed for this correction. MetroPT uses the corrected metric.
+
 
 ### Where in code
 `src/uengram/metropt.py` (download, cache, windows, labels), `src/uengram/stream_baselines.py` (Half-Space Trees, MemStream), `bench/run_metropt.py`.

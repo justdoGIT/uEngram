@@ -17,6 +17,13 @@ SYNTH_COLS = ["items_end", "writes", "write_reduction_pct", "event_recall", "sei
 CMAPSS_COLS = ["items_end", "writes", "auroc", "ap", "health_auroc", "health_ap", "rul_rmse",
                "rul_rmse_health", "eol_retention", "mmd2_current"]
 PAIRED = ["event_recall", "auroc", "ap", "false_flag_rate_era1", "stale_at1", "mmd2_current", "writes"]
+METROPT_COLS = ["auroc", "ap", "health_auroc", "health_ap", "failures_detected",
+                "lead_hours", "false_alarm_per_week", "failures_retained", "items_end", "writes", "lat_p99_us"]
+METROPT_RESOURCES = ["index_bytes", "pinned_raw_bytes"]
+METROPT_PAIRED = METROPT_COLS + METROPT_RESOURCES
+METROPT_ORDER = ["naive", "fifo", "reservoir", "reference_labelfree", "uengram",
+                 "uengram_frozen", "hst", "memstream"]
+METROPT_DETECTORS = {"hst", "memstream"}
 SWEEP_COLS = ["items_end", "writes", "event_recall", "seizure_recall", "auroc", "stale_at1", "mmd2_current"]
 PREV, CUR = "v2", "v3"  # the previous benchmark lives in results/<PREV>/
 PREV_SYNTH = ["auroc", "ap", "f1", "event_recall", "seizure_recall", "false_flag_rate_era0",
@@ -65,6 +72,87 @@ def table(methods_metrics, cols, order):
         cells = [cell(list(mm[c].values()), meth, c) if c in mm else "n/a" for c in cols]
         lines.append(f"| {meth} | {n} | " + " | ".join(cells) + " |")
     return "\n".join(lines)
+
+
+def metropt_table(methods_metrics, cols, order, encoder):
+    """Render seed variability without treating deterministic repeats as independent data."""
+    lines = ["| method | n | " + " | ".join(cols) + " |", "|" + "---|" * (len(cols) + 2)]
+    for meth in order:
+        if meth not in methods_metrics:
+            continue
+        mm = methods_metrics[meth]
+        n = len(next(iter(mm.values())))
+        cells = []
+        for metric in cols:
+            if metric not in mm:
+                cells.append("n/a")
+                continue
+            if meth in METROPT_DETECTORS and metric in (
+                    "failures_retained", "items_end", "writes", "index_bytes", "pinned_raw_bytes"):
+                cells.append("n/a")
+                continue
+            values = [v for v in mm[metric].values() if np.isfinite(v)]
+            cells.append(fmt(float(np.mean(values))) if encoder == "dsp" and values
+                         else "n/a" if not values else cell(values, meth, metric))
+        lines.append(f"| {meth} | {n} | " + " | ".join(cells) + " |")
+    return "\n".join(lines)
+
+
+def metropt_paired_table(mm, order, encoder):
+    lines = ["| method (uEngram minus method) | " + " | ".join(METROPT_PAIRED) + " |",
+             "|" + "---|" * (len(METROPT_PAIRED) + 1)]
+    ref = mm.get("uengram", {})
+    for meth in order:
+        if meth == "uengram" or meth not in mm:
+            continue
+        metrics = []
+        for metric in METROPT_PAIRED:
+            if meth in METROPT_DETECTORS and metric in (
+                    "failures_retained", "items_end", "writes", "index_bytes", "pinned_raw_bytes"):
+                metrics.append("n/a")
+                continue
+            if metric not in ref or metric not in mm[meth]:
+                metrics.append("n/a")
+                continue
+            seeds = sorted(set(ref[metric]) & set(mm[meth][metric]))
+            if not seeds:
+                metrics.append("n/a")
+                continue
+            diff = [ref[metric][seed] - mm[meth][metric][seed] for seed in seeds
+                    if np.isfinite(ref[metric][seed]) and np.isfinite(mm[meth][metric][seed])]
+            if encoder == "dsp":
+                metrics.append(fmt(float(np.mean(diff))) if diff else "n/a")
+                continue
+            d, lo, hi = paired_bootstrap_diff(
+                [ref[metric][seed] for seed in seeds],
+                [mm[meth][metric][seed] for seed in seeds])
+            if not np.isfinite(d):
+                metrics.append("n/a")
+            else:
+                star = "*" if lo > 0 or hi < 0 else ""
+                metrics.append(f"{fmt(d)} [{fmt(lo)}, {fmt(hi)}]{star}")
+        lines.append(f"| {meth} | " + " | ".join(metrics) + " |")
+    return "\n".join(lines)
+
+
+def metropt_criteria(rows):
+    """Return P1-P3 outcomes only when deterministic DSP repetitions agree."""
+    uengram = [row for row in rows if row["method"] == "uengram"]
+    if not uengram:
+        return "not run (no uEngram DSP rows)"
+    keys = ("failures_detected", "false_alarm_per_week", "failures_retained")
+    if any(not all(np.isfinite(row["metrics"].get(key, float("nan"))) for key in keys)
+           for row in uengram):
+        return "not assessable (one or more criteria metrics are missing)"
+    outcomes = [(row["metrics"][keys[0]] >= 4,
+                 row["metrics"][keys[1]] <= 1,
+                 row["metrics"][keys[2]] >= 4) for row in uengram]
+    if any(result != outcomes[0] for result in outcomes[1:]):
+        return "not assessable (DSP repetition outcomes disagree)"
+    labels = ("P1 all 4 detected", "P2 ≤1 false-alarm episode per clean week",
+              "P3 all 4 represented in live item provenance")
+    return "; ".join(f"{label}: {'PASS' if passed else 'FAIL'}"
+                     for label, passed in zip(labels, outcomes[0]))
 
 
 def paired_table(mm, order):
@@ -123,6 +211,7 @@ def prev_table(prev_rows, cur_rows, enc, metrics, method="uengram"):
 
 def build(runs_dir: str) -> str:
     synth, cmapss = load(f"{runs_dir}/synth_runs.jsonl"), load(f"{runs_dir}/cmapss_runs.jsonl")
+    metropt = load(f"{runs_dir}/metropt_runs.jsonl")
     sweep = load(f"{runs_dir}/synth_sweep.jsonl")
     prev_synth = load(f"{runs_dir}/{PREV}/synth_runs.jsonl")
     prev_cmapss = load(f"{runs_dir}/{PREV}/cmapss_runs.jsonl")
@@ -155,6 +244,44 @@ def build(runs_dir: str) -> str:
                     paired_table(g[(ds, enc)], order), ""]
         if not g:
             out += [f"## {title}", "", "not run", ""]
+    out += ["## MetroPT-3", "",
+            "The benchmark scores four reported leak intervals. A positive window overlaps a report interval; "
+            "clean negatives exclude each report interval plus 24 h before and 48 h after, and intervening "
+            "windows are unscored. Detection requires an alarm overlapping a report interval; lead time uses "
+            "the first available alarm (window end) from 24 h before report start through report end. "
+            "Negative lead means earlier, not proven fault prediction. False-alarm episodes count only "
+            "alarms on clean negatives (alerts strictly less than 1 h apart are merged), divided by observed "
+            "clean-negative window time in weeks, excluding logging gaps and unavailable detector scores. "
+            "HST's first 250 test windows are warm-up and unscored. Unreported negatives are not verified "
+            "healthy; reports do not establish exact leak onset or repair times.", "",
+            "Rows are grouped by encoder. CNN cells show mean and 95% bootstrap CI across seeds; DSP cells "
+            "show seed means without inferential intervals. DSP encoding is deterministic; stochastic "
+            "baselines can vary across seeds, but repetitions do not provide dataset-level uncertainty. "
+            "Paired tables show uEngram minus each method; DSP differences have no inferential intervals. "
+            "`n/a` means unavailable or "
+            "inapplicable; HST and MemStream are detector-only, so store retention, writes, and persistent "
+            "store footprint are not reported as zero. P3 tests whether live item provenance still represents "
+            "each reported event; it does not establish that raw evidence remains retrievable.", ""]
+    mg = group(metropt)
+    if not mg:
+        out += ["not run", ""]
+    else:
+        for (ds, enc) in sorted(mg):
+            if ds != "metropt":
+                continue
+            rows = [r for r in metropt if r["dataset"] == ds and r["encoder"] == enc]
+            out += [f"### Encoder `{enc}`", "", metropt_table(mg[(ds, enc)], METROPT_COLS, METROPT_ORDER, enc), ""]
+            if any(any(metric in r["metrics"] for metric in METROPT_RESOURCES) for r in rows):
+                out += ["#### Persistent store footprint (bytes)", "",
+                        metropt_table(mg[(ds, enc)], METROPT_RESOURCES, METROPT_ORDER, enc), ""]
+            if enc == "dsp":
+                out += ["#### uEngram DSP pass criteria", "", metropt_criteria(rows), ""]
+            out += ["#### Paired differences (uEngram minus method)", "",
+                    ("`*` marks a paired 95% bootstrap CI excluding zero; these intervals reflect "
+                     "between-seed variability, not uncertainty across datasets. DSP has no meaningful CI."),
+                    "", metropt_paired_table(mg[(ds, enc)], METROPT_ORDER, enc), ""]
+        if not any(ds == "metropt" for ds, _ in mg):
+            out += ["not run", ""]
     out += ["## Budget sweep (synthetic, DSP encoder)", "", sweep_table(sweep) if sweep else "not run", ""]
     for title, prev, cur, metrics in (("synthetic", prev_synth, synth, PREV_SYNTH),
                                       ("CMAPSS", prev_cmapss, cmapss, PREV_CMAPSS)):
