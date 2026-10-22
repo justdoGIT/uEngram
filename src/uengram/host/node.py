@@ -33,6 +33,8 @@ from .events import EventModel
 from .features import windows
 
 PHASES = 4
+PRESSURES = ("cpu_pressure", "mem_pressure", "io_pressure")
+SAT_FLOOR = 0.01  # 1 % of the time stalled is never flagged
 KIND_NAME = {CAND: "candidate", EPI: "episodic", SEM: "semantic", SUPER: "superseded"}
 LEVELS = {"cpu_busy": "angular", "cpu_pressure": "angular", "mem_used": "angular",
           "mem_pressure": "angular", "io_pressure": "angular", "ipc": "log", "freq_ratio": "log",
@@ -61,6 +63,7 @@ class NodeMemory:
         self.alarm_threshold = float("inf")
         self._prev: tuple[int, float] | None = None  # (window step, score) for the on-delay
         self.alarmed_states: dict[int, float] = {}  # item id -> window start of its first alarm
+        self.sat_bound = {n: SAT_FLOOR for n in PRESSURES}
 
     # -- commissioning ---------------------------------------------------
     @classmethod
@@ -93,7 +96,19 @@ class NodeMemory:
         for c, seq in zip(copies, seqB[1:]):
             recs += c._ingest(seq)
         persist = np.array([r["persistent_score"] for r in recs], dtype=np.float64)
+        m, need = int(np.isfinite(persist).sum()), int(np.ceil(2.0 / alpha)) - 1
+        if m < need:  # the conformal quantile would be +inf: alarms silently off
+            raise ValueError(f"{m} calibration scores; alpha={alpha} needs at least {need}. "
+                             f"Record longer or raise alpha (latent alpha is alpha/2).")
         node.alarm_threshold = conformal_threshold(persist, alpha / 2)
+        # Saturation flags name the resource under contention. D2 ranks the most
+        # *surprising* measurements, and on a quiet node any job moves power and
+        # clock first (measured: a 39 % memory stall on hp got 1 % of D2), so the
+        # USE saturation signals are also checked against the largest value of
+        # the declared-healthy run (a rank bound at level 1/(m+1) per resource).
+        cols = [enc.names.index(n) for n in PRESSURES]
+        seen = np.sin(np.vstack([seqA[0].F[:, cols], seqB[0].F[:, cols]])) ** 2
+        node.sat_bound = {n: float(max(np.nanmax(seen[:, j]), SAT_FLOOR)) for j, n in enumerate(PRESSURES)}
         single = np.array([r["score"] for r in recs], dtype=np.float64)
         node.commission_report = {
             "host": node.host, "ticks": len(ticks), "window_s": K,
@@ -102,6 +117,7 @@ class NodeMemory:
             "single_window_q": float(np.nanquantile(single, 1 - alpha / 2)),
             "encoder": enc.fit_report, "events": ev.report(), "slots": node.slot_counts(),
             "calibration_event_alarm_share": float(np.mean([r["alarm_event"] for r in recs])),
+            "saturation_bounds": node.sat_bound,
         }
         return node
 
@@ -136,7 +152,9 @@ class NodeMemory:
 
     def _one(self, seq, i: int, z, x, n_imp: int) -> dict:
         eng = self.eng
-        t_step = int(round((seq.t0[i] - self.t_origin) / self.K))
+        # phase-shifted sequences (offsets K/4..3K/4) map to the step of the
+        # phase-0 window they start in, so consecutive windows stay consecutive
+        t_step = int(np.floor((seq.t0[i] - self.t_origin) / self.K + 1e-9))
         ref = self._nearest_semantic(z)
         contrib = self.enc.attribution(x, z, eng.mu[ref[0]], ref[1]) if ref else None
         res = eng.ingest(z, t_step, raw_idx=t_step)
@@ -166,6 +184,7 @@ class NodeMemory:
         rec["levels"]["thermal_residual"] = float(x[self.enc.i_thermal] * self.enc.scale[self.enc.i_thermal]
                                                  + self.enc.med[self.enc.i_thermal])
         rec["alarm"] = rec["alarm_latent"] or rec["alarm_event"]
+        rec["saturation"] = {n: rec["levels"][n] for n in PRESSURES if rec["levels"][n] > self.sat_bound[n]}
         # uEngram promotes a persistent new state to normal (5 of 8 windows), so a
         # long fault stops alarming once learned. The memory keeps when a state
         # was first seen alarming, and reports it on every later visit.

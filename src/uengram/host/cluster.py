@@ -2,8 +2,9 @@
 
 Placement advice is advisory and explainable, from the latest window of each
 node: a node is listed as `avoid` when its window alarmed (novel state or an
-error counter fired) or its current state was first learned during an alarm
-(a known-bad state that uEngram has since accepted as a regime); otherwise
+error counter fired), a pressure signal exceeds everything seen during
+commissioning (`saturation`), or its current state was first learned during an
+alarm (a known-bad state that uEngram has since accepted as a regime); otherwise
 headroom = idle share times the share of time no task stalled on CPU, memory or I/O:
     headroom = (1 - cpu_busy) * (1 - max(cpu_pressure, mem_pressure, io_pressure))
 Nodes are ranked by headroom. Nothing is actuated.
@@ -56,6 +57,8 @@ def format_node(st: dict) -> str:
         f"  pressure cpu {lv.get('cpu_pressure', 0):.1%} mem {lv.get('mem_pressure', 0):.1%}"
         f" io {lv.get('io_pressure', 0):.1%}  mem used {lv.get('mem_used', float('nan')):.0%}",
         f"  novelty driver: {_top_modality(st)}; slots {st['slots']}",
+        *([f"  saturated beyond commissioning: "
+           + ", ".join(f"{k} {v:.1%}" for k, v in st["saturation"].items())] if st.get("saturation") else []),
         *([f"  this state was first seen during an alarm at "
            f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(st['state_alarmed_at']))}"]
           if st.get("state_alarmed_at") else []),
@@ -67,7 +70,7 @@ def format_node(st: dict) -> str:
 
 
 def avoid(st: dict) -> bool:
-    return bool(st["alarm"] or st.get("state_alarmed_at"))
+    return bool(st["alarm"] or st.get("state_alarmed_at") or st.get("saturation"))
 
 
 def format_cluster(states: dict[str, dict]) -> str:

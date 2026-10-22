@@ -31,7 +31,7 @@ flowchart LR
 | only whole devices with a `device` link; only NICs with a `device` link | partitions, loop, zram, dm and lo/bridges would count the same bytes twice |
 | `core_throttle_count` deduplicated per physical core, `package_throttle_count` per package | every SMT sibling exposes the same core counter |
 | one perf group per CPU: cycles (leader), instructions, ref-cycles, branch-misses, cache-misses | a group is scheduled as a unit, so ratios inside it are co-temporal. Three fixed + three programmable counters fit even where the NMI watchdog holds fixed counter 1 (4 of 5 nodes), so nothing is multiplexed. `ref-cycles` can only use fixed counter 2: a second system-wide group that needs it (a second collector, `perf stat -a`) makes the two alternate at ~50 % each (observed: `pmu_running` 0.499), and the counts become scaled estimates. Below 25 % running in any tick of a window the PMU attributes of that window are missing, not wrong. |
-| read time and collector CPU time recorded per tick | measured: ~0.5 ms to read all sources, 0.54 ms CPU per tick on msi (0.05 % of one core); see §7 |
+| read time and collector CPU time recorded per tick | measured over ~1 h on all five nodes: 0.07–0.23 % of one core, 0.5–2 ms to read every source (p50); see §7 |
 | collector is stdlib-only | workers have no numpy; recording needs only `python3` |
 
 Privilege: system-wide counters need `perf_event_paranoid <= 0` or `CAP_PERFMON`, and RAPL `energy_uj` is root-only since CVE-2020-8694. The proposal's `sysctl kernel.perf_event_paranoid=1` is not enough: level 1 still forbids CPU-wide events for unprivileged users (`perf-security.rst`). The service runs as `kk` with exactly `CAP_PERFMON` and `CAP_DAC_READ_SEARCH`, granted by `setpriv` from runit; no sysctl changes.
@@ -70,13 +70,14 @@ Not attributes (all are in `schema.EXCLUDED` with the reason): loadavg and PSI a
 3. **Temperature is mostly a function of power.** A one-pole RC model `C dT/dt = P − (T − T_amb)/R` with power constant within a window gives exactly, for window means,
    $$\bar T_w = \rho\,\bar T_{w-1} + (1-g)R\,P_w + (g-\rho)R\,P_{w-1} + (1-\rho)T_{amb},\quad \rho = e^{-K/\tau},\ g = \tfrac{\tau}{K}(1-\rho),$$
    so `T_w = c0 + c1 T_{w-1} + c2 P_w + c3 P_{w-1}` with steady-state gain `(c2+c3)/(1−c1) = R`. It is fitted by trimmed least squares and only the residual enters the state (a hot window whose residual exceeds 5 robust scales is not used as context for the next one). Raw temperature would duplicate pkg_power; the residual is what power does not explain: cooling, dust, ambient. The fit also reports τ, R (°C/W) and T_amb per node. Test: τ, R, T_amb recovered within 5 %, 2 %, 0.3 °C.
-4. **A channel that never moved during commissioning is invisible to PCA alone.** Its training variance is 0, so it gets no loading. The latent is 15 PCA coordinates plus one coordinate for the squared prediction error Q = ‖x − x̂‖² of the discarded subspace (Jackson & Mudholkar 1979), made near-Gaussian by its cube root (Wilson–Hilferty) and robustly standardised. Test: page scanning that never happened during commissioning moves the latent by > 5 noise units.
+4. **A channel that never moved during commissioning is invisible to PCA alone.** Its training variance is 0, so it gets no loading. The latent is 15 PCA coordinates plus one coordinate for the squared prediction error Q = ‖x − x̂‖² of the discarded subspace (Jackson & Mudholkar 1979), taken as √Q and robustly standardised. √Q is linear in the deviation, like the PCA coordinates, so D² grows with the square of a deviation in either subspace (√(2Q/g) ≈ N(√(2h−1), 1) under the null, Fisher; the threshold is conformal, so the null shape matters little). The first version used the cube root (Wilson–Hilferty, closer to Gaussian under the null), which grows D² only as deviation^(2/3) and so under-weights exactly the never-seen channels this coordinate exists for. Test: page scanning that never happened during commissioning moves the latent by > 5 noise units.
 5. **Zero-inflated features break noise whitening.** Their difference-based noise variance is 0, so whitening would amplify them without bound. Each feature has a floor (its smallest meaningful change: 0.1 % of time, 1 % of a ratio, 5 % of a rate, one event, 0.1 °C); the floor is the minimum robust scale and is added to the noise covariance (`stats.robust_noise_cov(..., floor=)`), so σ0 = 1 by construction (kept larger where the empirical value is).
 6. **Overlapping windows invalidate the engine's sequential statistics.** The MEWMA step detector and M-of-N promotion assume independent consecutive innovations; 75 % overlap would correlate them. The engine sees non-overlapping 32 s windows. For fitting and calibration the commissioning run is cut at four phase offsets (0, 8, 16, 24 s), giving four non-overlapping sequences; the noise covariance uses lag-1 differences inside each sequence only.
 7. **A window that straddles a job start is a mixture of two states.** It is novel on its own, and on the synthetic stream the 99.5 % quantile of single-window scores was 17,229 (transitions) against 37 for persistent novelty. Alarms use an on-delay: the score is `min(D²_w, D²_{w−1})` and the threshold is set conformally on that score (research-ad-eval.md §6). Cost: an anomaly shorter than two windows (64 s) does not raise a latent alarm; error counters still alarm immediately.
 8. **α is split** between the latent and the four counters (Bonferroni): 0.5 % latent, 0.125 % per counter, so the per-window false-alarm rate is ≤ 1 % under the calibration assumptions (exchangeable, healthy commissioning). Marginal, not per-stream.
 9. **Novelty is not badness.** uEngram promotes a state that persists (5 hits in 8 windows) to normal, so a long fault stops alarming once learned. The memory keeps the time each state first alarmed (`state_alarmed_at`, carried through merges) and the cluster view keeps such nodes at `avoid`.
 10. **Commissioning is declared healthy**, as in uEngram v2: any state seen in 20 windows anywhere in the fit part becomes semantic; afterwards the sustained-dwell rule applies.
+11. **D² ranks surprise, not severity, so a saturated resource can be outranked.** On a quiet node a new job's first effect is on power and clock (measured on hp: a 39 % memory-pressure window still put only 1 % of D² on the memory modality, because `pkg_power` moved more in whitened units). A `saturation` flag is reported alongside D² whenever `cpu_pressure`, `mem_pressure` or `io_pressure` exceeds the largest value observed in the declared-healthy commissioning run (floored at 1 %), independent of whether that window's D² cleared the alarm threshold; `cluster.py` treats a saturated node as `avoid` the same as an alarm.
 
 ## 5. Changes to the proposal (`BuildinguEngramforVoidLinuxCluster.md`)
 
@@ -93,7 +94,33 @@ Not attributes (all are in `schema.EXCLUDED` with the reason): loadavg and PSI a
 
 What this gives the cluster today: per node, a bounded memory of its operating states with when they started, how often they recur, their power and energy per instruction (`state_profile`), a calibrated alarm with the modality that drove it, error-counter alarms, and a placement order (`uengram-host cluster`) that skips nodes in alarmed or known-bad states and ranks the rest by headroom = (1 − busy)(1 − max pressure).
 
-## 6. Operation
+## 6. Validation
+
+**Synthetic (`bench/run_host_synth.py`, 20 seeds, `results/host_synth.jsonl`).** 4 h commissioning + 2 h test per seed, four faults per run at random onsets: a memory thrash (memory), a memory-bound spin loop (compute), a cooling fault at unchanged power (power_thermal), one OOM kill (count model).
+
+| metric | mean [95 % CI] |
+|---|---|
+| false alarm rate (normal windows) | 0.0057 [0.0036, 0.0076] |
+| thrash / spin / hot / oom detected | 1.00 / 1.00 / 1.00 / 1.00 |
+| thrash / spin / hot / oom delay | 40.0 / 39.1 / 55.3 / 21.9 s |
+| thrash / spin / hot / oom attribution correct | 1.00 / 1.00 / 1.00 / 1.00 |
+| thermal R recovered (truth 0.8 °C/W) | 0.791 |
+
+**Live fleet (`~/scripts/uengram-inject.sh` on 2026-10-22, 90 min commissioning per node, ticks and ground truth under `~/.local/state/uengram-host/fleet/` and `inject.log`).** Five real faults, one per node, injected through cgroup-confined processes and a plain TCP stream (`~/scripts/uengram-inject-node.sh`):
+
+| fault | node | detected | delay | top modality | saturation |
+|---|---|---|---|---|---|
+| spin (all CPUs busy) | hp | yes | 44 s | compute (`branch_mpki`, `llc_mpki`, `freq_ratio`) | — |
+| 1 GB cgroup, 2.5 GB working set (swap thrash) | hp | yes | 39 s | compute† | mem_pressure |
+| OOM kill (256 MB cgroup, no swap) | hp | no | — | — | — |
+| TCP stream, hp → lenovo | hp→lenovo | yes (on lenovo) | 42 s | compute† | cpu_pressure |
+| sequential O_DIRECT disk read | gigabyte | yes | 64 s | storage (`disk_read_bps`, `disk_read_iops`, `disk_busy`) | io_pressure |
+
+† On hp's weak i7 generation the thrash's dominant *novel* signal was `pkg_power`/`freq_ratio`, not the memory counters, so `modality_d2` named compute/power_thermal; the `saturation` flag (mem_pressure beyond anything seen in 90 minutes) is what correctly named the resource. On lenovo (i3-3110M, no hardware TCP offload), receiving the stream in a single Python process was genuinely CPU-bound — `cpu_busy_j/cpu_total_j` rose from ~2 % to 13 % — so `compute` is an accurate attribution for *this* receiver, and the `cpu_pressure` saturation flag is the right label for the actual bottleneck.
+
+The OOM miss is explained, not silently wrong: the fault lasted one 32 s window with 2 windows overlapping it; the event model's mid-p for one OOM kill after 98 windows without one is 0.0026, just above the Bonferroni-split latent level used here (α/2/4 = 0.00125 at α=0.01). A longer commissioning run (more `n`) or a less conservative split (α and the Bonferroni divisor are `NodeMemory` constructor arguments) lowers that bar; §4.11 states the tradeoff.
+
+## 7. Operation
 
 ```bash
 # record a commissioning run (as root via runit, or by hand)

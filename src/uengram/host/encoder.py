@@ -14,9 +14,14 @@ Pipeline, fitted on a commissioning run declared healthy:
    feature's smallest meaningful change, and median imputation of missing values.
 3. PCA to d-1 dimensions (Hotelling subspace) plus one coordinate for the
    squared prediction error Q = |x - x_hat|^2 of the discarded subspace,
-   normalised by its cube root (Wilson-Hilferty: (g chi2_h)^(1/3) is close to
-   Gaussian) and robustly standardised. Without Q, a change confined to
-   directions that were quiet during commissioning would be invisible.
+   taken as sqrt(Q) and robustly standardised. sqrt keeps this coordinate
+   linear in the deviation, like the PCA coordinates, so D^2 grows as the
+   square of a deviation in either subspace (a cube root, Wilson-Hilferty,
+   is closer to Gaussian under the null but grows only as deviation^(2/3) and
+   let a memory thrash on an idle node score below its power change); under
+   the null sqrt(2Q/g) is close to N(sqrt(2h-1), 1) (Fisher), and the alarm
+   threshold is calibrated conformally anyway. Without Q, a change confined
+   to directions that were quiet during commissioning would be invisible.
 4. Noise whitening with the robust within-state noise covariance from
    consecutive-window differences plus the resolution floor, so correlated
    features count once and the engine's diagonal Gaussian math applies.
@@ -104,7 +109,7 @@ class HostEncoder:
         X, _ = self.standardize(F)
         self.pca = Whitener().fit(X, self.d - 1)
         Zp = self.pca.transform(X)
-        q = np.cbrt(self._spe(X))
+        q = np.sqrt(self._spe(X))
         self.q_med = float(np.median(q))
         self.q_scale = max(MAD_K * float(np.median(np.abs(q - self.q_med))), 1e-6)
         Y = np.column_stack([Zp, (q - self.q_med) / self.q_scale])
@@ -151,7 +156,7 @@ class HostEncoder:
         """-> (Z [W,d], X [W,p] standardised features, n_imputed [W], new thermal state)."""
         F, state = self._with_thermal(seq, state)
         X, n_imp = self.standardize(F)
-        q = np.cbrt(self._spe(X))
+        q = np.sqrt(self._spe(X))
         Y = np.column_stack([self.pca.transform(X), (q - self.q_med) / self.q_scale])
         return Y @ self.W, X, n_imp, state
 
