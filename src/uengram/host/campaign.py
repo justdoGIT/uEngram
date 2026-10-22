@@ -60,8 +60,11 @@ NODES = {
     # lenovo: no power faults, its RAPL power-limit zone is disabled by firmware (enabled=0, writes return EIO)
     "lenovo": {"ssh": "lenovo-worker", "ip": "192.168.1.4",
                "faults": ["cpu", "mem", "oom", "disk", "net", "netem", "leak"]},
+    # gigabyte: no power faults. dev-setup's cpu-cap service holds every CPU at 1.5 GHz (issue #200), where
+    # the package draws 6.8 W under full load; PL1 at 30 % of TDP is 16 W, so the cap never binds
+    # (measured: the reference build took 70.5-70.8 s and 480 J at PL1 84, 35 and 25 W).
     "gigabyte": {"ssh": "gigabyte-worker", "ip": "192.168.1.6",
-                 "faults": ["cpu", "mem", "oom", "disk", "net", "power", "netem", "leak"]},
+                 "faults": ["cpu", "mem", "oom", "disk", "net", "netem", "leak"]},
 }
 
 
