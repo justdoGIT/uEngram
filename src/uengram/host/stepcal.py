@@ -17,10 +17,13 @@ windows (20 minutes of one host state without a job start or stop) between
 abrupt changes; this one measures exactly what the detector sees. A recorder
 copy of the commissioning engine runs over the declared-healthy fit windows
 with step splits held off; each semantic slot's standardised innovations are
-collected in visit order; a merge or a gap in the window sequence restarts
-the run (a gap restarts every run). EWMA(lam) of each run after b warm-up
-innovations; f_j = b * (1.4826 median |EWMA_j|)^2. This matches a scale, it
-does not prove a sequential false-alarm rate under arbitrary dependence.
+collected in visit order; a merge restarts the slot's run, a gap of more than
+b windows (10 minutes) restarts every run. Shorter gaps do not: the engine's
+MEWMA carries on across them, and a node that misses a tick every few
+minutes (hp before collector.AsyncWriter) would otherwise have no run long
+enough to measure. EWMA(lam) of each run after b warm-up innovations;
+f_j = b * (1.4826 median |EWMA_j|)^2. This matches a scale, it does not prove
+a sequential false-alarm rate under arbitrary dependence.
 """
 from __future__ import annotations
 
@@ -77,8 +80,9 @@ def calibrate(Z: np.ndarray, t_step: np.ndarray, cfg: EngramConfig, sigma0: np.n
     window steps t_step), fed through an engine configured like the real
     commissioning (`cfg` incl. its declared-normal promotion rule)."""
     rec = _Recorder(replace(cfg, use_step_detect=True), Z.shape[1], sigma0, raw_bytes)
+    max_gap = int(np.ceil((2.0 - cfg.step_lambda) / cfg.step_lambda))
     for i, z in enumerate(Z):
-        if i and t_step[i] != t_step[i - 1] + 1:
+        if i and t_step[i] - t_step[i - 1] > max_gap:
             rec.restart(rec.item_id[rec.item_id >= 0])
         rec.ingest(z, int(t_step[i]), int(t_step[i]))
         for ev in rec.drain_events():
