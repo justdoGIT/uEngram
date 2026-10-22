@@ -1,12 +1,13 @@
 """uengram-host command line.
 
   probe                       check every source and print one tick
-  record  --out F [--seconds] write ticks to a JSONL file (stdlib only; for commissioning)
-  commission --ticks F --model M   fit encoder, seed memory, calibrate alarms
-  run     --model M            online: tick, window, encode, remember; state file + events
+  record  [--out F | --spool D] [--seconds]   write ticks to a JSONL file or a daily spool (stdlib only)
+  commission --ticks F... --model M   fit encoder, seed memory, calibrate alarms
+  run     --model M [--spool D]  online: tick, window, encode, remember; state file + events
   replay  --model M --ticks F  offline: feed recorded ticks through a commissioned model
   status  [--state F]          print a node state file
   cluster --nodes ...          collect node states over ssh and print the cluster view
+  campaign plan|tick|status|report --dir D   validation campaign (uengram.host.campaign)
 """
 from __future__ import annotations
 
@@ -34,11 +35,15 @@ def _probe(args) -> int:
 
 
 def _record(args) -> int:
-    from .collector import JsonlSink, host_meta, open_collector, tick_loop
+    from .collector import JsonlSink, SpoolSink, host_meta, open_collector, tick_loop
     ticker = open_collector(pmu=True)
-    out = args.out or os.path.join(DEFAULT_DIR, f"ticks-{socket.gethostname()}.jsonl")
-    sink = JsonlSink(out, host_meta(ticker, args.period))
-    print(f"recording to {out}", file=sys.stderr, flush=True)
+    meta = host_meta(ticker, args.period)
+    if args.spool:
+        sink, where = SpoolSink(os.path.expanduser(args.spool), meta), args.spool
+    else:
+        where = args.out or os.path.join(DEFAULT_DIR, f"ticks-{socket.gethostname()}.jsonl")
+        sink = JsonlSink(where, meta)
+    print(f"recording to {where}", file=sys.stderr, flush=True)
     try:
         tick_loop(ticker, sink, args.period, args.seconds)
     finally:
@@ -53,6 +58,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("probe")
     r = sub.add_parser("record")
     r.add_argument("--out")
+    r.add_argument("--spool", help="directory of daily tick files (replaces --out)")
     r.add_argument("--seconds", type=float)
     r.add_argument("--period", type=float, default=1.0)
     from .cli_model import add_model_commands

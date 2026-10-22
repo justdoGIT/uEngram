@@ -14,11 +14,16 @@ package temperature and power it needs are returned as context.
 """
 from __future__ import annotations
 
+import gzip
+import json
+from array import array
 from dataclasses import dataclass
 
 import numpy as np
 
 from . import schema
+
+Columns = dict[str, np.ndarray]
 
 PMU_FIELDS = ("pmu_inst", "pmu_cyc", "pmu_ref", "pmu_brmiss", "pmu_llcmiss")
 # Scaled counts are an estimate when the group shares the PMU (two system-wide
@@ -43,11 +48,42 @@ class WindowBatch:
         return len(self.t0)
 
 
-def tick_columns(ticks: list[dict]) -> dict[str, np.ndarray]:
+def tick_columns(ticks: list[dict]) -> Columns:
     cols = {"t": np.array([r["t"] for r in ticks], dtype=np.float64)}
     for f in schema.TICK_FIELDS:
         cols[f] = np.array([np.nan if r.get(f) is None else r[f] for r in ticks], dtype=np.float64)
     return cols
+
+
+def read_columns(paths: list[str]) -> tuple[dict, Columns]:
+    """Stream tick files (JSONL, optionally .gz) into float64 columns, 8 bytes
+    per value: three days of 1 Hz ticks are ~90 MB instead of ~600 MB of dicts.
+    Truncated lines are skipped; rows are returned in time order."""
+    meta: dict = {}
+    buf = {f: array("d") for f in ("t", *schema.TICK_FIELDS)}
+    nan = float("nan")
+    for p in paths:
+        with (gzip.open(p, "rt") if p.endswith(".gz") else open(p)) as fh:
+            for line in fh:
+                try:
+                    rec = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if "meta" in rec:
+                    meta = meta or rec["meta"]
+                    continue
+                for f, a in buf.items():
+                    v = rec.get(f)
+                    a.append(nan if v is None else float(v))
+    cols = {f: np.frombuffer(a, dtype=np.float64) for f, a in buf.items()}
+    if len(cols["t"]) > 1 and np.any(np.diff(cols["t"]) < 0):
+        order = np.argsort(cols["t"], kind="stable")
+        cols = {f: v[order] for f, v in cols.items()}
+    return meta, cols
+
+
+def select(cols: Columns, mask: np.ndarray) -> Columns:
+    return {f: v[mask] for f, v in cols.items()}
 
 
 def window_index(t: np.ndarray, K: int, offset: float = 0.0) -> tuple[np.ndarray, np.ndarray]:
@@ -102,7 +138,10 @@ def _burst(b: schema.BurstBlock, X: dict[str, np.ndarray]) -> np.ndarray:
 
 
 def windows(ticks: list[dict], K: int, offset: float = 0.0) -> WindowBatch:
-    cols = tick_columns(ticks)
+    return windows_from_columns(tick_columns(ticks), K, offset)
+
+
+def windows_from_columns(cols: Columns, K: int, offset: float = 0.0) -> WindowBatch:
     ids, rows = window_index(cols["t"], K, offset)
     X = {f: cols[f][rows] for f in schema.TICK_FIELDS}  # [W, K]
     S = {f: X[f].sum(axis=1) for f in X}  # NaN if any tick is missing the field

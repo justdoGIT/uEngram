@@ -13,6 +13,8 @@ Commissioning (declared healthy run of ticks):
   non-overlapping sequences instead of one overlapping one.
 * alpha is split between the Gaussian latent and the error counters
   (Bonferroni), and inside the counters between the counters.
+* the sorted calibration scores are kept, so every window also gets a
+  conformal p-value (uengram.host.validate checks their calibration live).
 """
 from __future__ import annotations
 
@@ -21,6 +23,8 @@ import json
 import os
 import pickle
 import socket
+from collections import deque
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -30,7 +34,19 @@ from ..stats import conformal_threshold, surprisal
 from . import schema
 from .encoder import HostEncoder
 from .events import EventModel
-from .features import windows
+from .features import Columns, select, tick_columns, windows, windows_from_columns
+
+
+@dataclass(frozen=True)
+class Options:
+    """Model switches. Defaults are the deployed model; the others exist so
+    uengram.host.validate can measure what each part contributes."""
+    on_delay: int = 2  # consecutive novel windows before a latent alarm (1 = none)
+    use_thermal: bool = True  # thermal RC residual feature
+    use_spe: bool = True  # out-of-subspace (Q) coordinate
+    use_events: bool = True  # Poisson-Gamma test on error counters
+    use_saturation: bool = True  # pressure beyond commissioning
+
 
 PHASES = 4
 PRESSURES = ("cpu_pressure", "mem_pressure", "io_pressure")
@@ -48,11 +64,26 @@ def _natural(name: str, v: float) -> float:
     return float(np.sin(v) ** 2 if kind == "angular" else np.exp(v) if kind == "log" else v)
 
 
+def split_columns(cols: Columns, calib_frac: float, K: int,
+                  exclude: tuple[tuple[float, float], ...] = ()) -> tuple[Columns, Columns, float]:
+    """Drop excluded intervals, then cut at the phase-0 window boundary that
+    leaves the last `calib_frac` of the remaining ticks for calibration (a
+    share of the data, not of the time span: a node that was down for hours
+    would otherwise leave an empty calibration part)."""
+    t = cols["t"]
+    keep = np.ones(len(t), bool)
+    for lo, hi in exclude:
+        keep &= ~((t >= lo) & (t <= hi))
+    cols, t = select(cols, keep), t[keep]
+    split = float(np.floor(t[int((1.0 - calib_frac) * (len(t) - 1))] / K) * K)
+    return select(cols, t < split), select(cols, t >= split), split
+
+
 class NodeMemory:
     def __init__(self, enc: HostEncoder, eng: Engram, ev: EventModel, K: int, t_origin: float,
-                 alpha: float, meta: dict):
+                 alpha: float, meta: dict, options: Options = Options()):
         self.enc, self.eng, self.ev, self.K = enc, eng, ev, K
-        self.t_origin, self.alpha, self.meta = t_origin, alpha, meta
+        self.t_origin, self.alpha, self.meta, self.opt = t_origin, alpha, meta, options
         self.host = meta.get("host", socket.gethostname())
         self.thermal_state = None
         self.profile: dict[int, np.ndarray] = {}  # item id -> [windows, energy J, instructions, seconds]
@@ -61,36 +92,41 @@ class NodeMemory:
         self._buf: list[dict] = []
         self.commission_report: dict = {}
         self.alarm_threshold = float("inf")
-        self._prev: tuple[int, float] | None = None  # (window step, score) for the on-delay
+        self.calib = np.empty(0)  # sorted calibration (persistent) scores
+        self._recent: deque = deque(maxlen=options.on_delay)  # (window step, score)
         self.alarmed_states: dict[int, float] = {}  # item id -> window start of its first alarm
         self.sat_bound = {n: SAT_FLOOR for n in PRESSURES}
 
     # -- commissioning ---------------------------------------------------
     @classmethod
-    def commission(cls, ticks: list[dict], meta: dict, window: int = 32, alpha: float = 0.01,
-                   calib_frac: float = 0.3, d: int = 16, B_sem: int = 192, B_epi: int = 64) -> "NodeMemory":
+    def commission(cls, ticks: list[dict] | Columns, meta: dict, window: int = 32, alpha: float = 0.01,
+                   calib_frac: float = 0.3, d: int = 16, B_sem: int = 192, B_epi: int = 64,
+                   options: Options = Options(),
+                   exclude: tuple[tuple[float, float], ...] = ()) -> "NodeMemory":
+        """`ticks`: tick dicts or columns (features.read_columns). `exclude`:
+        wall-time intervals left out, e.g. injected faults, which must not be
+        learned as healthy."""
         K = window
-        t = np.array([r["t"] for r in ticks])
-        split = t.min() + (1.0 - calib_frac) * (t.max() - t.min())
-        split = np.floor(split / K) * K  # phase-0 window boundary
-        A = [r for r in ticks if r["t"] < split]
-        B = [r for r in ticks if r["t"] >= split]
+        cols = ticks if isinstance(ticks, dict) else tick_columns(ticks)
+        A, B, split = split_columns(cols, calib_frac, K, exclude)
+        t = np.concatenate([A["t"], B["t"]])
         offsets = [k * K / PHASES for k in range(PHASES)]
-        seqA = [windows(A, K, off) for off in offsets]
-        seqB = [windows(B, K, off) for off in offsets]
+        seqA = [windows_from_columns(A, K, off) for off in offsets]
+        seqB = [windows_from_columns(B, K, off) for off in offsets]
         if len(seqA[0]) < 4 * d or len(seqB[0]) < 10:
             raise ValueError(f"commissioning too short: {len(seqA[0])} fit / {len(seqB[0])} calibration windows")
-        enc = HostEncoder(d, K).fit(seqA)
+        enc = HostEncoder(d, K, options.use_thermal, options.use_spe).fit(seqA)
         ev = EventModel().fit(seqA[0].events)  # one phase: overlapping phases would count events 4 times
         cfg = EngramConfig(B_sem=B_sem, B_epi=B_epi)
         raw_bytes = 4 * len(schema.TICK_FIELDS) * K
         node = cls(enc, Engram(cfg, d, enc.sigma0, raw_bytes, name=f"uengram-{meta.get('host', '')}"),
-                   ev, K, float(seqA[0].t0[0]), alpha, meta)
+                   ev, K, float(seqA[0].t0[0]), alpha, meta, options)
         n_reconfirm = cfg.n_reconfirm
         cfg.n_reconfirm = len(seqA[0]) + 1  # declared-normal run: recurrence anywhere promotes
         node._ingest(seqA[0])
         cfg.n_reconfirm = n_reconfirm
-        node.thermal_state, node._prev = None, None
+        node.thermal_state = None
+        node._recent.clear()
         copies = [copy.deepcopy(node) for _ in offsets[1:]]
         recs = node._ingest(seqB[0])
         for c, seq in zip(copies, seqB[1:]):
@@ -101,25 +137,34 @@ class NodeMemory:
             raise ValueError(f"{m} calibration scores; alpha={alpha} needs at least {need}. "
                              f"Record longer or raise alpha (latent alpha is alpha/2).")
         node.alarm_threshold = conformal_threshold(persist, alpha / 2)
+        node.calib = np.sort(persist[np.isfinite(persist)])
         # Saturation flags name the resource under contention. D2 ranks the most
         # *surprising* measurements, and on a quiet node any job moves power and
         # clock first (measured: a 39 % memory stall on hp got 1 % of D2), so the
         # USE saturation signals are also checked against the largest value of
         # the declared-healthy run (a rank bound at level 1/(m+1) per resource).
-        cols = [enc.names.index(n) for n in PRESSURES]
-        seen = np.sin(np.vstack([seqA[0].F[:, cols], seqB[0].F[:, cols]])) ** 2
+        idx = [enc.names.index(n) for n in PRESSURES]
+        seen = np.sin(np.vstack([seqA[0].F[:, idx], seqB[0].F[:, idx]])) ** 2
         node.sat_bound = {n: float(max(np.nanmax(seen[:, j]), SAT_FLOOR)) for j, n in enumerate(PRESSURES)}
         single = np.array([r["score"] for r in recs], dtype=np.float64)
         node.commission_report = {
-            "host": node.host, "ticks": len(ticks), "window_s": K,
-            "fit_windows": len(seqA[0]), "calibration_scores": int(np.isfinite(persist).sum()),
+            "host": node.host, "ticks": int(len(t)), "window_s": K, "t_start": float(t.min()),
+            "t_split": float(split), "t_end": float(t.max()), "excluded": [list(x) for x in exclude],
+            "fit_windows": len(seqA[0]), "calibration_scores": m,
             "alarm_threshold_d2": node.alarm_threshold, "alarm_alpha_latent": alpha / 2,
             "single_window_q": float(np.nanquantile(single, 1 - alpha / 2)),
             "encoder": enc.fit_report, "events": ev.report(), "slots": node.slot_counts(),
             "calibration_event_alarm_share": float(np.mean([r["alarm_event"] for r in recs])),
-            "saturation_bounds": node.sat_bound,
+            "saturation_bounds": node.sat_bound, "options": options.__dict__,
         }
         return node
+
+    def p_latent(self, score: float) -> float:
+        """Split-conformal p-value of a persistent score against the calibration scores."""
+        if not np.isfinite(score) or len(self.calib) == 0:
+            return float("nan")
+        m = len(self.calib)
+        return float((1 + m - np.searchsorted(self.calib, score, side="left")) / (m + 1))
 
     # -- streaming -------------------------------------------------------
     def feed_ticks(self, ticks: list[dict]):
@@ -159,21 +204,25 @@ class NodeMemory:
         contrib = self.enc.attribution(x, z, eng.mu[ref[0]], ref[1]) if ref else None
         res = eng.ingest(z, t_step, raw_idx=t_step)
         self.windows_seen += 1
-        # On-delay of two windows: a window that straddles a job start/stop is a
-        # mixture of two known states and novel on its own; a fault persists.
+        # On-delay: a window that straddles a job start/stop is a mixture of two
+        # known states and novel on its own; a fault persists. The persistent
+        # score is the smallest of the last `on_delay` consecutive windows.
+        if self._recent and self._recent[-1][0] != t_step - 1:
+            self._recent.clear()
+        self._recent.append((t_step, res.score))
         persist = float("nan")
-        if self._prev is not None and self._prev[0] == t_step - 1:
-            persist = float(np.minimum(res.score, self._prev[1]))  # NaN stays NaN
-        self._prev = (t_step, res.score)
+        if len(self._recent) == self.opt.on_delay:
+            persist = float(np.min([s for _, s in self._recent]))  # NaN stays NaN
         p = self.ev.pvalues(seq.events[i])
         p_min = float(np.nanmin(p)) if np.isfinite(p).any() else 1.0
-        alarm_event = p_min < self.alpha / 2 / len(p)
+        alarm_event = self.opt.use_events and p_min < self.alpha / 2 / len(p)
         self._update_profile(res.item_id, seq, i)
         rec = {
             "host": self.host, "t0": float(seq.t0[i]), "item_id": res.item_id, "action": res.action,
             "kind": self._kind_of(res.item_id), "score": res.score, "persistent_score": persist,
             "surprisal": surprisal(res.score, self.eng.d) if np.isfinite(res.score) else None,
             "threshold": self.alarm_threshold, "alarm_latent": bool(persist > self.alarm_threshold),
+            "p_latent": self.p_latent(persist),
             "alarm_event": bool(alarm_event), "event_p_min": p_min,
             "events": {n: int(c) for n, c in zip(self.ev.names, seq.events[i]) if np.isfinite(c) and c > 0},
             "levels": {n: _natural(n, seq.F[i, self.enc.names.index(n)]) for n in LEVELS
@@ -184,7 +233,8 @@ class NodeMemory:
         rec["levels"]["thermal_residual"] = float(x[self.enc.i_thermal] * self.enc.scale[self.enc.i_thermal]
                                                  + self.enc.med[self.enc.i_thermal])
         rec["alarm"] = rec["alarm_latent"] or rec["alarm_event"]
-        rec["saturation"] = {n: rec["levels"][n] for n in PRESSURES if rec["levels"][n] > self.sat_bound[n]}
+        rec["saturation"] = {n: rec["levels"][n] for n in PRESSURES
+                             if self.opt.use_saturation and rec["levels"][n] > self.sat_bound[n]}
         # uEngram promotes a persistent new state to normal (5 of 8 windows), so a
         # long fault stops alarming once learned. The memory keeps when a state
         # was first seen alarming, and reports it on every later visit.

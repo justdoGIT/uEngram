@@ -28,6 +28,8 @@ Pipeline, fitted on a commissioning run declared healthy:
 """
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 
 from ..encoders import Whitener
@@ -89,10 +91,14 @@ class ThermalModel:
 
 
 class HostEncoder:
-    def __init__(self, d: int = 16, K: int = 32):
+    def __init__(self, d: int = 16, K: int = 32, use_thermal: bool = True, use_spe: bool = True):
+        """`use_thermal=False` leaves the thermal residual missing (imputed, so it
+        carries nothing); `use_spe=False` fixes the Q coordinate at 0. Both exist
+        for ablations (uengram.host.validate)."""
         if d % 2:
             raise ValueError("d must be even for the exact chi-square tail")
         self.d, self.K = d, K
+        self.use_thermal, self.use_spe = use_thermal, use_spe
         self.names = schema.feature_names()
         self.modality = np.array(schema.feature_modality())
         self.i_thermal = self.names.index("thermal_residual")
@@ -100,16 +106,18 @@ class HostEncoder:
 
     # -- fit ---------------------------------------------------------------
     def fit(self, seqs: list[WindowBatch]) -> "HostEncoder":
-        self.thermal = ThermalModel(self.K).fit(seqs)
+        self.thermal = ThermalModel(self.K).fit(seqs) if self.use_thermal else None
         F = np.vstack([self._with_thermal(s, None)[0] for s in seqs])
         groups = np.concatenate([np.full(len(s), i) for i, s in enumerate(seqs)])
-        self.med = np.nanmedian(F, axis=0)
-        q75, q25 = np.nanpercentile(F, [75, 25], axis=0)
-        self.scale = np.maximum((q75 - q25) / 1.349, self.floors)
+        with warnings.catch_warnings():  # an ablated feature is missing in every window
+            warnings.simplefilter("ignore", RuntimeWarning)
+            self.med = np.nan_to_num(np.nanmedian(F, axis=0))
+            q75, q25 = np.nanpercentile(F, [75, 25], axis=0)
+        self.scale = np.fmax((q75 - q25) / 1.349, self.floors)
         X, _ = self.standardize(F)
         self.pca = Whitener().fit(X, self.d - 1)
         Zp = self.pca.transform(X)
-        q = np.sqrt(self._spe(X))
+        q = np.sqrt(self._spe(X)) if self.use_spe else np.zeros(len(X))
         self.q_med = float(np.median(q))
         self.q_scale = max(MAD_K * float(np.median(np.abs(q - self.q_med))), 1e-6)
         Y = np.column_stack([Zp, (q - self.q_med) / self.q_scale])
@@ -129,14 +137,17 @@ class HostEncoder:
         self.fit_report = {
             "windows": int(len(F)), "features": len(self.names),
             "pca_var_share": float(np.sum(self.pca.lam) / tot) if tot > 0 else float("nan"),
-            "imputed_share": float(np.mean(np.isnan(F))), "thermal": self.thermal.params(),
+            "imputed_share": float(np.mean(np.isnan(F))),
+            "thermal": self.thermal.params() if self.thermal else None,
             "sigma0_emp_median": float(np.median(self.sigma0_emp)),
         }
         return self
 
     def _with_thermal(self, seq: WindowBatch, state):
-        r, state = self.thermal.residuals(seq, state)
         F = seq.F.copy()
+        if self.thermal is None:
+            return F, state
+        r, state = self.thermal.residuals(seq, state)
         F[:, self.i_thermal] = r
         return F, state
 
@@ -156,7 +167,7 @@ class HostEncoder:
         """-> (Z [W,d], X [W,p] standardised features, n_imputed [W], new thermal state)."""
         F, state = self._with_thermal(seq, state)
         X, n_imp = self.standardize(F)
-        q = np.sqrt(self._spe(X))
+        q = np.sqrt(self._spe(X)) if self.use_spe else np.zeros(len(X))
         Y = np.column_stack([self.pca.transform(X), (q - self.q_med) / self.q_scale])
         return Y @ self.W, X, n_imp, state
 

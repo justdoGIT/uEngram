@@ -9,12 +9,17 @@ nominal period. A late tick (process stalled) simply has a longer dt.
 """
 from __future__ import annotations
 
+import glob
+import gzip
 import json
 import math
 import os
 import platform
+import re
+import shutil
 import signal
 import socket
+import threading
 import time
 from typing import Callable
 
@@ -33,8 +38,11 @@ def open_collector(pmu: bool = True) -> Ticker:
 def host_meta(ticker: Ticker, period: float) -> dict:
     with open("/proc/cpuinfo") as f:
         model = next((ln.split(":", 1)[1].strip() for ln in f if ln.startswith("model name")), "")
+    with open("/proc/meminfo") as f:
+        mem_kb = next(int(ln.split()[1]) for ln in f if ln.startswith("MemTotal:"))
     return {"host": socket.gethostname(), "kernel": platform.release(), "cpu_model": model,
-            "period_s": period, "fields": list(schema.TICK_FIELDS), **ticker.snap.meta()}
+            "mem_total_kb": mem_kb, "period_s": period, "fields": list(schema.TICK_FIELDS),
+            **ticker.snap.meta()}
 
 
 def _sleep_until_phase(period: float) -> None:
@@ -83,6 +91,69 @@ class JsonlSink:
 
     def close(self) -> None:
         self.f.close()
+
+
+class SpoolSink:
+    """Daily tick files `<dir>/ticks-<host>-YYYYMMDD.jsonl` (UTC day), each with
+    its own meta line, so a validation run can replay any period. A finished
+    day is gzip-compressed in a background thread (the tick loop never waits)
+    and days older than `keep_days` are dropped: the spool is the collector's
+    own bounded log, like svlogd's rotation (~62 MB/day raw, ~8 MB gzipped)."""
+
+    def __init__(self, directory: str, meta: dict, keep_days: int = 14):
+        self.dir, self.meta, self.keep_days = directory, meta, keep_days
+        self.host = meta["host"]
+        self.day, self.sink = None, None
+        self._hk: threading.Thread | None = None
+        os.makedirs(directory, exist_ok=True)
+
+    def _path(self, day: str) -> str:
+        return os.path.join(self.dir, f"ticks-{self.host}-{day}.jsonl")
+
+    def __call__(self, t: float, tick: dict) -> None:
+        day = time.strftime("%Y%m%d", time.gmtime(t))
+        if day != self.day:
+            if self.sink:
+                self.sink.close()
+            self.day, self.sink = day, JsonlSink(self._path(day), self.meta)
+            if self._hk:
+                self._hk.join()  # finished hours ago unless days pass faster than gzip (tests)
+            cutoff = time.strftime("%Y%m%d", time.gmtime(t - self.keep_days * 86400))
+            self._hk = threading.Thread(target=self._housekeep, args=(day, cutoff), daemon=True)
+            self._hk.start()
+        self.sink(t, tick)
+
+    def _housekeep(self, today: str, cutoff: str) -> None:
+        for p in glob.glob(os.path.join(self.dir, f"ticks-{self.host}-*.jsonl*")):
+            day = os.path.basename(p)[len(f"ticks-{self.host}-"):][:8]
+            if day < cutoff:
+                os.remove(p)
+            elif p.endswith(".jsonl") and day != today:
+                with open(p, "rb") as src, gzip.open(p + ".gz.tmp", "wb", compresslevel=6) as dst:
+                    shutil.copyfileobj(src, dst)
+                os.replace(p + ".gz.tmp", p + ".gz")
+                os.remove(p)
+
+    def close(self, wait: float | None = 5.0) -> None:
+        """Close today's file; give a running compression `wait` seconds (an
+        interrupted one leaves the .jsonl, which the next start compresses)."""
+        if self.sink:
+            self.sink.close()
+        if self._hk:
+            self._hk.join(wait)
+
+
+def spool_files(directory: str, host: str) -> list[str]:
+    """Spool files of one host in day order. A finished day is .jsonl.gz; a copy
+    taken while that day was being compressed may also hold its .jsonl (partial
+    or complete), so the .gz wins and temporary files are ignored."""
+    pat = re.compile(rf"ticks-{re.escape(host)}-(\d{{8}})\.jsonl(\.gz)?$")
+    days: dict[str, str] = {}
+    for name in sorted(os.listdir(directory)) if os.path.isdir(directory) else []:
+        m = pat.match(name)
+        if m and (m.group(2) or m.group(1) not in days):
+            days[m.group(1)] = os.path.join(directory, name)
+    return [days[d] for d in sorted(days)]
 
 
 def read_ticks(path: str) -> tuple[dict, list[dict]]:

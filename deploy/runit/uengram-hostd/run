@@ -1,7 +1,9 @@
 #!/bin/sh
 # uengram-hostd: 1 Hz host snapshot -> 32 s windows -> uEngram memory.
 # Before commissioning (no model file) it records ticks; afterwards it runs
-# the memory online and writes state.json + events.jsonl.
+# the memory online and writes state.json + events.jsonl. In both modes every
+# tick is also kept in $state/spool (daily files, gzipped, 14 days), which the
+# validation campaign replays; on msi spool/ is a symlink to the backup disk.
 # Runs as an unprivileged user with exactly two capabilities:
 #   CAP_PERFMON          system-wide PMU counters (perf_event_paranoid unchanged)
 #   CAP_DAC_READ_SEARCH  RAPL energy_uj, root-only since CVE-2020-8694
@@ -15,9 +17,9 @@ state="${UENGRAM_STATE:-$home/.local/state/uengram-host}"
 host="$(hostname)"
 model="$state/model-$host.pkl"
 if [ -r "$model" ]; then
-	set -- run --model "$model" --state "$state/state.json" --events "$state/events.jsonl"
+	set -- run --model "$model" --state "$state/state.json" --events "$state/events.jsonl" --spool "$state/spool"
 else
-	set -- record --out "$state/ticks-$host.jsonl"
+	set -- record --spool "$state/spool"
 fi
 exec setpriv --reuid="$user" --regid="$user" --init-groups \
 	--inh-caps=+perfmon,+dac_read_search --ambient-caps=+perfmon,+dac_read_search \

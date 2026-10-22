@@ -62,7 +62,7 @@ def test_saved_memory_continues_identically(tmp_path, run):
     node, _ = run
     path = str(tmp_path / "m.pkl")
     node.save(path)
-    more = make_ticks(320, seed=9, t_start=node._prev[0] * 32 + node.t_origin + 32.5)
+    more = make_ticks(320, seed=9, t_start=node._recent[-1][0] * 32 + node.t_origin + 32.5)
     a = [r["score"] for r in node.feed_ticks(more)]
     b = [r["score"] for r in NodeMemory.load(path).feed_ticks(more)]
     assert a == b and len(a) == 10
