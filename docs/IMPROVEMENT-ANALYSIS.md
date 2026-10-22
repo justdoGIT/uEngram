@@ -88,7 +88,7 @@ Measured wear drift on the synthetic stream is 5e-4 to 1e-3 sigma0 per window (K
 10. CMAPSS: window mean/slope features, healthy-baseline distance, supervised health index, 30-cycle windows, PHM08 score.
 11. Evaluation on real labelled machinery data: SKAB (https://github.com/waico/skab), MIMII (https://zenodo.org/records/3384388), CWRU bearings (https://engineering.case.edu/bearingdatacenter).
 
-Items 1 to 5 are implemented in v2; see `docs/EXPLAINED.md` and `docs/RESULTS.md`.
+Items 1 to 5 are implemented in v2; see `docs/EXPLAINED.md` and `docs/RESULTS.md`. In v3, item 9 was implemented and rejected: the CNN steps it targeted came from noise correlated in time, now handled by calibrating the step detector (`docs/EXPLAINED.md` section 10c). The healthy-baseline distance of item 10 is the CMAPSS health score (section 7c).
 
 ## Follow-up findings during the v2 implementation
 

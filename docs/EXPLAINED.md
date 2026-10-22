@@ -213,6 +213,25 @@ Calibrating on the monitored stream itself would include its faults (2 to 3% of 
 
 ---
 
+## 7c. Health: distance from a frozen healthy reference
+
+### Plain words
+The memory is built to follow slow wear: "normal" is whatever the machine does now. That is right for deciding what is routine and wrong for asking how far the machine has degraded, because the novelty score stays low while the machine wears out. A copy of the normal states taken while the machine is known to be healthy, frozen and never updated, answers the second question: how far is this window from the nearest healthy state?
+
+### Why it exists
+On CMAPSS every engine runs to failure. End-of-life windows are not novel to a memory that has absorbed the degradation of earlier units: v2 novelty separated end-of-life from healthy windows with AUROC 0.59 (both encoders). Distance to a healthy reference separates the same windows with AUROC 0.999 (seed 0, DSP and CNN; all seeds in `docs/RESULTS.md`).
+
+### The math
+Run an engine over a commissioning stream (CMAPSS: the first 30 windows of each of the 50 training units, assumed healthy, no labels). Freeze the means $\mu_k$ and predictive variances $v_k$ of up to $B_{ref}=32$ semantic slots with the largest $n$. Health score: $h_t=\min_k \sum_j (z_{tj}-\mu_{kj})^2/v_{kj}$; NaN without a reference. The reference costs $2d\cdot 4$ bytes per state, written once through the ledger.
+
+### Why this and not the obvious alternative
+Making the adaptive memory slower does not answer the question: its novelty still measures distance to everything stored, including the late-life states of earlier units (naive kNN novelty: AUROC 0.552, `docs/IMPROVEMENT-ANALYSIS.md` section 5). A supervised health index is as discriminative but needs run-to-failure labels; the frozen reference needs only a period declared healthy, like the alarm calibration (7b).
+
+### Where in code
+`src/uengram/engine.py:Engram.reference, Engram.set_reference`; `IngestResult.health` in `src/uengram/store.py`; commissioning in `bench/run_cmapss.py:run_one`; metrics `health_auroc`, `health_ap`.
+
+---
+
 ## 8. Absorption: exponentially weighted mean/variance, adaptive step, variance shrinkage
 
 ### Plain words
@@ -292,13 +311,40 @@ A repair shifts the normal readings a little, often by less than the gate's widt
 In v1 the maintenance step (4.6 to 10 noise units, gate radius 6.8) was absorbed gradually, so the pre-maintenance baseline kept answering "what is normal now" (`stale_at1` 0.61 with DSP).
 
 ### The math
-For each semantic slot, on every absorbed window: standardised innovation $e_t=(z_t-\mu)/\sqrt{v}$ (predictive variance, before the update), multivariate EWMA $Z_t=\lambda e_t+(1-\lambda)Z_{t-1}$, statistic $T^2=\frac{2-\lambda}{\lambda}\lVert Z_t\rVert^2$ ([Lowry et al. 1992](https://doi.org/10.1080/00401706.1992.10485232)). With no change, $e$ has independent unit-variance components (section 4) and $T^2$ is approximately $\chi^2_d$; alarm when $T^2 > \chi^2_{d,\mathrm{isf}}(10^{-6}) = 58.3$ and the slot has $n \ge 2/\lambda$. $\lambda = 0.1$. Simulated in 16-d: about 1 false alarm per $10^6$ windows; median delay 8, 4 and 3 windows for persistent 3, 5 and 8 sigma shifts; a decaying transition ramp (6, 3, 1.5, 0.75 sigma) never alarms. On alarm: make room in the semantic group, start a new semantic slot at the current window (variance prior copied from the old slot), and supersede the old slot (lineage `supersede` with cause `step`, event `("supersede", old, new)`).
+For each semantic slot, on every absorbed window: standardised innovation $e_t=(z_t-\mu)/\sqrt{v}$ (predictive variance, before the update), multivariate EWMA $Z_t=\lambda e_t+(1-\lambda)Z_{t-1}$, statistic $T^2=\frac{2-\lambda}{\lambda}\lVert Z_t\rVert^2$ ([Lowry et al. 1992](https://doi.org/10.1080/00401706.1992.10485232)). With no change and innovations independent in time, $e$ has unit-variance components (section 4) and $T^2$ is approximately $\chi^2_d$; section 10c restores this when the encoder's noise is correlated in time. Alarm when $T^2 > \chi^2_{d,\mathrm{isf}}(10^{-6}) = 58.3$ and the slot has $n \ge 2/\lambda$. $\lambda = 0.1$. Simulated in 16-d: about 1 false alarm per $10^6$ windows; median delay 8, 4 and 3 windows for persistent 3, 5 and 8 sigma shifts; a decaying transition ramp (6, 3, 1.5, 0.75 sigma) never alarms. On alarm: make room in the semantic group, start a new semantic slot at the current window (variance prior copied from the old slot), and supersede the old slot (lineage `supersede` with cause `step`, event `("supersede", old, new)`).
 
 ### Why this and not the obvious alternative
 A per-dimension CUSUM needs a known shift direction and 32 one-sided charts whose false alarms add up; Crosier's multivariate CUSUM needs simulated thresholds. The MEWMA statistic is direction-free with an approximately $\chi^2$ threshold. A faster EWMA step ($\beta_{\min}$) would chase a repair over about $1/\beta$ windows instead of recognising it, and blur the before/after states.
 
 ### Where in code
 `src/uengram/engine.py:Engram._step_detected`, `src/uengram/lifecycle.py:split_on_step`; ablation `uengram_nostep`.
+
+---
+
+## 10c. Calibrating the step detector to correlated noise
+
+### Plain words
+The step detector averages the last ~19 deviations of a state and assumes they are independent, so that noise averages out. When the encoder's noise is correlated in time (overlapping windows, slow transients), it does not average out, and the detector reads ordinary fluctuations as repairs. The engine measures once, on training data, how much more an average of the real noise varies than an average of independent noise, and shrinks the detector's input by that factor.
+
+### Why it exists
+CMAPSS windows of 16 cycles at stride 1 share 15 of their 16 cycles. On the 50 stream units the v2 engine fired 493 (DSP) and 356 (CNN) step changes (seed 0). Each one superseded a state; superseded slots are the first evicted when the semantic group is full, and the record of end-of-life windows went with them: end-of-life retention 0.40 (DSP) and 0.46 (CNN). On the synthetic stream the CNN latent superseded 155 states in 20,000 windows (DSP: 5).
+
+### The math
+For an EWMA $y_t=\lambda z_t+(1-\lambda)y_{t-1}$ of independent samples, $\mathrm{Var}(y)=\frac{\lambda}{2-\lambda}\mathrm{Var}(z)$. Correlation in time multiplies this by the inflation
+$$f_j=\frac{\mathrm{Var}(y_j)}{\frac{\lambda}{2-\lambda}\mathrm{Var}(z_j)}.$$
+For AR(1) wander with coefficient $\rho$ and variance $\tau^2$ on top of unit white noise, $f=\bigl(1+\tau^2\tfrac{1+a}{1-a}\bigr)/(1+\tau^2)$ with $a=\rho(1-\lambda)$, i.e. 5.3 for $\rho=0.9$, $\tau=1$. Estimation on the encoder's training latents: cut the sequence wherever a lag-1 difference has Mahalanobis $D^2>\chi^2_{d,\mathrm{isf}}(10^{-3})$ under the robust noise covariance (state switches, steps, fault onsets); restart the EWMA in each segment and skip its first $b=(2-\lambda)/\lambda=19$ samples; estimate both variances from robust lag-$2b$ differences within segments (section 5). The engine feeds $e_{tj}/\sqrt{\max(f_j,1)}$ to the MEWMA and keeps the threshold $\chi^2_{d,\mathrm{isf}}(10^{-6})$. Measured medians: CMAPSS DSP 6.6, CNN 2.5; synthetic DSP 0.96, ctx 1.00, CNN 1.19. Seed 0 effect on CMAPSS: 2 (DSP) and 6 (CNN) step changes, end-of-life retention 1.00 for both, 85% fewer writes.
+
+### Why this and not the obvious alternative
+- *Track wear with a level-plus-rate Kalman filter* (the first hypothesis: wear outruns a slot it visits only part of the time, and the lag looks like a step). Rates estimated from intermittent visits were weak, the rate uncertainty widened the gates of stale states, and faults hid behind them (context-encoder AUROC 1.00 to 0.82, seed 0). Learning the process noise from squared innovations ran away in one dimension (DSP: up to 600 times what its drift needs). A lag-feedback gain on the EW step took CNN supersessions only from 155 to 115. The CNN latent's slow motion inside one regime was not wear: its 25-window block means move 3 to 4 times the noise floor and back, with a path 3 to 10 times the net displacement.
+- *A long-lag noise scale* ($\sigma$ at lag 19 over $\sigma_0$) under-corrects: for AR(1) at $\rho=0.9$, $\tau=1$ it gives a variance ratio of 1.9 where the inflation is 5.3, and leaves 18 to 57 false steps per 2,000 windows.
+- *Unsegmented estimation.* Synthetic regimes last 24 windows (median), so 54% of lag-38 pairs straddle a switch and the MAD breaks down. $f$ came out 7 to 10 on the regime dimensions, and the first supersession after maintenance moved from 29 to 92 windows (DSP).
+- *A lower `step_alpha`* rescales every dimension alike, whatever its correlation.
+
+### Limits
+On the synthetic stream the CNN still supersedes 101 states (seed 0, from 155). The cause is the coolant transient after each regime switch, which the CNN latent encodes at hundreds of noise units: $D^2$ between successive windows is 562, 166, 68 and 21 at 1, 2, 3 and 5 windows after a switch, while switches themselves are about 21,000. No label-free segmentation threshold separates those cases, and skipping a slot's first windows after re-entry only reached 120. The fix belongs in the encoder: the context encoder (section 3b) predicts the transient, and its successive-window $D^2$ after a switch is 16, the noise level.
+
+### Where in code
+`src/uengram/stats.py:ewma_inflation, _segments`; `Engram(step_inflation=...)`, `Engram._step_detected`; `bench/common.py:measure_step_inflation`, called by `bench/run_synth.py` and `bench/run_cmapss.py`.
 
 ---
 
@@ -440,3 +486,9 @@ Accuracy/F1 alone hides the imbalance; plain MSE between centroids ignores sprea
 - Context encoder with a learned thermal-lag residual (section 3b).
 - Robust full noise-covariance whitening in every encoder (section 4); the encoder test now pins "noise covariance = I" instead of "total covariance = I".
 - `synth.generate(anomalies=False, maint_frac>=1)` provides the fault-free commissioning stream.
+
+### v3 changes
+
+- Step detector input scaled by the measured EWMA variance inflation of the encoder's training latents (section 10c).
+- Frozen healthy reference and health score; CMAPSS commissioning from the first 30 windows of each training unit (section 7c).
+- Level-plus-rate Kalman wear tracking (`docs/IMPROVEMENT-ANALYSIS.md` item 9), learned process noise and a lag-feedback gain were implemented, measured and removed (section 10c).
