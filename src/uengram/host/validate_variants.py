@@ -17,7 +17,8 @@ import numpy as np
 from ..stats import conformal_threshold
 from .features import select, windows_from_columns
 from .node import PHASES, NodeMemory, Options
-from .validate import block_ci, fired, in_fault, near_fault, replay, touches, wilson
+from .validate import block_ci, fired, in_fault, near_fault, replay, touches
+from .validate_criteria import wilson
 
 ABLATIONS = {"no_thermal": Options(use_thermal=False), "no_spe": Options(use_spe=False),
              "no_ondelay": Options(on_delay=1), "no_events": Options(use_events=False),
@@ -78,13 +79,12 @@ def run_variants(node: NodeMemory, meta: dict, comm, test, recs_full: list[dict]
     return out
 
 
-def variant_table(var_rows: dict[str, dict[str, dict[float, bool]]], faults: list[dict], K: int) -> list[str]:
+def variant_summary(var_rows: dict[str, dict[str, dict[float, bool]]], faults: list[dict], K: int) -> dict:
+    """variant -> {"fa": false-alarm share of normal windows with CI, "det": detected
+    share of executed faults touching the node with CI, "per_type": {type: (share, n)}}."""
     types = sorted({f["type"] for f in faults if f.get("status") == "done"})
-    head = ("| variant | false alarms (normal windows) | detected, all faults | "
-            + " | ".join(types) + " |")
-    lines = [head, "|" + "---|" * (3 + len(types))]
-    variants = [v for v in ALL if any(v in rows for rows in var_rows.values())]
-    for v in variants:
+    out = {}
+    for v in [v for v in ALL if any(v in rows for rows in var_rows.values())]:
         normal, hits = [], {t: [] for t in types}
         for name, rows in var_rows.items():
             series = rows.get(v)
@@ -96,11 +96,20 @@ def variant_table(var_rows: dict[str, dict[str, dict[float, bool]]], faults: lis
             for f in faults:
                 if f.get("status") != "done" or touches(f, name) is None:
                     continue
-                win = [ok for t0, ok in series.items() if in_fault(t0, f, K)]
-                hits[f["type"]].append(any(win))
-        m, lo, hi = block_ci(normal)
+                hits[f["type"]].append(any(ok for t0, ok in series.items() if in_fault(t0, f, K)))
         allhits = [h for t in types for h in hits[t]]
-        p, plo, phi = wilson(sum(allhits), len(allhits))
-        per = " | ".join(f"{np.mean(hits[t]):.2f} ({len(hits[t])})" if hits[t] else "-" for t in types)
+        out[v] = {"fa": block_ci(normal), "det": wilson(sum(allhits), len(allhits)),
+                  "per_type": {t: (float(np.mean(h)) if h else float("nan"), len(h)) for t, h in hits.items()}}
+    return out
+
+
+def variant_table(summary: dict) -> list[str]:
+    types = sorted({t for s in summary.values() for t in s["per_type"]})
+    lines = ["| variant | false alarms (normal windows) | detected, all faults | " + " | ".join(types) + " |",
+             "|" + "---|" * (3 + len(types))]
+    for v, s in summary.items():
+        (m, lo, hi), (p, plo, phi) = s["fa"], s["det"]
+        per = " | ".join(f"{s['per_type'][t][0]:.2f} ({s['per_type'][t][1]})" if s["per_type"][t][1] else "-"
+                         for t in types)
         lines.append(f"| {v} | {m:.4f} [{lo:.4f}, {hi:.4f}] | {p:.2f} [{plo:.2f}, {phi:.2f}] | {per} |")
     return lines

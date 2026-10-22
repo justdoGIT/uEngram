@@ -4,13 +4,21 @@
 #   fault-inject.sh spin FRACTION SECONDS          nice-19 busy loops on FRACTION of the CPUs
 #   fault-inject.sh mem GB SECONDS          (root) GB working set inside a 1 GiB memory cgroup (swap thrash)
 #   fault-inject.sh oom                     (root) one OOM kill inside a 256 MiB cgroup without swap
+#   fault-inject.sh leak MBPS SECONDS       (root) MBPS MiB allocated and touched per second, never freed,
+#                                                  in a cgroup bounded at 1.25x the total, no swap
 #   fault-inject.sh diskread MBPS SECONDS   (root) O_DIRECT sequential reads of the first disk, MBPS per
 #                                                  second (0 = as fast as possible); read-only
+#   fault-inject.sh powercap FRACTION SECONDS (root) package PL1 = FRACTION of TDP while all CPUs spin
+#   fault-inject.sh netem LOSS DELAY HOST PORT MBPS SECONDS (root) egress loss % and delay ms on the
+#                                                  interface towards HOST while streaming to it
 #   fault-inject.sh netrecv PORT SECONDS           plain TCP sink
 #   fault-inject.sh netsend HOST PORT MBPS SECONDS plain TCP stream of zeros (0 = unpaced)
 # Memory faults are confined to cgroups under /sys/fs/cgroup/guards and removed afterwards.
+# powercap and netem undo themselves on exit, and a detached timer (unpowercap,
+# unnetem) undoes them 60 s after their end even if this shell or its ssh is killed.
 set -eu
 cg=/sys/fs/cgroup/guards
+rapl=/sys/class/powercap/intel-rapl:0
 user=kk
 
 # NAME MEM_BYTES SWAP_BYTES CMD...: run CMD as $user inside a fresh memory cgroup;
@@ -49,19 +57,29 @@ busy_share() { # share of CPU time not idle/iowait over 5 s
 	echo "$a $b" | awk '{ t = $4 - $2; printf "%.3f", (t > 0) ? 1 - ($3 - $1) / t : 0 }'
 }
 
+spin_all() { # FRACTION SECONDS: nice-19 busy loops on FRACTION of the CPUs
+	n="$(awk -v f="$1" -v c="$(nproc)" 'BEGIN { n = int(f * c + 0.5); print n < 1 ? 1 : n }')"
+	i=0
+	while [ "$i" -lt "$n" ]; do
+		timed "$2" nice -n 19 sh -c 'while :; do :; done' &
+		i=$((i + 1))
+	done
+	wait
+}
+
+clear_netem() { # DEV: remove our netem if it is still there; the kernel's default root qdisc returns
+	if tc qdisc show dev "$1" root | grep -q netem; then
+		tc qdisc del dev "$1" root
+	fi
+}
+
 case "$1" in
 check)
 	avail="$(awk '/^MemAvailable:/ { print int($2 / 1024) }' /proc/meminfo)"
 	echo "busy=$(busy_share) mem_avail_mb=$avail"
 	;;
 spin)
-	n="$(awk -v f="$2" -v c="$(nproc)" 'BEGIN { n = int(f * c + 0.5); print n < 1 ? 1 : n }')"
-	i=0
-	while [ "$i" -lt "$n" ]; do
-		timed "$3" nice -n 19 sh -c 'while :; do :; done' &
-		i=$((i + 1))
-	done
-	wait
+	spin_all "$2" "$3"
 	;;
 mem)
 	in_cgroup uengram-mem 1073741824 max python3 -c "
@@ -76,6 +94,42 @@ while time.time() - t < $3:
 	;;
 oom)
 	in_cgroup uengram-oom 268435456 0 python3 -c "b = [bytearray(64 << 20) for _ in range(16)]"
+	;;
+leak)
+	in_cgroup uengram-leak "$(($2 * $3 * 1310720 + 67108864))" 0 python3 -c "
+import time
+b, t = [], time.time()
+while time.time() - t < $3:
+    b.append(b'\x01' * ($2 << 20))
+    time.sleep(1)
+"
+	;;
+powercap)
+	old="$(cat "$rapl/constraint_0_power_limit_uw")"
+	cap="$(awk -v f="$2" -v t="$(cat "$rapl/constraint_0_max_power_uw")" 'BEGIN { printf "%d", f * t }')"
+	setsid sh "$0" unpowercap "$old" "$(($3 + 60))" >/dev/null 2>&1 &
+	trap 'echo "$old" >"$rapl/constraint_0_power_limit_uw"' EXIT
+	trap 'exit 1' INT TERM HUP
+	echo "$cap" >"$rapl/constraint_0_power_limit_uw"
+	echo "package PL1 $old -> $cap uW"
+	spin_all 1.0 "$3"
+	;;
+unpowercap)
+	sleep "$3"
+	echo "$2" >"$rapl/constraint_0_power_limit_uw"
+	;;
+netem)
+	dev="$(ip route get "$4" | awk '{ for (i = 1; i < NF; i++) if ($i == "dev") { print $(i + 1); exit } }')"
+	setsid sh "$0" unnetem "$dev" "$(($7 + 60))" >/dev/null 2>&1 &
+	trap 'clear_netem "$dev"' EXIT
+	trap 'exit 1' INT TERM HUP
+	tc qdisc replace dev "$dev" root netem delay "${3}ms" loss "${2}%"
+	echo "netem on $dev: delay ${3}ms loss ${2}%"
+	setpriv --reuid="$user" --regid="$user" --init-groups sh "$0" netsend "$4" "$5" "$6" "$7"
+	;;
+unnetem)
+	sleep "$3"
+	clear_netem "$2"
 	;;
 diskread)
 	disk="$(lsblk -dno NAME,TYPE | awk '$2 == "disk" { print $1; exit }')"

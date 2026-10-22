@@ -9,8 +9,8 @@ replays the test phase through the deployed model and answers:
    recording week: commissioned offline on its first days, replayed on the
    rest, nothing injected. (b) On the fault week, deployed model, windows at
    least MARGIN windows away from any fault on the node. Alarms are serially
-   dependent, so intervals come from a moving-block bootstrap (blocks of
-   ~1 h), not iid.
+   dependent, so intervals come from a moving-block bootstrap whose blocks hold
+   whole alarm episodes (episode_block), not iid.
 2. Detection: per fault type and strength, the share detected by any channel
    (Wilson interval), the delay, whether D2 attribution named the expected
    modality and whether a saturation flag named the expected resource.
@@ -32,12 +32,17 @@ import numpy as np
 from .collector import spool_files
 from .features import read_columns, select, windows_from_columns
 from .node import NodeMemory, Options
+from .validate_criteria import wilson
 
 MARGIN = 2  # windows around a fault left out of the normal set
-BLOCK = 112  # windows per bootstrap block (~1 h)
-EXPECT_MODALITY = {"cpu": "compute", "mem": "memory", "disk": "storage", "net": "network"}
+MIN_BLOCK = 4  # shortest bootstrap block, windows
+EXPECT_MODALITY = {"cpu": "compute", "mem": "memory", "disk": "storage", "net": "network",
+                   "netem": "network", "leak": "memory"}
 EXPECT_SAT = {"cpu": "cpu_pressure", "mem": "mem_pressure", "disk": "io_pressure"}
 EXPECT_EVENT = {"oom": "oom_kills"}
+# A capped package under load runs slower than the same load uncapped; its
+# clearest trace is the clock ratio. Loss shows as retransmits, a leak as used memory.
+EXPECT_FEATURE = {"power": "freq_ratio", "netem": "tcp_retrans", "leak": "mem_used"}
 
 
 # -- data ----------------------------------------------------------------
@@ -102,26 +107,29 @@ def _loads(line: str) -> dict | None:
 
 
 # -- statistics -------------------------------------------------------------
-def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float, float]:
-    if n == 0:
-        return float("nan"), float("nan"), float("nan")
-    p = k / n
-    c = (p + z * z / (2 * n)) / (1 + z * z / n)
-    h = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / (1 + z * z / n)
-    return p, max(0.0, c - h), min(1.0, c + h)
+def episode_block(x: np.ndarray, merge: int = 2) -> int:
+    """Bootstrap block length that holds whole alarm episodes: twice the 95th
+    percentile length of the runs of 1s (gaps of up to `merge` windows bridged),
+    at least MIN_BLOCK."""
+    ones = np.flatnonzero(x > 0)
+    if len(ones) == 0:
+        return MIN_BLOCK
+    cut = np.flatnonzero(np.diff(ones) > merge + 1)
+    lengths = np.r_[ones[cut], ones[-1]] - np.r_[ones[0], ones[cut + 1]] + 1
+    return max(MIN_BLOCK, int(2 * np.ceil(np.quantile(lengths, 0.95))))
 
 
-def block_ci(x, block: int = BLOCK, n_boot: int = 2000, seed: int = 0) -> tuple[float, float, float]:
+def block_ci(x, block: int | None = None, n_boot: int = 2000, seed: int = 0) -> tuple[float, float, float]:
     """Mean with a moving-block bootstrap 95 % interval (serially dependent x).
-    Blocks are `block` long but at least 20 per series. A constant 0/1 series
-    has no bootstrap spread; its bound is the rule of three over n/b blocks
-    (a block holding any 1 holds at least one of its b windows)."""
+    Blocks are `block` long (default: episode_block) but at least 20 per series.
+    A constant 0/1 series has no bootstrap spread; its bound is the rule of three
+    over n/b blocks (a block holding any 1 holds at least one of its b windows)."""
     x = np.asarray(x, dtype=np.float64)
     x = x[np.isfinite(x)]
     n = len(x)
     if n == 0:
         return float("nan"), float("nan"), float("nan")
-    b = max(1, min(block, n // 20))
+    b = max(1, min(block or episode_block(x), n // 20))
     m = float(x.mean())
     if np.all(x == x[0]) and x[0] in (0.0, 1.0):
         r3 = min(1.0, 3.0 * b / n)
@@ -182,6 +190,8 @@ def detection(recs_by_node: dict[str, list[dict]], faults: list[dict], K: int) -
                 "saturation_ok": (EXPECT_SAT[ftype] in {k for r in rs for k in r["saturation"]})
                 if ftype in EXPECT_SAT else None,
                 "event_ok": any(EXPECT_EVENT[ftype] in r["events"] for r in rs) if ftype in EXPECT_EVENT else None,
+                "feature_ok": (EXPECT_FEATURE[ftype] in [n for n, _ in lat.get("top_features", [])])
+                if lat and ftype in EXPECT_FEATURE else None,
             })
     return rows
 
@@ -199,7 +209,8 @@ def consistency(online: list[dict], recs: list[dict]) -> dict:
 # -- report -----------------------------------------------------------------
 def _detection_table(rows: list[dict]) -> list[str]:
     out = ["| fault | level | role | n | detected [95 % CI] | latent | event | saturation flag ok | "
-           "D2 modality ok | median delay s |", "|---|---|---|---|---|---|---|---|---|---|"]
+           "D2 modality ok | expected feature in top 3 | median delay s |",
+           "|---|---|---|---|---|---|---|---|---|---|---|"]
     keys = sorted({(r["type"], r["level"], r["role"]) for r in rows}, key=str)
     for ftype, level, role in keys:
         g = [r for r in rows if (r["type"], r["level"], r["role"]) == (ftype, level, role)]
@@ -211,7 +222,7 @@ def _detection_table(rows: list[dict]) -> list[str]:
         delay = f"{np.median(delays):.0f}" if delays else "-"
         out.append(f"| {ftype} | {level} | {role} | {len(g)} | {p:.2f} [{lo:.2f}, {hi:.2f}] | "
                    f"{np.mean([r['latent'] for r in g]):.2f} | {np.mean([r['event'] for r in g]):.2f} | "
-                   f"{rate('saturation_ok')} | {rate('attribution_ok')} | {delay} |")
+                   f"{rate('saturation_ok')} | {rate('attribution_ok')} | {rate('feature_ok')} | {delay} |")
     return out
 
 
@@ -242,7 +253,8 @@ def clean_check(meta: dict, cols, camp: dict, K: int) -> dict:
 
 
 def write_report(directory: str, variants: tuple[str, ...] | None = None) -> str:
-    from .validate_variants import run_variants, variant_table
+    from .validate_criteria import criteria, evaluate, verdict_table
+    from .validate_variants import run_variants, variant_summary, variant_table
     with open(os.path.join(directory, "campaign.json")) as f:
         camp = json.load(f)
     faults, alpha = load_faults(directory), camp["alpha"]
@@ -269,6 +281,13 @@ def write_report(directory: str, variants: tuple[str, ...] | None = None) -> str
             cons[name] = consistency(online, recs)
         var_rows[name] = run_variants(node, meta, comm, test, recs, alpha, variants)
     det = detection(recs_by_node, faults, K)
+    summary = variant_summary(var_rows, faults, K)
+    if "criteria" in camp:
+        crit = camp["criteria"]
+        registered = f"registered {time.strftime('%Y-%m-%d %H:%M', time.localtime(camp['criteria_registered']))}"
+    else:  # campaigns planned before criteria were stored: evaluated, but not pre-registered
+        crit, registered = criteria(alpha), "NOT pre-registered (campaign planned before criteria were stored)"
+    verdicts = evaluate(crit, camp["levels"], clean, det, cons, summary)
     fmt = lambda t: time.strftime("%Y-%m-%d %H:%M", time.localtime(t))
     done = sum(f.get("status") == "done" for f in camp["schedule"])
     lines = [f"# uengram-host validation report ({fmt(time.time())})", "",
@@ -276,6 +295,7 @@ def write_report(directory: str, variants: tuple[str, ...] | None = None) -> str
              f"{fmt(camp['end'])}. Faults: {done} executed of {len(camp['schedule'])} scheduled. "
              f"alpha = {alpha} (latent alpha/2; event counters alpha/2, Bonferroni over the counters).", "",
              *([f"Nodes left out: {skipped}.", ""] if skipped else []),
+             f"## 0. Pre-registered verdicts ({registered})", "", *verdict_table(verdicts), "",
              "## 1. Calibration", "",
              "Pass: the latent and event rates are each at most alpha/2 inside the CI (saturation "
              "flags have their own rank bound); the share of p <= a is close to a.", "",
@@ -291,12 +311,12 @@ def write_report(directory: str, variants: tuple[str, ...] | None = None) -> str
         lines.append(f"| {name} | {c['matched']} | {c.get('identical', float('nan')):.3f} |")
     lines += ["", "## 4. Ablations and baselines", "",
               "Pass for a component: removing it lowers detection or raises false alarms.", ""]
-    lines += variant_table(var_rows, faults, K)
+    lines += variant_table(summary)
     path = os.path.join(directory, "report.md")
     with open(path, "w") as f:
         f.write("\n".join(lines) + "\n")
     with open(os.path.join(directory, "report.json"), "w") as f:
-        json.dump({"clean_week": clean, "calibration": cal, "detection": det, "consistency": cons,
-                   "skipped": skipped},
+        json.dump({"verdicts": verdicts, "criteria": crit, "clean_week": clean, "calibration": cal,
+                   "detection": det, "consistency": cons, "variants": summary, "skipped": skipped},
                   f, indent=1, default=str)
     return path

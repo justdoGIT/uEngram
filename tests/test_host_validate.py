@@ -11,6 +11,7 @@ from uengram.host.features import read_columns
 from uengram.host.node import NodeMemory
 from uengram.host.synth import T0, make_ticks
 from uengram.host.validate import commission_from_spool, write_report
+from uengram.host.validate_criteria import criteria, evaluate
 
 DAY = 86400
 
@@ -86,7 +87,9 @@ def campaign_dir(tmp_path_factory):
         f.writelines(json.dumps(x) + "\n" for x in faults)
     camp = {"start": start, "clean_split": start + 3 * 3600, "commission": t_comm, "end": end, "alpha": 0.01,
             "nodes": {"synth": {"ssh": "synth", "ip": "", "faults": ["cpu", "mem", "oom"]}},
-            "schedule": faults, "commissioned": {"synth": {"deployed": t_comm}}, "report": None}
+            "levels": {"cpu": [1.0], "mem": [2.5], "oom": [1]}, "criteria": criteria(0.01),
+            "criteria_registered": start, "schedule": faults, "commissioned": {"synth": {"deployed": t_comm}},
+            "report": None}
     with open(os.path.join(d, "campaign.json"), "w") as f:
         json.dump(camp, f)
     node = commission_from_spool(d, "synth", start, t_comm, 0.01)
@@ -132,3 +135,39 @@ def test_report_lists_every_requested_variant(campaign_dir):
     md = campaign_dir[1]
     rows = [ln.split("|")[1].strip() for ln in md.split("## 4.")[1].splitlines() if ln.startswith("| ")]
     assert rows[1:] == ["full", "no_ondelay", "saturation_only", "max_z", "single_gaussian"]
+
+
+def test_the_report_evaluates_the_stored_criteria(campaign_dir):
+    rep, md = campaign_dir
+    assert "## 0. Pre-registered verdicts (registered " in md
+    v = {(r["criterion"], r["scope"]): r["verdict"] for r in rep["verdicts"]}
+    assert v[("online equals offline", "synth")] == "PASS"
+    # an hour without a single alarm is too short to bound the rate under 1 %: not a pass
+    assert campaign_dir[0]["clean_week"]["synth"]["latent"][0] == 0.0
+    assert v[("clean week: latent false alarms", "synth")] == "FAIL"
+    # one trial per fault type cannot clear the lower bound: too little evidence is not a pass
+    assert v[("strongest level detected", "cpu 1.0")] == "FAIL"
+
+
+def _det(ftype, level, hits, n):
+    return [{"type": ftype, "level": level, "role": "target", "detected": i < hits} for i in range(n)]
+
+
+@pytest.mark.parametrize("hits,verdict", [(10, "PASS"), (9, "PASS"), (8, "FAIL")])
+def test_strongest_level_needs_80_percent_and_a_lower_bound_of_half(hits, verdict):
+    rows = evaluate(criteria(0.01), {"cpu": [1.0]}, {}, _det("cpu", 1.0, hits, 10), {}, {})
+    assert rows[0]["verdict"] == verdict  # 8/10: share 0.8 but Wilson lower bound 0.49
+
+
+def test_detection_falling_with_strength_fails():
+    det = _det("disk", 10, 9, 10) + _det("disk", 0, 8, 10)
+    rows = {r["criterion"]: r["verdict"] for r in evaluate(criteria(0.01), {"disk": [10, 40, 0]}, {}, det, {}, {})}
+    assert rows["strongest >= weakest"] == "FAIL"
+
+
+def test_a_component_or_baseline_without_measured_benefit_fails():
+    s = lambda det, fa: {"det": (det, 0, 1), "fa": (fa, 0, 1), "per_type": {}}
+    summary = {"full": s(0.9, 0.004), "no_spe": s(0.9, 0.004), "no_events": s(0.8, 0.004),
+               "max_z": s(0.9, 0.003), "single_gaussian": s(0.9, 0.006)}
+    v = {r["scope"]: r["verdict"] for r in evaluate(criteria(0.01), {}, {}, [], {}, summary)}
+    assert v == {"no_spe": "FAIL", "no_events": "PASS", "max_z": "FAIL", "single_gaussian": "PASS"}

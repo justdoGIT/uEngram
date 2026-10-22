@@ -50,19 +50,21 @@ def test_plan_respects_each_nodes_fault_list_and_pairs_network_faults(camp):
 
 
 class Fleet:
-    """Stands in for ssh: gate answers per node, a fault takes DURATION seconds."""
+    """Stands in for ssh and kepr: gate answers per node, a fault takes DURATION seconds."""
 
-    def __init__(self, monkeypatch, now, busy=()):
-        self.now, self.busy, self.ran = now, set(busy), []
+    def __init__(self, monkeypatch, now, busy=(), locked=False):
+        self.now, self.busy, self.ran, self.locked, self.alerts = now, set(busy), [], locked, []
         monkeypatch.setattr(cp, "_now", lambda: self.now)
-        monkeypatch.setattr(cp, "_push_helper", lambda host: None)
-        monkeypatch.setattr(cp, "_gate", lambda name, host: (name not in self.busy, f"busy={name in self.busy}"))
+        monkeypatch.setattr(cp, "push_helper", lambda host: None)
+        monkeypatch.setattr(cp, "gate", lambda name, host, need=0.0: (name not in self.busy, f"busy={name in self.busy}"))
+        monkeypatch.setattr(cp, "vault_unlocked", lambda: not self.locked)
+        monkeypatch.setattr(cp, "alert", lambda *a: self.alerts.append(a))
 
         def execute(camp, f):
             self.ran.append(f["id"])
             self.now += cp.DURATION
             return {"rc": 0}
-        monkeypatch.setattr(cp, "_execute", execute)
+        monkeypatch.setattr(cp, "execute", execute)
 
 
 def _testing(d, c):
@@ -123,3 +125,26 @@ def test_faults_on_a_node_that_failed_commissioning_are_skipped(camp, monkeypatc
     f = next(x for x in cp.load(d)["schedule"] if x["id"] == f0["id"])
     assert f["status"] == "skipped" and "not commissioned" in f["reason"]
     assert f0["id"] not in fleet.ran
+
+
+def test_a_locked_vault_delays_sudo_faults_without_spending_retries(camp, monkeypatch):
+    d, c = camp
+    c = _testing(d, c)
+    sudo = next(f for f in c["schedule"] if f["type"] in cp.SUDO_FAULTS)
+    plain = next(f for f in c["schedule"] if f["type"] == "cpu")
+    for f in c["schedule"]:
+        if f["id"] not in (sudo["id"], plain["id"]):
+            f["status"] = "skipped"
+    plain["planned"] = sudo["planned"]
+    cp._save(d, c)
+    fleet = Fleet(monkeypatch, sudo["planned"], locked=True)
+    cp.tick(d)
+    fleet.now += cp.FAULT_GAP
+    cp.tick(d)
+    after = {f["id"]: f for f in cp.load(d)["schedule"]}
+    assert fleet.ran == [plain["id"]]  # faults without sudo still run
+    assert after[sudo["id"]]["status"] == "pending" and after[sudo["id"]]["postponed"] == 0
+    assert len(fleet.alerts) == 1  # rate-limited
+    fleet.locked, fleet.now = False, after[sudo["id"]]["planned"]
+    cp.tick(d)
+    assert fleet.ran == [plain["id"], sudo["id"]]

@@ -70,7 +70,7 @@ python3 -m uengram.host campaign status --dir ~/Backup/uengram-host/campaign
 
 ```
 src/uengram/   library: stats, metrics, synth, encoders (dsp, ctx, cnn), ledger, store, baselines, engine, lifecycle, cmapss
-src/uengram/host/  host telemetry: schema, perf, sources, collector (stdlib); features, encoder, events, node, cluster, synth (numpy); campaign, validate, validate_variants
+src/uengram/host/  host telemetry: schema, perf, sources, collector (stdlib); features, encoder, events, node, cluster, synth (numpy); campaign, campaign_exec, validate, validate_criteria, validate_variants
 bench/         harness: provenance, evaluate, common, run_synth, run_cmapss, run_host_synth, report
 deploy/        runit services (uengram-hostd, uengram-campaign) and the node installer
 tests/         unit and behaviour tests

@@ -115,9 +115,9 @@ class SpoolSink:
         if day != self.day:
             if self.sink:
                 self.sink.close()
+            if self._hk:  # finished hours ago unless the day began right after a start (or in tests)
+                self._hk.join()
             self.day, self.sink = day, JsonlSink(self._path(day), self.meta)
-            if self._hk:
-                self._hk.join()  # finished hours ago unless days pass faster than gzip (tests)
             cutoff = time.strftime("%Y%m%d", time.gmtime(t - self.keep_days * 86400))
             self._hk = threading.Thread(target=self._housekeep, args=(day, cutoff), daemon=True)
             self._hk.start()
@@ -128,7 +128,7 @@ class SpoolSink:
             day = os.path.basename(p)[len(f"ticks-{self.host}-"):][:8]
             if day < cutoff:
                 os.remove(p)
-            elif p.endswith(".jsonl") and day != today:
+            elif p.endswith(".jsonl") and day < today:  # never today's (or a later) file
                 with open(p, "rb") as src, gzip.open(p + ".gz.tmp", "wb", compresslevel=6) as dst:
                     shutil.copyfileobj(src, dst)
                 os.replace(p + ".gz.tmp", p + ".gz")
