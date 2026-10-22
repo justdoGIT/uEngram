@@ -15,10 +15,12 @@ import json
 import math
 import os
 import platform
+import queue
 import re
 import shutil
 import signal
 import socket
+import sys
 import threading
 import time
 from typing import Callable
@@ -28,6 +30,44 @@ from .perf import PerfCounters
 from .sources import Snapshot, Ticker
 
 PHASE = 0.5
+
+
+class AsyncWriter:
+    """File writes on one background thread, in submission order, so a slow
+    disk never delays a tick. A tick that misses its second lands in the next
+    one, and its window then has K-1 ticks and is dropped whole. Measured on
+    hp, whose root is an overlay on a USB stick: write() blocked for about a
+    second every few minutes (97 missed ticks in 4.4 h, the collector using
+    2 ms of CPU across each gap), which dropped 23 % of hp's windows.
+    At most `maxsize` writes wait (an hour of ticks); beyond that new ones are
+    dropped and counted. A failing write is logged and counted, not raised:
+    the daemon keeps monitoring while its disk misbehaves."""
+
+    def __init__(self, maxsize: int = 3600):
+        self.q: queue.Queue = queue.Queue(maxsize)
+        self.dropped = self.failed = 0
+        self.thread = threading.Thread(target=self._run, name="writer", daemon=True)
+        self.thread.start()
+
+    def submit(self, fn: Callable, *args) -> None:
+        try:
+            self.q.put_nowait((fn, args))
+        except queue.Full:
+            self.dropped += 1
+
+    def _run(self) -> None:
+        while (item := self.q.get()) is not None:
+            fn, args = item
+            try:
+                fn(*args)
+            except OSError as e:
+                self.failed += 1
+                print(f"writer: {getattr(fn, '__qualname__', fn)}: {e}", file=sys.stderr, flush=True)
+
+    def close(self, timeout: float = 60.0) -> None:
+        """Finish the queued writes (up to `timeout` seconds)."""
+        self.q.put(None, timeout=timeout)
+        self.thread.join(timeout)
 
 
 def open_collector(pmu: bool = True) -> Ticker:
@@ -45,15 +85,17 @@ def host_meta(ticker: Ticker, period: float) -> dict:
             **ticker.snap.meta()}
 
 
-def _sleep_until_phase(period: float) -> None:
+def _sleep_until_phase(period: float, idle: Callable[[float], None]) -> None:
     now = time.time()
     target = math.floor((now - PHASE) / period) * period + PHASE + period
-    time.sleep(max(0.0, target - now))
+    idle(max(0.0, target - now))
 
 
 def tick_loop(ticker: Ticker, on_tick: Callable[[float, dict], None], period: float = 1.0,
-              seconds: float | None = None) -> None:
-    """Call on_tick(wall_time, tick) every period until SIGTERM/SIGINT or `seconds`."""
+              seconds: float | None = None, idle: Callable[[float], None] = time.sleep) -> None:
+    """Call on_tick(wall_time, tick) every period until SIGTERM/SIGINT or `seconds`.
+    Between ticks `idle(timeout)` waits; the daemon passes one that serves its
+    stream and PSI triggers (it must return within `timeout`)."""
     stop = False
 
     def _stop(*_):
@@ -63,10 +105,10 @@ def tick_loop(ticker: Ticker, on_tick: Callable[[float, dict], None], period: fl
     old = {s: signal.signal(s, _stop) for s in (signal.SIGTERM, signal.SIGINT)}
     t_end = None if seconds is None else time.monotonic() + seconds
     try:
-        _sleep_until_phase(period)
+        _sleep_until_phase(period, idle)
         ticker.tick()  # discard: its interval started at construction, off-phase
         while not stop and (t_end is None or time.monotonic() < t_end):
-            _sleep_until_phase(period)
+            _sleep_until_phase(period, idle)
             if stop:
                 break
             tick = ticker.tick()

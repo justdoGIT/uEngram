@@ -36,44 +36,39 @@ def _replay(args) -> int:
 
 
 def _run(args) -> int:
-    from .collector import SpoolSink, host_meta, open_collector, tick_loop
-    from .node import NodeMemory
-    node = NodeMemory.load(args.model)
-    ticker = open_collector(pmu=True)
-    spool = SpoolSink(os.path.expanduser(args.spool), host_meta(ticker, 1.0)) if args.spool else None
-    events = open(args.events, "a", buffering=1)
-
-    def on_tick(t, tick):
-        if spool:
-            spool(t, tick)
-        for rec in node.feed_ticks([{"t": t, **tick}]):
-            events.write(json.dumps(rec) + "\n")
-            node.write_state(args.state, rec)
-            if node.windows_seen % args.save_every == 0:
-                node.save(args.model)
-
-    try:
-        tick_loop(ticker, on_tick, 1.0)
-    finally:
-        node.save(args.model)
-        events.close()
-        if spool:
-            spool.close()
-    return 0
+    from .daemon import run
+    return run(args.model, args.state, args.events, os.path.expanduser(args.spool) if args.spool else None,
+               args.socket, args.save_every)
 
 
 def _status(args) -> int:
     with open(args.state) as f:
         st = json.load(f)
     from .cluster import format_node
-    print(format_node(st))
+    print(format_node(st, st.get("pressure_events")))
     return 0
 
 
+def _follow(args) -> int:
+    from .stream import follow
+    return follow(args.socket)
+
+
+def _hub(args) -> int:
+    import signal
+    from .hub import run, ssh_follow
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))  # runit stop: close the followers
+    return run({n: ssh_follow(n) for n in args.nodes}, os.path.expanduser(args.out))
+
+
 def _cluster(args) -> int:
-    from .cluster import collect, format_cluster
-    states = collect(args.nodes, args.state)
-    print(format_cluster(states))
+    from .cluster import format_cluster, read_snapshot
+    try:
+        snap = read_snapshot(os.path.expanduser(args.snapshot))
+    except FileNotFoundError:
+        print(f"no hub snapshot at {args.snapshot}: the hub runs on msi (uengram-host hub)", file=sys.stderr)
+        return 1
+    print(format_cluster(snap))
     return 0
 
 
@@ -96,10 +91,22 @@ def _campaign(args) -> int:
     return 0
 
 
+def _tune(args) -> int:
+    from .tune import format_result, tune
+    name = args.name or args.node.removesuffix("-worker")
+    res = tune(args.node, name, args.knob, args.values, reps=args.reps, jobs=args.jobs,
+               files_per_job=args.files_per_job, funcs=args.funcs, settle_s=args.settle,
+               tolerance=args.tolerance, seed=args.seed, campaign_dir=args.campaign, apply=args.apply)
+    print(format_result(res))
+    return 0
+
+
 def add_model_commands(sub) -> dict:
     host = socket.gethostname()
     model = os.path.join(DEFAULT_DIR, f"model-{host}.pkl")
     state = os.path.join(DEFAULT_DIR, "state.json")
+    sock = os.path.join(DEFAULT_DIR, "stream.sock")
+    snapshot = f"/dev/shm/uengram-cluster-{os.environ.get('USER') or os.getuid()}.json"
     c = sub.add_parser("commission")
     c.add_argument("--ticks", nargs="+", required=True, help="tick files or a node's spool files (.jsonl[.gz])")
     c.add_argument("--model", default=model)
@@ -120,11 +127,16 @@ def add_model_commands(sub) -> dict:
     o.add_argument("--events", default=os.path.join(DEFAULT_DIR, "events.jsonl"))
     o.add_argument("--save-every", type=int, default=50, help="windows between model saves")
     o.add_argument("--spool", help="also keep every tick in this daily spool directory")
+    o.add_argument("--socket", default=sock, help="stream socket for `follow` readers")
     s = sub.add_parser("status")
     s.add_argument("--state", default=state)
+    f = sub.add_parser("follow")
+    f.add_argument("--socket", default=sock)
+    h = sub.add_parser("hub")
+    h.add_argument("--nodes", nargs="+", required=True, help="ssh names of the nodes to follow")
+    h.add_argument("--out", default=snapshot)
     k = sub.add_parser("cluster")
-    k.add_argument("--nodes", nargs="+", required=True)
-    k.add_argument("--state", default="~/.local/state/uengram-host/state.json")
+    k.add_argument("--snapshot", default=snapshot, help="the hub's snapshot file")
     g = sub.add_parser("campaign")
     g.add_argument("action", choices=["plan", "tick", "status", "report"])
     g.add_argument("--dir", required=True)
@@ -137,5 +149,21 @@ def add_model_commands(sub) -> dict:
     g.add_argument("--seed", type=int, default=0)
     g.add_argument("--alpha", type=float, default=0.01)
     g.add_argument("--variants", nargs="*", help="report: subset of uengram.host.validate_variants.ALL")
-    return {"commission": _commission, "replay": _replay, "run": _run, "status": _status,
-            "cluster": _cluster, "campaign": _campaign}
+    t = sub.add_parser("tune")
+    t.add_argument("--node", required=True, help="ssh name of the node")
+    t.add_argument("--name", help="Slurm node name (default: the ssh name without -worker)")
+    t.add_argument("--knob", choices=["pl1", "epp", "scx"], required=True)
+    t.add_argument("--values", nargs="+", required=True,
+                   help="pl1: watts; epp: preference names; scx: scheduler names (scx_NAME) or none")
+    t.add_argument("--reps", type=int, default=6, help="blocks; each runs every value once, in random order")
+    t.add_argument("--jobs", type=int, help="parallel gcc processes (default: the node's CPUs)")
+    t.add_argument("--files-per-job", type=int, default=16)
+    t.add_argument("--funcs", type=int, default=150, help="functions per generated file")
+    t.add_argument("--settle", type=float, default=20.0, help="seconds between setting a value and the build")
+    t.add_argument("--tolerance", type=float, default=0.05, help="largest accepted slowdown (share)")
+    t.add_argument("--seed", type=int, default=0)
+    t.add_argument("--campaign", default="~/Backup/uengram-host/campaign",
+                   help="refuse while the campaign in this directory runs")
+    t.add_argument("--apply", action="store_true", help="set the recommended pl1/epp until the next reboot")
+    return {"commission": _commission, "replay": _replay, "run": _run, "status": _status, "follow": _follow,
+            "hub": _hub, "cluster": _cluster, "campaign": _campaign, "tune": _tune}

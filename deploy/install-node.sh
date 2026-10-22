@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Install uengram-hostd on fleet nodes: sync the package, install the runit
 # service, optionally install python3-numpy and enable the service.
-#   deploy/install-node.sh [--numpy] [--enable] [--campaign] NODE...
+#   deploy/install-node.sh [--numpy] [--enable] [--campaign] [--hub] NODE...
 # --campaign also installs (and with --enable enables) uengram-campaign, the
-# validation-campaign runner; install it on one node only (msi).
+# validation-campaign runner; --hub installs uengram-hub, which follows every
+# node's state stream; install both on one node only (msi).
 # sudo runs with the password from kepr on stdin (never in argv or files).
 set -euo pipefail
 
@@ -11,21 +12,23 @@ repo="$(cd "$(dirname "$0")/.." && pwd)"
 numpy=0
 enable=0
 campaign=0
+hub=0
 nodes=()
 for a in "$@"; do
 	case "$a" in
 	--numpy) numpy=1 ;;
 	--enable) enable=1 ;;
 	--campaign) campaign=1 ;;
+	--hub) hub=1 ;;
 	-h | --help)
-		sed -n '2,7p' "$0"
+		sed -n '2,8p' "$0"
 		exit 0
 		;;
 	*) nodes+=("$a") ;;
 	esac
 done
 [ "${#nodes[@]}" -gt 0 ] || {
-	echo "usage: $0 [--numpy] [--enable] [--campaign] NODE..." >&2
+	echo "usage: $0 [--numpy] [--enable] [--campaign] [--hub] NODE..." >&2
 	exit 2
 }
 
@@ -51,6 +54,9 @@ for n in "${nodes[@]}"; do
 	install_service "$n" uengram-hostd
 	if [ "$campaign" = 1 ]; then
 		install_service "$n" uengram-campaign
+	fi
+	if [ "$hub" = 1 ]; then
+		install_service "$n" uengram-hub
 	fi
 	ssh -o BatchMode=yes "$n" 'python3 -c "import numpy" 2>/dev/null && echo "numpy: yes" || echo "numpy: no (run mode needs it)"'
 done

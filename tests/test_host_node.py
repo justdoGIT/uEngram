@@ -58,6 +58,15 @@ def test_single_error_event_alarms_through_the_count_model(run):
     assert r["alarm_event"] and r["events"] == {"oom_kills": 1}
 
 
+def test_health_places_every_sustained_anomaly_beyond_the_healthy_reference(run):
+    node, recs = run
+    assert 0 < node.commission_report["reference_states"] <= node.eng.cfg.B_ref
+    normal = [r["persistent_health"] for r in recs
+              if not any(lo - 64 <= r["k"] <= hi + 64 for lo, hi in ANOMALIES.values())]
+    for name in ("thrash", "spin", "hot"):
+        assert min(r["persistent_health"] for r in _during(recs, name)) > np.nanquantile(normal, 0.99)
+
+
 def test_saved_memory_continues_identically(tmp_path, run):
     node, _ = run
     path = str(tmp_path / "m.pkl")

@@ -22,7 +22,8 @@ from .validate_criteria import wilson
 
 ABLATIONS = {"no_thermal": Options(use_thermal=False), "no_spe": Options(use_spe=False),
              "no_ondelay": Options(on_delay=1), "no_events": Options(use_events=False),
-             "no_saturation": Options(use_saturation=False)}
+             "no_saturation": Options(use_saturation=False),
+             "no_step_calibration": Options(use_step_calibration=False)}
 BASELINES = ("saturation_only", "max_z", "single_gaussian")
 ALL = ("full", *ABLATIONS, *BASELINES)
 

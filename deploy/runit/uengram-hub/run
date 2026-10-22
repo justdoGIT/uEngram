@@ -1,0 +1,17 @@
+#!/bin/sh
+# uengram-hub (msi only): follow every node's uengram-hostd stream over ssh and
+# keep the cluster snapshot that `uengram-host cluster` reads
+# (/dev/shm/uengram-cluster-kk.json, rewritten up to once a second). Runs as kk
+# for the fleet ssh keys; no network port is opened on any node.
+exec 2>&1
+# shellcheck source=/dev/null
+[ -r /etc/default/uengram-hub ] && . /etc/default/uengram-hub
+user="${UENGRAM_USER:-kk}"
+home="/home/$user"
+src="${UENGRAM_SRC:-$home/.local/share/uengram-host/src}"
+set --
+for n in ${UENGRAM_NODES:-msi-worker hp asus-worker lenovo-worker gigabyte-worker}; do
+	set -- "$@" "$n"
+done
+exec chpst -u "$user:$user" env HOME="$home" USER="$user" PYTHONPATH="$src" \
+	python3 -m uengram.host hub --nodes "$@"

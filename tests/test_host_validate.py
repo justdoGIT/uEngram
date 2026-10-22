@@ -133,7 +133,8 @@ def test_injected_faults_are_found_by_the_right_channel(campaign_dir):
 
 def test_report_lists_every_requested_variant(campaign_dir):
     md = campaign_dir[1]
-    rows = [ln.split("|")[1].strip() for ln in md.split("## 4.")[1].splitlines() if ln.startswith("| ")]
+    section4 = md.split("## 4.")[1].split("## 5.")[0]
+    rows = [ln.split("|")[1].strip() for ln in section4.splitlines() if ln.startswith("| ")]
     assert rows[1:] == ["full", "no_ondelay", "saturation_only", "max_z", "single_gaussian"]
 
 

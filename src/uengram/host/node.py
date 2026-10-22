@@ -15,6 +15,11 @@ Commissioning (declared healthy run of ticks):
   (Bonferroni), and inside the counters between the counters.
 * the sorted calibration scores are kept, so every window also gets a
   conformal p-value (uengram.host.validate checks their calibration live).
+* uEngram v3: the step detector is calibrated to the time correlation of
+  the commissioning innovations (stepcal.py), and the normal states learned
+  from the declared-healthy fit part are frozen as a healthy reference; every
+  window gets its health score, the D2 to the nearest frozen state, which
+  keeps growing with slow drift that the adaptive memory absorbs.
 """
 from __future__ import annotations
 
@@ -31,10 +36,11 @@ import numpy as np
 from ..engine import Engram, EngramConfig
 from ..lifecycle import CAND, EPI, SEM, SUPER
 from ..stats import conformal_threshold, surprisal
-from . import schema
+from . import schema, stepcal
 from .encoder import HostEncoder
 from .events import EventModel
 from .features import Columns, select, tick_columns, windows, windows_from_columns
+from .psi import fast_bounds
 
 
 @dataclass(frozen=True)
@@ -46,6 +52,7 @@ class Options:
     use_spe: bool = True  # out-of-subspace (Q) coordinate
     use_events: bool = True  # Poisson-Gamma test on error counters
     use_saturation: bool = True  # pressure beyond commissioning
+    use_step_calibration: bool = True  # step detector scaled to correlated innovations (uEngram v3)
 
 
 PHASES = 4
@@ -93,9 +100,10 @@ class NodeMemory:
         self.commission_report: dict = {}
         self.alarm_threshold = float("inf")
         self.calib = np.empty(0)  # sorted calibration (persistent) scores
-        self._recent: deque = deque(maxlen=options.on_delay)  # (window step, score)
+        self._recent: deque = deque(maxlen=options.on_delay)  # (window step, score, health)
         self.alarmed_states: dict[int, float] = {}  # item id -> window start of its first alarm
         self.sat_bound = {n: SAT_FLOOR for n in PRESSURES}
+        self.fast_bound = {n: SAT_FLOOR for n in PRESSURES}  # 2 s shares, for psi.PsiTriggers
 
     # -- commissioning ---------------------------------------------------
     @classmethod
@@ -113,18 +121,24 @@ class NodeMemory:
         offsets = [k * K / PHASES for k in range(PHASES)]
         seqA = [windows_from_columns(A, K, off) for off in offsets]
         seqB = [windows_from_columns(B, K, off) for off in offsets]
-        if len(seqA[0]) < 4 * d or len(seqB[0]) < 10:
-            raise ValueError(f"commissioning too short: {len(seqA[0])} fit / {len(seqB[0])} calibration windows")
         enc = HostEncoder(d, K, options.use_thermal, options.use_spe).fit(seqA)
         ev = EventModel().fit(seqA[0].events)  # one phase: overlapping phases would count events 4 times
         cfg = EngramConfig(B_sem=B_sem, B_epi=B_epi)
         raw_bytes = 4 * len(schema.TICK_FIELDS) * K
-        node = cls(enc, Engram(cfg, d, enc.sigma0, raw_bytes, name=f"uengram-{meta.get('host', '')}"),
-                   ev, K, float(seqA[0].t0[0]), alpha, meta, options)
         n_reconfirm = cfg.n_reconfirm
         cfg.n_reconfirm = len(seqA[0]) + 1  # declared-normal run: recurrence anywhere promotes
+        t_origin = float(seqA[0].t0[0])
+        inflation, stepcal_report = None, {"estimator": "off"}
+        if options.use_step_calibration:
+            Z, _, _, _ = enc.encode(seqA[0])
+            steps = np.floor((seqA[0].t0 - t_origin) / K + 1e-9).astype(np.int64)
+            inflation, stepcal_report = stepcal.calibrate(Z, steps, cfg, enc.sigma0, raw_bytes)
+        eng = Engram(cfg, d, enc.sigma0, raw_bytes, name=f"uengram-{meta.get('host', '')}",
+                     step_inflation=inflation)
+        node = cls(enc, eng, ev, K, t_origin, alpha, meta, options)
         node._ingest(seqA[0])
         cfg.n_reconfirm = n_reconfirm
+        eng.set_reference(*eng.reference())
         node.thermal_state = None
         node._recent.clear()
         copies = [copy.deepcopy(node) for _ in offsets[1:]]
@@ -146,6 +160,7 @@ class NodeMemory:
         idx = [enc.names.index(n) for n in PRESSURES]
         seen = np.sin(np.vstack([seqA[0].F[:, idx], seqB[0].F[:, idx]])) ** 2
         node.sat_bound = {n: float(max(np.nanmax(seen[:, j]), SAT_FLOOR)) for j, n in enumerate(PRESSURES)}
+        node.fast_bound = fast_bounds({k: np.concatenate([A[k], B[k]]) for k in A}, SAT_FLOOR)
         single = np.array([r["score"] for r in recs], dtype=np.float64)
         node.commission_report = {
             "host": node.host, "ticks": int(len(t)), "window_s": K, "t_start": float(t.min()),
@@ -155,7 +170,9 @@ class NodeMemory:
             "single_window_q": float(np.nanquantile(single, 1 - alpha / 2)),
             "encoder": enc.fit_report, "events": ev.report(), "slots": node.slot_counts(),
             "calibration_event_alarm_share": float(np.mean([r["alarm_event"] for r in recs])),
-            "saturation_bounds": node.sat_bound, "options": options.__dict__,
+            "saturation_bounds": node.sat_bound, "fast_bounds_2s": node.fast_bound,
+            "step_calibration": stepcal_report, "reference_states": int(len(eng.ref_mu)),
+            "options": options.__dict__,
         }
         return node
 
@@ -206,13 +223,15 @@ class NodeMemory:
         self.windows_seen += 1
         # On-delay: a window that straddles a job start/stop is a mixture of two
         # known states and novel on its own; a fault persists. The persistent
-        # score is the smallest of the last `on_delay` consecutive windows.
+        # score is the smallest of the last `on_delay` consecutive windows. The
+        # same holds for the distance to the healthy reference.
         if self._recent and self._recent[-1][0] != t_step - 1:
             self._recent.clear()
-        self._recent.append((t_step, res.score))
-        persist = float("nan")
-        if len(self._recent) == self.opt.on_delay:
-            persist = float(np.min([s for _, s in self._recent]))  # NaN stays NaN
+        self._recent.append((t_step, res.score, res.health))
+        persist = persist_health = float("nan")
+        if len(self._recent) == self.opt.on_delay:  # NaN stays NaN
+            persist = float(np.min([s for _, s, _ in self._recent]))
+            persist_health = float(np.min([h for _, _, h in self._recent]))
         p = self.ev.pvalues(seq.events[i])
         p_min = float(np.nanmin(p)) if np.isfinite(p).any() else 1.0
         alarm_event = self.opt.use_events and p_min < self.alpha / 2 / len(p)
@@ -246,6 +265,15 @@ class NodeMemory:
             rec["modality_d2"] = mods
             top = np.argsort(-contrib)[:3]
             rec["top_features"] = [[self.enc.names[j], float(contrib[j])] for j in top]
+        # Health (uEngram v3, EXPLAINED 7c): D2 to the nearest state of the frozen
+        # healthy reference, with the same attribution. Not an alarm: a new but
+        # legitimate workload also moves it; it ranks slow drift that the memory
+        # has absorbed (a leak, rising thermal resistance) above routine windows.
+        rec["health"], rec["persistent_health"] = res.health, persist_health
+        if len(eng.ref_mu):
+            j = int(np.argmin(np.sum((z - eng.ref_mu) ** 2 / eng.ref_var, axis=1)))
+            ch = self.enc.attribution(x, z, eng.ref_mu[j], eng.ref_var[j])
+            rec["health_modality_d2"] = {m: float(ch[self.enc.modality == m].sum()) for m in schema.MODALITIES}
         for ev in eng.drain_events():
             self._apply_event(ev)
         return rec
@@ -287,13 +315,10 @@ class NodeMemory:
     def slot_counts(self) -> dict:
         return {name: int(np.sum(self.eng.kind == k)) for k, name in KIND_NAME.items()}
 
-    def write_state(self, path: str, rec: dict) -> None:
-        st = {**rec, "slots": self.slot_counts(), "state_profile": self.state_profile(rec["item_id"]),
-              "windows_seen": self.windows_seen, "gaps": self.gaps}
-        tmp = f"{path}.tmp"
-        with open(tmp, "w") as f:
-            json.dump(st, f)
-        os.replace(tmp, path)
+    def state(self, rec: dict) -> dict:
+        """The node's current state: its latest window record plus the memory's view."""
+        return {**rec, "slots": self.slot_counts(), "state_profile": self.state_profile(rec["item_id"]),
+                "windows_seen": self.windows_seen, "gaps": self.gaps}
 
     def save(self, path: str) -> None:
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)

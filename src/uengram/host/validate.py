@@ -10,7 +10,8 @@ replays the test phase through the deployed model and answers:
    rest, nothing injected. (b) On the fault week, deployed model, windows at
    least MARGIN windows away from any fault on the node. Alarms are serially
    dependent, so intervals come from a moving-block bootstrap whose blocks hold
-   whole alarm episodes (episode_block), not iid.
+   whole alarm episodes (episode_block), not iid. Also alarm episodes per
+   week and step-change supersessions per day (validate_signals).
 2. Detection: per fault type and strength, the share detected by any channel
    (Wilson interval), the delay, whether D2 attribution named the expected
    modality and whether a saturation flag named the expected resource.
@@ -18,6 +19,8 @@ replays the test phase through the deployed model and answers:
    windows (the deployed path must equal the offline one).
 4. Ablations and baselines (validate_variants): what each part contributes and
    whether simpler detectors would do as well.
+5. Health (validate_signals): whether the distance to the frozen healthy
+   reference ranks fault windows above normal ones.
 """
 from __future__ import annotations
 
@@ -33,6 +36,7 @@ from .collector import spool_files
 from .features import read_columns, select, windows_from_columns
 from .node import NodeMemory, Options
 from .validate_criteria import wilson
+from .validate_signals import alarm_episodes, health_ranking, health_table, step_changes_per_day
 
 MARGIN = 2  # windows around a fault left out of the normal set
 MIN_BLOCK = 4  # shortest bootstrap block, windows
@@ -161,6 +165,8 @@ def calibration(recs: list[dict], faults: list[dict], name: str, K: int, alpha: 
         "any": block_ci([fired(r) for r in normal]),
         "p_le": {a: block_ci(np.where(np.isfinite(p), p <= a, np.nan)) for a in (alpha / 2, 0.05, 0.1)},
         "ks_d": ks,
+        "episodes_per_week": alarm_episodes(normal, K, fired),
+        "step_changes_per_day": step_changes_per_day(recs, K),
     }
 
 
@@ -227,16 +233,17 @@ def _detection_table(rows: list[dict]) -> list[str]:
 
 
 def _calibration_table(cal: dict) -> list[str]:
-    out = ["| node | normal windows | latent | event | saturation | any | p <= alpha/2 | p <= 0.05 | KS D |",
-           "|---|---|---|---|---|---|---|---|---|"]
+    out = ["| node | normal windows | latent | event | saturation | any | p <= alpha/2 | p <= 0.05 | KS D | "
+           "alarm episodes / week | step changes / day |",
+           "|---|---|---|---|---|---|---|---|---|---|---|"]
     for name, c in cal.items():
         if "error" in c:
-            out.append(f"| {name} | {c['error']} |" + " |" * 7)
+            out.append(f"| {name} | {c['error']} |" + " |" * 9)
             continue
         pa = list(c["p_le"].values())
         out.append(f"| {name} | {c['normal_windows']} | {_fmt(c['latent'])} | {_fmt(c['event'])} | "
                    f"{_fmt(c['saturation'])} | {_fmt(c['any'])} | {_fmt(pa[0])} | {_fmt(pa[1])} | "
-                   f"{c['ks_d']:.3f} |")
+                   f"{c['ks_d']:.3f} | {c['episodes_per_week']:.2f} | {c['step_changes_per_day']:.2f} |")
     return out
 
 
@@ -312,11 +319,16 @@ def write_report(directory: str, variants: tuple[str, ...] | None = None) -> str
     lines += ["", "## 4. Ablations and baselines", "",
               "Pass for a component: removing it lowers detection or raises false alarms.", ""]
     lines += variant_table(summary)
+    health = health_ranking(recs_by_node, faults, K, near_fault, in_fault)
+    lines += ["", "## 5. Health score as a ranking signal (reported, not alarmed)", "",
+              "AUROC of fault windows against normal windows, per node, averaged over nodes. Health is the D2 "
+              "to the frozen healthy reference (uEngram v3); the alarm score is the persistent novelty score.",
+              ""] + health_table(health)
     path = os.path.join(directory, "report.md")
     with open(path, "w") as f:
         f.write("\n".join(lines) + "\n")
     with open(os.path.join(directory, "report.json"), "w") as f:
         json.dump({"verdicts": verdicts, "criteria": crit, "clean_week": clean, "calibration": cal,
-                   "detection": det, "consistency": cons, "variants": summary, "skipped": skipped},
-                  f, indent=1, default=str)
+                   "detection": det, "consistency": cons, "variants": summary, "health": health,
+                   "skipped": skipped}, f, indent=1, default=str)
     return path

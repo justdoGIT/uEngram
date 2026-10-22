@@ -2,11 +2,14 @@
 
   probe                       check every source and print one tick
   record  [--out F | --spool D] [--seconds]   write ticks to a JSONL file or a daily spool (stdlib only)
-  commission --ticks F... --model M   fit encoder, seed memory, calibrate alarms
-  run     --model M [--spool D]  online: tick, window, encode, remember; state file + events
+  commission --ticks F... --model M   fit encoder, seed memory, calibrate alarms and the step test
+  run     --model M [--spool D]  online: tick, window, encode, remember; state file, events, stream socket
   replay  --model M --ticks F  offline: feed recorded ticks through a commissioned model
   status  [--state F]          print a node state file
-  cluster --nodes ...          collect node states over ssh and print the cluster view
+  follow                      relay this node's state stream to stdout (read by the hub over ssh)
+  hub     --nodes ...          follow every node's stream; keep the cluster snapshot (runs on msi)
+  cluster                     print the hub's cluster view and placement order
+  tune    --node N --knob K --values ...   measure a power/scheduler knob on a fixed build (uengram.host.tune)
   campaign plan|tick|status|report --dir D   validation campaign (uengram.host.campaign)
 """
 from __future__ import annotations
@@ -35,7 +38,7 @@ def _probe(args) -> int:
 
 
 def _record(args) -> int:
-    from .collector import JsonlSink, SpoolSink, host_meta, open_collector, tick_loop
+    from .collector import AsyncWriter, JsonlSink, SpoolSink, host_meta, open_collector, tick_loop
     ticker = open_collector(pmu=True)
     meta = host_meta(ticker, args.period)
     if args.spool:
@@ -44,9 +47,11 @@ def _record(args) -> int:
         where = args.out or os.path.join(DEFAULT_DIR, f"ticks-{socket.gethostname()}.jsonl")
         sink = JsonlSink(where, meta)
     print(f"recording to {where}", file=sys.stderr, flush=True)
+    writer = AsyncWriter()
     try:
-        tick_loop(ticker, sink, args.period, args.seconds)
+        tick_loop(ticker, lambda t, tick: writer.submit(sink, t, tick), args.period, args.seconds)
     finally:
+        writer.close()
         sink.close()
     return 0
 
