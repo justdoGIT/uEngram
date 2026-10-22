@@ -1,10 +1,12 @@
 # uEngram
 
-A reference implementation and benchmark of a deterministic, fixed-budget memory for embedded sensor streams ("Mem0 for sensors"). Routine windows are absorbed into running Gaussian statistics at no extra write cost, rare anomalies are pinned with their raw window, wear drift is tracked with checkpoints, stale baselines are superseded, and eviction is Ward-merge / importance-based inside a hard budget. The engine works on a whitened latent space with exact chi-square gating; encoders are a DSP+PCA encoder and a 1D-CNN autoencoder. It is benchmarked against naive append-only, FIFO, reservoir sampling and the engine from `docs/EdgeAIMemoryArchitecture.md` on a labelled synthetic stream and on NASA CMAPSS FD001, with multi-seed bootstrap confidence intervals.
+A reference implementation and benchmark of a deterministic, fixed-budget memory for embedded sensor streams ("Mem0 for sensors"). Routine windows are absorbed into running Gaussian statistics at no extra write cost, rare anomalies are pinned with their raw window, wear drift is tracked with checkpoints, repairs and new regimes are detected by a sequential step test and supersede the old state, and eviction is Ward-merge / importance-based inside a hard budget. Novelty is scored against normal states only, and alarms use a threshold calibrated conformally on a fault-free commissioning run. The engine works on a whitened latent space in which within-state noise is decorrelated, so correlated sensors count once; encoders are a DSP+PCA encoder, the same with a learned thermal-lag residual (`ctx`), and a 1D-CNN autoencoder. It is benchmarked against naive append-only, FIFO, reservoir sampling and the engine from `docs/EdgeAIMemoryArchitecture.md` on a labelled synthetic stream and on NASA CMAPSS FD001, with multi-seed bootstrap confidence intervals.
 
-- `docs/PLAN.md`: the implementation plan.
+- `docs/PLAN.md`: the original implementation plan.
 - `docs/EXPLAINED.md`: every component in plain words and math, and where it lives in code.
-- `docs/RESULTS.md`: benchmark tables and findings.
+- `docs/RESULTS.md`: benchmark tables and findings (v2; v1 kept in `results/v1/`).
+- `docs/IMPROVEMENT-ANALYSIS.md`: the diagnostics that motivated v2.
+- `docs/research-*.md`: literature notes (machine-state mathematics, anomaly-detection evaluation, condition-monitoring features, CMAPSS practice).
 
 ## Environment
 
@@ -29,8 +31,8 @@ uv run pytest -q
 uv run python -m bench.run_synth --quick --out /tmp/uengram_smoke.jsonl
 uv run python -m bench.run_cmapss --quick --out /tmp/uengram_cmapss_smoke.jsonl
 
-# full synthetic benchmark: 10 seeds x 2 encoders x 9 methods
-uv run python -m bench.run_synth --seeds 0-9 --encoders dsp,cnn --jobs 2 --out results/synth_runs.jsonl 2>&1 | tee ~/.local/state/uengram/synth.log
+# full synthetic benchmark: 10 seeds x 3 encoders x 10 methods
+uv run python -m bench.run_synth --seeds 0-9 --encoders dsp,ctx,cnn --jobs 2 --out results/synth_runs.jsonl 2>&1 | tee ~/.local/state/uengram/synth.log
 
 # budget sweep
 uv run python -m bench.run_synth --seeds 0-4 --encoders dsp --sweep-budgets 64,128,256,512 --out results/synth_sweep.jsonl 2>&1 | tee ~/.local/state/uengram/sweep.log
@@ -47,9 +49,9 @@ Keep `--jobs` at 2 or below; the host has about 1 GB of RAM headroom.
 ## Layout
 
 ```
-src/uengram/   library: stats, metrics, synth, encoders, ledger, store, baselines, engine, lifecycle, cmapss
+src/uengram/   library: stats, metrics, synth, encoders (dsp, ctx, cnn), ledger, store, baselines, engine, lifecycle, cmapss
 bench/         harness: provenance, evaluate, common, run_synth, run_cmapss, report
 tests/         unit and behaviour tests
 results/       committed run outputs (JSONL)
-docs/          plan, explainer, results, architecture notes
+docs/          plan, explainer, results, improvement analysis, research notes, architecture notes
 ```

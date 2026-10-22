@@ -63,26 +63,54 @@ The doc trains on unscaled channels, so a channel with large units (rpm) dominat
 
 ---
 
-## 4. Whitening
+## 3b. Context encoder: predicting transitions from physics
 
 ### Plain words
-Re-measure the 16 numbers so that, over normal training data, each one has spread exactly 1 and none of them moves in lock-step with another. After this, "how unusual is this point?" is just ordinary distance.
+After a speed change the coolant takes a few windows to warm up. A plain encoder sees each warm-up window as "temperature ramping", which never happens in steady running, so it looks like a fault. The context encoder asks instead: "given how fast it was warming a moment ago and what speed we just switched to, how much should it warm now?" Only the surprise in that answer is kept.
 
 ### Why it exists
-The statistical machinery (chi-square gate, Bhattacharyya distance, Ward cost) assumes distances mean the same thing in every direction.
+In v1, 35% of normal windows within 4 steps of a regime change were flagged against 0.8% of steady windows, and the only features that moved were the coolant log-std and lowest band. A thermal fault is also a temperature ramp, so without a model the two are confused.
 
 ### The math
-Training features $F\in\mathbb{R}^{N\times p}$, mean $m$, covariance $\Sigma=V\Lambda V^\top$ (`eigh`), top-$d$ eigenpairs. $z=(F-m)V_d\Lambda_d^{-1/2}$. Eigenvalues are floored at $10^{-8}\lambda_{\max}$. On training data $\mathrm{Cov}(z)=I_d$ exactly (tested to $10^{-6}$).
+Fit a line to the coolant samples in each window: ramp $r_t$ = end minus start. Drive $u_t$ = mean rpm. A first-order lag $x_t = x_{t-1} + a\,(T_{eq}(u_t) - x_{t-1})$ with a quadratic equilibrium temperature $T_{eq}$ gives, between consecutive windows,
+$$r_t = (1-a)\,r_{t-1} + a\,[T_{eq}(u_t) - T_{eq}(u_{t-1})] = b_0\,r_{t-1} + b_1\,\Delta u + b_2\,\Delta(u^2).$$
+Slow wear shifts $T_{eq}$ by the same amount in both windows and cancels. $b$ is fitted by trimmed least squares (6 rounds, keep $|e| < 4\,$MAD) on the training stream. The feature is the residual $e_t = r_t - \hat r_t$, plus the log std of the linearly detrended coolant signal; they replace the channel's six spectral features. Encoding is sequential: if $|e_t|$ exceeds 5 robust scales the window is treated as faulty and does not update the context, which is propagated as $b_0\,r_{t-1}$ with $u$ held (innovation gating). Independent windows (`sequential=False`, e.g. the probe set) assume steady state, $\hat r = 0$.
 
 ### Why this and not the obvious alternative
-Without whitening, a Euclidean ball in feature space is an arbitrary ellipse relative to the data. Mahalanobis in the original space would need a $p\times p$ inverse per comparison; whitening pays that once.
+Three simpler fits failed on the same data (`docs/IMPROVEMENT-ANALYSIS.md`): one-window least squares was pulled by fault windows (a seizure's 0.3 rpm is a high-leverage point); robust trimming discarded the transitions as outliers and learned "temperature never changes" ($b_0 = 0.99$); a one-window equilibrium model was confounded by wear ($a = 0.019$). The two-window form recovers $a = 0.523$ (truth 0.5) and equilibrium steps 0.234 / 0.141 (truth 0.25 / 0.15) from unlabelled data. This is residual generation by analytical redundancy ([Willsky 1984](https://willsky.lids.mit.edu/publ_pdfs/43_pub_IEEE.pdf); [Isermann](https://link.springer.com/book/10.1007/3-540-30368-5)).
 
 ### Where in code
-`src/uengram/encoders.py:Whitener`.
+`src/uengram/encoder_ctx.py:ContextEncoder`; selected with `--encoders ctx` in `bench/run_synth.py`.
 
 ---
 
-## 5. Noise scale $\sigma_0$ via MAD of successive differences
+## 4. Whitening and correlated sensors
+
+### Plain words
+Two re-measurements. First, rotate and rescale the features so that over all training data each direction has spread 1 and none moves in lock-step with another. Second, do the same for the *jitter inside one operating state*. Sensors that are physically tied together, such as a temperature and a pressure in the same fluid, jitter together. After the second step one physical wobble counts once, not once per sensor, and a change that breaks the usual relationship (temperature up, pressure not) stands out.
+
+### Why it exists
+The statistical machinery (chi-square gate, step detector, Bhattacharyya distance, Ward cost) treats the 16 dimensions as independent. If one fluctuation moves several dimensions, a per-dimension distance counts it several times and the gate fires too often.
+
+### The math
+PCA whitening: training features $F\in\mathbb{R}^{N\times p}$, mean $m$, covariance $\Sigma=V\Lambda V^\top$, top-$d$ eigenpairs, $y=(F-m)V_d\Lambda_d^{-1/2}$ (eigenvalues floored at $10^{-8}\lambda_{\max}$).
+
+Noise whitening: estimate the within-state noise covariance $N$ of $y$ robustly from lag differences (section 5) and set $z = y\,N^{-1/2}$ with the symmetric root $N^{-1/2} = U\,\mathrm{diag}(\nu)^{-1/2}\,U^\top$ (minimal rotation). The noise in $z$ is then uncorrelated with unit variance (tested to 0.01), so the diagonal slot statistics count each correlated fluctuation once. This is the noise-adjustment step of the maximum-noise-fraction transform ([Green et al. 1988](https://doi.org/10.1109/36.3001)), applied after PCA so the kept subspace does not change.
+
+Measured on the synthetic stream before this step: noise correlation between dimensions averaged 0.05 (DSP), 0.04 (context) and 0.22 (CNN), leaving 14.1, 14.6 and 7.4 effective independent dimensions of 16. Inside one regime, the per-dimension gate rejected 23 to 39% of normal windows in CNN space versus 0% with a full covariance. After noise whitening, the per-dimension gate rejects at most 0.08% of normal windows in 200-window state blocks (the slots' effective memory) versus 0% with a full per-slot covariance, so slots stay diagonal; a full covariance would cost $d^2 = 256$ numbers per slot for that difference.
+
+### Why this and not the obvious alternative
+- *Correlation across states is not noise.* Across operating states temperature and pressure both rise with load. That common cause is carried by the slot means, not the noise model. Estimating correlation from all data would mix the two; differences of consecutive windows cancel the state.
+- *Global PCA alone is not enough.* It decorrelates the total spread, which is dominated by differences between states, and leaves within-state noise correlated (the CNN case above).
+- *Per-slot full covariances* were measured to add almost nothing after noise whitening, at 16 times the memory.
+- On CMAPSS FD001 the 14 sensors carry close to 2 independent signals (82% and 16% of standardised variance; healthy-life levels correlate up to 0.98 across engines, while noise couplings are at most 0.35, between s9 and s14, both core-shaft speed). Summing per-sensor deviations there would overcount the same degradation several times.
+
+### Where in code
+`src/uengram/encoders.py:Whitener, NoiseWhitener, fit_projection`; `src/uengram/stats.py:robust_noise_cov`.
+
+---
+
+## 5. Noise scale $\sigma_0$ and noise covariance from successive differences
 
 ### Plain words
 To decide whether a point is "far", you need to know how jittery a single measurement normally is. Measure that jitter by comparing each window to the one right after it: slow changes (wear, a regime switch) cancel, jitter does not.
@@ -95,11 +123,13 @@ $\Delta_t=z_{t+\ell}-z_t$ with lag $\ell$ (1 for synthetic; 16 for CMAPSS, so th
 $$\sigma_{0,j}=\frac{1.4826\;\mathrm{median}|\Delta_j-\mathrm{median}(\Delta_j)|}{\sqrt2}.$$
 $1.4826$ turns the median absolute deviation into a standard deviation for Gaussians; $\sqrt2$ because a difference of two independent noises has variance $2\sigma^2$. Floored at $10^{-6}$; fewer than 10 pairs raises.
 
+The full noise covariance generalises this. With $D_t = \Delta_t/\sqrt2$, start from $C = \mathrm{diag}(\sigma_0^2)$ and repeat 5 times: keep the $D_t$ with $D_t^\top C^{-1} D_t \le q$, where $q$ is the $\chi^2_d$ 97.5% quantile, and set $C$ to their covariance times $c = 0.975 / P(\chi^2_{d+2} \le q)$. The factor $c$ undoes the shrinkage caused by trimming a Gaussian at Mahalanobis radius $q$. Tested: a correlated 4-d noise covariance is recovered within 0.08 under state switches every 50 steps and 3% persistent jumps. After noise whitening $\sigma_0 \approx 1$ in every dimension; it is still estimated by the MAD formula and passed to the engine.
+
 ### Why this and not the obvious alternative
 A plain standard deviation of differences is inflated by every regime switch and anomaly (a handful of huge jumps). The median ignores them as long as they are a minority. Residual bias is small but real: if a fraction $\epsilon$ of differences are huge, the median of $|\Delta|$ moves up to the $0.5/(1-\epsilon)$ quantile of the clean distribution, which inflates the estimate by roughly 4% at $\epsilon=5\%$ and 16% at $\epsilon=10\%$. The test uses 5% persistent jumps and recovers $\sigma$ within 10%.
 
 ### Where in code
-`src/uengram/stats.py:robust_noise_sigma`.
+`src/uengram/stats.py:robust_noise_sigma, robust_noise_cov`.
 
 ---
 
@@ -117,14 +147,17 @@ Slot state (struct-of-arrays): mean $\mu\in\mathbb{R}^d$, variance state $S\in\m
 ```mermaid
 stateDiagram-v2
     [*] --> Candidate: point outside every gate (new_candidate)
-    Candidate --> Semantic: n >= M within N steps of creation (promote)
-    Candidate --> Episodic: age > N without promotion (probation expiry)
-    Semantic --> Superseded: dormant >= t_dormant and a younger semantic slot exists
+    Candidate --> Semantic: 5 hits within 8 steps of creation (promote)
+    Candidate --> Episodic: age over 8 steps without promotion (probation expiry)
+    Episodic --> Semantic: sustained dwell, 20 hits within 30 steps (promote)
+    Semantic --> Superseded: persistent shift detected (step) or dormant with a younger successor
     Semantic --> Semantic: merge (duplicate or Ward) / drift checkpoint
     Episodic --> [*]: evicted, lowest importance
     Candidate --> [*]: evicted when no episodic slot exists, oldest first
     Superseded --> [*]: evicted first when the semantic group is full
 ```
+
+On a step detection the old slot is superseded and a new semantic slot starts at the current window.
 
 A bounded `lineage` ring (256 entries) records `checkpoint`, `supersede`, `merge` and eviction events, so the history of how the machine's normal moved survives even when the slots that held it are gone.
 
@@ -149,13 +182,34 @@ For slot $k$ with mean $\mu_k$ and diagonal predictive variance $v_k$:
 $$D^2_k=\sum_{j=1}^{d}\frac{(z_j-\mu_{k,j})^2}{v_{k,j}}.$$
 For a point from the slot's own Gaussian, $D^2\sim\chi^2_d$. The gate is $D^2_k\le\tau=\chi^2_{d,\mathrm{isf}}(\alpha)$ with $\alpha=10^{-4}$ (`alpha_gate`; $\tau\approx 39.3$ at $\alpha=10^{-3}$ for $d=16$). For even $d$ the survival function is exact:
 $$Q\!\left(\tfrac d2,\tfrac x2\right)=e^{-x/2}\sum_{k=0}^{d/2-1}\frac{(x/2)^k}{k!},$$
-evaluated in log space. $\tau$ is found by bisection. Surprisal is $-\log_{10}Q$, capped at 300 decades. The prequential score reported for detection is $\min_k D_k^2$ computed *before* the slot update.
+evaluated in log space. $\tau$ is found by bisection. Surprisal is $-\log_{10}Q$, capped at 300 decades.
+
+The prequential novelty score is $\min_k D_k^2$ over **semantic** slots only, computed *before* the update (over all slots when promotion is disabled, since then no slot is "normal"). Episodic slots still absorb recurring faults, so a repeat knock joins the knock slot and is named by it, but a stored fault no longer makes the next one look familiar. v1 took the minimum over all slots; in the diagnostic (DSP, 3 seeds) this masking held AUROC at 0.64, and scoring against normal states only gave 1.00.
 
 ### Why this and not the obvious alternative
 Cosine similarity on a sphere ignores magnitude (a 2x anomaly maps to the same point) and has no calibrated threshold. The closed form avoids a scipy dependency and keeps the tail accurate far out, where `1-cdf` underflows to zero and surprisal would be infinite. $d$ must be even; odd $d$ raises.
 
 ### Where in code
 `src/uengram/stats.py:chi2_logsf, chi2_isf, surprisal`; gate in `src/uengram/engine.py:Engram.ingest`.
+
+---
+
+## 7b. Alarms: a calibrated threshold, separate from absorption
+
+### Plain words
+Two questions get two thresholds. "Which memory does this window belong to?" uses the statistical gate. "Should a person be told?" uses an alarm threshold set from a period known to be healthy, so that a chosen share (1%) of healthy windows alarm.
+
+### Why it exists
+The gate assumes Gaussian slots. Real score distributions are not exactly $\chi^2$ (transitions, wear, model error), so the gate's nominal false-alarm rate is not the real one. In v1 a flag meant "not absorbed by a semantic slot", which gave 6 to 12% false flags (v1 benchmark, DSP and CNN).
+
+### The math
+Split-conformal calibration ([Vovk et al.](https://www.springer.com/gp/book/9780387001524); [Bates et al. 2023](https://arxiv.org/abs/2104.08279)): run a fresh engine over a fault-free commissioning stream (synthetic: 4,000 windows, its own seed, no anomalies, no maintenance), keep its normal-state scores $a_1 \ldots a_m$ after a 200-window warm-up, and set the alarm threshold to the $\lceil(1-\alpha)(m+1)\rceil$-th smallest. For a new normal score exchangeable with the calibration scores, $P(\text{alarm}) \le \alpha$; here $\alpha = 0.01$. Alarm iff score > threshold; a NaN score (no normal state yet) never alarms.
+
+### Why this and not the obvious alternative
+Calibrating on the monitored stream itself would include its faults (2 to 3% of windows). With $\alpha = 1\%$ below that contamination rate, the threshold would land inside the fault scores and miss events. A commissioning period declared healthy is how deployments set alarm limits. The guarantee is marginal and assumes exchangeability; wear drift and maintenance break it, so the realised false-flag rate is reported separately for both eras.
+
+### Where in code
+`src/uengram/stats.py:conformal_threshold`; `EngramConfig.alarm_threshold`; `bench/common.py:calibrate_alarm`.
 
 ---
 
@@ -187,19 +241,21 @@ A fixed EWMA coefficient alongside a mass counter (the doc) is inconsistent: the
 ## 9. M-of-N promotion
 
 ### Plain words
-One strange window might be a glitch. Five similar strange windows within eight steps is a new operating mode. Like radar: a blip becomes a *track* only after repeated confirmation.
+One strange window might be a glitch. Five similar strange windows within eight steps is a new operating mode. Like radar: a blip becomes a *track* only after repeated confirmation. A rare-event slot that later turns into a place the machine *stays* (20 hits within 30 windows) is promoted too: operating states persist, fault bursts do not.
 
 ### Why it exists
 It separates transients (a knock) from regime changes (new normal) with no labels. Transients stay episodic; regime changes become habits and can supersede old ones.
 
 ### The math
-A candidate created at time $t_0$ is promoted at the first absorb at time $t$ where $n\ge M=5$ and $t-t_0\le N=8$. A candidate still unpromoted when $t-t_0>N$ becomes episodic (probation expiry). Sporadic recurrences 300 steps apart can never confirm (tested: 10 recurrences produce one episodic slot with $n=10$, never promoted). On promotion the slot's raw-window pointers are released, since a habit stores statistics, not exemplars.
+A candidate created at time $t_0$ is promoted at the first absorb where its last $M=5$ hits fall within $N=8$ steps; it cannot be older than $N$ then, so this is "5 within 8 steps of creation". A candidate still unpromoted when $t-t_0>N$ becomes episodic (probation expiry). An episodic slot is promoted when its last $M_r=20$ hits fall within $N_r=30$ steps (`m_reconfirm`, `n_reconfirm`); the engine keeps a ring of the last 20 hit times per slot. Synthetic regimes dwell about 33 windows (stay probability 0.97); fault events last at most 3 windows, so a back-to-back pair of events cannot reach 20 within 30. Sporadic recurrences 300 steps apart never confirm (tested). On promotion the slot's raw-window pointers are released, since a habit stores statistics, not exemplars.
+
+Both rules were needed. v1's birth-only rule trapped a regime whose first visit was cut short: in one diagnostic seed, normal windows sat in episodic slots of up to 2,088 members and 36% of all windows were flagged. Allowing "5 in 8" at any time instead promoted a burst of two knock events into a normal state, after which knocks were familiar again (DSP AUROC 0.917 on seed 0). The sustained-dwell rule restores 1.000.
 
 ### Why this and not the obvious alternative
 A single threshold on slot count promotes any slot that eventually accumulates $n$ points, including a once-a-month fault. The time window is what encodes "this is the current state of the machine".
 
 ### Where in code
-`src/uengram/engine.py:Engram._absorb` (promote) and the probation block in `ingest`.
+`src/uengram/engine.py:Engram._absorb` (promotion rules) and the probation block in `ingest`.
 
 ---
 
@@ -217,13 +273,32 @@ $$D_B=\tfrac18\sum_j\frac{(\mu_{1j}-\mu_{2j})^2}{\bar v_j}+\tfrac12\sum_j\ln\fra
 Merge the closest active semantic pair while $D_B\le 0.5$ (at most 20 per call) using exact mixture moments:
 $n=n_1+n_2$, $\mu=(n_1\mu_1+n_2\mu_2)/n$, $\sigma^2=\frac{n_1(\sigma_1^2+\mu_1^2)+n_2(\sigma_2^2+\mu_2^2)}{n}-\mu^2$. The larger-$n$ slot survives.
 (b) Drift: if $\|(\mu-\mu_{ckpt})/\sigma_0\|_2\ge\theta=3$, append a lineage `checkpoint`, write once, reset $\mu_{ckpt}=\mu$. A slow ramp of total size $\Delta$ in one direction yields about $\Delta/(\theta\sigma_0)$ checkpoints (4 in the test).
-(c) Supersession: an active semantic slot $o$ with $t-t_{last}(o)\ge t_{dormant}$ and at least one active semantic slot $s$ with $t_{created}(s)>t_{last}(o)$ becomes kind 4, pointing at the $s$ with the smallest $D_B$. A dormant slot with no successor stays active, so an idle mode that simply has not occurred for a while is not retired.
+(c) Supersession: an active semantic slot $o$ with $t-t_{last}(o)\ge t_{dormant}$ and at least one active semantic slot $s$ with $t_{created}(s)>t_{last}(o)$ becomes kind 4, pointing at the $s$ with the smallest $D_B$. A dormant slot with no successor stays active, so an idle mode that simply has not occurred for a while is not retired. Supersession also happens immediately when the step detector (section 10b) fires.
 
 ### Why this and not the obvious alternative
 Bhattacharyya accounts for both mean separation and variance mismatch, so two concentric Gaussians of different width are not called duplicates; plain centroid distance would. Supersession requires a successor, not just silence, to avoid forgetting rare-but-valid modes.
 
 ### Where in code
 `src/uengram/lifecycle.py:consolidate, merge_slots`; `src/uengram/stats.py:bhattacharyya_diag, bhattacharyya_pairwise, merge_moments`.
+
+---
+
+## 10b. Step detector: recognising a repair or a new regime
+
+### Plain words
+A repair shifts the normal readings a little, often by less than the gate's width, so each window alone still "fits". Averaging the deviations of recent windows makes the shift obvious: noise averages out, a persistent shift does not. When the average says "this state moved", the memory starts a new state and retires the old one.
+
+### Why it exists
+In v1 the maintenance step (4.6 to 10 noise units, gate radius 6.8) was absorbed gradually, so the pre-maintenance baseline kept answering "what is normal now" (`stale_at1` 0.61 with DSP).
+
+### The math
+For each semantic slot, on every absorbed window: standardised innovation $e_t=(z_t-\mu)/\sqrt{v}$ (predictive variance, before the update), multivariate EWMA $Z_t=\lambda e_t+(1-\lambda)Z_{t-1}$, statistic $T^2=\frac{2-\lambda}{\lambda}\lVert Z_t\rVert^2$ ([Lowry et al. 1992](https://doi.org/10.1080/00401706.1992.10485232)). With no change, $e$ has independent unit-variance components (section 4) and $T^2$ is approximately $\chi^2_d$; alarm when $T^2 > \chi^2_{d,\mathrm{isf}}(10^{-6}) = 58.3$ and the slot has $n \ge 2/\lambda$. $\lambda = 0.1$. Simulated in 16-d: about 1 false alarm per $10^6$ windows; median delay 8, 4 and 3 windows for persistent 3, 5 and 8 sigma shifts; a decaying transition ramp (6, 3, 1.5, 0.75 sigma) never alarms. On alarm: make room in the semantic group, start a new semantic slot at the current window (variance prior copied from the old slot), and supersede the old slot (lineage `supersede` with cause `step`, event `("supersede", old, new)`).
+
+### Why this and not the obvious alternative
+A per-dimension CUSUM needs a known shift direction and 32 one-sided charts whose false alarms add up; Crosier's multivariate CUSUM needs simulated thresholds. The MEWMA statistic is direction-free with an approximately $\chi^2$ threshold. A faster EWMA step ($\beta_{\min}$) would chase a repair over about $1/\beta$ windows instead of recognising it, and blur the before/after states.
+
+### Where in code
+`src/uengram/engine.py:Engram._step_detected`, `src/uengram/lifecycle.py:split_on_step`; ablation `uengram_nostep`.
 
 ---
 
@@ -336,6 +411,8 @@ so uEngram's slots can be compared as Gaussians with their variances, and point 
 
 **Bootstrap.** Percentile bootstrap of the mean over seeds (2000 resamples, 95%). Paired differences resample seed indices jointly, so a seed that is hard for every method does not widen the CI of the difference. A `*` means the CI excludes 0. With 5-10 seeds, CIs are wide; treat them as indications, not proofs.
 
+**Alarms and supersession.** `false_flag_rate_era0/era1` is the share of normal windows that alarm before and after maintenance, to compare with the calibrated $\alpha = 0.01$. `supersede_delay_maint` is the number of windows from maintenance to the first supersession. `results/v1/` keeps the first benchmark; the report pairs uEngram v1 and v2 on the same seeds.
+
 ### Why this and not the obvious alternative
 Accuracy/F1 alone hides the imbalance; plain MSE between centroids ignores spread; a normal-approximation CI on 10 seeds is unreliable for bounded metrics like recall.
 
@@ -351,3 +428,13 @@ Accuracy/F1 alone hides the imbalance; plain MSE between centroids ignores sprea
 - **Provenance order.** The harness records a window under its item id before applying the ingest's merge/evict events, not after. An id merged away at the end of the same ingest (consolidation) would otherwise leave a ghost record. Ids are never reused, so the order is otherwise equivalent.
 - **Noise-sigma test** uses persistent level jumps rather than isolated spikes: an isolated spike contaminates two successive differences, so the 5% rate gives 10% contamination and the MAD is biased 16% high, outside the 10% tolerance. Persistent jumps contaminate one difference each.
 - The architecture notes now live at `docs/EdgeAIMemoryArchitecture.md`.
+
+### v2 changes (after `docs/IMPROVEMENT-ANALYSIS.md`)
+
+- Novelty scored against semantic slots only (section 7).
+- Alarm threshold separated from the absorption gate and set by conformal calibration on a fault-free commissioning run (section 7b).
+- Two-tier promotion: 5-of-8 probation for candidates, 20-of-30 sustained dwell for episodic slots (section 9).
+- MEWMA step detector with immediate supersession (section 10b).
+- Context encoder with a learned thermal-lag residual (section 3b).
+- Robust full noise-covariance whitening in every encoder (section 4); the encoder test now pins "noise covariance = I" instead of "total covariance = I".
+- `synth.generate(anomalies=False, maint_frac>=1)` provides the fault-free commissioning stream.
