@@ -49,7 +49,7 @@ TICK_FIELDS: dict[str, tuple[str, str]] = {
     "disk_wq_ms": ("weighted ms with I/O in flight (sum over disks)", "counter"),
     "disk_busy_max": ("max over disks of io_ticks/dt", "gauge"),
     "psi_io_us": ("us, /proc/pressure/io some total", "counter"),
-    "disk_ioerr": ("SCSI ioerr_cnt increments", "counter"),
+    "disk_timeouts": ("SCSI command timeouts (iotmo_cnt), fixed disks", "counter"),
     "net_rx_bytes": ("bytes received, physical NICs", "counter"),
     "net_tx_bytes": ("bytes sent, physical NICs", "counter"),
     "net_rx_pkts": ("packets received", "counter"),
@@ -135,7 +135,8 @@ ATTRIBUTES: tuple[Attribute, ...] = (
               note="busiest device; saturates early on parallel devices"),
     Attribute("io_pressure", "storage", "fraction", ("psi_io_us",), "dt_s", 1e-6, ANG_FLOOR,
               note="includes NFS waits"),
-    Attribute("disk_errors", "storage", "event_count", ("disk_ioerr",)),
+    Attribute("disk_errors", "storage", "event_count", ("disk_timeouts",),
+              note="command timeouts; ioerr_cnt is excluded (see EXCLUDED)"),
     # network
     Attribute("net_rx_bps", "network", "log1p_rate", ("net_rx_bytes",)),
     Attribute("net_tx_bps", "network", "log1p_rate", ("net_tx_bytes",)),
@@ -213,6 +214,9 @@ EXCLUDED: dict[str, str] = {
     "ios in progress": "instantaneous sample of what disk_queue time-averages",
     "TCP InSegs/OutSegs": "mostly the NIC packet counts again",
     "C-state residency": "its energy consequence is in pkg_power; idle share is 1 - cpu_busy",
+    "SCSI ioerr_cnt": "counts every command completed with an error, including management pass-through: "
+                      "smartd's 30-min SMART poll adds one per disk on every node, and media polling of an "
+                      "empty card reader added 0.47/s on msi; periodic clustered counts are not error events",
 }
 
 

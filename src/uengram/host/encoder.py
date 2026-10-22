@@ -120,7 +120,7 @@ class HostEncoder:
         # Whitening declared the noise (robust + floor) to be the identity, so
         # sigma0 is 1 by construction; a larger empirical value is kept.
         self.sigma0 = np.maximum(self.sigma0_emp, 1.0)
-        tot = float(np.sum(np.var(X, axis=0)))
+        tot = float(np.sum(np.var(X, axis=0, ddof=1)))  # same normalisation as np.cov in the PCA
         self.fit_report = {
             "windows": int(len(F)), "features": len(self.names),
             "pca_var_share": float(np.sum(self.pca.lam) / tot) if tot > 0 else float("nan"),

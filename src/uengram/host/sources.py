@@ -115,8 +115,23 @@ def parse_snmp_tcp(text: str, key: str = "RetransSegs") -> int:
     return int(val[hdr.index(key)])
 
 
+def _removable(dev: str, root: str = "/sys/block") -> bool:
+    with open(f"{root}/{dev}/removable") as f:
+        return f.read().strip() == "1"
+
+
 def physical_block_devices(root: str = "/sys/block") -> list[str]:
-    return sorted(d for d in os.listdir(root) if os.path.exists(f"{root}/{d}/device"))
+    """Whole devices with a backing device; a removable device without a medium
+    (empty card reader: size 0) is skipped."""
+    out = []
+    for d in sorted(os.listdir(root)):
+        if not os.path.exists(f"{root}/{d}/device"):
+            continue
+        with open(f"{root}/{d}/size") as f:
+            empty = f.read().strip() == "0"
+        if not (empty and _removable(d, root)):
+            out.append(d)
+    return out
 
 
 def physical_nics(root: str = "/sys/class/net") -> list[str]:
@@ -185,8 +200,8 @@ class Snapshot:
         self.f_disk = _File("/proc/diskstats")
         self.f_net = _File("/proc/net/dev")
         self.f_snmp = _File("/proc/net/snmp")
-        self.ioerr = [_File(p) for d in self.disks
-                      if os.path.exists(p := f"/sys/block/{d}/device/ioerr_cnt")]
+        self.timeouts = [_File(p) for d in self.disks if not _removable(d)
+                         and os.path.exists(p := f"/sys/block/{d}/device/iotmo_cnt")]
         self.rapl = [(_File(p), rng) for p, rng in rapl_packages()]
         self.temps = [_File(p) for p in coretemp_package_inputs()]
         self.throttle = [_File(p) for p in throttle_files()]
@@ -198,7 +213,7 @@ class Snapshot:
     def meta(self) -> dict:
         return {"disks": self.disks, "nics": self.nics, "clk_tck": self.clk_tck,
                 "rapl": [f.path for f, _ in self.rapl], "temps": [f.path for f in self.temps],
-                "throttle_files": len(self.throttle), "ioerr_disks": len(self.ioerr),
+                "throttle_files": len(self.throttle), "timeout_disks": len(self.timeouts),
                 "ncpu": os.cpu_count(), "pmu": self.perf is not None}
 
     def read(self) -> dict:
@@ -215,7 +230,7 @@ class Snapshot:
         c["vm_pgscan"] = v.get("pgscan_kswapd", 0) + v.get("pgscan_direct", 0) + v.get("pgscan_khugepaged", 0)
         c["vm_pgmajfault"], c["vm_pswpout"], c["vm_oom_kill"] = v["pgmajfault"], v["pswpout"], v["oom_kill"]
         c["disks"] = parse_diskstats(self.f_disk.text(), set(self.disks))
-        c["disk_ioerr"] = sum(int(f.text().strip(), 0) for f in self.ioerr)
+        c["disk_timeouts"] = sum(int(f.text().strip(), 0) for f in self.timeouts)
         c.update(parse_net_dev(self.f_net.text(), set(self.nics)))
         c["tcp_retrans"] = parse_snmp_tcp(self.f_snmp.text())
         c["rapl"] = [int(f.text()) for f, _ in self.rapl]
@@ -229,7 +244,7 @@ class Snapshot:
 
 
 COUNTERS = ("cpu_total_j", "cpu_busy_j", "cpu_sys_j", "psi_cpu_us", "psi_mem_us", "psi_io_us", "ctxt",
-            "forks", "vm_pgscan", "vm_pgmajfault", "vm_pswpout", "vm_oom_kill", "disk_ioerr",
+            "forks", "vm_pgscan", "vm_pgmajfault", "vm_pswpout", "vm_oom_kill", "disk_timeouts",
             "net_rx_bytes", "net_rx_pkts", "net_tx_bytes", "net_tx_pkts", "net_drop_err",
             "tcp_retrans", "throttle")
 

@@ -73,18 +73,21 @@ class EventModel:
         self.names = [a.name for a in schema.event_attributes()]
 
     def fit(self, E: np.ndarray) -> "EventModel":
+        """Per counter: n windows where it was measured, s events in them."""
         E = np.asarray(E, dtype=np.float64)
-        ok = np.isfinite(E).all(axis=1)
-        self.n = int(ok.sum())
-        self.r = 0.5 + E[ok].sum(axis=0)
+        ok = np.isfinite(E)
+        self.n = ok.sum(axis=0)
+        self.r = 0.5 + np.where(ok, E, 0.0).sum(axis=0)
         self.q = self.n / (self.n + 1.0)
         return self
 
     def pvalues(self, counts: np.ndarray) -> np.ndarray:
-        """Mid-p per counter; NaN where the count is missing (counter reset)."""
-        return np.array([nb_midp(k, r, self.q) if np.isfinite(k) else np.nan
-                         for k, r in zip(counts, self.r)])
+        """Mid-p per counter; NaN where the count is missing (counter reset) or
+        the counter was never measured during commissioning."""
+        return np.array([nb_midp(k, r, q) if np.isfinite(k) and n > 0 else np.nan
+                         for k, r, q, n in zip(counts, self.r, self.q, self.n)])
 
     def report(self) -> dict:
-        return {"windows": self.n, "rate_per_window": {n: float((r - 0.5) / self.n)
-                                                       for n, r in zip(self.names, self.r)}}
+        return {"windows": {a: int(n) for a, n in zip(self.names, self.n)},
+                "rate_per_window": {a: float((r - 0.5) / n) if n else None
+                                    for a, r, n in zip(self.names, self.r, self.n)}}

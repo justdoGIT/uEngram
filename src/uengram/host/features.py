@@ -21,7 +21,10 @@ import numpy as np
 from . import schema
 
 PMU_FIELDS = ("pmu_inst", "pmu_cyc", "pmu_ref", "pmu_brmiss", "pmu_llcmiss")
-MIN_PMU_RUNNING = 0.5
+# Scaled counts are an estimate when the group shares the PMU (two system-wide
+# groups that both need fixed counter 2 alternate, each running ~50 %); below a
+# quarter of the time the window's PMU attributes count as missing.
+MIN_PMU_RUNNING = 0.25
 RATIO_EPS = 1e-6
 BURST_EPS = 1e-2  # transformed units: a tick-to-tick scale below 0.01 is indistinguishable
 

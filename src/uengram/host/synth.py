@@ -59,7 +59,7 @@ def make_ticks(n: int, seed: int = 0, block: int = 300, anomalies: dict | None =
             "disk_rd_bytes": rng.poisson(disk * 0.3 / 512) * 512, "disk_wr_bytes": rng.poisson(disk * 0.7 / 512) * 512,
             "disk_rd_ios": rng.poisson(disk * 0.3 / 65536 + 0.1), "disk_wr_ios": rng.poisson(disk * 0.7 / 65536 + 0.3),
             "disk_wq_ms": rng.poisson(disk / 1e6 * 20 + 1), "disk_busy_max": min(1.0, disk / 8e7 + 0.002),
-            "psi_io_us": (5e4 if reg == "io" else 0.0) + abs(rng.normal(0, 1e2)), "disk_ioerr": 0,
+            "psi_io_us": (5e4 if reg == "io" else 0.0) + abs(rng.normal(0, 1e2)), "disk_timeouts": 0,
             "net_rx_bytes": rng.poisson(net * 0.6), "net_tx_bytes": rng.poisson(net * 0.4),
             "net_rx_pkts": rng.poisson(net * 0.6 / 900 + 3), "net_tx_pkts": rng.poisson(net * 0.4 / 900 + 3),
             "tcp_retrans": rng.poisson(0.01), "net_drop_err": 0,
