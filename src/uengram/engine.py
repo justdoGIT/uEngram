@@ -41,17 +41,26 @@ class EngramConfig:
     step_lambda: float = 0.1
     step_alpha: float = 1e-6
     use_step_detect: bool = True
+    B_ref: int = 32  # max states kept in a frozen healthy reference
 
 
 class Engram:
     in_ref_space = True
 
     def __init__(self, cfg: EngramConfig, d: int, sigma0: np.ndarray,
-                 raw_window_bytes: int, name: str = "uengram"):
+                 raw_window_bytes: int, name: str = "uengram",
+                 step_inflation: np.ndarray | None = None):
         self.cfg, self.d, self.name = cfg, d, name
         self.raw_window_bytes = raw_window_bytes
         self.sigma0 = np.asarray(sigma0, dtype=np.float64)
         self.sigma0_sq = self.sigma0 ** 2
+        # The step detector's MEWMA averages about (2-lambda)/lambda innovations
+        # and its threshold assumes them independent. Slow within-state
+        # variation correlates them and inflates the MEWMA variance by a
+        # per-dimension factor f (stats.ewma_inflation on training latents), so
+        # innovations enter it scaled by 1/sqrt(f), never amplified.
+        self.step_scale = (np.ones(d) if step_inflation is None else
+                           np.sqrt(np.maximum(np.asarray(step_inflation, dtype=np.float64), 1.0)))
         self.tau = chi2_isf(cfg.alpha_gate, d)
         self.alarm_tau = self.tau if cfg.alarm_threshold is None else float(cfg.alarm_threshold)
         self.step_h = chi2_isf(cfg.step_alpha, d)
@@ -71,6 +80,7 @@ class Engram:
         self.item_id = np.full(cap, -1, dtype=np.int64)
         self.superseded_by = np.full(cap, -1, dtype=np.int64)
         self.ewma_e = np.zeros((cap, d))  # step-detector state per slot
+        self.ref_mu, self.ref_var = np.zeros((0, d)), np.zeros((0, d))  # frozen healthy reference
         ring = max(cfg.m_promote, cfg.m_reconfirm)
         self.hits = np.full((cap, ring), lc.NO_HIT, dtype=np.int64)  # last hit times, oldest first
         self.exemplars: dict[int, list[int]] = {}
@@ -96,6 +106,21 @@ class Engram:
         n = self.n[idx].astype(np.float64)
         n_eff = np.where(self.kind[idx] == SEM, np.minimum(n, self.n_eff_cap), n)
         return var * (1.0 + 1.0 / n_eff)[:, None]
+
+    # -- healthy reference --------------------------------------------------
+    def reference(self):
+        """The current normal states (largest first, at most B_ref) as
+        (mean, predictive variance): a healthy reference to freeze."""
+        sem = np.flatnonzero(self.kind == SEM)
+        sem = sem[np.argsort(-self.n[sem], kind="stable")][: self.cfg.B_ref]
+        return self.mu[sem].copy(), np.array(self._pred_var(sem))
+
+    def set_reference(self, mu, var) -> None:
+        """Freeze a healthy reference. Unlike the slots it never adapts, so the
+        health score keeps growing with wear the memory has learned to accept."""
+        self.ref_mu = np.array(mu, dtype=np.float64).reshape(-1, self.d)
+        self.ref_var = np.array(var, dtype=np.float64).reshape(-1, self.d)
+        self.ledger.write_now(-1, len(self.ref_mu) * 2 * self.d * 4)
 
     def _alloc(self) -> int:
         return int(np.flatnonzero(self.kind == EMPTY)[0])
@@ -138,6 +163,8 @@ class Engram:
             res = self._absorb(chosen, z, t, raw_idx, score, alarm)
         else:
             res = self._new_slot(z, t, raw_idx, score, alarm, rarity)
+        if len(self.ref_mu):
+            res.health = float(np.min(np.sum((z - self.ref_mu) ** 2 / self.ref_var, axis=1)))
 
         stale = np.flatnonzero((self.kind == CAND) & (t - self.t_created > cfg.n_promote))
         for i in stale:
@@ -153,9 +180,9 @@ class Engram:
         iid = int(self.item_id[k])
         n = int(self.n[k])
         sem = self.kind[k] == SEM
+        alpha = max(1.0 / (n + 1), cfg.beta_min) if sem else 1.0 / (n + 1)
         if sem:
             e = (z - self.mu[k]) / np.sqrt(self._pred_var(np.array([k]))[0])
-        alpha = max(1.0 / (n + 1), cfg.beta_min) if sem else 1.0 / (n + 1)
         self.mu[k], self.S[k] = ew_update(self.mu[k], self.S[k], z, alpha)
         self.n[k] = n + 1
         self.t_last[k] = t
@@ -189,10 +216,10 @@ class Engram:
         return IngestResult(iid, score, alarm, action)
 
     def _step_detected(self, k: int, e: np.ndarray) -> bool:
-        """MEWMA on standardised innovations: Z <- lam e + (1-lam) Z; alarm when
-        (2-lam)/lam * |Z|^2 exceeds the chi2_d quantile at step_alpha."""
+        """MEWMA on standardised innovations e / step_scale: Z <- lam e + (1-lam) Z;
+        alarm when (2-lam)/lam * |Z|^2 exceeds the chi2_d quantile at step_alpha."""
         lam = self.cfg.step_lambda
-        self.ewma_e[k] = lam * e + (1.0 - lam) * self.ewma_e[k]
+        self.ewma_e[k] = lam * e / self.step_scale + (1.0 - lam) * self.ewma_e[k]
         return bool(self.n[k] >= self.step_min_n
                     and self.step_c * float(self.ewma_e[k] @ self.ewma_e[k]) > self.step_h)
 
@@ -234,15 +261,16 @@ class Engram:
         if len(idx) == 0:
             z = np.zeros((0, self.d))
             return ItemsView(np.zeros(0, np.int64), z, z, np.zeros(0), np.zeros(0, np.int64))
-        return ItemsView(self.item_id[idx].copy(), self.mu[idx].copy(), np.array(self._gate_var(idx)),
-                         self.n[idx].astype(np.float64), self.t_last[idx].copy())
+        return ItemsView(self.item_id[idx].copy(), self.mu[idx].copy(),
+                         np.array(self._gate_var(idx)), self.n[idx].astype(np.float64),
+                         self.t_last[idx].copy())
 
     def drain_events(self) -> list[tuple]:
         ev, self.events = self.events, []
         return ev
 
     def index_bytes(self) -> int:
-        return int(np.sum(self.kind != EMPTY)) * self.slot_bytes
+        return int(np.sum(self.kind != EMPTY)) * self.slot_bytes + len(self.ref_mu) * 2 * self.d * 4
 
     def pinned_raw_bytes(self) -> int:
         return sum(len(set(v)) for v in self.exemplars.values()) * self.raw_window_bytes
