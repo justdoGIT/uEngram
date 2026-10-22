@@ -57,14 +57,18 @@ Keep `--jobs` at 2 or below; the host has about 1 GB of RAM headroom.
 ```bash
 # probe all sources on this node (needs CAP_PERFMON + CAP_DAC_READ_SEARCH, see docs/HOST-TELEMETRY.md)
 python3 -m uengram.host probe
-# record (a single file, or daily spool files), commission, replay, run, cluster view
+# record (a single file, or daily spool files), commission, replay
 python3 -m uengram.host record --spool ~/.local/state/uengram-host/spool
 uv run python -m uengram.host commission --ticks ~/.local/state/uengram-host/spool/ticks-*.jsonl* --model model.pkl
 uv run python -m uengram.host replay --model model.pkl --ticks more.jsonl --events events.jsonl
-python3 -m uengram.host cluster --nodes msi-worker hp asus-worker lenovo-worker gigabyte-worker
+# on msi: follow every node's pushed state (the uengram-hub service), print the cluster view
+python3 -m uengram.host hub --nodes msi-worker hp asus-worker lenovo-worker gigabyte-worker
+python3 -m uengram.host cluster
+# on msi, outside the campaign: measure a power/scheduler knob on one node's reference build
+python3 -m uengram.host tune --node asus-worker --knob pl1 --values 40 30
 # synthetic validation of the host pipeline
 uv run python -m bench.run_host_synth --seeds 0-19 --jobs 2 --out results/host_synth.jsonl
-# install the runit service on nodes (sudo via kepr); --campaign adds the campaign runner (msi only)
+# install the runit service on nodes (sudo via kepr); --campaign and --hub add the campaign runner and the hub (msi only)
 deploy/install-node.sh --numpy NODE...
 # 14-day live validation campaign: record a clean week, commission on it, fault week, report
 python3 -m uengram.host campaign plan --dir ~/Backup/uengram-host/campaign
@@ -75,9 +79,9 @@ python3 -m uengram.host campaign status --dir ~/Backup/uengram-host/campaign
 
 ```
 src/uengram/   library: stats, metrics, synth, encoders, ledger, store, baselines, stream_baselines, engine, lifecycle, cmapss, metropt
-src/uengram/host/  host telemetry: schema, perf, sources, collector (stdlib); features, encoder, events, node, cluster, synth (numpy); campaign, campaign_exec, validate, validate_criteria, validate_variants
+src/uengram/host/  host telemetry: schema, perf, sources, collector, stream, hub, cluster, psi (stdlib); features, encoder, events, stepcal, node, daemon, synth (numpy); campaign, campaign_exec, tune, knob.sh, validate, validate_criteria, validate_variants, validate_signals
 bench/         harness: provenance, evaluate, common, run_synth, run_cmapss, run_metropt, metropt_calibration, metropt_eval, run_host_synth, report
-deploy/        runit services (uengram-hostd, uengram-campaign) and the node installer
+deploy/        runit services (uengram-hostd, uengram-campaign, uengram-hub) and the node installer
 tests/         unit and behaviour tests
 results/       committed run outputs (JSONL)
 docs/          plan, explainer, results, improvement analysis, research notes, architecture notes
