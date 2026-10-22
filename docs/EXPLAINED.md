@@ -317,6 +317,8 @@ This is exactly the increase in total within-cluster variance caused by the merg
 $$\text{importance}=\text{surprisal}\cdot(1+\ln n)\cdot2^{-(t-t_{last})/h_{epi}}$$
 ($h_{epi}=20000$); if there is no episodic slot, evict the oldest candidate.
 
+The surprisal used here is the slot's **rarity** at creation: $-\log_{10}$ of the $\chi^2_d$ tail at the distance to the nearest stored slot of *any* kind. It is deliberately not the alarm score, which is measured against normal states only (section 7). A pattern that keeps recurring (a regime transition seen through the CNN encoder) is far from normal but close to its own earlier copies, so it ranks below a unique event such as a seizure. With the alarm score in this role, CNN transition candidates tied seizures at the 300-decade cap, and the older seizures were evicted: seizure recall was 0 versus 1.0 with rarity (seed 0, `docs/IMPROVEMENT-ANALYSIS.md` follow-up; regression test `test_unique_event_outlives_recurring_novelties_when_budget_overflows`).
+
 ### Why this and not the obvious alternative
 The doc's density-based utility `mean(max(sim,0))·log1p(mass)` has no stated objective. Ward cost is the standard minimum-variance clustering criterion. Keeping the episodic and semantic budgets separate means a flood of routine states can never evict a seizure.
 
@@ -411,7 +413,7 @@ so uEngram's slots can be compared as Gaussians with their variances, and point 
 
 **Bootstrap.** Percentile bootstrap of the mean over seeds (2000 resamples, 95%). Paired differences resample seed indices jointly, so a seed that is hard for every method does not widen the CI of the difference. A `*` means the CI excludes 0. With 5-10 seeds, CIs are wide; treat them as indications, not proofs.
 
-**Alarms and supersession.** `false_flag_rate_era0/era1` is the share of normal windows that alarm before and after maintenance, to compare with the calibrated $\alpha = 0.01$. `supersede_delay_maint` is the number of windows from maintenance to the first supersession. `results/v1/` keeps the first benchmark; the report pairs uEngram v1 and v2 on the same seeds.
+**Alarms and supersession.** `false_flag_rate_era0/era1` is the share of normal windows that alarm before and after maintenance, to compare with the calibrated $\alpha = 0.01$. `supersede_delay_maint` is the number of windows from maintenance until the first supersession of a slot that received windows in the 200 windows before maintenance (NaN if that never happens); supersessions of unrelated dormant slots do not count. `results/v1/` keeps the first benchmark; the report pairs uEngram v1 and v2 on the same seeds.
 
 ### Why this and not the obvious alternative
 Accuracy/F1 alone hides the imbalance; plain MSE between centroids ignores spread; a normal-approximation CI on 10 seeds is unreliable for bounded metrics like recall.

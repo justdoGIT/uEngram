@@ -192,3 +192,23 @@ def test_recall_current_prefers_live_over_superseded():
     q = np.zeros(D)
     assert eng.recall(q, 200, 5, "current") == [0]
     assert set(eng.recall(q, 200, 5, "history")) == {0, 1}
+
+
+def test_unique_event_outlives_recurring_novelties_when_budget_overflows():
+    # A unique extreme event and a family of mutually similar novelties are all
+    # far from normal; retention priority must prefer the unique one.
+    rng = np.random.default_rng(0)
+    eng = make(B_epi=3)
+    unique = None
+    for t in range(700):
+        z = pt(rng)
+        if t == 100:
+            z[0] += 60.0
+        elif t >= 200 and t % 50 == 0:
+            z[0] += 20.0
+            z[1] += 6.0 * ((t - 200) // 50)  # each member 12 sd from the previous one
+        r = eng.ingest(z, t, t)
+        if t == 100:
+            unique = r.item_id
+        assert count(eng, lc.CAND, lc.EPI) <= 3
+    assert unique in set(eng.items().ids.tolist())

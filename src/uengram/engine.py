@@ -110,7 +110,7 @@ class Engram:
         cfg = self.cfg
         z = np.asarray(z, dtype=np.float64)
         gate = np.flatnonzero((self.kind == CAND) | (self.kind == EPI) | (self.kind == SEM))
-        score, chosen = float("nan"), -1
+        score, rarity, chosen = float("nan"), float("nan"), -1
         if len(gate):
             var = self._pred_var(gate)
             d2 = np.sum((z - self.mu[gate]) ** 2 / var, axis=1)
@@ -119,6 +119,10 @@ class Engram:
             ref = (self.kind[gate] == SEM) if cfg.use_promotion else np.ones(len(gate), bool)
             if ref.any():
                 score = float(d2[ref].min())
+            # Rarity among everything stored ranks episodic memories for
+            # retention: a pattern that keeps recurring is less precious than a
+            # unique one, even when both are far from normal.
+            rarity = float(d2.min())
             inside = d2 <= self.tau
             if inside.any():
                 # Habit memory has priority: a point inside any semantic gate is
@@ -133,7 +137,7 @@ class Engram:
         if chosen >= 0:
             res = self._absorb(chosen, z, t, raw_idx, score, alarm)
         else:
-            res = self._new_slot(z, t, raw_idx, score, alarm)
+            res = self._new_slot(z, t, raw_idx, score, alarm, rarity)
 
         stale = np.flatnonzero((self.kind == CAND) & (t - self.t_created > cfg.n_promote))
         for i in stale:
@@ -192,12 +196,13 @@ class Engram:
         return bool(self.n[k] >= self.step_min_n
                     and self.step_c * float(self.ewma_e[k] @ self.ewma_e[k]) > self.step_h)
 
-    def _new_slot(self, z, t: int, raw_idx: int, score: float, alarm: bool) -> IngestResult:
+    def _new_slot(self, z, t: int, raw_idx: int, score: float, alarm: bool,
+                  rarity: float) -> IngestResult:
         lc.make_episodic_room(self, t)
         k = self._alloc()
         iid = self._new_id()
         lc.init_slot(self, k, iid, z, t, CAND if self.cfg.use_promotion else EPI)
-        self.surpr[k] = 0.0 if np.isnan(score) else surprisal(score, self.d)
+        self.surpr[k] = 0.0 if np.isnan(rarity) else surprisal(rarity, self.d)
         self.exemplars[iid] = [raw_idx, raw_idx]
         self.ledger.write_now(iid, self.slot_bytes + self.raw_window_bytes)
         return IngestResult(iid, score, alarm, "new_candidate")

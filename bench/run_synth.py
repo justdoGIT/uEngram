@@ -53,21 +53,29 @@ def run_one(task):
             store = make_store(method, B, enc.d, enc.sigma0, RAW_BYTES, seed, over)
             prov = Provenance()
             sup_t: list[int] = []
+            active_pre: set[int] = set()  # items that received windows just before maintenance
+            maint_sup: list[int] = []  # times at which one of those items was superseded
 
-            def record(t, res, store=store, prov=prov, sup_t=sup_t):
+            def record(t, res, store=store, prov=prov, sup_t=sup_t, active_pre=active_pre,
+                       maint_sup=maint_sup):
                 if res.item_id != -1:
                     prov.record(res.item_id, int(stream.anomaly[t]), int(stream.regime[t]),
                                 int(stream.era[t]), int(stream.event_id[t]))
+                    if t_m - 200 <= t < t_m:
+                        active_pre.add(res.item_id)
                 evs = store.drain_events()
-                sup_t.extend(t for e in evs if e[0] == "supersede")
+                for e in evs:
+                    if e[0] == "supersede":
+                        sup_t.append(t)
+                        if t >= t_m and e[1] in active_pre:
+                            maint_sup.append(t - t_m)
                 prov.apply(evs)
 
             oracle = (stream.anomaly > 0) * 0.8 + 0.1 if method == "reference_oracle" else None
             scores, flags, lat = run_stream(store, Z, record, oracle)
             m = evaluate_run(store, prov, stream, Z, PZ, probe, scores, flags, h, lat)
-            after = [t - t_m for t in sup_t if t >= t_m]
             m.update(extra, n_supersede=len(sup_t),
-                     supersede_delay_maint=float(min(after)) if after else float("nan"))
+                     supersede_delay_maint=float(min(maint_sup)) if maint_sup else float("nan"))
             lines.append({"dataset": "synth", "seed": seed, "encoder": enc_name,
                           "method": method, "budget": B, "metrics": m})
             print(f"[{tag}] seed={seed} enc={enc_name} method={method} B={B} "

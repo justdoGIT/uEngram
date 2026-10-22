@@ -89,3 +89,11 @@ Measured wear drift on the synthetic stream is 5e-4 to 1e-3 sigma0 per window (K
 11. Evaluation on real labelled machinery data: SKAB (https://github.com/waico/skab), MIMII (https://zenodo.org/records/3384388), CWRU bearings (https://engineering.case.edu/bearingdatacenter).
 
 Items 1 to 5 are implemented in v2; see `docs/EXPLAINED.md` and `docs/RESULTS.md`.
+
+## Follow-up findings during the v2 implementation
+
+Measured with the same throwaway scripts (seed 0 unless stated).
+
+1. **Promotion at any time re-created masking.** Allowing an episodic slot to be promoted after any 5 hits in 8 windows promoted a pure knock slot (two knock events back to back) into a normal state; knocks were then familiar again and DSP AUROC fell to 0.917. Episodic slots are now promoted only after a sustained dwell (20 hits in 30 windows); synthetic regimes dwell about 33 windows, fault events at most 3. AUROC returned to 1.000.
+2. **Correlated sensors (user question).** Noise correlation left in the PCA-whitened space averaged 0.05 (DSP), 0.04 (context) and 0.22 (CNN), with 14.1, 14.6 and 7.4 effective independent dimensions of 16. Inside one regime the per-dimension gate rejected 23 to 39% of normal windows in CNN space versus 0% with a full covariance, i.e. one fluctuation was counted several times. After whitening with a robust full noise covariance, the per-dimension gate rejects at most 0.08% (CNN, 200-window state blocks) versus 0% for a full per-slot covariance, so slots stay diagonal. On CMAPSS FD001 the 14 sensors carry about 2 independent signals (82% and 16% of standardised variance).
+3. **CNN seizure retention.** With the alarm score (distance to normal states) used as the episodic importance, CNN transition candidates reached the 300-decade surprisal cap as often as seizures (37% of new candidates at the cap), and the older seizures were evicted: seizure recall 0, event recall 0.118. Ranking episodic slots by rarity (distance to the nearest stored slot of any kind) restored seizure recall 1.0 and event recall 0.299 (v1: 0.314).
