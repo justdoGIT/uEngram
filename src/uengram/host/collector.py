@@ -119,17 +119,21 @@ def tick_loop(ticker: Ticker, on_tick: Callable[[float, dict], None], period: fl
 
 
 class JsonlSink:
-    """First line {"meta": ...}; then one {"t": wall_time, <tick fields>} per tick."""
+    """First row has file metadata; each following row has time, kernel label, and tick fields."""
 
     def __init__(self, path: str, meta: dict):
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
         fresh = not os.path.exists(path) or os.path.getsize(path) == 0
         self.f = open(path, "a", buffering=1)
+        self.kernel = meta.get("kernel")
         if fresh:
             self.f.write(json.dumps({"meta": meta}) + "\n")
 
     def __call__(self, t: float, tick: dict) -> None:
-        self.f.write(json.dumps({"t": t, **tick}, separators=(",", ":")) + "\n")
+        rec = {"t": t, **tick}
+        if self.kernel:
+            rec["kernel"] = self.kernel
+        self.f.write(json.dumps(rec, separators=(",", ":")) + "\n")
 
     def close(self) -> None:
         self.f.close()

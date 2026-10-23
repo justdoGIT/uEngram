@@ -52,17 +52,22 @@ def tick_columns(ticks: list[dict]) -> Columns:
     cols = {"t": np.array([r["t"] for r in ticks], dtype=np.float64)}
     for f in schema.TICK_FIELDS:
         cols[f] = np.array([np.nan if r.get(f) is None else r[f] for r in ticks], dtype=np.float64)
+    cols["kernel"] = np.array([str(r.get("kernel") or "") for r in ticks])
     return cols
 
 
 def read_columns(paths: list[str]) -> tuple[dict, Columns]:
-    """Stream tick files (JSONL, optionally .gz) into float64 columns, 8 bytes
-    per value: three days of 1 Hz ticks are ~90 MB instead of ~600 MB of dicts.
-    Truncated lines are skipped; rows are returned in time order."""
+    """Stream JSONL tick files into numeric columns plus categorical kernel labels.
+
+    Three days of 1 Hz numeric ticks use ~90 MB instead of ~600 MB of dicts.
+    Truncated lines are skipped; legacy rows inherit their file's kernel metadata.
+    """
     meta: dict = {}
     buf = {f: array("d") for f in ("t", *schema.TICK_FIELDS)}
+    kernels = []
     nan = float("nan")
     for p in paths:
+        file_meta = {}
         with (gzip.open(p, "rt") if p.endswith(".gz") else open(p)) as fh:
             for line in fh:
                 try:
@@ -70,12 +75,15 @@ def read_columns(paths: list[str]) -> tuple[dict, Columns]:
                 except json.JSONDecodeError:
                     continue
                 if "meta" in rec:
-                    meta = meta or rec["meta"]
+                    file_meta = rec["meta"]
+                    meta = meta or file_meta
                     continue
                 for f, a in buf.items():
                     v = rec.get(f)
                     a.append(nan if v is None else float(v))
+                kernels.append(str(rec.get("kernel", file_meta.get("kernel", "")) or ""))
     cols = {f: np.frombuffer(a, dtype=np.float64) for f, a in buf.items()}
+    cols["kernel"] = np.asarray(kernels, dtype=str)
     if len(cols["t"]) > 1 and np.any(np.diff(cols["t"]) < 0):
         order = np.argsort(cols["t"], kind="stable")
         cols = {f: v[order] for f, v in cols.items()}
@@ -84,6 +92,22 @@ def read_columns(paths: list[str]) -> tuple[dict, Columns]:
 
 def select(cols: Columns, mask: np.ndarray) -> Columns:
     return {f: v[mask] for f, v in cols.items()}
+
+
+def kernel_releases(cols: Columns) -> tuple[str, ...]:
+    return tuple(sorted({str(label) for label in cols.get("kernel", ()) if label}))
+
+
+def select_kernel(cols: Columns, kernel: str) -> Columns:
+    if not kernel:
+        raise ValueError("kernel release must be nonempty")
+    labels = cols.get("kernel")
+    if labels is None:
+        raise ValueError("tick data has no kernel labels")
+    mask = labels == kernel
+    if not np.any(mask):
+        raise ValueError(f"kernel release {kernel!r} not found; available: {kernel_releases(cols)}")
+    return select(cols, mask)
 
 
 def window_index(t: np.ndarray, K: int, offset: float = 0.0) -> tuple[np.ndarray, np.ndarray]:

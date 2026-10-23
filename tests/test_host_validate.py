@@ -7,10 +7,10 @@ import numpy as np
 import pytest
 
 from uengram.host.collector import SpoolSink, spool_files
-from uengram.host.features import read_columns
+from uengram.host.features import read_columns, select_kernel
 from uengram.host.node import NodeMemory
 from uengram.host.synth import T0, make_ticks
-from uengram.host.validate import commission_from_spool, write_report
+from uengram.host.validate import commission_from_spool, replay, write_report
 from uengram.host.validate_criteria import criteria, evaluate
 
 DAY = 86400
@@ -61,6 +61,54 @@ def test_spool_rotates_at_utc_midnight_and_reads_back_in_order(tmp_path):
     assert [os.path.basename(p) for p in spool_files(d, "h")] == [
         f"ticks-h-{_day(midnight)}.jsonl.gz", f"ticks-h-{_day(midnight + 2 * DAY)}.jsonl"]
 
+
+def test_spool_restart_on_same_day_keeps_each_tick_kernel(tmp_path):
+    d = str(tmp_path / "spool")
+    midnight = np.floor(T0 / DAY) * DAY
+    old = SpoolSink(d, {"host": "h", "kernel": "6.18.57_1"})
+    old(midnight + 0.5, {"pmu_inst": 1})
+    old.close(wait=None)
+    new = SpoolSink(d, {"host": "h", "kernel": "7.2.1_1"})
+    new(midnight + 1.5, {"pmu_inst": 2})
+    new.close(wait=None)
+
+    meta, cols = read_columns(spool_files(d, "h"))
+    assert meta["kernel"] == "6.18.57_1"
+    assert cols["kernel"].tolist() == ["6.18.57_1", "7.2.1_1"]
+    assert select_kernel(cols, "7.2.1_1")["t"].tolist() == [midnight + 1.5]
+    with pytest.raises(ValueError, match="multiple kernel releases"):
+        NodeMemory.commission(cols, meta)
+
+
+def test_read_columns_uses_header_kernel_for_legacy_tick_rows(tmp_path):
+    p = _touch(str(tmp_path), "ticks-h-20261021.jsonl",
+               '{"meta":{"host":"h","kernel":"6.18.56_1"}}\n'
+               '{"t":1,"pmu_inst":3}\n')
+    meta, cols = read_columns([p])
+    assert meta["kernel"] == "6.18.56_1"
+    assert cols["kernel"].tolist() == ["6.18.56_1"]
+
+
+def test_replay_rejects_model_commissioned_on_another_kernel():
+    node = type("Model", (), {"meta": {"kernel": "6.18.57_1"}})()
+    cols = {"kernel": np.array(["7.2.1_1"])}
+    with pytest.raises(ValueError, match="does not match replay data kernels"):
+        replay(node, cols)
+
+
+def test_cli_replay_rejects_mixed_kernels(tmp_path, monkeypatch):
+    from uengram.host import cli_model
+
+    node = NodeMemory.__new__(NodeMemory)
+    node.meta = {"kernel": "6.18.57_1"}
+    monkeypatch.setattr(NodeMemory, "load", classmethod(lambda cls, _: node))
+    ticks = tmp_path / "ticks.jsonl"
+    ticks.write_text('{"meta":{"kernel":"6.18.57_1"}}\n'
+                     '{"t":1,"kernel":"6.18.57_1"}\n'
+                     '{"t":2,"kernel":"7.2.11_1"}\n')
+    args = type("Args", (), {"model": "ignored", "ticks": str(ticks), "events": None, "save": False})()
+    with pytest.raises(ValueError, match="does not match replay data kernels"):
+        cli_model._replay(args)
 
 # -- end to end: a synthetic one-node campaign ----------------------------------
 ONSETS = {"spin": (1000, 1200), "thrash": (2000, 2200), "oom": (3000, 3000)}

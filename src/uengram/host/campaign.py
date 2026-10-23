@@ -218,7 +218,8 @@ def _commission_and_deploy(directory: str, camp: dict) -> None:
     out = {}
     for name, cfg in camp["nodes"].items():
         try:
-            node = commission_from_spool(directory, name, camp["start"], camp["commission"], camp["alpha"])
+            node = commission_from_spool(directory, name, camp["start"], camp["commission"], camp["alpha"],
+                                         kernel=cfg.get("kernel"))
         except (OSError, ValueError) as e:  # no spool, too short: this node sits the test out
             out[name] = {"error": str(e)}
             continue
@@ -231,7 +232,8 @@ def _commission_and_deploy(directory: str, camp: dict) -> None:
         cp = subprocess.run(["scp", "-q", path, f"{cfg['ssh']}:{remote}"], timeout=120)
         start = run_ssh(cfg["ssh"], "sv start uengram-hostd", sudo=True, timeout=120)
         ok = stop.returncode == 0 and cp.returncode == 0 and start.returncode == 0
-        out[name] = {"deployed": _now(), "threshold": node.alarm_threshold, "report": node.commission_report}
+        out[name] = {"deployed": _now(), "kernel": node.meta.get("kernel"),
+                     "threshold": node.alarm_threshold, "report": node.commission_report}
         if not ok:
             out[name]["error"] = f"deploy rc stop={stop.returncode} scp={cp.returncode} start={start.returncode}"
     camp["commissioned"] = out

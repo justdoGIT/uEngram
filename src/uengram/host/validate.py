@@ -33,7 +33,7 @@ import time
 import numpy as np
 
 from .collector import spool_files
-from .features import read_columns, select, windows_from_columns
+from .features import kernel_releases, read_columns, select, select_kernel, windows_from_columns
 from .node import NodeMemory, Options
 from .validate_criteria import wilson
 from .validate_signals import alarm_episodes, health_ranking, health_table, step_changes_per_day
@@ -63,15 +63,22 @@ def between(cols, lo: float, hi: float):
 
 
 def commission_from_spool(directory: str, name: str, lo: float, hi: float, alpha: float,
-                          options: Options = Options()) -> NodeMemory:
+                          options: Options = Options(), kernel: str | None = None) -> NodeMemory:
     meta, cols = load_columns(directory, name, lo, hi)
+    if kernel is not None:
+        cols = select_kernel(cols, kernel)
     return NodeMemory.commission(cols, meta, alpha=alpha, options=options)
 
 
 def replay(node: NodeMemory, cols) -> list[dict]:
-    """Feed columns through a copy of the node exactly as the daemon does after
-    loading it (same thermal state and on-delay history; both reset themselves
-    across a gap). The original stays as commissioned."""
+    """Replay copied columns with the daemon's state and gap resets.
+
+    The original remains commissioned; data from a different kernel release is rejected.
+    """
+    expected = node.meta.get("kernel")
+    releases = kernel_releases(cols)
+    if expected and releases and releases != (str(expected),):
+        raise ValueError(f"model kernel {expected!r} does not match replay data kernels {releases}")
     n = copy.deepcopy(node)
     return n._ingest(windows_from_columns(cols, n.K))
 
@@ -253,9 +260,9 @@ def clean_check(meta: dict, cols, camp: dict, K: int) -> dict:
     try:
         node = NodeMemory.commission(between(cols, camp["start"], camp["clean_split"]), meta,
                                      window=K, alpha=camp["alpha"])
+        recs = replay(node, between(cols, camp["clean_split"], camp["commission"]))
     except ValueError as e:
         return {"error": str(e)}
-    recs = replay(node, between(cols, camp["clean_split"], camp["commission"]))
     return calibration(recs, [], "", K, camp["alpha"])
 
 
@@ -276,9 +283,14 @@ def write_report(directory: str, variants: tuple[str, ...] | None = None) -> str
         t_dep = dep.get("deployed", camp["commission"])
         meta, cols = load_columns(directory, name)
         test, comm = between(cols, t_dep, camp["end"]), between(cols, camp["start"], camp["commission"])
+        try:
+            recs = replay(node, test)
+        except ValueError as e:
+            skipped[name] = str(e)
+            continue
         clean[name] = clean_check(meta, cols, camp, node.K)
         del cols
-        recs, K = replay(node, test), node.K
+        K = node.K
         recs_by_node[name] = recs
         cal[name] = calibration(recs, faults, name, node.K, alpha)
         ev_path = os.path.join(directory, "nodes", name, "events.jsonl")

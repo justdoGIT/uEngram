@@ -39,7 +39,7 @@ from ..stats import conformal_threshold, surprisal
 from . import schema, stepcal
 from .encoder import HostEncoder
 from .events import EventModel
-from .features import Columns, select, tick_columns, windows, windows_from_columns
+from .features import Columns, kernel_releases, select, tick_columns, windows, windows_from_columns
 from .psi import fast_bounds
 
 
@@ -116,6 +116,13 @@ class NodeMemory:
         learned as healthy."""
         K = window
         cols = ticks if isinstance(ticks, dict) else tick_columns(ticks)
+        releases = kernel_releases(cols)
+        if len(releases) > 1:
+            raise ValueError(f"commissioning data contains multiple kernel releases: {releases}; "
+                             "select one release before commissioning")
+        model_meta = dict(meta)
+        if releases:
+            model_meta["kernel"] = releases[0]
         A, B, split = split_columns(cols, calib_frac, K, exclude)
         t = np.concatenate([A["t"], B["t"]])
         offsets = [k * K / PHASES for k in range(PHASES)]
@@ -133,9 +140,9 @@ class NodeMemory:
             Z, _, _, _ = enc.encode(seqA[0])
             steps = np.floor((seqA[0].t0 - t_origin) / K + 1e-9).astype(np.int64)
             inflation, stepcal_report = stepcal.calibrate(Z, steps, cfg, enc.sigma0, raw_bytes)
-        eng = Engram(cfg, d, enc.sigma0, raw_bytes, name=f"uengram-{meta.get('host', '')}",
+        eng = Engram(cfg, d, enc.sigma0, raw_bytes, name=f"uengram-{model_meta.get('host', '')}",
                      step_inflation=inflation)
-        node = cls(enc, eng, ev, K, t_origin, alpha, meta, options)
+        node = cls(enc, eng, ev, K, t_origin, alpha, model_meta, options)
         node._ingest(seqA[0])
         cfg.n_reconfirm = n_reconfirm
         eng.set_reference(*eng.reference())

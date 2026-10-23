@@ -11,9 +11,11 @@ from .cli import DEFAULT_DIR
 
 
 def _commission(args) -> int:
-    from .features import read_columns
+    from .features import read_columns, select_kernel
     from .node import NodeMemory
     meta, cols = read_columns([os.path.expanduser(p) for p in args.ticks])
+    if args.kernel is not None:
+        cols = select_kernel(cols, args.kernel)
     exclude = tuple(tuple(float(x) for x in e.split(":")) for e in args.exclude)
     node = NodeMemory.commission(cols, meta, window=args.window, alpha=args.alpha,
                                  calib_frac=args.calib_frac, exclude=exclude)
@@ -26,7 +28,12 @@ def _replay(args) -> int:
     from .collector import read_ticks
     from .node import NodeMemory
     node = NodeMemory.load(args.model)
-    _, ticks = read_ticks(args.ticks)
+    meta, ticks = read_ticks(args.ticks)
+    expected = node.meta.get("kernel")
+    releases = tuple(sorted({str(tick.get("kernel") or meta.get("kernel"))
+                             for tick in ticks if tick.get("kernel") or meta.get("kernel")}))
+    if expected and releases and releases != (str(expected),):
+        raise ValueError(f"model kernel {expected!r} does not match replay data kernels {releases}")
     out = open(args.events, "w") if args.events else sys.stdout
     for rec in node.feed_ticks(ticks):
         out.write(json.dumps(rec) + "\n")
@@ -114,6 +121,7 @@ def add_model_commands(sub) -> dict:
     c.add_argument("--alpha", type=float, default=0.01, help="alarm false-positive rate")
     c.add_argument("--calib-frac", type=float, default=0.3,
                    help="tail share of the commissioning run held out for alarm calibration")
+    c.add_argument("--kernel", help="only commission ticks from this kernel release")
     c.add_argument("--exclude", action="append", default=[], metavar="LO:HI",
                    help="wall-time interval (epoch s) left out, e.g. an injected fault; repeatable")
     r = sub.add_parser("replay")
