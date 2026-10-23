@@ -20,6 +20,13 @@ def test_only_complete_wall_aligned_windows_are_kept():
     assert len(b) == 2 and b.t0[1] - b.t0[0] == 64
 
 
+def test_duplicate_tick_does_not_make_a_complete_window():
+    start = np.floor(T0 / 32) * 32 + 0.5
+    ticks = make_ticks(32, seed=0, t_start=start)
+    ticks[10]["t"] = ticks[9]["t"]
+    assert len(windows(ticks, 32)) == 0
+
+
 def test_ratios_are_ratios_of_window_sums():
     ticks = make_ticks(32, seed=0, t_start=np.floor(T0 / 32) * 32 + 0.5, order=("build",))
     ticks[3]["pmu_inst"], ticks[3]["pmu_cyc"] = 1.0, 1e3  # a nearly idle tick with IPC 0.001

@@ -111,12 +111,15 @@ def select_kernel(cols: Columns, kernel: str) -> Columns:
 
 
 def window_index(t: np.ndarray, K: int, offset: float = 0.0) -> tuple[np.ndarray, np.ndarray]:
-    """Rows of complete windows [offset + wK, offset + (w+1)K): (window ids [W], row index [W, K])."""
+    """Rows of complete windows [offset + wK, offset + (w+1)K) without repeated ticks."""
     wid = np.floor((t - offset) / K).astype(np.int64)
     ids, start, count = np.unique(wid, return_index=True, return_counts=True)
     keep = count == K
-    # ticks are time-ordered, so a complete window is K contiguous rows
+    # Counts alone admit duplicate timestamps paired with a missing tick.
     rows = start[keep][:, None] + np.arange(K)[None, :]
+    if len(rows):
+        unique = np.all(np.diff(t[rows], axis=1) > 0.0, axis=1)
+        return ids[keep][unique], rows[unique]
     return ids[keep], rows
 
 

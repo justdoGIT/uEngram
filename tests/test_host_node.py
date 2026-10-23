@@ -13,7 +13,10 @@ def run():
     node = NodeMemory.commission(ticks, {"host": "synth"})
     start = ticks[-1]["t"] + 1
     start += (32 - start % 32) % 32
-    test = make_ticks(3600, seed=2, t_start=start + 0.5, anomalies=ANOMALIES)
+    # A multiple of K (32) leaves no partial window in the node's buffer, so the
+    # save/load test's `more` stream starts on a clean boundary and produces no
+    # duplicate timestamp (which window_index now rejects as a malformed window).
+    test = make_ticks(3584, seed=2, t_start=start + 0.5, anomalies=ANOMALIES)
     recs = list(node.feed_ticks(test))
     for r in recs:
         r["k"] = r["t0"] - test[0]["t"]
