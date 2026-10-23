@@ -1,0 +1,334 @@
+{
+  "freeze_commit": "cddfbf1",
+  "datasets": {
+    "metropt2": {
+      "planned_tasks": 22,
+      "completed_tasks": 22,
+      "scorable_tasks": 22,
+      "result_records": 46,
+      "unscorable_tasks": [],
+      "archives_checked": 46,
+      "archive_bytes": 10692800,
+      "unscorable_run_archives": []
+    },
+    "care": {
+      "planned_tasks": 285,
+      "completed_tasks": 285,
+      "scorable_tasks": 267,
+      "result_records": 552,
+      "unscorable_tasks": [
+        {
+          "stream": "care_A_68",
+          "method": "hst",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_68",
+          "method": "memstream",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_68",
+          "method": "uengram",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_22",
+          "method": "uengram",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_22",
+          "method": "hst",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_22",
+          "method": "memstream",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_73",
+          "method": "hst",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_73",
+          "method": "memstream",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_73",
+          "method": "uengram",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_10",
+          "method": "hst",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_10",
+          "method": "memstream",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_10",
+          "method": "uengram",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_45",
+          "method": "hst",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_45",
+          "method": "memstream",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_45",
+          "method": "uengram",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_84",
+          "method": "hst",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_84",
+          "method": "memstream",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        },
+        {
+          "stream": "care_A_84",
+          "method": "uengram",
+          "encoder": "tab",
+          "seed": 0,
+          "error": "ValueError: CARE event has no normal-status rows to evaluate"
+        }
+      ],
+      "archives_checked": 534,
+      "archive_bytes": 30857689,
+      "unscorable_run_archives": [
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_68_hst_tab_0_v1_rule.npz",
+          "bytes": 13279,
+          "sha256": "5afd883d9f986189850caea0e572a666e7b71d298e8d6826372a7bc34143bc1a",
+          "episodes": 8
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_68_memstream_tab_0_v1_rule.npz",
+          "bytes": 3326,
+          "sha256": "123ebe4d6dc9ff9742d1bc36111a731788c548c5faf15e9465bf98e55cc00cc9",
+          "episodes": 0
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_68_uengram_tab_0_v1_rule.npz",
+          "bytes": 37474,
+          "sha256": "4416a5ccea76d4322847d85f82b9e52d53f363ab3d95d5cbe7a71cdfe9f1ee7b",
+          "episodes": 21
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_22_uengram_tab_0_v1_rule.npz",
+          "bytes": 24473,
+          "sha256": "c69cbd3ad837d96314bf3858bba2a987aac2d821f994d9988fdea46ddf41c2d0",
+          "episodes": 8
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_22_hst_tab_0_v1_rule.npz",
+          "bytes": 16502,
+          "sha256": "f4aaa23cf6395c26f603b2d021a0cdf4d0abb5be0d39febeed72df556bb49a5b",
+          "episodes": 10
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_22_memstream_tab_0_v1_rule.npz",
+          "bytes": 29652,
+          "sha256": "aa8f12223556263c2ed4566e3b34b28be54d3312e9c17b7fdcb2ed46a5b3a38c",
+          "episodes": 21
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_73_hst_tab_0_v1_rule.npz",
+          "bytes": 25181,
+          "sha256": "a07d709dddc60ec022b2a086bf71b8a79d17770a17d71778e04f80ca583f1403",
+          "episodes": 17
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_73_memstream_tab_0_v1_rule.npz",
+          "bytes": 15148,
+          "sha256": "f60d331403806e565bfcce1b6a41c52432582d54e2b7c1ff022adbca86894fb9",
+          "episodes": 8
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_73_uengram_tab_0_v1_rule.npz",
+          "bytes": 35172,
+          "sha256": "71014dc5beff47a5af689e0e8e49d665f80766cee4539cc7a132d7ab72c3dab5",
+          "episodes": 18
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_10_hst_tab_0_v1_rule.npz",
+          "bytes": 19159,
+          "sha256": "0a7989c20664a1c8da81dff6e8a515bac3c487884627689a45789d96ca25f24b",
+          "episodes": 12
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_10_memstream_tab_0_v1_rule.npz",
+          "bytes": 16483,
+          "sha256": "1608b5bb29e422e51dbfd950643ab576b586773ed579a773429fa9055d5eca2c",
+          "episodes": 9
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_10_uengram_tab_0_v1_rule.npz",
+          "bytes": 12152,
+          "sha256": "1bf2273fbf6e575e0fbf4539e2a80657b4e449e6b18308c75ed2247f715de998",
+          "episodes": 0
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_45_hst_tab_0_v1_rule.npz",
+          "bytes": 18829,
+          "sha256": "dfd6ad014f6ac950a8090824e5bff9297409a02774c4ad8557f83f3874371b93",
+          "episodes": 11
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_45_memstream_tab_0_v1_rule.npz",
+          "bytes": 3317,
+          "sha256": "00f2b7d93072b2576338878ca233e4c82b88cf09d8d354c83a211207987a71cc",
+          "episodes": 0
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_45_uengram_tab_0_v1_rule.npz",
+          "bytes": 13915,
+          "sha256": "d1d0419289983f0ced851b176e9de74d5d8a8ff0272fd475500d27b927df937c",
+          "episodes": 1
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_84_hst_tab_0_v1_rule.npz",
+          "bytes": 20707,
+          "sha256": "bf4746bd934bf355c8b956fd9ba3ff6c0573d5893959e6f15abe16161840df0d",
+          "episodes": 17
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_84_memstream_tab_0_v1_rule.npz",
+          "bytes": 13518,
+          "sha256": "bbbdec8ed845b3e4a2465cb5fba142a94cb26851012e3100073fdbfc1964d7b7",
+          "episodes": 7
+        },
+        {
+          "path": "/home/kk/.local/state/uengram/evidence/care_A_84_uengram_tab_0_v1_rule.npz",
+          "bytes": 28849,
+          "sha256": "a812f9ea60ede63d28f83e7271a9b2030a4447b7314aa4ea62d66701f2237e1b",
+          "episodes": 14
+        }
+      ]
+    }
+  },
+  "snapshot_samples": [
+    {
+      "stream": "metropt2_jan",
+      "method": "uengram",
+      "policy": "v1_rule",
+      "input_index": 3951,
+      "source_values_and_time_match": true
+    },
+    {
+      "stream": "metropt2_apr",
+      "method": "uengram",
+      "policy": "v1_rule",
+      "input_index": 3605,
+      "source_values_and_time_match": true
+    },
+    {
+      "stream": "care_A_72",
+      "method": "hst",
+      "policy": "v1_rule",
+      "input_index": 52118,
+      "source_values_and_time_match": true
+    },
+    {
+      "stream": "care_B_34",
+      "method": "hst",
+      "policy": "v1_rule",
+      "input_index": 52587,
+      "source_values_and_time_match": true
+    },
+    {
+      "stream": "care_C_55",
+      "method": "hst",
+      "policy": "v1_rule",
+      "input_index": 52869,
+      "source_values_and_time_match": true
+    }
+  ],
+  "care_cohort": {
+    "datasets": 95,
+    "assets": 36,
+    "anomaly": 45,
+    "normal": 50
+  },
+  "cohort_count_correction": "Supplied event_info.csv labels are 45 anomaly / 50 normal; the preregistration text incorrectly stated 44 / 51. All 95 predeclared datasets remain included; no relabeling.",
+  "care_event_tables": [
+    {
+      "member": "CARE_To_Compare/Wind Farm A/event_info.csv",
+      "bytes": 1788,
+      "sha256": "9254667b70d73e8eb23e7143ad56f1c280ba020c8b3d9289ad56fcaa59270aa5",
+      "labels": {
+        "anomaly": 12,
+        "normal": 10
+      }
+    },
+    {
+      "member": "CARE_To_Compare/Wind Farm B/event_info.csv",
+      "bytes": 1344,
+      "sha256": "e27b4de2fc9f87b7c73ca5bc5a0950cb56cf666a26d9749c52c4aff7c473e681",
+      "labels": {
+        "anomaly": 6,
+        "normal": 9
+      }
+    },
+    {
+      "member": "CARE_To_Compare/Wind Farm C/event_info.csv",
+      "bytes": 6070,
+      "sha256": "5c1e35122df6417d836a364ff5055ca4f5311b0c2c59b690733a08c89298ab80",
+      "labels": {
+        "anomaly": 27,
+        "normal": 31
+      }
+    }
+  ]
+}

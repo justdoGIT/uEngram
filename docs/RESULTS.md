@@ -237,6 +237,63 @@ P1 all 4 detected: FAIL; P2 ≤1 false-alarm episode per clean week: FAIL; P3 al
 | hst | 0.0802 | 0.257 | n/a | n/a | 0.4 | -3.26 | 1.36 | n/a | n/a | n/a | 561 | n/a | n/a |
 | memstream | 0.0587 | -0.132 | n/a | n/a | -1 | -1.58 | -2.84 | n/a | n/a | n/a | -401 | n/a | n/a |
 
+## Protocol v2: alarm policy confirmation
+
+Protocol and pass criteria in `docs/EXPLAINED.md` section 17. Each method runs one continuous memory per stream; `v1_rule` alarms on every window above the alpha = 0.01 calibration threshold, `v2` is the method's alarm configuration frozen on MetroPT-3. False-alarm episodes merge openings less than 1 h apart; clean time in alarm is the duration-weighted share of eligible clean exposure. Cells are means over seeds (range when seeds differ).
+
+**Unscorable run attempts: 18.** Original runner status: `invalid_calibration`; individual reasons distinguish calibration from evaluation failure. No zero-alarm fallback was used. A CARE method with any missing dataset has no aggregate score or CI.
+
+- `care_A_68` hst/tab seed 0: ValueError: CARE event has no normal-status rows to evaluate
+- `care_A_68` memstream/tab seed 0: ValueError: CARE event has no normal-status rows to evaluate
+- `care_A_68` uengram/tab seed 0: ValueError: CARE event has no normal-status rows to evaluate
+- `care_A_22` uengram/tab seed 0: ValueError: CARE event has no normal-status rows to evaluate
+- `care_A_22` hst/tab seed 0: ValueError: CARE event has no normal-status rows to evaluate
+- `care_A_22` memstream/tab seed 0: ValueError: CARE event has no normal-status rows to evaluate
+- `care_A_73` hst/tab seed 0: ValueError: CARE event has no normal-status rows to evaluate
+- `care_A_73` memstream/tab seed 0: ValueError: CARE event has no normal-status rows to evaluate
+- `care_A_73` uengram/tab seed 0: ValueError: CARE event has no normal-status rows to evaluate
+- `care_A_10` hst/tab seed 0: ValueError: CARE event has no normal-status rows to evaluate
+
+### MetroPT2
+
+### `metropt2_apr` (2 reported events)
+
+| method | encoder | policy | n | events_detected | false_alarm_per_week | alarm_time_share_clean | alerts_per_week | operator_events_per_week | notifications_per_week_all | lead_hours | events_warned_before_lps | hours_before_lps | events_retained | auroc | health_auroc |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| hst | dsp | v1_rule | 5 | 0.8 (0-1) | 10.6 (3.65-19.3) | 1.10% (0.00371-0.0203) | 0 | 10.6 (3.65-19.3) | 11.4 (3.55-20.3) | -16 (-18.7--6.2) | 2 | 45.4 (35.5-48) | n/a | 0.942 (0.929-0.953) | n/a |
+| hst | dsp | v2 | 5 | 0 | 0 | 0.00% | 0 | 0 | 0 | n/a | 0 | n/a | n/a | 0.942 (0.929-0.953) | n/a |
+| memstream | dsp | v1_rule | 5 | 2 | 17.7 (15.2-21.9) | 2.24% (0.0187-0.0287) | 0 | 17.7 (15.2-21.9) | 17.3 (15.3-21.2) | -6.47 (-6.87--5.87) | 2 | 35.8 (35.2-36.2) | n/a | 0.598 (0.58-0.624) | n/a |
+| memstream | dsp | v2 | 5 | 0 | 0 | 0.00% | 0 | 0 | 0 | n/a | 0 | n/a | n/a | 0.598 (0.58-0.624) | n/a |
+| uengram | dsp | v1_rule | 1 | 2 | 14.9 | 1.58% | 0 | 14.9 | 15.3 | -18.7 | 2 | 48 | 2 | 0.812 | 0.969 |
+| uengram | dsp | v2 | 1 | 0 | 0 | 0.00% | 37.7 | 37.7 | 36.1 | n/a | 0 | n/a | 2 | 0.812 | 0.969 |
+
+uEngram (dsp) v2 criteria: Q1 all events detected: FAIL; Q2 false-alarm budget: PASS; Q3 all events in live provenance: PASS
+
+Q4 at least 2 h before every published LPS warning: FAIL (2 warnings).
+
+Secondary (parked leak duty): detected 0/2, 0 false-alarm episodes per clean **parked** week, 1884 parked test windows.
+
+### `metropt2_jan` (3 reported events)
+
+| method | encoder | policy | n | events_detected | false_alarm_per_week | alarm_time_share_clean | alerts_per_week | operator_events_per_week | notifications_per_week_all | lead_hours | events_warned_before_lps | hours_before_lps | events_retained | auroc | health_auroc |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| hst | dsp | v1_rule | 5 | 0.2 (0-1) | 3.1 (2.46-4.24) | 0.33% (0.00248-0.00458) | 0 | 3.1 (2.46-4.24) | 3.37 (2.48-4.46) | -9.24 (-15.6--5.39) | n/a | n/a | n/a | 0.423 (0.38-0.489) | n/a |
+| hst | dsp | v2 | 5 | 0 | 0.0308 (0-0.077) | 0.01% (0-0.00015) | 0 | 0.0308 (0-0.077) | 0.0283 (0-0.0708) | n/a | n/a | n/a | n/a | 0.423 (0.38-0.489) | n/a |
+| memstream | dsp | v1_rule | 5 | 2 | 17 (12-21.1) | 4.73% (0.0231-0.0605) | 0 | 17 (12-21.1) | 17.9 (13.1-21.9) | -14.3 (-14.4--14.3) | n/a | n/a | n/a | 0.744 (0.735-0.753) | n/a |
+| memstream | dsp | v2 | 5 | 0 | 0.108 (0.077-0.154) | 0.98% (0.000451-0.0235) | 0 | 0.108 (0.077-0.154) | 0.156 (0.142-0.212) | n/a | n/a | n/a | n/a | 0.744 (0.735-0.753) | n/a |
+| uengram | dsp | v1_rule | 1 | 0 | 1.39 | 0.14% | 0 | 1.39 | 1.27 | n/a | n/a | n/a | 3 | 0.491 | 0.637 |
+| uengram | dsp | v2 | 1 | 0 | 0 | 0.00% | 16.3 | 16.3 | 17.3 | n/a | n/a | n/a | 3 | 0.491 | 0.637 |
+
+uEngram (dsp) v2 criteria: Q1 all events detected: FAIL; Q2 false-alarm budget: PASS; Q3 all events in live provenance: PASS
+
+Secondary (parked leak duty): detected 1/3, 0.544 false-alarm episodes per clean **parked** week, 2114 parked test windows.
+
+### CARE to Compare
+
+CARE score as published (Fraunhofer IEE reference implementation, criticality threshold 72); CIs resample assets within farms (all event datasets of an asset stay together); class-incomplete bootstrap draws are rejected. `*` marks an exploratory paired CI excluding 0; no multiplicity correction or inference to unseen farms.
+
+Full-cohort CARE score and CI unavailable: some attempted datasets have no valid evaluation. See the failure diagnostics; no subset aggregate is substituted.
+
 ## Budget sweep (synthetic, DSP encoder)
 
 | method | budget | n | items_end | writes | event_recall | seizure_recall | auroc | stale_at1 | mmd2_current |
@@ -429,3 +486,162 @@ uEngram reaches AUROC 1.0 at every budget. At B=64 it keeps 91.9% of events and 
 - MetroPT-3 has one machine and four coarse report intervals. Report times are not leak-onset times, and clean negatives are unreported windows, not verified healthy ones. On DSP, deterministic methods effectively have one run; only reservoir, HST and MemStream vary with the seed. The DSP seed-0 rows come from the full-length smoke run of commit `ef09b74`, the code that produced the other 72 rows.
 - AP now places tied scores in one threshold group (`docs/EXPLAINED.md` section 16). Synthetic and CMAPSS AP values here come from JSONL files generated with the previous tie handling; they were not recomputed. MetroPT uses the corrected metric.
 - Engine deviations from `docs/PLAN.md` and every v2 and v3 change are described in `docs/EXPLAINED.md`.
+
+### Protocol v2: compressor confirmation rejected the selected policy
+
+Freeze commit `cddfbf1` precedes both confirmation runs. MetroPT-3 was used
+for development; it is not another independent success. All five development
+iterations and the complete five-seed CNN2 comparison are retained in
+`results/v2_dev.json` and `results/v2_development.jsonl`.
+
+**Do not deploy the selected v2 alarm policy.** It detected none of the five
+published MetroPT2 failure intervals, across the two recordings. Q1 fails
+on both, Q2 passes only because critical alarms disappear, Q3 passes because
+all five intervals remain in live provenance, and April's Q4 fails. These
+recordings are not verified independent physical machines. The January
+reports comprise two air leaks and one oil leak, not three air leaks.
+
+The unfiltered uEngram v1-rule comparator detects both April reports, but
+does not meet the false-alarm budget. The v2 advisory stream remains busy.
+This is a failure of useful alarming, not evidence that reducing the number
+of critical notifications solved operator workload. Memory retention and
+modelled write savings do not establish useful fault warning or retrieval.
+
+Post-confirmation diagnostics, with **no retuning**, identify two different
+failure mechanisms (`results/v2_alarm_diagnostics.json`):
+
+| recording / report | raw v1 novelty exceedances | raw v2 novelty exceedances | v2 exceedances vetoed as new state | maximum novelty counter |
+|---|---:|---:|---:|---:|
+| January / February 28 | 0 | 0 | 0 | 0 |
+| January / March 23 | 0 | 0 | 0 | 0 |
+| January / May 30 | 0 | 0 | 0 | 0 |
+| April / June 4 | 13 | 3 | 3 | 0 |
+| April / July 11 | 7 | 3 | 1 | 1 |
+
+These counts cover eligible windows **inside** each report interval.
+January has no novelty threshold crossings to turn into an alarm. In June,
+the advisory veto removes every v2 crossing; in July, the remaining crossings
+never build the required counter. July also has nine frozen-health
+threshold crossings, but the development-selected direct health branch is
+disabled. April's high health AUROC is not proof that a deployable threshold
+meets the false-alarm and warning-time criteria. No alternative was selected
+on these consumed confirmation intervals.
+
+The next alarm-design experiment should test demand-conditioned duty,
+pressure-recovery and thermal residuals, with distinct healthy, fault and
+unresolved states. Absence of corroborating health evidence must not be
+interpreted as proof that a new state is benign. An alarm snapshot must
+include operating context and preceding history; an isolated measurement
+does not identify the cause. Preserve existing equipment safety alarms and
+require physical/operator confirmation. This is a proposal, not a validated
+replacement.
+
+### CNN2 and Colab: faster fitting, not better fault detection
+
+Colab CLI exercised the deterministic CUDA path, exposed and fixed the
+CUDA-median and member-loop defects, and exported a checkpoint that was
+restored and exercised on CPU. The state-conditioned candidate failed
+noise-covariance estimation and was rejected without a fake noise fallback.
+Full timing, gate diagnostics and the 64-window CPU/GPU inference comparison
+are in `results/encoder_v2_gate.json`; GPU sessions were terminated after
+artifact retrieval.
+
+| observed CNN2 fit | seconds |
+|---|---:|
+| local CPU, seed 0 | 68.39 |
+| Colab T4, new-session utility fit | 26.02 |
+| Colab T4, warmed five-seed runs | 17.38–18.23 |
+
+These are observed fitting times, not end-to-end upload/setup/download
+times or a controlled hardware benchmark: local CPU PyTorch was 2.14.1+cpu,
+while Colab used 2.11.0+cu130. The CPU-restored checkpoint differed from
+GPU embeddings by at most 0.000415 inferred noise standard deviations on
+the 64 checked windows.
+
+The analog-only member CKA is high, yet transferred v2 event detection varies
+from one to three of four development reports across seeds. Representation
+agreement is not fault sensitivity. DSP was selected before confirmation,
+and its alarm policy still failed there. More GPU epochs are not the
+evidence-supported next step.
+
+### CARE: all tasks attempted, full-cohort score undefined
+
+All 285 planned detector tasks were attempted: 95 datasets × three methods.
+267 tasks yielded both policy evaluations; 18 attempts (six datasets × three
+methods) cannot be evaluated under the registered mask. The affected
+datasets are `A_10`, `A_22`, `A_45`, `A_68`, `A_73` and `A_84`.
+Their prediction partitions contain only statuses 3 and 4: neither status 0
+nor the paper's broader normal-status set {0, 2} provides any eligible row.
+The original runner categorizes these as `invalid_calibration`, but their
+actual exception is **evaluation failure**, not failed encoder training or
+numerical calibration. Raw detector scores were produced for every task.
+
+Accordingly, **no full-cohort CARE score or CI is available for any method**.
+No six-dataset exclusion, zero-score substitution or changed mask is used.
+The complete 552 result records retain the failure reasons;
+`results/v2_care_evaluability.json` records the status counts. The source
+tables contain 45 anomaly and 50 normal datasets, correcting the original
+protocol prose's 44 / 51 count without changing membership or supplied
+labels. `results/v2_confirmation_manifest.json` records task coverage,
+source-table hashes and evidence checks.
+
+The [CARE paper](https://arxiv.org/html/2404.10320) describes retrospective
+fault-related status assignment for farm A. These tags are not trustworthy
+online availability signals: runtime prediction never reads test statuses.
+Before another confirmation, resolve the intended evaluation population
+with the dataset/reference maintainers or register a defensible alternative
+using independently known availability. Adding idle status 2 alone does not
+solve these six cases. No alternative full-cohort result is claimed here.
+
+### Encoder diagnosis: operating-range scaling before more training
+
+The post-confirmation seed-0 diagnostic did not retrain the model.
+TP2's training IQR-derived scale is 0.00148, while its healthy 99th percentile
+is 10.14: the normalized value is about 6,848. The other channels' normalized
+99th percentiles are about 1.6–2.7. In the resulting raw CNN2 latent, the
+first principal component explains 99.69% of variance and spectrum effective
+rank is 1.02 (`results/v2_encoder_diagnostics.json`).
+
+[INFERENCE] High raw-latent CKA can therefore be dominated by common
+operating-range variation rather than stable fault-sensitive features.
+This is not proof of a causal explanation; it motivates a controlled
+normalization/objective ablation. Fit scaling over the healthy operating
+range or conditioned on observed operating mode, then test physically
+meaningful prediction/residual objectives. Require downstream detection,
+false-alarm burden and cross-seed consistency, not representation agreement
+alone. A new confirmation cohort is needed after these consumed holdouts.
+
+### Research and paid-pilot boundary
+
+The defensible research contribution is currently a reproducible negative
+result: bounded-memory retention, representation agreement and low critical
+alarm counts do not establish useful fault warning. A paper can document
+the frozen evaluation, suppression failure, scaling diagnosis and status-mask
+pitfall; it cannot claim validated predictive maintenance superiority.
+
+A plausible paid pilot is a **read-only compressed-air leak audit and
+evidence logger**, linked to existing trusted equipment alarms and verified
+by physical inspection. Charge for verified findings or measured energy
+savings only after a site-specific baseline and repair check. This is a
+commercial proposal, not evidence of demand, revenue or present deployment
+readiness. Do not replace protective controls or sell this failed policy as
+a safety alarm.
+
+### Verification and artifact scope
+
+The final complete Python suite passes all 98 tests; Ruff's undefined-name
+and related checks pass. The NumPy CARE scorer matched the upstream scorer
+on 500 seeded event cases. The full Python Semgrep scan found no findings
+in 44 code files; this is not a security guarantee.
+
+Artifact verification covers all 307 planned detector tasks, all 580
+successful-record snapshot archives (SHA-256, sizes and episode/index
+schema), and the 18 archives written before evaluation failed. Five sampled
+snapshots, one per compressor recording and wind farm, match their actual
+source input values and timestamps. All completed uEngram score caches
+respect the 256-item bound. This verifies the recorded experimental
+artifacts, not deployment safety or the correctness of unobserved faults.
+Large data, raw score/embedding caches, checkpoints and snapshot archives
+remain local under the paths recorded in the result files; they are not
+embedded in the Git repository.
+

@@ -596,7 +596,15 @@ Each detector runs continuously into test, with no test-time restart. uEngram/HS
 - Windows have 60 samples and do not cross logging gaps over 60 seconds. No detector tuning uses these test windows.
 - Run uEngram once (deterministic DSP), HST and MemStream for seeds 0–4, for each recording. Compare both policies on each run.
 
-**CARE to Compare:** [dataset version 15846963](https://doi.org/10.5281/zenodo.15846963), CC BY-SA 4.0; [Gück, Roelofs and Faulstich](https://arxiv.org/abs/2404.10320). All 95 event datasets, 36 assets and three farms are attempted, with 44 anomaly and 51 normal labels. Models are separate per dataset; asset identities group uncertainty estimates, not encoder inputs.
+**CARE to Compare:** [dataset version 15846963](https://doi.org/10.5281/zenodo.15846963), CC BY-SA 4.0; [Gück, Roelofs and Faulstich](https://arxiv.org/abs/2404.10320). All 95 event datasets, 36 assets and three farms are attempted. Models are separate per dataset; asset identities group uncertainty estimates, not encoder inputs.
+
+**Post-confirmation count correction:** the frozen prose stated 44 anomaly
+and 51 normal labels. The supplied `event_info.csv` tables actually contain
+45 anomaly and 50 normal labels. No dataset was added, dropped or relabeled;
+all 95 predefined datasets were attempted, and scoring used their supplied
+labels throughout. `results/v2_confirmation_manifest.json` records the
+per-farm counts and source-table hashes. This corrects descriptive prose,
+not the registered cohort, model, thresholds or scoring rule.
 
 - Use 10-minute averages, drop counters, map angles to sin/cos, retain missing values for commissioning-median imputation, drop commissioning-constant features, and fit robust scaling/PCA/noise whitening on commissioning only. CARE provides aggregates, not compressor waveforms; it uses `TabularEncoder`, not a fabricated CNN waveform input.
 - Respect supplied train/prediction partitions. Calibration is the final 28 days of training; commissioning is earlier status-0 training rows. No event label, asset ID, timestamp or status ID is a sensor feature.

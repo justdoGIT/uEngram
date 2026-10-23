@@ -113,6 +113,12 @@ project's local CPU-wheel source. Use only authorized uploads and never load
 an untrusted pickle checkpoint.
 
 Faster training did not make CNN2 the better detector: its five development
-seeds were less reliable than DSP. DSP remains the selected compressor
-encoder; CARE uses tabular features, not invented waveforms. Detailed results
-and limitations are in [RESULTS](docs/RESULTS.md).
+seeds were less reliable than DSP. DSP was selected for compressor
+confirmation; CARE uses tabular features, not invented waveforms.
+
+**Confirmation rejected the v2 alarm policy for deployment:** it detected
+none of the five published MetroPT2 failure intervals. Low critical-alarm
+counts and preserved provenance do not establish useful fault warning.
+CARE attempted all 95 datasets; six have no eligible evaluation rows, so no
+full-cohort CARE score or confidence interval is reported.
+See [RESULTS](docs/RESULTS.md) for the complete comparison and limitations.

@@ -2,7 +2,8 @@
 
 Guck, Roelofs & Faulstich (2024), Zenodo 10.5281/zenodo.15846963, CC BY-SA
 4.0: 95 event datasets from 36 wind turbines in 3 farms, 10-minute SCADA rows,
-one training year per dataset, 44 labeled anomaly events and 51 normal events.
+one training year per dataset. Supplied event tables label 45 anomaly / 50
+normal events; the original protocol text's 44 / 51 count was incorrect.
 Each dataset is one stream. Preprocessing follows the reference implementation
 (Fraunhofer IEE EnergyFaultDetector, care2compare and CAREScore): 10-minute
 averages only, counters dropped, angles as sin/cos. Status 0 identifies

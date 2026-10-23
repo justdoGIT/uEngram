@@ -148,6 +148,7 @@ def care_section(rows) -> list[str]:
 def build_v2(runs_dir: str) -> list[str]:
     mp2 = _load(f"{runs_dir}/v2_metropt2.jsonl")
     care = _load(f"{runs_dir}/v2_care.jsonl")
+    care_attempted = bool(care)
     failures = [r for r in mp2 + care if r.get("status") == "invalid_calibration"]
     blocked = {(r["method"], r["encoder"]) for r in care if r.get("status") == "invalid_calibration"}
     mp2 = [r for r in mp2 if r.get("status") != "invalid_calibration"]
@@ -160,8 +161,9 @@ def build_v2(runs_dir: str) -> list[str]:
            "merge openings less than 1 h apart; clean time in alarm is the duration-weighted share of "
            "eligible clean exposure. Cells are means over seeds (range when seeds differ).", ""]
     if failures:
-        out += [f"**Invalid-calibration runs: {len(failures)}.** No zero-alarm fallback was used. "
-                "A CARE method with any missing dataset has no aggregate score or CI.", ""]
+        out += [f"**Unscorable run attempts: {len(failures)}.** Original runner status: "
+                "`invalid_calibration`; individual reasons distinguish calibration from evaluation failure. "
+                "No zero-alarm fallback was used. A CARE method with any missing dataset has no aggregate score or CI.", ""]
         out += [f"- `{r['stream']}` {r['method']}/{r['encoder']} seed {r['seed']}: {r['error']}"
                 for r in failures[:10]]
         out += [""]
@@ -171,5 +173,8 @@ def build_v2(runs_dir: str) -> list[str]:
             "CIs resample assets within farms (all event datasets of an asset stay together); "
             "class-incomplete bootstrap draws are rejected. `*` marks an exploratory paired CI excluding 0; "
             "no multiplicity correction or inference to unseen farms.", ""]
-    out += care_section(care) if care else ["not run", ""]
+    out += (care_section(care) if care else
+            ["Full-cohort CARE score and CI unavailable: some attempted datasets have no valid evaluation. "
+             "See the failure diagnostics; no subset aggregate is substituted.", ""] if care_attempted else
+            ["not run", ""])
     return out
