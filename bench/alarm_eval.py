@@ -13,7 +13,7 @@ from __future__ import annotations
 import numpy as np
 
 from bench.metropt_eval import episodes
-from uengram.alarm import AlarmConfig, AlarmPolicy
+from uengram.alarm import AlarmConfig, AlarmLogic, AlarmPolicy
 from uengram.metrics import auroc, average_precision
 
 H = np.timedelta64(1, "h")
@@ -32,18 +32,19 @@ def eligible(stream, sc: dict, cfg: AlarmConfig, idx: np.ndarray) -> np.ndarray:
     return stream.monitorable[idx] & scored
 
 
-def apply_policy(stream, sc: dict, cfg: AlarmConfig, evidence=None):
+def apply_policy(stream, sc: dict, cfg: AlarmConfig, evidence=None, logic: AlarmLogic | None = None):
     """Calibrate the policy on the calibration windows, stream the test
     windows, and evaluate. Returns (metrics, details, policy).
 
     `evidence` (optional): one True/False/None per test window, the policy's
-    corroboration input (src/uengram/alarm.py); None corroborates every window."""
+    corroboration input (src/uengram/alarm.py); None corroborates every window.
+    `logic` (optional): AlarmLogic; None is the v2 alarm."""
     nov, health, act = sc["novelty"], sc["health"], sc["action"]
     cal, test = stream.cal, np.flatnonzero(stream.test)
     novelty_enabled, health_enabled = cfg.k_novelty > 0, cfg.k_health > 0
     cal_valid = eligible(stream, sc, cfg, np.flatnonzero(cal))
     valid = eligible(stream, sc, cfg, test)
-    pol = AlarmPolicy(cfg, stream.feature_names).calibrate(
+    pol = AlarmPolicy(cfg, stream.feature_names, logic or AlarmLogic()).calibrate(
         nov[cal], health[cal], stream.state[cal], cal_valid, stream.features[cal])
     supported = any((novelty_enabled and b["novelty_threshold_supported"]) or
                     (health_enabled and b["health_threshold_supported"])

@@ -944,10 +944,12 @@ setpoints, persistence counters, metrics and scoring causality. A second
 independent implementation reproduced the v7 rows and per-event traces
 exactly.
 
-Corrections: unknown evidence holds the counters (this removes the v6
-recency artifact and the v5 run-breaking), persistence applies to the
-combined condition, LPS and TP3 < 7 bar are one vote, and early warnings
-are reported positive.
+Corrections: a uEngram error with unknown evidence holds the counters,
+instead of counting as normal. This removes the v6 recency artifact. v8
+made the rule an exact Kleene AND: no error lowers the counter even when
+the evidence is unknown. Persistence applies to the combined condition,
+LPS and TP3 < 7 bar are one vote, and early warnings are reported
+positive.
 
 On MetroPT3, no configuration meets the budget. Within both alarm budgets,
 the best rows reach 2/4 with dataset corroboration and 3/4 with the
@@ -959,3 +961,35 @@ and dataset errors either never occur (May 29-30) or arrive 34 h into the
 report (June 5-7). On MetroPT2, uEngram never crosses inside the April
 events, although the oil-level error precedes both LPS warnings by 3.0 h
 and 59.4 h.
+
+### v8: how each component behaves, and why
+
+`docs/research-alarm-components.md` profiles every component by operating
+state, derives the false-alarm arithmetic exactly, and crosses eight
+components in a 1,728-alarm factorial on MetroPT3. The components are α,
+the health channel, the setpoint for a state without a reference, the
+new-state veto, the persistence filter and its length, corroboration and
+staleness.
+
+- **The air leaks' signature is the operating state.** 492 of 495 event
+  windows are sustained load, a state uEngram never saw before the test (0
+  commissioning windows). So 87% of healthy sustained-load windows exceed
+  the health setpoint.
+- **Within sustained load, the scores carry no early warning.** AUROC,
+  clean vs the 24 h before a report: health 0.07, novelty 0.35.
+- **Exceedances cluster in time.** P(exceed | exceeded) = 0.30 vs 0.009
+  otherwise. A two-state Markov model predicts 0.80 false alarms per week
+  against 0.74 observed, while independence predicts 0.002. That is also
+  why the filter type (counter, ISA timers, m-of-n, EWMA) barely matters.
+- **No combination reaches 4/4 within budget.** Jul 15 is caught only by
+  trusting health in sustained load, which costs at least 2.53% of healthy
+  time. Commissioning sustained load online removes that catch, so it was
+  the state, not the leak, being detected.
+
+Fixes: Kleene corroboration (provably only removes alarm time), four
+three-valued filters, veto-hold, unknown/online-commissioned states,
+staleness, physically conditioned errors, an episode-based early-warning
+metric, and a three-valued v5 hold. The v5 hold fix exposes calibration
+drift that the old run reset had hidden. Every default reproduces the
+earlier results byte for byte. Independent implementations reproduced the
+v8 rows, the clustering arithmetic and the corrected v7 rows exactly.

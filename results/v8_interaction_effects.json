@@ -1,0 +1,1737 @@
+{
+  "alpha=0.01": {
+    "pairs": 576,
+    "median": {
+      "events_detected": 0.0,
+      "alarm_time_share_clean": 0.011745192484336534,
+      "false_alarm_per_week": 0.1587254375359765,
+      "events_warned_before_report": 0.5
+    },
+    "by_other": {
+      "channels": {
+        "novelty": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0004979415732224309,
+          "false_alarm_per_week": 0.10581695835731766,
+          "events_warned_before_report": 0.0
+        },
+        "both": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.019882845510390112,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 1.0
+        }
+      },
+      "unbaselined": {
+        "global": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.010593986909350489,
+          "false_alarm_per_week": 0.15872543753597645,
+          "events_warned_before_report": 0.5
+        },
+        "unknown": {
+          "events_detected": 0.5,
+          "alarm_time_share_clean": 0.010593986909350489,
+          "false_alarm_per_week": 0.1587254375359765,
+          "events_warned_before_report": 0.5
+        },
+        "commission": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.011745192484336534,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 0.5
+        }
+      },
+      "veto": {
+        "normal": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.011514942621244225,
+          "false_alarm_per_week": 0.1587254375359765,
+          "events_warned_before_report": 0.5
+        },
+        "hold": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.011745192484336534,
+          "false_alarm_per_week": 0.1587254375359765,
+          "events_warned_before_report": 0.5
+        }
+      },
+      "persistence": {
+        "counter": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.010893215502324369,
+          "false_alarm_per_week": 0.15872543753597648,
+          "events_warned_before_report": 0.5
+        },
+        "consecutive": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.011021243874146405,
+          "false_alarm_per_week": 0.15872543753597648,
+          "events_warned_before_report": 0.5
+        },
+        "m_of_n": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.012025437710938443,
+          "false_alarm_per_week": 0.1587254375359765,
+          "events_warned_before_report": 0.5
+        },
+        "ewma": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.01070298817432504,
+          "false_alarm_per_week": 0.1587254375359765,
+          "events_warned_before_report": 0.5
+        }
+      },
+      "k": {
+        "3": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.011795319069272663,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 0.5
+        },
+        "6": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.010658766553582957,
+          "false_alarm_per_week": 0.13227119794664705,
+          "events_warned_before_report": 0.5
+        }
+      },
+      "corroboration": {
+        "none": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.011745192484336534,
+          "false_alarm_per_week": 0.1587254375359765,
+          "events_warned_before_report": 0.5
+        },
+        "dataset": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.01038932522443238,
+          "false_alarm_per_week": 0.1322711979466471,
+          "events_warned_before_report": 0.5
+        },
+        "physical": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.01038932522443238,
+          "false_alarm_per_week": 0.1322711979466471,
+          "events_warned_before_report": 0.5
+        }
+      },
+      "stale": {
+        "0": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.011745192484336534,
+          "false_alarm_per_week": 0.1587254375359765,
+          "events_warned_before_report": 0.5
+        },
+        "36": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.011745192484336534,
+          "false_alarm_per_week": 0.1587254375359765,
+          "events_warned_before_report": 0.5
+        }
+      }
+    }
+  },
+  "alpha=0.03": {
+    "pairs": 576,
+    "median": {
+      "events_detected": 0.0,
+      "alarm_time_share_clean": 0.012966557782042962,
+      "false_alarm_per_week": 0.15872543753597654,
+      "events_warned_before_report": 0.5
+    },
+    "by_other": {
+      "channels": {
+        "novelty": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0007470873217356921,
+          "false_alarm_per_week": 0.1322711979466471,
+          "events_warned_before_report": 0.0
+        },
+        "both": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0216022836027455,
+          "false_alarm_per_week": 0.2645423958932942,
+          "events_warned_before_report": 1.0
+        }
+      },
+      "unbaselined": {
+        "global": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.011252543508650993,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 0.5
+        },
+        "unknown": {
+          "events_detected": 0.5,
+          "alarm_time_share_clean": 0.011099014439605776,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 0.5
+        },
+        "commission": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.014552368721710847,
+          "false_alarm_per_week": 0.2645423958932942,
+          "events_warned_before_report": 0.5
+        }
+      },
+      "veto": {
+        "normal": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.012506014315382825,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 0.5
+        },
+        "hold": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.012966557782042962,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 0.5
+        }
+      },
+      "persistence": {
+        "counter": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.011458211224505865,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 0.5
+        },
+        "consecutive": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.011687498797136923,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 0.5
+        },
+        "m_of_n": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.013554910918147572,
+          "false_alarm_per_week": 0.21163391671463538,
+          "events_warned_before_report": 0.5
+        },
+        "ewma": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.01113457544619659,
+          "false_alarm_per_week": 0.18517967712530597,
+          "events_warned_before_report": 0.5
+        }
+      },
+      "k": {
+        "3": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.013042272545153291,
+          "false_alarm_per_week": 0.2645423958932942,
+          "events_warned_before_report": 0.5
+        },
+        "6": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.011682687344830665,
+          "false_alarm_per_week": 0.13227119794664705,
+          "events_warned_before_report": 0.5
+        }
+      },
+      "corroboration": {
+        "none": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.012966557782042962,
+          "false_alarm_per_week": 0.2645423958932942,
+          "events_warned_before_report": 0.5
+        },
+        "dataset": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.010689691069769558,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 0.5
+        },
+        "physical": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.01068969106976956,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 0.5
+        }
+      },
+      "stale": {
+        "0": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.012966557782042962,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 0.5
+        },
+        "36": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.012966557782042962,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 0.5
+        }
+      }
+    }
+  },
+  "channels=both": {
+    "pairs": 864,
+    "median": {
+      "events_detected": 1.0,
+      "alarm_time_share_clean": 0.019884945053214663,
+      "false_alarm_per_week": 0.1587254375359765,
+      "events_warned_before_report": 1.0
+    },
+    "by_other": {
+      "alpha": {
+        "0.003": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "0.01": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.01978259234051785,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 1.0
+        },
+        "0.03": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.024304176515563734,
+          "false_alarm_per_week": 0.21163391671463538,
+          "events_warned_before_report": 1.0
+        }
+      },
+      "unbaselined": {
+        "global": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.033114995459738644,
+          "false_alarm_per_week": 0.21163391671463538,
+          "events_warned_before_report": 1.0
+        },
+        "unknown": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.019283557255407632,
+          "false_alarm_per_week": 0.052908479178658846,
+          "events_warned_before_report": 1.0
+        },
+        "commission": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.019583748138842765,
+          "false_alarm_per_week": 0.10581695835731772,
+          "events_warned_before_report": 1.0
+        }
+      },
+      "veto": {
+        "normal": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.019884945053214663,
+          "false_alarm_per_week": 0.13227119794664707,
+          "events_warned_before_report": 1.0
+        },
+        "hold": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.019884945053214663,
+          "false_alarm_per_week": 0.1587254375359765,
+          "events_warned_before_report": 1.0
+        }
+      },
+      "persistence": {
+        "counter": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.01978259234051785,
+          "false_alarm_per_week": 0.1322711979466471,
+          "events_warned_before_report": 1.0
+        },
+        "consecutive": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.01978259234051785,
+          "false_alarm_per_week": 0.10581695835731769,
+          "events_warned_before_report": 1.0
+        },
+        "m_of_n": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.020703416830985054,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 1.0
+        },
+        "ewma": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.019844878777646166,
+          "false_alarm_per_week": 0.13227119794664707,
+          "events_warned_before_report": 1.0
+        }
+      },
+      "k": {
+        "3": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.01938490393716768,
+          "false_alarm_per_week": 0.052908479178658846,
+          "events_warned_before_report": 1.0
+        },
+        "6": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.02008956299765726,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 1.0
+        }
+      },
+      "corroboration": {
+        "none": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.020427633132885314,
+          "false_alarm_per_week": 0.15872543753597654,
+          "events_warned_before_report": 1.0
+        },
+        "dataset": {
+          "events_detected": 0.5,
+          "alarm_time_share_clean": 0.020081952154918266,
+          "false_alarm_per_week": 0.10581695835731769,
+          "events_warned_before_report": 1.0
+        },
+        "physical": {
+          "events_detected": 0.5,
+          "alarm_time_share_clean": 0.01978259234051785,
+          "false_alarm_per_week": 0.10581695835731769,
+          "events_warned_before_report": 1.0
+        }
+      },
+      "stale": {
+        "0": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.019884945053214663,
+          "false_alarm_per_week": 0.1587254375359765,
+          "events_warned_before_report": 1.0
+        },
+        "36": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.019884945053214663,
+          "false_alarm_per_week": 0.1587254375359765,
+          "events_warned_before_report": 1.0
+        }
+      }
+    }
+  },
+  "unbaselined=unknown": {
+    "pairs": 576,
+    "median": {
+      "events_detected": -2.0,
+      "alarm_time_share_clean": -0.00992620106971707,
+      "false_alarm_per_week": -0.15872543753597654,
+      "events_warned_before_report": 0.0
+    },
+    "by_other": {
+      "alpha": {
+        "0.003": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.00992563244353542,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        },
+        "0.01": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.009925632443535422,
+          "false_alarm_per_week": -0.1587254375359765,
+          "events_warned_before_report": 0.0
+        },
+        "0.03": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.010130294128453529,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "channels": {
+        "novelty": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.002966828972991131,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        },
+        "both": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.02263963271997523,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "veto": {
+        "normal": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.005832005080893636,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        },
+        "hold": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.016780814727593067,
+          "false_alarm_per_week": -0.1587254375359765,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "persistence": {
+        "counter": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.008109309197922151,
+          "false_alarm_per_week": -0.1587254375359765,
+          "events_warned_before_report": 0.0
+        },
+        "consecutive": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.008109309197922151,
+          "false_alarm_per_week": -0.1587254375359765,
+          "events_warned_before_report": 0.0
+        },
+        "m_of_n": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.01186959039669112,
+          "false_alarm_per_week": -0.1587254375359765,
+          "events_warned_before_report": 0.0
+        },
+        "ewma": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.007929885767374155,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "k": {
+        "3": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.010028510041938369,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        },
+        "6": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.009925063817353771,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "corroboration": {
+        "none": {
+          "events_detected": -3.0,
+          "alarm_time_share_clean": -0.0348129569786179,
+          "false_alarm_per_week": -0.634901750143906,
+          "events_warned_before_report": 0.0
+        },
+        "dataset": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.01281167275825689,
+          "false_alarm_per_week": -0.1587254375359765,
+          "events_warned_before_report": 0.0
+        },
+        "physical": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.005782053457859551,
+          "false_alarm_per_week": -0.10581695835731766,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "stale": {
+        "0": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.010283123349890563,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        },
+        "36": {
+          "events_detected": -2.0,
+          "alarm_time_share_clean": -0.005782053457859551,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        }
+      }
+    }
+  },
+  "unbaselined=commission": {
+    "pairs": 576,
+    "median": {
+      "events_detected": 0.0,
+      "alarm_time_share_clean": -0.005782053457859551,
+      "false_alarm_per_week": -0.10581695835731769,
+      "events_warned_before_report": 0.0
+    },
+    "by_other": {
+      "alpha": {
+        "0.003": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00608814930548873,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        },
+        "0.01": {
+          "events_detected": -0.5,
+          "alarm_time_share_clean": -0.005782053457859551,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        },
+        "0.03": {
+          "events_detected": -0.5,
+          "alarm_time_share_clean": -0.004400160615026077,
+          "false_alarm_per_week": -0.10581695835731766,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "channels": {
+        "novelty": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00235301888013885,
+          "false_alarm_per_week": -0.10581695835731766,
+          "events_warned_before_report": 0.0
+        },
+        "both": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.022605340187174243,
+          "false_alarm_per_week": -0.1587254375359765,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "veto": {
+        "normal": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0028134748658479617,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        },
+        "hold": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.006036623025336233,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "persistence": {
+        "counter": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.005627299655500015,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        },
+        "consecutive": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.005627299655500015,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        },
+        "m_of_n": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.005782053457859551,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        },
+        "ewma": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.005806985528901082,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "k": {
+        "3": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.005782053457859551,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        },
+        "6": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.005627299655500014,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "corroboration": {
+        "none": {
+          "events_detected": -0.5,
+          "alarm_time_share_clean": -0.015011993638385238,
+          "false_alarm_per_week": -0.2645423958932942,
+          "events_warned_before_report": 0.0
+        },
+        "dataset": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.011149097284066394,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        },
+        "physical": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.004656086137243616,
+          "false_alarm_per_week": -0.052908479178658874,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "stale": {
+        "0": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.006139325661837135,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        },
+        "36": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.005474033029307868,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        }
+      }
+    }
+  },
+  "veto=hold": {
+    "pairs": 864,
+    "median": {
+      "events_detected": 0.0,
+      "alarm_time_share_clean": 0.0,
+      "false_alarm_per_week": 0.0,
+      "events_warned_before_report": 0.0
+    },
+    "by_other": {
+      "alpha": {
+        "0.003": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "0.01": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "0.03": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "channels": {
+        "novelty": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "both": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "unbaselined": {
+        "global": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0011765313103071807,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "unknown": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "commission": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "persistence": {
+        "counter": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "consecutive": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "m_of_n": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "ewma": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "k": {
+        "3": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "6": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "corroboration": {
+        "none": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.00025579430079100294,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "dataset": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "physical": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "stale": {
+        "0": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "36": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      }
+    }
+  },
+  "persistence=consecutive": {
+    "pairs": 432,
+    "median": {
+      "events_detected": 0.0,
+      "alarm_time_share_clean": 0.0,
+      "false_alarm_per_week": 0.0,
+      "events_warned_before_report": 0.0
+    },
+    "by_other": {
+      "alpha": {
+        "0.003": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "0.01": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "0.03": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "channels": {
+        "novelty": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "both": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "unbaselined": {
+        "global": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "unknown": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "commission": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "veto": {
+        "normal": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "hold": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "k": {
+        "3": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "6": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "corroboration": {
+        "none": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "dataset": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "physical": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "stale": {
+        "0": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "36": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      }
+    }
+  },
+  "persistence=m_of_n": {
+    "pairs": 432,
+    "median": {
+      "events_detected": 0.0,
+      "alarm_time_share_clean": 0.0009208244904672022,
+      "false_alarm_per_week": 0.0,
+      "events_warned_before_report": 0.0
+    },
+    "by_other": {
+      "alpha": {
+        "0.003": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.00015344158809419252,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "0.01": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0009208244904672022,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "0.03": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.002062975787022376,
+          "false_alarm_per_week": 0.05290847917865882,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "channels": {
+        "novelty": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0006138538333277928,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "both": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0011255299158608213,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "unbaselined": {
+        "global": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0019005236609728232,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "unknown": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0005268977680110156,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "commission": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0008173345254070933,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "veto": {
+        "normal": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0009720883277666275,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "hold": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0007226801364002991,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "k": {
+        "3": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0009195122762018569,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "6": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0009208244904672022,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "corroboration": {
+        "none": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.002624690973540513,
+          "false_alarm_per_week": 0.052908479178658874,
+          "events_warned_before_report": 0.0
+        },
+        "dataset": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0006138538333277932,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "physical": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.000613678871425747,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "stale": {
+        "0": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0009208244904672022,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "36": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0009208244904672022,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      }
+    }
+  },
+  "persistence=ewma": {
+    "pairs": 432,
+    "median": {
+      "events_detected": 0.0,
+      "alarm_time_share_clean": -0.00010235271269681026,
+      "false_alarm_per_week": 0.0,
+      "events_warned_before_report": 0.0
+    },
+    "by_other": {
+      "alpha": {
+        "0.003": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -5.126383729942702e-05,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "0.01": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00010235271269681129,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "0.03": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0001534415880941921,
+          "false_alarm_per_week": 0.02645423958932941,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "channels": {
+        "novelty": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00010235271269681026,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "both": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00010235271269681129,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "unbaselined": {
+        "global": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0001278971503955019,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "unknown": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -4.374047551068683e-08,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "commission": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00010235271269681129,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "veto": {
+        "normal": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00010235271269681026,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "hold": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00010235271269681034,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "k": {
+        "3": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0001534415880941921,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "6": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "corroboration": {
+        "none": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0001247478361586765,
+          "false_alarm_per_week": 0.052908479178658874,
+          "events_warned_before_report": 0.0
+        },
+        "dataset": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00010235271269681026,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "physical": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00010235271269681026,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "stale": {
+        "0": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00010235271269681034,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "36": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00010235271269681026,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      }
+    }
+  },
+  "k=6": {
+    "pairs": 864,
+    "median": {
+      "events_detected": 0.0,
+      "alarm_time_share_clean": -0.0005602280103507462,
+      "false_alarm_per_week": -0.15872543753597654,
+      "events_warned_before_report": 0.0
+    },
+    "by_other": {
+      "alpha": {
+        "0.003": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00016463914982512557,
+          "false_alarm_per_week": -0.052908479178658846,
+          "events_warned_before_report": 0.0
+        },
+        "0.01": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00078724107825521,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        },
+        "0.03": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0010986732638967865,
+          "false_alarm_per_week": -0.21163391671463538,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "channels": {
+        "novelty": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0008528517915223959,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        },
+        "both": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00026489231969738583,
+          "false_alarm_per_week": -0.07936271876798827,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "unbaselined": {
+        "global": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0009246299118366964,
+          "false_alarm_per_week": -0.15872543753597657,
+          "events_warned_before_report": 0.0
+        },
+        "unknown": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00031703096650704236,
+          "false_alarm_per_week": -0.10581695835731769,
+          "events_warned_before_report": 0.0
+        },
+        "commission": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0003180807379193181,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "veto": {
+        "normal": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0005602280103507462,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        },
+        "hold": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0005602280103507462,
+          "false_alarm_per_week": -0.1587254375359765,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "persistence": {
+        "counter": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.00078724107825521,
+          "false_alarm_per_week": -0.1322711979466471,
+          "events_warned_before_report": 0.0
+        },
+        "consecutive": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0005729127482490687,
+          "false_alarm_per_week": -0.1587254375359765,
+          "events_warned_before_report": 0.0
+        },
+        "m_of_n": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0007209305173798408,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        },
+        "ewma": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0004040745127748442,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "corroboration": {
+        "none": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0011604785557944725,
+          "false_alarm_per_week": -0.29099663548262367,
+          "events_warned_before_report": 0.0
+        },
+        "dataset": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0003180807379193181,
+          "false_alarm_per_week": -0.10581695835731766,
+          "events_warned_before_report": 0.0
+        },
+        "physical": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0003180807379193181,
+          "false_alarm_per_week": -0.10581695835731766,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "stale": {
+        "0": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0005224799799843586,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        },
+        "36": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": -0.0005729127482490687,
+          "false_alarm_per_week": -0.15872543753597654,
+          "events_warned_before_report": 0.0
+        }
+      }
+    }
+  },
+  "corroboration=dataset": {
+    "pairs": 576,
+    "median": {
+      "events_detected": -1.0,
+      "alarm_time_share_clean": -0.013968170930779823,
+      "false_alarm_per_week": -0.21163391671463538,
+      "events_warned_before_report": 0.0
+    },
+    "by_other": {
+      "alpha": {
+        "0.003": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.013712289149037797,
+          "false_alarm_per_week": -0.21163391671463536,
+          "events_warned_before_report": 0.0
+        },
+        "0.01": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.014076034943391078,
+          "false_alarm_per_week": -0.21163391671463538,
+          "events_warned_before_report": 0.0
+        },
+        "0.03": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.015323906969257445,
+          "false_alarm_per_week": -0.2645423958932942,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "channels": {
+        "novelty": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.01361002391729201,
+          "false_alarm_per_week": -0.21163391671463536,
+          "events_warned_before_report": 0.0
+        },
+        "both": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.015144745981562513,
+          "false_alarm_per_week": -0.3439051146612825,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "unbaselined": {
+        "global": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.022001284220361017,
+          "false_alarm_per_week": -0.4761763126079296,
+          "events_warned_before_report": 0.0
+        },
+        "unknown": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "commission": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.014582024764107613,
+          "false_alarm_per_week": -0.2645423958932942,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "veto": {
+        "normal": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.01361002391729201,
+          "false_alarm_per_week": -0.21163391671463538,
+          "events_warned_before_report": 0.0
+        },
+        "hold": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.014991435614894858,
+          "false_alarm_per_week": -0.21163391671463538,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "persistence": {
+        "counter": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.013942626493081131,
+          "false_alarm_per_week": -0.21163391671463536,
+          "events_warned_before_report": 0.0
+        },
+        "consecutive": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.013942626493081131,
+          "false_alarm_per_week": -0.21163391671463536,
+          "events_warned_before_report": 0.0
+        },
+        "m_of_n": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.015477479778778171,
+          "false_alarm_per_week": -0.2645423958932942,
+          "events_warned_before_report": 0.0
+        },
+        "ewma": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.013814641861734606,
+          "false_alarm_per_week": -0.2380881563039648,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "k": {
+        "3": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.01424959715022054,
+          "false_alarm_per_week": -0.37035935425061184,
+          "events_warned_before_report": 0.0
+        },
+        "6": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.013916994574431418,
+          "false_alarm_per_week": -0.21163391671463538,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "stale": {
+        "0": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.013968170930779823,
+          "false_alarm_per_week": -0.21163391671463538,
+          "events_warned_before_report": 0.0
+        },
+        "36": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.013968170930779823,
+          "false_alarm_per_week": -0.21163391671463538,
+          "events_warned_before_report": 0.0
+        }
+      }
+    }
+  },
+  "corroboration=physical": {
+    "pairs": 576,
+    "median": {
+      "events_detected": -1.0,
+      "alarm_time_share_clean": -0.013968170930779822,
+      "false_alarm_per_week": -0.21163391671463538,
+      "events_warned_before_report": 0.0
+    },
+    "by_other": {
+      "alpha": {
+        "0.003": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.013712289149037797,
+          "false_alarm_per_week": -0.21163391671463536,
+          "events_warned_before_report": 0.0
+        },
+        "0.01": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.013979281011559735,
+          "false_alarm_per_week": -0.2645423958932942,
+          "events_warned_before_report": 0.0
+        },
+        "0.03": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.014888907940296002,
+          "false_alarm_per_week": -0.2909966354826236,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "channels": {
+        "novelty": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.0136099801768165,
+          "false_alarm_per_week": -0.21163391671463538,
+          "events_warned_before_report": 0.0
+        },
+        "both": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.015144745981562513,
+          "false_alarm_per_week": -0.3439051146612825,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "unbaselined": {
+        "global": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.028443512675114992,
+          "false_alarm_per_week": -0.5290847917865884,
+          "events_warned_before_report": 0.0
+        },
+        "unknown": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "commission": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.014582024764107613,
+          "false_alarm_per_week": -0.2645423958932942,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "veto": {
+        "normal": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.01361002391729201,
+          "false_alarm_per_week": -0.21163391671463538,
+          "events_warned_before_report": 0.0
+        },
+        "hold": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.014223965231570825,
+          "false_alarm_per_week": -0.2645423958932942,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "persistence": {
+        "counter": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.013916994574431418,
+          "false_alarm_per_week": -0.21163391671463538,
+          "events_warned_before_report": 0.0
+        },
+        "consecutive": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.013916994574431418,
+          "false_alarm_per_week": -0.21163391671463538,
+          "events_warned_before_report": 0.0
+        },
+        "m_of_n": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.015477479778778171,
+          "false_alarm_per_week": -0.2645423958932942,
+          "events_warned_before_report": 0.0
+        },
+        "ewma": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.013789053683560405,
+          "false_alarm_per_week": -0.2645423958932942,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "k": {
+        "3": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.01424959715022054,
+          "false_alarm_per_week": -0.3703593542506119,
+          "events_warned_before_report": 0.0
+        },
+        "6": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.013865818218083012,
+          "false_alarm_per_week": -0.21163391671463538,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "stale": {
+        "0": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.013916994574431418,
+          "false_alarm_per_week": -0.21163391671463538,
+          "events_warned_before_report": 0.0
+        },
+        "36": {
+          "events_detected": -1.0,
+          "alarm_time_share_clean": -0.01397372597116978,
+          "false_alarm_per_week": -0.21163391671463538,
+          "events_warned_before_report": 0.0
+        }
+      }
+    }
+  },
+  "stale=36": {
+    "pairs": 864,
+    "median": {
+      "events_detected": 0.0,
+      "alarm_time_share_clean": 0.0,
+      "false_alarm_per_week": 0.0,
+      "events_warned_before_report": 0.0
+    },
+    "by_other": {
+      "alpha": {
+        "0.003": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "0.01": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "0.03": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "channels": {
+        "novelty": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "both": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "unbaselined": {
+        "global": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "unknown": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "commission": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "veto": {
+        "normal": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "hold": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "persistence": {
+        "counter": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "consecutive": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "m_of_n": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "ewma": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "k": {
+        "3": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "6": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      },
+      "corroboration": {
+        "none": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "dataset": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        },
+        "physical": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "false_alarm_per_week": 0.0,
+          "events_warned_before_report": 0.0
+        }
+      }
+    }
+  }
+}

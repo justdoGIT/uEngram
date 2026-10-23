@@ -69,7 +69,7 @@ uEngram step.
 | 1 | **Valid input**: the window is monitorable and scored. Invalid windows neither raise nor clear. | `bench.alarm_eval.eligible`; `AlarmPolicy.step` returns early |
 | 2 | **uEngram error**: novelty or health crosses its setpoint for the current state. | Window → DSP features → 16-d whitened `z` (fit on commissioning only). Novelty: min Mahalanobis² to the memory's normal slots, computed before the window is absorbed. Health: min Mahalanobis² to the reference frozen at the end of commissioning. Setpoint: split-conformal quantile `k = ceil((1-α)(m+1))` of the calibration-week scores per state (GLOBAL fallback). The new-state veto and the health-trust rule decide whether the crossing counts. Recorded per window as `AlarmPolicy.exceeded`. |
 | 3 | **Corroboration**: at least `m` independent errors (threshold crossings) were seen in the last `L` h. Each source is TRUE, FALSE or UNKNOWN. The vote is TRUE if #true ≥ m, FALSE if #true + #unknown < m, otherwise UNKNOWN. | `bench.alarm_definition.vote` |
-| 4 | **Persistence (on-delay)**: a corroborated error raises the counter (cap `k`). A FALSE vote or no error lowers it. An UNKNOWN vote holds it. The alarm opens when a counter reaches `k`. | `AlarmPolicy.step(..., evidence=)` |
+| 4 | **Persistence (on-delay)**: the window's condition is the Kleene AND of the uEngram error and the vote. A corroborated error raises the counter (cap `k`). No error, or a FALSE vote, lowers it. Only an error with an UNKNOWN vote holds it. The alarm opens when a counter reaches `k`. | `AlarmPolicy.step(..., evidence=)` |
 | 5 | **Release (off-delay)**: the alarm clears when both counters are back at 0. That takes `k` normal windows after a saturating deviation. | `AlarmPolicy.step` |
 | 6 | **Actionability** (evaluated, not triggered): hours before the report, and hours before LPS, with positive meaning early. | `actionability`, `event_trace` |
 
@@ -97,9 +97,9 @@ An independent audit reimplemented each step without the repository's evaluation
 | Data | 25,126 windows (fit 2,658, calibration 911, test 21,556); window length 583–722 s, median 585 s; no window spans a logging gap; 495 eligible event and 19,399 eligible clean windows | consistent |
 | v7 (this study) | Own implementation of section 2 versus the published v7 rows and trace | section 9 |
 
-A repository test also rebuilds the v7 alarm from the recorded exceedances and votes alone,
-with one counter that rises on TRUE+error, falls on FALSE, and holds on UNKNOWN. It does so on
-real MetroPT3 data, including votes with unknowns.
+A repository test also rebuilds the v7 alarm from the recorded exceedances and votes alone, on
+real MetroPT3 data including votes with unknowns. It uses one counter that rises on error AND
+TRUE, falls on no error or a FALSE vote, and holds only on error AND UNKNOWN.
 
 ## 4. Corrections
 
@@ -140,7 +140,7 @@ Selection rules were fixed in code before any corroborated row existed.
 | rows | 504 | 756 |
 | rows meeting the full budget | **0** | **0** |
 | most events with clean ≤ 2% and false alarms ≤ 1/week | 2 | 3 |
-| any 4/4 row | none: event-coverage ceiling 3 (`m=1`) and 0 (`m=2`) | 110 rows; min clean 1.62% at 1.80 fa/wk; min fa 0.63/wk at 4.62% |
+| any 4/4 row | none: event-coverage ceiling 3 (`m=1`) and 0 (`m=2`) | 110 rows; min clean 1.22% at 1.80 fa/wk; min fa 0.63/wk at 4.62% |
 | selection (fallback) | config 20, `m=1`, `L=6 h`: **2/4**, 0.05 fa/wk, 0.02% clean | config 20, `m=1`, `L=24 h`: **3/4**, 0.11 fa/wk, 0.08% clean |
 | the same config uncorroborated | 3/4, 0.11 fa/wk, 0.08% | (same) |
 
@@ -153,16 +153,20 @@ Selection rules were fixed in code before any corroborated row existed.
 - **The two-valued dataset votes behave as the theory requires** (504 rows, 0 violations).
   Corroboration only removes alarm time and recall. Clean share rises with `L` and falls with
   `m`.
-- **The three-valued calibrated votes can extend alarms.** UNKNOWN holds the counters, so 73
-  of 756 rows have more clean alarm time than the policy, and clean share is not monotone in
-  `L` or `m`.
-- **Early warnings are rare and almost all concern Apr 18.** Within both budgets:
-  - 17 dataset rows (configs 3, 4, 5: the actual alarm at `α` = 0.01, 0.03, 0.1) warn
-    Apr 18 13.96 h before its report, with or without corroboration. The oil-level departure
-    starts at −14.6 h.
-  - 25 calibrated rows (configs 3, 4, 5, 41, 43) warn Apr 18 13.4–14.0 h early. One of them
-    (config 5, `m=1`, `L=0`) also stands 5.8 h before Jul 15, but its alarms clear before
-    either failure window, so it detects 0/4.
+- **Both vote types only remove alarm time** (0 of 756 calibrated rows exceed the policy's
+  clean share; clean share rises with `L` and falls with `m` in every row).
+  - This holds because the condition is the Kleene AND. Each corroborated counter is then never
+    above the uncorroborated one, so the corroborated alarm is a subset of the policy alarm.
+  - An earlier version of this study held the counter on an unknown vote even without a
+    uEngram error. That let 73 rows extend alarms over healthy windows. It was corrected in
+    v8 ([research-alarm-components.md](research-alarm-components.md)); 256 calibrated rows
+    changed, and no dataset row changed.
+- **Early warnings are rare.** An event counts as warned only if the alarm episode that first
+  catches it opened before the report.
+  - Within both budgets, no dataset-corroborated row warns.
+  - Two calibrated rows (configs 41 and 43) warn Apr 18, 13.4 h and 13.8 h before its report.
+  - The 14.0 h "warnings" of configs 3–5 under the earlier metric came from alarms that cleared
+    before the failure began.
 
 ## 6. How each failure did or did not cause an alarm (MetroPT3, selected dataset alarm)
 
@@ -215,10 +219,15 @@ false alarms.
 
 A separate implementation was written from section 2 alone. It does not use `AlarmPolicy`,
 `apply_policy`, `evaluate_alarms` or any v6/v7 harness code; script
-`~/scripts/uengram_v7_independent.py`. It recomputed seven sweep rows: both selections, plus
-configs 0, 22, 34 and 42 under both families. All four metrics matched exactly (max abs
-difference 0). It also recomputed the four MetroPT3 trace rows of section 6, and every time
-matched exactly.
+`~/scripts/uengram_v7_independent.py`.
+
+- **Under the original semantics**, it recomputed seven sweep rows: both selections, plus
+  configs 0, 22, 34 and 42 under both families. All four metrics matched exactly (max abs
+  difference 0). It also recomputed the four MetroPT3 trace rows of section 6, and every time
+  matched exactly.
+- **After the Kleene correction**, the selections, the replay and the trace are
+  byte-identical. The changed calibrated rows were re-verified independently; see
+  [research-alarm-components.md](research-alarm-components.md), section 8.
 
 ## Reproduce
 

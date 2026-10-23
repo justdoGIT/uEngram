@@ -10,11 +10,14 @@ when the state has enough calibration windows, otherwise on all states.
   normal window lowers it by 1 (not below 0). An alarm opens when a counter
   reaches its k and closes when both counters are back at 0. Clearing takes as
   many normal windows as the counters then hold: k after a deviation that
-  saturated the counter, however long it lasted (a fixed off-delay).
-- Corroboration (optional, `evidence`): an exceedance counts only when
-  external evidence is true for that window. False evidence makes the window
-  count as normal; unknown evidence (None) holds both counters, so a window
-  that cannot be corroborated neither raises nor clears the alarm. The default
+  saturated the counter, however long it lasted (a fixed off-delay). Other
+  on/off-delay filters (consecutive, m-of-n, EWMA) are available through
+  `AlarmLogic` (uengram.persistence).
+- Corroboration (optional, `evidence`): each channel's condition is ANDed
+  (Kleene, three-valued) with external evidence for that window. False evidence
+  or no exceedance makes the window count as normal; when the result is
+  unknown (unknown evidence with an exceedance, or an unjudged channel) the
+  filter holds, so the window neither raises nor clears the alarm. The default
   (always true) is the uncorroborated alarm.
 - State gating: windows the caller marks unmonitorable (logging restarts,
   maintenance, stopped machine) neither raise nor lower the counters.
@@ -43,6 +46,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from .persistence import MODELS, make_filter
 from .stats import conformal_threshold
 
 GLOBAL = -1  # baseline key for the all-states fallback
@@ -61,6 +65,43 @@ class AlarmConfig:
     # States without their own baseline cannot be judged by the frozen health
     # reference: their health exceedances raise alerts instead of counting.
     health_needs_baseline: bool = False
+
+
+@dataclass(frozen=True)
+class AlarmLogic:
+    """How conditions combine into an alarm; the defaults are AlarmPolicy v2 exactly.
+
+    persistence  on/off-delay filter per channel (uengram.persistence.MODELS)
+    window       m_of_n: the last n known windows (0 -> 2k)
+    veto         "normal": a vetoed novelty exceedance counts as a normal window;
+                 "hold": it is unknown (a new memory state is neither fault nor normal)
+    unbaselined  "global": a state without its own reference uses the GLOBAL setpoint;
+                 "unknown": no setpoint applies, so the window is not judged;
+                 "commission": the state's first eligible windows (unjudged) become
+                 its reference, causally, then it is judged against it
+    In the non-global modes a channel whose setpoint is unsupported (+inf) is unknown.
+    stale_windows  > 0: more than this many consecutive unknown inputs reset a channel's
+                 filter to clear, so a held alarm cannot stand without new evidence
+    """
+    persistence: str = "counter"
+    window: int = 0
+    veto: str = "normal"
+    unbaselined: str = "global"
+    commission_windows: int = 0  # 0: the fewest windows the conformal level supports
+    stale_windows: int = 0  # 0: unknown inputs hold a channel indefinitely
+
+    def __post_init__(self):
+        if self.persistence not in MODELS:
+            raise ValueError(f"persistence must be one of {MODELS}")
+        if self.veto not in ("normal", "hold") or self.unbaselined not in ("global", "unknown", "commission"):
+            raise ValueError("veto must be normal|hold; unbaselined must be global|unknown|commission")
+
+
+def _and(a: bool | None, b: bool | None) -> bool | None:
+    """Kleene conjunction: False if either is False, unknown if either is unknown."""
+    if a is False or b is False:
+        return False
+    return None if a is None or b is None else True
 
 
 @dataclass
@@ -93,6 +134,7 @@ class _Baseline:
 class AlarmPolicy:
     cfg: AlarmConfig = field(default_factory=AlarmConfig)
     feature_names: tuple[str, ...] = ()
+    logic: AlarmLogic = field(default_factory=AlarmLogic)
 
     def __post_init__(self):
         self.baselines: dict[int, _Baseline] = {}
@@ -100,10 +142,37 @@ class AlarmPolicy:
         self.episodes: list[dict] = []
         self.alerts: list[dict] = []
         self.level = self.cfg.alpha
-        self.c_nov = self.c_health = 0
         self.active = False
         self._prev_state: int | None = None
+        self._pending: dict[int, list] = {}  # windows collected to commission a new state
+        lg = self.logic
+        self._filters = {name: make_filter(lg.persistence, k, lg.window, lg.stale_windows) if k > 0 else None
+                         for name, k in (("novelty", self.cfg.k_novelty), ("health", self.cfg.k_health))}
+
+    @property
+    def c_nov(self) -> int:  # counter state, counter persistence only
+        return getattr(self._filters["novelty"], "c", 0)
+
+    @property
+    def c_health(self) -> int:
+        return getattr(self._filters["health"], "c", 0)
+
     # -- calibration -----------------------------------------------------
+    def _baseline(self, novelty, health, features) -> tuple[_Baseline, dict]:
+        nov = np.sort(novelty[np.isfinite(novelty)])
+        finite_health = health[np.isfinite(health)]
+        health_thr = conformal_threshold(finite_health, self.cfg.alpha)
+        b = _Baseline(nov, health_thr)
+        if features is not None and len(features):
+            q25, b.feat_med, q75 = np.nanpercentile(features, [25, 50, 75], axis=0)
+            b.feat_scale = np.maximum((q75 - q25) / 1.349, 1e-9)
+        novelty_supported = len(nov) > 0 and math.isfinite(_conformal_at(nov, self.cfg.alpha))
+        counts = {"monitorable_windows": len(novelty), "novelty_scores": int(np.isfinite(novelty).sum()),
+                  "health_scores": int(np.isfinite(health).sum()),
+                  "novelty_threshold_supported": novelty_supported,
+                  "health_threshold_supported": len(finite_health) > 0 and math.isfinite(health_thr)}
+        return b, counts
+
     def calibrate(self, novelty, health, state, monitorable, features=None) -> "AlarmPolicy":
         """Thresholds from label-free calibration windows (monitorable only)."""
         novelty, health = np.asarray(novelty, float), np.asarray(health, float)
@@ -114,33 +183,33 @@ class AlarmPolicy:
         for key, m in groups:
             if key != GLOBAL and m.sum() < self.cfg.min_state_windows:
                 continue
-            nov = np.sort(novelty[m][np.isfinite(novelty[m])])
-            h = health[m]
-            finite_health = h[np.isfinite(h)]
-            b = _Baseline(nov, conformal_threshold(finite_health, self.cfg.alpha))
-            if features is not None and m.any():
-                f = np.asarray(features, float)[m]
-                q25, b.feat_med, q75 = np.nanpercentile(f, [25, 50, 75], axis=0)
-                b.feat_scale = np.maximum((q75 - q25) / 1.349, 1e-9)
-            self.baselines[key] = b
-            self.baseline_counts[key] = {
-                "monitorable_windows": int(m.sum()),
-                "novelty_scores": int(np.isfinite(novelty[m]).sum()),
-                "health_scores": int(np.isfinite(h).sum()),
-                "novelty_threshold_supported": len(nov) > 0 and math.isfinite(_conformal_at(nov, self.cfg.alpha)),
-                "health_threshold_supported": len(finite_health) > 0 and math.isfinite(conformal_threshold(finite_health, self.cfg.alpha)),
-            }
+            f = np.asarray(features, float)[m] if features is not None and m.any() else None
+            self.baselines[key], self.baseline_counts[key] = self._baseline(novelty[m], health[m], f)
         return self
 
     def thresholds(self, state: int) -> tuple[float, float]:
         b = self.baselines.get(int(state), self.baselines[GLOBAL])
         return _conformal_at(b.novelty, self.level), b.health_thr
 
+    def _commission(self, state: int, novelty: float, health: float, features) -> None:
+        """Collect an unseen state's eligible windows; once enough, they become its reference."""
+        need = self.logic.commission_windows or math.ceil((1.0 - self.cfg.alpha) / self.cfg.alpha)
+        buf = self._pending.setdefault(state, [])
+        buf.append((novelty, health, None if features is None else np.asarray(features, float)))
+        if len(buf) >= need:
+            feats = [x[2] for x in buf if x[2] is not None]
+            b, counts = self._baseline(np.array([x[0] for x in buf]), np.array([x[1] for x in buf]),
+                                       np.array(feats) if feats else None)
+            self.baselines[state] = b
+            self.baseline_counts[state] = counts | {"commissioned_online": True}
+            del self._pending[state]
+
     # -- streaming ----------------------------------------------------------
     def step(self, index: int, time, novelty: float, health: float, action: str,
              state: int, monitorable: bool, features=None, *, evidence: bool | None = True) -> StepResult:
         if not monitorable:
             return StepResult(False, False, None)
+        lg = self.logic
         own = state in self.baselines
         b = self.baselines[state] if own else self.baselines[GLOBAL]
         alert = None
@@ -154,7 +223,8 @@ class AlarmPolicy:
         # frozen reference (health_needs_baseline): it neither counts nor vetoes.
         h_trusted = not (self.cfg.health_needs_baseline and self.cfg.per_state and not own)
         n_count, h_count = n_ex, h_ex and h_trusted
-        if self.cfg.new_state_alert and action == "new_candidate" and not h_count:
+        vetoed = self.cfg.new_state_alert and action == "new_candidate" and not h_count
+        if vetoed:
             n_count = False
             alert = alert or "new_state"
         if h_ex and not h_trusted:
@@ -163,26 +233,32 @@ class AlarmPolicy:
             self.alerts.append({"index": index, "time": str(time), "kind": alert, "state": state})
         if self.cfg.aci_gamma and not self.active and not h_ex and math.isfinite(novelty):
             self.level += self.cfg.aci_gamma * (self.cfg.alpha - n_ex)
-        exceeded = (self.cfg.k_novelty > 0 and n_count) or (self.cfg.k_health > 0 and h_count)
-        if evidence is not None:  # unknown corroboration holds the counters
-            if not evidence:
-                n_count = h_count = False
-            self.c_nov = (min(self.c_nov + 1, self.cfg.k_novelty) if n_count else
-                          max(self.c_nov - 1, 0)) if self.cfg.k_novelty > 0 else 0
-            self.c_health = (min(self.c_health + 1, self.cfg.k_health) if h_count else
-                             max(self.c_health - 1, 0)) if self.cfg.k_health > 0 else 0
+        # Three-valued channel conditions. "global" keeps v2 exactly; otherwise a window
+        # without an applicable, supported setpoint is unknown rather than normal.
+        unjudged = lg.unbaselined != "global" and self.cfg.per_state and not own
+        if lg.unbaselined == "commission" and unjudged:
+            self._commission(state, novelty, health, features)
+        strict = lg.unbaselined != "global"
+        n_val = None if unjudged or (strict and not math.isfinite(n_thr)) or (vetoed and lg.veto == "hold") \
+            else n_count
+        h_val = None if unjudged or (strict and not math.isfinite(h_thr)) else h_count
+        exceeded = (self.cfg.k_novelty > 0 and n_val is True) or (self.cfg.k_health > 0 and h_val is True)
+        filters = {name: f for name, f in self._filters.items() if f is not None}
+        for name, value in (("novelty", n_val), ("health", h_val)):
+            if name in filters:
+                filters[name].step(_and(value, evidence))  # corroboration: Kleene AND
         opened = False
         if self.active:
             ep = self.episodes[-1]
             ep["peak_novelty"] = max(ep["peak_novelty"], novelty) if math.isfinite(novelty) else ep["peak_novelty"]
             ep["peak_health"] = max(ep["peak_health"], health) if math.isfinite(health) else ep["peak_health"]
             ep["windows"] += 1
-            if self.c_nov == 0 and self.c_health == 0:
+            if all(f.clear for f in filters.values()):
                 self.active = False
                 ep["close_index"], ep["close_time"] = index, str(time)
         else:
-            by_nov = self.cfg.k_novelty > 0 and self.c_nov >= self.cfg.k_novelty
-            by_health = self.cfg.k_health > 0 and self.c_health >= self.cfg.k_health
+            by_nov = "novelty" in filters and filters["novelty"].trigger
+            by_health = "health" in filters and filters["health"].trigger
             if by_nov or by_health:
                 self.active = opened = True
                 self.episodes.append(self._freeze_frame(

@@ -36,12 +36,13 @@ import numpy as np
 from bench.alarm_eval import apply_policy, eligible
 from bench.error_gated_alarm import dataset_errors, frozen_scores, latch
 from bench.modality_alarm import ModalityConfig, calibrate, channel_judgement
-from uengram.alarm import AlarmConfig
+from uengram import metropt
+from uengram.alarm import AlarmConfig, AlarmLogic
 
 
 @dataclass(frozen=True)
 class Corroboration:
-    family: str = "dataset"  # "dataset" or "calibrated"
+    family: str = "dataset"  # "dataset", "physical" or "calibrated"
     min_errors: int = 1  # m
     lookback_h: float = 0.0  # L
 
@@ -56,6 +57,49 @@ def dataset_sources(stream, test: np.ndarray) -> tuple[np.ndarray, np.ndarray, l
     low_pressure = E[:, names.index("lps")] | E[:, names.index("tp3_below_7bar")]
     true = np.column_stack([low_pressure, E[:, names.index("oil_level")]])
     return true, np.ones_like(true), ["low_pressure", "oil_level"]
+
+
+CUT_IN_BAR = 8.2  # MetroPT documentation: MPG loads the compressor below 8.2 bar
+IDLE = 0  # operating state: compressor idle or offloaded
+
+
+def fill_windows(stream) -> int:
+    """Healthy start-up length, label-free: the most windows any commissioning or
+    calibration logging segment needed for TP3 to reach the 8.2 bar cut-in."""
+    tp3_max = stream.W[:, list(metropt.ANALOG).index("TP3")].max(axis=1)
+    starts = np.r_[0, np.flatnonzero(stream.segment[1:] != stream.segment[:-1]) + 1]
+    ends, worst = np.r_[starts[1:], len(stream.segment)], 0
+    for a, b in zip(starts, ends):
+        if stream.fit[a] or stream.cal[a]:
+            hit = np.flatnonzero(tp3_max[a:b] >= CUT_IN_BAR)
+            worst = max(worst, int(hit[0]) + 1 if len(hit) else int(b - a))
+    return worst
+
+
+def physical_sources(stream, test: np.ndarray) -> tuple[np.ndarray, np.ndarray, list[str]]:
+    """The dataset errors, judged only where the physics makes them meaningful.
+
+    low_pressure  unknown only during a healthy start-up: within the first
+                  `fill_windows` windows of a logging segment, before TP3 has reached the
+                  8.2 bar cut-in, pressure below 7 bar is the reservoirs filling. Later,
+                  low pressure without ever reaching cut-in is a failure to build pressure
+                  and counts as an error
+    oil_level     judged only while idle: under load the flag follows oil temperature and
+                  churn, so a departure while running is unknown, not a low-oil error"""
+    true, _, names = dataset_sources(stream, test)
+    tp3_max = stream.W[:, list(metropt.ANALOG).index("TP3")].max(axis=1)
+    fill = fill_windows(stream)
+    starting = np.zeros(len(stream.start), bool)  # within a healthy fill, cut-in not reached
+    pos, seen = 0, False
+    for i in range(len(starting)):
+        if i and stream.segment[i] != stream.segment[i - 1]:
+            pos, seen = 0, False
+        starting[i] = pos < fill and not seen
+        pos, seen = pos + 1, seen or tp3_max[i] >= CUT_IN_BAR
+    starting, idle = starting[test], stream.state[test] == IDLE
+    low, oil = true[:, 0], true[:, 1]
+    known = np.column_stack([~(low & starting), idle])
+    return np.column_stack([low & ~starting, oil & idle]), known, names
 
 
 def calibrated_sources(stream, test: np.ndarray) -> tuple[np.ndarray, np.ndarray, list[str]]:
@@ -79,14 +123,28 @@ def vote(true: np.ndarray, known: np.ndarray, end: np.ndarray, valid: np.ndarray
     return out
 
 
-def actionability(stream, d: dict) -> dict:
-    """Early-is-positive summaries of evaluate_alarms' per-event first alarm."""
-    early = [-e["lead_hours"] for e in d["events"] if e["lead_hours"] is not None and e["lead_hours"] < 0]
+def actionability(stream, test: np.ndarray, d: dict) -> dict:
+    """Early warnings, positive = early. An event is warned when the alarm episode that
+    first catches it (holds its first active eligible event window) opened within the
+    24 h before the report start; an alarm that cleared before the failure is no warning.
+    With published LPS times, the same episode must open at least 2 h before LPS."""
+    end, event = stream.end[test], stream.event_id()[test]
+    active, opened = d["active"] & d["valid"], np.flatnonzero(d["opened"] & d["valid"])
+    early, before_lps = [], 0
+    for e, (a, _) in enumerate(stream.events):
+        hit = np.flatnonzero(active & (event == e))
+        prior = opened[opened <= hit[0]] if len(hit) else opened[:0]
+        if not len(prior):
+            continue  # missed, or standing since before the test split
+        fs, o = np.datetime64(a, "s"), end[prior[-1]]
+        if fs - np.timedelta64(24, "h") <= o < fs:
+            early.append(float((fs - o).astype(np.int64)) / 3600)
+        if stream.lps is not None and stream.lps[e] is not None:
+            before_lps += float((np.datetime64(stream.lps[e], "s") - o).astype(np.int64)) / 3600 >= 2.0
     out = {"events_warned_before_report": float(len(early)),
            "hours_before_report": float(np.mean(early)) if early else float("nan")}
     if stream.lps is not None:
-        out["events_warned_2h_before_lps"] = float(sum(
-            (e.get("hours_before_lps") or 0.0) >= 2.0 for e in d["events"]))
+        out["events_warned_2h_before_lps"] = float(before_lps)
     return out
 
 
@@ -98,6 +156,7 @@ class Definition:
         self.scores = frozen_scores(stream)
         self.test = np.flatnonzero(stream.test)
         self.sources = {"dataset": dataset_sources(stream, self.test),
+                        "physical": physical_sources(stream, self.test),
                         "calibrated": calibrated_sources(stream, self.test)}
 
     def evidence(self, cfg: AlarmConfig, c: Corroboration) -> np.ndarray:
@@ -106,11 +165,12 @@ class Definition:
         valid = eligible(self.stream, self.scores, cfg, self.test)
         return vote(true, known, self.stream.end[self.test], valid, c)
 
-    def evaluate(self, cfg: AlarmConfig, c: Corroboration | None):
-        """(metrics, details, policy) of the alarm; c None = uncorroborated AlarmPolicy."""
+    def evaluate(self, cfg: AlarmConfig, c: Corroboration | None, logic: AlarmLogic | None = None):
+        """(metrics, details, policy) of the alarm; c None = uncorroborated AlarmPolicy;
+        logic None = the v2 condition logic."""
         evidence = None if c is None else self.evidence(cfg, c)
-        m, d, pol = apply_policy(self.stream, self.scores, cfg, evidence)
-        m.update(actionability(self.stream, d))
+        m, d, pol = apply_policy(self.stream, self.scores, cfg, evidence, logic)
+        m.update(actionability(self.stream, self.test, d))
         if evidence is not None:
             valid = d["valid"]
             clean = self.stream.clean_negative()[self.test] & valid
@@ -122,15 +182,17 @@ class Definition:
         return m, d, pol
 
 
-def event_trace(definition: "Definition", cfg: AlarmConfig, c: Corroboration) -> list[dict]:
+def event_trace(definition: "Definition", cfg: AlarmConfig, c: Corroboration | None,
+                logic: AlarmLogic | None = None) -> list[dict]:
     """When each condition was first met around every event, in hours from report start
-    (negative = before the report), over [report start - 24 h, report end]."""
+    (negative = before the report), over [report start - 24 h, report end]. With no
+    corroboration rule every window counts as corroborated."""
     s, t = definition.stream, definition.test
-    evidence = definition.evidence(cfg, c)
-    _, d, pol = apply_policy(s, definition.scores, cfg, evidence)
+    evidence = None if c is None else definition.evidence(cfg, c)
+    _, d, pol = apply_policy(s, definition.scores, cfg, evidence, logic)
     valid, end = d["valid"], s.end[t]
     crossing = pol.exceeded & valid  # condition 2 exactly as the policy counted it
-    corroborated = np.array([v is True for v in evidence]) & valid
+    corroborated = valid.copy() if evidence is None else np.array([v is True for v in evidence]) & valid
     out = []
     for e, (a, b) in enumerate(s.events):
         fs, fe = np.datetime64(a, "s"), np.datetime64(b, "s")

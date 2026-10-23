@@ -163,16 +163,29 @@ def modality_errors(stream, test: np.ndarray, cfg: ModalityConfig, baselines: di
 
 
 def hold(condition: np.ndarray, monitorable: np.ndarray, k_hold: int,
-         k_release: int) -> tuple[np.ndarray, np.ndarray]:
+         k_release: int, known: np.ndarray | None = None, stale: int = 0) -> tuple[np.ndarray, np.ndarray]:
     """Open after k_hold consecutive eligible windows of `condition`; release after
-    k_release consecutive eligible windows without it. Gaps reset the run."""
+    k_release consecutive eligible windows without it. Gaps reset the run.
+
+    With `known` (three-valued condition), a window whose condition is undecided, or a
+    logging gap, holds the run and release counts instead: it neither extends, resets nor
+    releases (the v7 alarm definition, ISA-18.2 bad-quality handling). With stale > 0,
+    more than `stale` such windows in a row expire the held state: the run resets and an
+    open alarm closes, so it cannot stand without new evidence."""
     if k_hold < 1 or k_release < 1:
         raise ValueError("k_hold and k_release must be >= 1")
     n = len(condition)
     active, opened = np.zeros(n, bool), np.zeros(n, bool)
-    run = quiet = 0
+    run = quiet = held = 0
     on = False
     for i in range(n):
+        if known is not None and not (monitorable[i] and known[i]):
+            held += 1
+            if stale and held > stale:
+                run, quiet, on = 0, 0, False
+            active[i] = on and bool(monitorable[i])
+            continue
+        held = 0
         if not monitorable[i]:
             run = 0
         elif condition[i]:
@@ -188,15 +201,36 @@ def hold(condition: np.ndarray, monitorable: np.ndarray, k_hold: int,
     return active, opened
 
 
-def evaluate(stream, cfg: ModalityConfig) -> tuple[dict, dict]:
-    """Same eligibility, clean/event definitions and metrics as the AlarmPolicy harness."""
+def three_valued_condition(stream, test: np.ndarray, cfg: ModalityConfig, baselines: dict,
+                           values: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, list[str]]:
+    """(condition, decided, errors, names): at least m modalities in error is TRUE when
+    m are, FALSE when even every unjudged channel could not reach m, otherwise undecided."""
+    errors, known = channel_judgement(stream, test, cfg, baselines, values)
+    names = list(cfg.channels)
+    if cfg.duty:
+        errors = np.column_stack([errors, stream.state[test] == SUSTAINED_LOAD])
+        known = np.column_stack([known, np.ones(len(test), bool)])
+        names.append(DUTY)
+    n_err, n_unknown = errors.sum(axis=1), (~known).sum(axis=1)
+    condition = n_err >= cfg.min_modalities
+    return condition, condition | (n_err + n_unknown < cfg.min_modalities), errors, names
+
+
+def evaluate(stream, cfg: ModalityConfig, three_valued: bool = False, stale: int = 0) -> tuple[dict, dict]:
+    """Same eligibility, clean/event definitions and metrics as the AlarmPolicy harness.
+    `three_valued`: unjudged channels are unknown, so undecided windows hold the run, for
+    at most `stale` windows in a row when stale > 0."""
     test = np.flatnonzero(stream.test)
     values = channel_values(stream, cfg)
     baselines = calibrate(stream, cfg, values)
-    errors, names = modality_errors(stream, test, cfg, baselines, values)
-    condition = errors.sum(axis=1) >= cfg.min_modalities
     valid = stream.monitorable[test]
-    active, opened = hold(condition, valid, cfg.k_hold, cfg.k_release)
+    if three_valued:
+        condition, decided, errors, names = three_valued_condition(stream, test, cfg, baselines, values)
+        active, opened = hold(condition, valid, cfg.k_hold, cfg.k_release, decided, stale)
+    else:
+        errors, names = modality_errors(stream, test, cfg, baselines, values)
+        condition = errors.sum(axis=1) >= cfg.min_modalities
+        active, opened = hold(condition, valid, cfg.k_hold, cfg.k_release)
     start, end = stream.start[test], stream.end[test]
     score = errors.sum(axis=1).astype(float)
     m, d = evaluate_alarms(start, end, stream.event_id()[test], stream.clean_negative()[test],

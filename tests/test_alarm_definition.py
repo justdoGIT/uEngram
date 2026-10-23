@@ -72,8 +72,9 @@ def test_two_valued_corroboration_only_removes_alarm_time(metropt3, index, c):
 @pytest.mark.parametrize("c", [None, Corroboration("dataset", 1, 6.0), Corroboration("calibrated", 1, 24.0)])
 def test_recorded_exceedances_and_votes_rebuild_the_alarm(metropt3, index, c):
     """Condition 2 (the policy's counted exceedance), the vote and one on/off-delay counter
-    reproduce the alarm exactly: TRUE + exceedance raises, FALSE or no exceedance lowers,
-    UNKNOWN holds."""
+    reproduce the alarm exactly. The combined condition is the Kleene AND: exceedance AND
+    TRUE raises, no exceedance or a FALSE vote lowers (even when the vote is unknown), and
+    only exceedance AND UNKNOWN holds."""
     cfg = ALARM_CONFIGS[index]
     assert cfg.k_health == 0
     evidence = None if c is None else metropt3.evidence(cfg, c)
@@ -81,8 +82,10 @@ def test_recorded_exceedances_and_votes_rebuild_the_alarm(metropt3, index, c):
     counter, on, active = 0, False, np.zeros(len(metropt3.test), bool)
     for j in np.flatnonzero(d["valid"]):
         v = True if evidence is None else evidence[j]
-        if v is not None:
-            counter = min(counter + 1, cfg.k_novelty) if (v and pol.exceeded[j]) else max(counter - 1, 0)
+        if v is False or not pol.exceeded[j]:
+            counter = max(counter - 1, 0)
+        elif v is True:
+            counter = min(counter + 1, cfg.k_novelty)
         on = (on and counter > 0) or counter >= cfg.k_novelty
         active[j] = on
     assert (active == (d["active"] & d["valid"])).all()

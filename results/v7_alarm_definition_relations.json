@@ -26,7 +26,7 @@
   },
   "calibrated": {
     "rows": 756,
-    "clean_share_above_policy": 73,
+    "clean_share_above_policy": 0,
     "events_above_policy": 0,
     "events_above_corroboration_ceiling": 0,
     "rows_meeting_budget": 0,
@@ -51,7 +51,7 @@
       "calibrated:m3:L12h": 3,
       "calibrated:m3:L24h": 4
     },
-    "clean_share_lower_at_longer_lookback": 48,
-    "clean_share_higher_at_larger_m": 20
+    "clean_share_lower_at_longer_lookback": 0,
+    "clean_share_higher_at_larger_m": 0
   }
 }
