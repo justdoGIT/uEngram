@@ -11,6 +11,10 @@ This study replaces the pooled novelty/health distance with a per-modality rule.
 whether requiring several modalities in error, held for a minimum duration, closes that gap.
 It does not. The rest of this document shows exactly why.
 
+[research-error-gated-alarm.md](research-error-gated-alarm.md) takes the other route: it keeps
+the `AlarmPolicy` alarm measure and adds dataset-defined threshold-crossing errors as a
+required condition.
+
 Harness: `bench/modality_alarm.py` (rule), `bench/modality_sweep.py` (sweeps, selection,
 replay, relations). Tests: `tests/test_modality_alarm.py`. Raw results:
 `results/v5_modality_*`. Windows are 9.75 min, so `k_hold` windows equal `0.1625 * k_hold` h.

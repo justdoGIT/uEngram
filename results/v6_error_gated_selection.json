@@ -1,0 +1,148 @@
+{
+  "selection_rule": "gated rows, events_detected==4 AND alarm_time_share_clean<=0.02 AND false_alarm_per_week<=1; min clean share, earliest first alarm, shorter lookback, smaller m, earlier ALARM_CONFIG",
+  "fallback_rule": "gated rows with alarm_time_share_clean<=0.02 AND false_alarm_per_week<=1; max events_detected, then the SELECTION_RULE tie order; replayed only to test transfer",
+  "alarm_configs": 44,
+  "gates": 36,
+  "families": {
+    "dataset": {
+      "used": "fallback",
+      "selected": {
+        "stream": "metropt3",
+        "alarm_index": 24,
+        "alarm_config": {
+          "alpha": 0.003,
+          "k_novelty": 3,
+          "k_health": 10,
+          "per_state": true,
+          "min_state_windows": 100,
+          "new_state_alert": true,
+          "aci_gamma": 0.0,
+          "health_needs_baseline": false
+        },
+        "gate": {
+          "family": "dataset",
+          "min_errors": 1,
+          "lookback_h": 1
+        },
+        "calibration_unavailable": null,
+        "metrics": {
+          "events_detected": 3.0,
+          "false_alarm_per_week": 0.21163391671463538,
+          "alarm_time_share_clean": 0.01970744620358917,
+          "lead_hours": 12.776481481481483,
+          "notifications_per_week_all": 39.7683782497178,
+          "alerts_per_week": 40.73952896756731
+        },
+        "events": [
+          {
+            "event": 0,
+            "detected": true,
+            "lead_hours": 1.0577777777777777,
+            "alarm_windows": 1,
+            "windows": 143,
+            "hours_before_lps": null
+          },
+          {
+            "event": 1,
+            "detected": false,
+            "lead_hours": null,
+            "alarm_windows": 0,
+            "windows": 41,
+            "hours_before_lps": null
+          },
+          {
+            "event": 2,
+            "detected": true,
+            "lead_hours": 34.033055555555556,
+            "alarm_windows": 15,
+            "windows": 285,
+            "hours_before_lps": null
+          },
+          {
+            "event": 3,
+            "detected": true,
+            "lead_hours": 3.238611111111111,
+            "alarm_windows": 2,
+            "windows": 26,
+            "hours_before_lps": null
+          }
+        ],
+        "policy_events_detected": 4.0,
+        "error_ceiling_events": 3,
+        "condition_share_clean": 0.15155420382493942,
+        "satisfies_recall_and_budget": false
+      },
+      "primary_candidates": 0
+    },
+    "calibrated": {
+      "used": "primary",
+      "selected": {
+        "stream": "metropt3",
+        "alarm_index": 42,
+        "alarm_config": {
+          "alpha": 0.003,
+          "k_novelty": 6,
+          "k_health": 6,
+          "per_state": true,
+          "min_state_windows": 100,
+          "new_state_alert": true,
+          "aci_gamma": 0.0,
+          "health_needs_baseline": false
+        },
+        "gate": {
+          "family": "calibrated",
+          "min_errors": 1,
+          "lookback_h": 6
+        },
+        "calibration_unavailable": null,
+        "metrics": {
+          "events_detected": 4.0,
+          "false_alarm_per_week": 0.9523526252158592,
+          "alarm_time_share_clean": 0.0105898315641769,
+          "lead_hours": 0.9846527777777777,
+          "notifications_per_week_all": 39.52764956781878,
+          "alerts_per_week": 40.73952896756731
+        },
+        "events": [
+          {
+            "event": 0,
+            "detected": true,
+            "lead_hours": 1.5533333333333332,
+            "alarm_windows": 28,
+            "windows": 143,
+            "hours_before_lps": null
+          },
+          {
+            "event": 1,
+            "detected": true,
+            "lead_hours": 0.6988888888888889,
+            "alarm_windows": 31,
+            "windows": 41,
+            "hours_before_lps": null
+          },
+          {
+            "event": 2,
+            "detected": true,
+            "lead_hours": 0.7116666666666667,
+            "alarm_windows": 31,
+            "windows": 285,
+            "hours_before_lps": null
+          },
+          {
+            "event": 3,
+            "detected": true,
+            "lead_hours": 0.9747222222222223,
+            "alarm_windows": 10,
+            "windows": 26,
+            "hours_before_lps": null
+          }
+        ],
+        "policy_events_detected": 4.0,
+        "error_ceiling_events": 4,
+        "condition_share_clean": 0.9483994020310326,
+        "satisfies_recall_and_budget": true
+      },
+      "primary_candidates": 2
+    }
+  }
+}

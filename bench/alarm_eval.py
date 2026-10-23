@@ -54,6 +54,7 @@ def apply_policy(stream, sc: dict, cfg: AlarmConfig):
                            opened, nov[test], health[test], [a["index"] for a in pol.alerts],
                            stream.lps)
     d["active"], d["opened"] = active, opened
+    d["valid"] = metric_valid  # eligible test windows the metrics above use
     d["baseline_counts"] = pol.baseline_counts
     alerts = np.zeros(len(test), bool)
     alerts[[a["index"] for a in pol.alerts]] = True

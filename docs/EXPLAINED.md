@@ -895,3 +895,32 @@ was replayed unchanged on MetroPT2 and detected 0/3 and 0/2 events:
   without loaded samples break the condition-A run before 40 windows.
 - On the judgeable event windows, the physical channels were nearly always
   in error.
+
+### v6: the actual alarm, gated by threshold-crossing errors
+
+`docs/research-error-gated-alarm.md` keeps `AlarmPolicy` unchanged as the
+alarm measure. It adds `A(t) = P(t) AND [at least m errors seen within the
+last L hours]` (`bench/error_gated_alarm.py`).
+
+The errors are the threshold crossings the MetroPT documentation defines:
+`LPS` (pressure below 7 bar), `Oil_level` (oil below expected; healthy
+value taken from calibration) and TP3 below 7 bar. The v5 calibrated
+per-channel crossings are a comparison family.
+
+On MetroPT3:
+
+- The gate can only remove alarm time. All 1512 gated rows confirm this,
+  though false alarms can rise when an error flickers.
+- The May 29-30 failure has no dataset-defined error from 24 h before it
+  to its end, so no dataset-gated alarm reaches 4/4. The best that meets
+  both alarm budgets detects 3/4 (1.97% clean time, 0.21 false alarms per
+  week).
+- Calibrated crossings meet the full budget: 4/4, 1.06%, 0.95 false alarms
+  per week. But those thresholds never fire in sustained load, which has no
+  calibration baseline. A pure "idle or cycling within 6 h" gate gives 4/4
+  at 1.25%, so the effect is mostly operating-state recency.
+
+Replayed unchanged on MetroPT2, both selections detect nothing, because the
+policy itself never opens there. Inside the Jan events the frozen scores
+cross no threshold, while the dataset errors cover both Apr events and 0%
+of clean windows.
