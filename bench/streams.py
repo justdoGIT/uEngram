@@ -129,4 +129,7 @@ def load_stream(name: str) -> Stream:
     if name.startswith("care_"):
         from bench.stream_care import care_stream
         return care_stream(name)
+    if name == "scania_validation":
+        from bench.stream_scania import load_scania
+        return load_scania()
     raise ValueError(f"unknown stream {name}")
