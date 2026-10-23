@@ -802,3 +802,57 @@ there is no documented model-reload API. Brier/ECE describe coarse
 report-interval labels on selected candidate assessments, not calibration
 for a deployed safety system. These consumed recordings remain exploratory,
 not fresh confirmation.
+
+### Domain dataset readiness (v4, no training)
+
+Audited seven public candidates against the question: is there an
+independent, compressor-semantics-matched, asset-disjoint cohort with
+verified pointwise physical-fault labels, usable to fine-tune and then
+evaluate Laya without reusing consumed data? **No.** MetroPT-3 and
+MetroPT-2 are already consumed; their report intervals are company
+maintenance proxies, not adjudicated pointwise fault truth, and asset
+independence across recordings is unverified. The IIT Kanpur air
+compressor set is lab-seeded, acoustic-only, and a single machine. The
+Mendeley rotating-machine and SKAB sets are different equipment (bearing
+testbench; water-pump loop), not air compressors. The SCANIA APS and
+Component X sets are a different system and an anonymized component with
+no established compressor identity. Full source citations, license
+status (CC BY 4.0, GPL-3.0, or unverified) and the per-candidate blockers
+are in `results/v4_dataset_audit.json`.
+
+`bench/domain_dataset.py` exports development-only, weak report-association
+examples from the already-frozen MetroPT traces, reusing the unchanged
+Laya state builder and causal schedule. A candidate window is labelled
+`reported_fault` only if fully inside a published report interval, and
+`outside_report_buffer` only if the current, previous and every
+strictly-prior reference window `StateBuilder` would use are all outside
+the existing 24h-before/48h-after exclusion margins. A window whose
+report overlap is partial, or whose context falls inside those margins
+without full containment, is excluded rather than guessed. Identical
+serialized inputs across streams deduplicate to one row; an identical
+input with conflicting labels is dropped entirely, not resolved by
+precedence. Every row has exactly `{state, questions, expected}`,
+matching Laya's documented fine-tuning schema; all identifiers, trace
+hashes, timestamps and dependency indices live only in a separate
+`provenance.jsonl`, keyed by the same input hash. The question text
+itself states this is a weak report-association proxy, not a verified
+physical-health or operator-review judgment.
+
+```bash
+uv run python -m bench.domain_dataset \
+  --freeze results/v3_normal_freeze.json \
+  --out-dir ~/.local/state/uengram/domain_dataset \
+  --manifest results/v4_domain_dataset_manifest.json
+```
+
+The run produced 2,503 distinct inference inputs (176 `reported_fault`,
+2,327 `outside_report_buffer`), zero duplicate-conflict drops, and zero
+truncated requests when checked against Laya's own tokenizer and
+`items_from_rows` loader (`laya.evals.Dataset`, `laya.train.to_internal`).
+`results/v4_domain_dataset_manifest.json` records
+`independent_evaluation_eligible: false` and `production_ready: false`
+with the exact missing prerequisites: independent asset-disjoint data,
+adjudicated pointwise labels, and an untouched preregistered evaluation
+split. This dataset is for weak-supervision development only; it does
+not support a validated accuracy claim, and nothing here retrains or
+changes the frozen Laya evaluation in `results/v3_laya_evaluated.jsonl`.

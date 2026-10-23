@@ -144,3 +144,14 @@ raw advisory outputs omitted baseline policy alerts. The measured hp
 four-thread setting was faster than eight threads on the synthetic timing
 check. See [the completed comparison](docs/RESULTS.md#laya-paired-comparison-completed-no-diagnostic-improvement)
 and [reproduction commands](docs/EXPLAINED.md#laya-comparison-and-hp-inference).
+
+A follow-up public-dataset audit found **no independent, compressor-matched,
+asset-disjoint cohort with verified pointwise physical-fault labels**: the
+MetroPT recordings are already consumed, and every other reviewed source is
+a different system, lab-seeded, or has anonymized components. A
+development-only weak-supervision export from the existing frozen traces
+(2,503 cases, zero truncation against Laya's tokenizer) is available for
+future fine-tuning experiments; it explicitly carries
+`independent_evaluation_eligible: false`. See
+[the dataset audit](docs/EXPLAINED.md#domain-dataset-readiness-v4-no-training)
+and `results/v4_dataset_audit.json`.
