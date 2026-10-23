@@ -1,0 +1,47 @@
+{
+  "independent": {
+    "and_control": {
+      "vehicles": 5046,
+      "alarm_vehicles": 978,
+      "healthy_alarm_rate": 0.19287169042769858,
+      "near_failure_recall": 0.22794117647058823,
+      "final_row_novelty_auroc": 0.5410431891697616,
+      "recall_by_class": {
+        "0": 0.19287169042769858,
+        "1": 0.1875,
+        "2": 0.2857142857142857,
+        "3": 0.2,
+        "4": 0.23684210526315788
+      }
+    },
+    "or_no_evidence_control": {
+      "vehicles": 5046,
+      "alarm_vehicles": 978,
+      "healthy_alarm_rate": 0.19287169042769858,
+      "near_failure_recall": 0.22794117647058823,
+      "final_row_novelty_auroc": 0.5410431891697616,
+      "recall_by_class": {
+        "0": 0.19287169042769858,
+        "1": 0.1875,
+        "2": 0.2857142857142857,
+        "3": 0.2,
+        "4": 0.23684210526315788
+      }
+    },
+    "or_missingness_tripwire": {
+      "vehicles": 5046,
+      "alarm_vehicles": 1049,
+      "healthy_alarm_rate": 0.20712830957230144,
+      "near_failure_recall": 0.23529411764705882,
+      "final_row_novelty_auroc": 0.5410431891697616,
+      "recall_by_class": {
+        "0": 0.20712830957230144,
+        "1": 0.1875,
+        "2": 0.2857142857142857,
+        "3": 0.2,
+        "4": 0.25
+      }
+    }
+  },
+  "matches_report": true
+}

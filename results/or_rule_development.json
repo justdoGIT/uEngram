@@ -1,0 +1,148 @@
+{
+  "and": {
+    "config": {
+      "alpha": 0.003,
+      "k_novelty": 3,
+      "k_health": 0,
+      "per_state": true,
+      "min_state_windows": 100,
+      "new_state_alert": true,
+      "aci_gamma": 0.0,
+      "health_needs_baseline": true,
+      "persistence": "counter",
+      "window": 0,
+      "veto": "normal",
+      "unbaselined": "global",
+      "commission_windows": 0,
+      "stale_windows": 0,
+      "combine": "and",
+      "error_k": 3,
+      "corroboration": {
+        "family": "dataset",
+        "min_errors": 1,
+        "lookback_h": 0.0
+      }
+    },
+    "metrics": {
+      "events_detected": 0.0,
+      "false_alarm_per_week": 0.052908479178658846,
+      "alarm_time_share_clean": 0.00016463914982512557,
+      "lead_hours": NaN,
+      "notifications_per_week_all": 39.04619220402074
+    },
+    "events": [
+      {
+        "event": 0,
+        "detected": false,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 143,
+        "alarm_windows": 0
+      },
+      {
+        "event": 1,
+        "detected": false,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 41,
+        "alarm_windows": 0
+      },
+      {
+        "event": 2,
+        "detected": false,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 285,
+        "alarm_windows": 0
+      },
+      {
+        "event": 3,
+        "detected": false,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 26,
+        "alarm_windows": 0
+      }
+    ],
+    "alarm_episodes": 1,
+    "trigger_kinds": {
+      "novelty": 1,
+      "health": 0,
+      "both": 0,
+      "error": 0
+    }
+  },
+  "or": {
+    "config": {
+      "alpha": 0.003,
+      "k_novelty": 3,
+      "k_health": 0,
+      "per_state": true,
+      "min_state_windows": 100,
+      "new_state_alert": true,
+      "aci_gamma": 0.0,
+      "health_needs_baseline": true,
+      "persistence": "counter",
+      "window": 0,
+      "veto": "normal",
+      "unbaselined": "global",
+      "commission_windows": 0,
+      "stale_windows": 0,
+      "combine": "or",
+      "error_k": 3,
+      "corroboration": {
+        "family": "dataset",
+        "min_errors": 1,
+        "lookback_h": 0.0
+      }
+    },
+    "metrics": {
+      "events_detected": 2.0,
+      "false_alarm_per_week": 1.2168950211091534,
+      "alarm_time_share_clean": 0.151534765804746,
+      "lead_hours": -5.294027777777778,
+      "notifications_per_week_all": 39.19062941316015
+    },
+    "events": [
+      {
+        "event": 0,
+        "detected": true,
+        "first_alarm": "2020-04-17T09:50:35",
+        "lead_hours": -14.156944444444445,
+        "windows": 143,
+        "alarm_windows": 3
+      },
+      {
+        "event": 1,
+        "detected": false,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 41,
+        "alarm_windows": 0
+      },
+      {
+        "event": 2,
+        "detected": false,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 285,
+        "alarm_windows": 0
+      },
+      {
+        "event": 3,
+        "detected": true,
+        "first_alarm": "2020-07-15T18:04:08",
+        "lead_hours": 3.568888888888889,
+        "windows": 26,
+        "alarm_windows": 7
+      }
+    ],
+    "alarm_episodes": 29,
+    "trigger_kinds": {
+      "novelty": 0,
+      "health": 0,
+      "both": 0,
+      "error": 29
+    }
+  }
+}

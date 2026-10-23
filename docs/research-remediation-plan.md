@@ -105,12 +105,33 @@ threshold (`scripts/cluster-storage-guard.sh`). `data/uengram` already holds 11.
 + MetroPT2 2.8 GB + MetroPT3 581 MB). Only SCANIA (1.54 GB) and Kelmarsh (3.84 GB) fit without
 first freeing space; Penmanshiel and Hill of Towie do not.
 
-## 4. What I need from you
-1. **Which remediation(s) to implement next**, if any — section 1 (RC1–RC5), each independently
-   actionable; the OR rule (RC4) is the most direct, cheapest, and testable without new data.
-2. **Which dataset to validate on**, given the disk limit: SCANIA Component X (real fleet,
-   repair-record events, different machine) or Kelmarsh wind farm (real SCADA + alarm/event log,
-   different machine, both fit in 16 GB without cleanup); or free space first to consider
-   Penmanshiel/Hill of Towie.
-3. Confirmation to download the chosen dataset (1.5–3.8 GB) to the near-full disk, or to free
-   space first.
+## 4. Decision and execution
+
+The selected remediation is the independently persisted **OR** rule:
+`AlarmLogic(combine="or", error_k=3)`. The existing AND rule remains the
+primary uEngram result; OR is an opt-in output because it changes the alarm
+contract and can raise false alarms from its external evidence source.
+
+The selected validation dataset is **SCANIA Component X**. The archive was
+downloaded to the approved near-full `/home/kk/Backup` volume, its bundled
+SHA-256 manifest passed for every member, and the frozen protocol is recorded
+in [validation-scania-protocol.md](validation-scania-protocol.md).
+
+The implementation and validation are complete:
+
+1. The OR rule raises an independent `error` alarm only when a real evidence
+   array is supplied. With no evidence, its active and opened arrays are
+   identical to AND.
+2. On the fixed MetroPT3 development replay, OR detected 2/4 events but raised
+   1.217 false alarms/week and occupied 15.15% of clean time. This is
+   development evidence, not fresh confirmation.
+3. On the untouched SCANIA validation split, AND had 22.79% recall over
+   classes 1–4 and a 19.29% class-0 final-row alarm rate. The predeclared
+   missingness tripwire changed these to 23.53% and 20.71%, respectively.
+   The no-evidence OR control matched AND exactly.
+
+SCANIA has no independent physical alarm channel and no exact failure
+timestamp. Its OR result is therefore a data-quality tripwire, not evidence
+that the component-failure label itself independently raised the alarm. Full
+metrics and the independent recomputation are in
+[research-scania-validation.md](research-scania-validation.md).

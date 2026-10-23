@@ -993,3 +993,27 @@ metric, and a three-valued v5 hold. The v5 hold fix exposes calibration
 drift that the old run reset had hidden. Every default reproduces the
 earlier results byte for byte. Independent implementations reproduced the
 v8 rows, the clustering arithmetic and the corrected v7 rows exactly.
+
+### v9: independent SCANIA validation and the opt-in OR rule
+
+The v9 remediation adds `AlarmLogic(combine="or", error_k=3)` as an opt-in
+policy. It preserves the existing AND behavior when no evidence array is
+provided, and it can independently persist a real external evidence stream
+when one is supplied. A no-evidence OR run is required to match AND exactly.
+
+The selected fresh dataset is SCANIA Component X, a 23,550-vehicle truck
+component fleet with workshop-repair proximity labels. The frozen split uses
+healthy training vehicles for commissioning and calibration and leaves the
+validation vehicles untouched. Because SCANIA labels only the final readout's
+relative time-to-repair class, evaluation uses each vehicle's final observed
+row; it does not claim lead hours or false alarms per week.
+
+On 5,046 validation vehicles, the AND/control alarmed 978 final rows, with a
+19.287% class-0 alarm rate and 22.794% recall over classes 1–4. The
+predeclared missingness tripwire in the OR run alarmed 1,049 final rows, with
+20.713% class-0 alarm rate and 23.529% recall. The no-evidence OR control
+matched AND exactly. SCANIA has no independent physical alarm channel, so this
+OR evidence is a data-quality tripwire, not an independent component-failure
+signal. Full protocol, integrity checks, metrics, and independent
+recomputation: `docs/validation-scania-protocol.md` and
+`docs/research-scania-validation.md`.

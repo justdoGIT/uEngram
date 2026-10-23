@@ -69,15 +69,24 @@ def main() -> None:
     parser.add_argument("--root", default=None)
     parser.add_argument("--out", default="results/scania_validation.json")
     parser.add_argument("--scores", default="results/scania_scores.npz")
+    parser.add_argument("--reuse-scores", action="store_true")
     args = parser.parse_args()
 
     stream = load_scania(args.root)
-    scores = score_stream(stream, "uengram", "tab", 0, "scania", encoding_dir=None)
-    np.savez_compressed(
-        args.scores,
-        novelty=scores["novelty"], health=scores["health"], action=scores["action"],
-        meta=json.dumps(scores["meta"]),
-    )
+    score_path = Path(args.scores)
+    if score_path.exists() and args.reuse_scores:
+        with np.load(score_path, allow_pickle=False) as z:
+            scores = {
+                "novelty": z["novelty"], "health": z["health"], "action": z["action"],
+                "meta": json.loads(str(z["meta"])),
+            }
+    else:
+        scores = score_stream(stream, "uengram", "tab", 0, "scania", encoding_dir=None)
+        np.savez_compressed(
+            args.scores,
+            novelty=scores["novelty"], health=scores["health"], action=scores["action"],
+            meta=json.dumps(scores["meta"]),
+        )
 
     and_active, and_opened, and_policy = _run_policy(stream, scores, AlarmLogic())
     or_control_active, or_control_opened, or_control_policy = _run_policy(
@@ -92,9 +101,21 @@ def main() -> None:
     or_active, or_opened, or_policy = _run_policy(
         stream, scores, AlarmLogic(combine="or", error_k=3), evidence=missing
     )
+    test_ids = stream.extra["vehicle_id"][test]
+    final = _final_rows(test_ids)
+    final_classes = stream.extra["class_label"][test][final]
     out = {
         "protocol": "docs/validation-scania-protocol.md",
-        "stream": stream.extra,
+        "stream": {
+            "W_shape": list(stream.W.shape),
+            "fit_rows": int(stream.fit.sum()),
+            "cal_rows": int(stream.cal.sum()),
+            "test_rows": int(stream.test.sum()),
+            "test_vehicles": int(len(final_classes)),
+            "class_counts": {
+                str(k): int((final_classes == k).sum()) for k in range(5)
+            },
+        },
         "scores": scores["meta"],
         "and_control": _alarm_metrics(stream, scores, and_active, and_opened),
         "or_no_evidence_control": _alarm_metrics(stream, scores, or_control_active, or_control_opened),

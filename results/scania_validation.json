@@ -1,0 +1,127 @@
+{
+  "protocol": "docs/validation-scania-protocol.md",
+  "stream": {
+    "W_shape": [
+      1212827,
+      105
+    ],
+    "fit_rows": 812712,
+    "cal_rows": 203888,
+    "test_rows": 196227,
+    "test_vehicles": 5046,
+    "class_counts": {
+      "0": 4910,
+      "1": 16,
+      "2": 14,
+      "3": 30,
+      "4": 76
+    }
+  },
+  "scores": {
+    "method": "uengram",
+    "encoder": "tab",
+    "seed": 0,
+    "stream": "scania_validation",
+    "input_hash": "2e5d34c20bdbfd00eff01cab77499b5e6b31df61488f8a8d75cc3f8d065c176d",
+    "items_end": 256,
+    "index_bytes": 43776,
+    "pinned_raw_bytes": 52500,
+    "writes": 350598,
+    "bytes_written": 106994488,
+    "write_reduction_pct": -78.66960204253238,
+    "commissioning_calibration_writes": 1545307,
+    "total_writes": 1895905,
+    "events_retained": [],
+    "step_calibration": {
+      "estimator": "commissioning_slot_innovations",
+      "warm_samples": 23717,
+      "runs": 27731,
+      "inflation": [
+        13.058515420820612,
+        12.896662831748461,
+        11.647845613626297,
+        16.094956370514566,
+        12.525316690366274,
+        15.155073821874618,
+        17.458328353171172,
+        18.96361351507918,
+        18.10640478740272,
+        19.983222497525258,
+        22.56723321130154,
+        21.158759803982885,
+        18.96512941211088,
+        18.936786902367274,
+        18.554758472659156,
+        18.698958435950722
+      ]
+    },
+    "steps_in_test": 0,
+    "lat_p50_us": 192.561,
+    "lat_p99_us": 702.4320999999999
+  },
+  "and_control": {
+    "vehicles": 5046,
+    "alarm_vehicles": 978,
+    "healthy_alarm_rate": 0.19287169042769858,
+    "near_failure_recall": 0.22794117647058823,
+    "final_row_novelty_auroc": 0.5410431891697616,
+    "final_row_novelty_ap": 0.032113761465069716,
+    "recall_by_class": {
+      "0": 0.19287169042769858,
+      "1": 0.1875,
+      "2": 0.2857142857142857,
+      "3": 0.2,
+      "4": 0.23684210526315788
+    }
+  },
+  "or_no_evidence_control": {
+    "vehicles": 5046,
+    "alarm_vehicles": 978,
+    "healthy_alarm_rate": 0.19287169042769858,
+    "near_failure_recall": 0.22794117647058823,
+    "final_row_novelty_auroc": 0.5410431891697616,
+    "final_row_novelty_ap": 0.032113761465069716,
+    "recall_by_class": {
+      "0": 0.19287169042769858,
+      "1": 0.1875,
+      "2": 0.2857142857142857,
+      "3": 0.2,
+      "4": 0.23684210526315788
+    }
+  },
+  "or_missingness_tripwire": {
+    "vehicles": 5046,
+    "alarm_vehicles": 1049,
+    "healthy_alarm_rate": 0.20712830957230144,
+    "near_failure_recall": 0.23529411764705882,
+    "final_row_novelty_auroc": 0.5410431891697616,
+    "final_row_novelty_ap": 0.032113761465069716,
+    "recall_by_class": {
+      "0": 0.20712830957230144,
+      "1": 0.1875,
+      "2": 0.2857142857142857,
+      "3": 0.2,
+      "4": 0.25
+    }
+  },
+  "control_equal": true,
+  "missing_rows": 3937,
+  "episodes": {
+    "and": 1057,
+    "or_missingness": 1176
+  },
+  "trigger_kinds": {
+    "and": {
+      "novelty": 1057,
+      "health": 0,
+      "both": 0,
+      "error": 0
+    },
+    "or_missingness": {
+      "novelty": 1047,
+      "health": 0,
+      "both": 0,
+      "error": 129
+    }
+  }
+}
