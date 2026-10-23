@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import zlib
 from array import array
 from dataclasses import dataclass
 
@@ -69,19 +70,22 @@ def read_columns(paths: list[str]) -> tuple[dict, Columns]:
     for p in paths:
         file_meta = {}
         with (gzip.open(p, "rt") if p.endswith(".gz") else open(p)) as fh:
-            for line in fh:
-                try:
-                    rec = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                if "meta" in rec:
-                    file_meta = rec["meta"]
-                    meta = meta or file_meta
-                    continue
-                for f, a in buf.items():
-                    v = rec.get(f)
-                    a.append(nan if v is None else float(v))
-                kernels.append(str(rec.get("kernel", file_meta.get("kernel", "")) or ""))
+            try:
+                for line in fh:
+                    try:
+                        rec = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    if "meta" in rec:
+                        file_meta = rec["meta"]
+                        meta = meta or file_meta
+                        continue
+                    for f, a in buf.items():
+                        v = rec.get(f)
+                        a.append(nan if v is None else float(v))
+                    kernels.append(str(rec.get("kernel", file_meta.get("kernel", "")) or ""))
+            except (EOFError, zlib.error, gzip.BadGzipFile):
+                pass  # a truncated trailing member from an interrupted write
     cols = {f: np.frombuffer(a, dtype=np.float64) for f, a in buf.items()}
     cols["kernel"] = np.asarray(kernels, dtype=str)
     if len(cols["t"]) > 1 and np.any(np.diff(cols["t"]) < 0):

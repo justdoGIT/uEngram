@@ -50,7 +50,7 @@ def test_spool_rotates_at_utc_midnight_and_reads_back_in_order(tmp_path):
         sink(r["t"], {k: v for k, v in r.items() if k != "t"})
     sink.close(wait=None)
     files = spool_files(d, "h")
-    assert len(files) == 2 and files[0].endswith(".jsonl.gz") and files[1].endswith(".jsonl")
+    assert len(files) == 2 and files[0].endswith(".jsonl.gz") and files[1].endswith(".jsonl.gz")
     meta, cols = read_columns(files)
     assert meta == {"host": "h"}
     np.testing.assert_array_equal(cols["t"], [r["t"] for r in ticks])
@@ -59,7 +59,7 @@ def test_spool_rotates_at_utc_midnight_and_reads_back_in_order(tmp_path):
     sink(midnight + 2 * DAY + 0.5, {})
     sink.close(wait=None)
     assert [os.path.basename(p) for p in spool_files(d, "h")] == [
-        f"ticks-h-{_day(midnight)}.jsonl.gz", f"ticks-h-{_day(midnight + 2 * DAY)}.jsonl"]
+        f"ticks-h-{_day(midnight)}.jsonl.gz", f"ticks-h-{_day(midnight + 2 * DAY)}.jsonl.gz"]
 
 
 def test_spool_restart_on_same_day_keeps_each_tick_kernel(tmp_path):
@@ -87,6 +87,25 @@ def test_read_columns_uses_header_kernel_for_legacy_tick_rows(tmp_path):
     meta, cols = read_columns([p])
     assert meta["kernel"] == "6.18.56_1"
     assert cols["kernel"].tolist() == ["6.18.56_1"]
+
+
+def test_read_columns_tolerates_a_truncated_trailing_gzip_member(tmp_path):
+    import zlib
+
+    def member(text):
+        c = zlib.compressobj(6, zlib.DEFLATED, 31)
+        return c.compress(text) + c.flush()
+
+    p = os.path.join(str(tmp_path), "ticks-h-20261021.jsonl.gz")
+    data = (member(b'{"meta":{"host":"h","kernel":"6.18.56_1"}}\n')
+            + member(b'{"t":1,"pmu_inst":3}\n')
+            + zlib.compressobj(6, zlib.DEFLATED, 31).compress(b'{"t":2,"pmu_inst":4}\n'))  # truncated
+    with open(p, "wb") as f:
+        f.write(data)
+    meta, cols = read_columns([p])
+    assert meta["kernel"] == "6.18.56_1"
+    assert cols["t"].tolist() == [1.0]
+    assert cols["pmu_inst"].tolist() == [3.0]
 
 
 def test_replay_rejects_model_commissioned_on_another_kernel():

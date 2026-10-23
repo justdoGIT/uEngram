@@ -23,6 +23,7 @@ import socket
 import sys
 import threading
 import time
+import zlib
 from typing import Callable
 
 from . import schema
@@ -140,51 +141,83 @@ class JsonlSink:
 
 
 class SpoolSink:
-    """Daily tick files `<dir>/ticks-<host>-YYYYMMDD.jsonl` (UTC day), each with
-    its own meta line, so a validation run can replay any period. A finished
-    day is gzip-compressed in a background thread (the tick loop never waits)
-    and days older than `keep_days` are dropped: the spool is the collector's
-    own bounded log, like svlogd's rotation (~62 MB/day raw, ~8 MB gzipped)."""
+    """Daily tick files `<dir>/ticks-<host>-YYYYMMDD.jsonl.gz` (UTC day), a
+    sequence of gzip members: the first holds the meta line, each later one
+    holds `member_ticks` tick lines. Compressing on write skips the raw
+    ~62 MB/day file and the read-back pass that used to gzip a finished day,
+    so the slow disks (hp's USB stick, msi's Backup) see a fraction of the
+    writes. Days older than `keep_days` are dropped; readers accept both
+    `.jsonl` and `.jsonl.gz`, so older raw files still replay."""
 
-    def __init__(self, directory: str, meta: dict, keep_days: int = 14):
+    def __init__(self, directory: str, meta: dict, keep_days: int = 14, member_ticks: int = 32):
         self.dir, self.meta, self.keep_days = directory, meta, keep_days
         self.host = meta["host"]
-        self.day, self.sink = None, None
+        self.kernel = meta.get("kernel")
+        self.member_ticks = member_ticks
+        self.day: str | None = None
+        self._f = None
+        self._buf: list[str] = []
         self._hk: threading.Thread | None = None
         os.makedirs(directory, exist_ok=True)
 
     def _path(self, day: str) -> str:
-        return os.path.join(self.dir, f"ticks-{self.host}-{day}.jsonl")
+        return os.path.join(self.dir, f"ticks-{self.host}-{day}.jsonl.gz")
+
+    @staticmethod
+    def _member(text: str) -> bytes:
+        c = zlib.compressobj(6, zlib.DEFLATED, 31)  # 31: gzip container
+        return c.compress(text.encode()) + c.flush()
+
+    def _flush(self) -> None:
+        if self._buf and self._f:
+            self._f.write(self._member("".join(self._buf)))
+            self._f.flush()
+        self._buf.clear()
 
     def __call__(self, t: float, tick: dict) -> None:
         day = time.strftime("%Y%m%d", time.gmtime(t))
-        if day != self.day:
-            if self.sink:
-                self.sink.close()
+        if day != self.day or self._f is None:
+            self._flush()
+            if self._f:
+                self._f.close()
+                self._f = None
             if self._hk:  # finished hours ago unless the day began right after a start (or in tests)
                 self._hk.join()
-            self.day, self.sink = day, JsonlSink(self._path(day), self.meta)
+            self.day = day
+            path = self._path(day)
+            fresh = not os.path.exists(path) or os.path.getsize(path) == 0
+            self._f = open(path, "ab")
+            if fresh:
+                self._f.write(self._member(json.dumps({"meta": self.meta}) + "\n"))
+                self._f.flush()
             cutoff = time.strftime("%Y%m%d", time.gmtime(t - self.keep_days * 86400))
             self._hk = threading.Thread(target=self._housekeep, args=(day, cutoff), daemon=True)
             self._hk.start()
-        self.sink(t, tick)
+        rec = {"t": t, **tick}
+        if self.kernel:
+            rec["kernel"] = self.kernel
+        self._buf.append(json.dumps(rec, separators=(",", ":")) + "\n")
+        if len(self._buf) >= self.member_ticks:
+            self._flush()
 
     def _housekeep(self, today: str, cutoff: str) -> None:
         for p in glob.glob(os.path.join(self.dir, f"ticks-{self.host}-*.jsonl*")):
             day = os.path.basename(p)[len(f"ticks-{self.host}-"):][:8]
             if day < cutoff:
                 os.remove(p)
-            elif p.endswith(".jsonl") and day < today:  # never today's (or a later) file
+            elif p.endswith(".jsonl") and day < today:  # legacy raw day, never today's (or a later) file
                 with open(p, "rb") as src, gzip.open(p + ".gz.tmp", "wb", compresslevel=6) as dst:
                     shutil.copyfileobj(src, dst)
                 os.replace(p + ".gz.tmp", p + ".gz")
                 os.remove(p)
 
     def close(self, wait: float | None = 5.0) -> None:
-        """Close today's file; give a running compression `wait` seconds (an
-        interrupted one leaves the .jsonl, which the next start compresses)."""
-        if self.sink:
-            self.sink.close()
+        """Flush the pending member and close today's file; give a running
+        housekeeping thread `wait` seconds."""
+        self._flush()
+        if self._f:
+            self._f.close()
+            self._f = None
         if self._hk:
             self._hk.join(wait)
 
