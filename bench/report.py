@@ -282,6 +282,8 @@ def build(runs_dir: str) -> str:
                     "", metropt_paired_table(mg[(ds, enc)], METROPT_ORDER, enc), ""]
         if not any(ds == "metropt" for ds, _ in mg):
             out += ["not run", ""]
+    from bench.report_v2 import build_v2
+    out += build_v2(runs_dir)
     out += ["## Budget sweep (synthetic, DSP encoder)", "", sweep_table(sweep) if sweep else "not run", ""]
     for title, prev, cur, metrics in (("synthetic", prev_synth, synth, PREV_SYNTH),
                                       ("CMAPSS", prev_cmapss, cmapss, PREV_CMAPSS)):

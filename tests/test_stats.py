@@ -144,3 +144,11 @@ def test_robust_noise_cov_recovers_correlated_noise():
     C = stats.robust_noise_cov(levels + jumps + noise, 1, None)
     assert np.abs(C - true).max() < 0.08
     assert stats.robust_noise_cov(noise, 1, None)[0, 1] > 0.7  # correlation kept, not discarded
+
+
+def test_noise_covariance_rejects_insufficient_inliers_without_nan_covariance():
+    # A noiseless ramp has no zero-centred within-state increments. Returning a
+    # NaN/scalar covariance here makes a later eigendecomposition fail opaquely.
+    z = np.arange(100, dtype=float)[:, None] * np.array([[1.0, 2.0]])
+    with pytest.raises(ValueError, match="noise covariance retained 0 inliers"):
+        stats.robust_noise_cov(z, 1, None)

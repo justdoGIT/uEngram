@@ -145,7 +145,11 @@ def robust_noise_cov(z: np.ndarray, lag: int, groups: np.ndarray | None,
     C = np.diag(s * s)
     for _ in range(iters):
         d2 = np.einsum("ij,jk,ik->i", D, np.linalg.inv(C), D)
-        C = np.cov(D[d2 <= q], rowvar=False) * cons
+        keep = d2 <= q
+        if int(keep.sum()) < max(10, d + 1):
+            raise ValueError(f"noise covariance retained {int(keep.sum())} inliers; "
+                             f"need at least {max(10, d + 1)} at iteration {_ + 1}")
+        C = np.cov(D[keep], rowvar=False) * cons
     return C
 
 

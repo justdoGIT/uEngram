@@ -1,0 +1,300 @@
+{
+  "development_stream": "metropt3",
+  "gpu_analog": [
+    {
+      "name": "cnn2_nocond",
+      "seed": 0,
+      "fit_seconds": 18.23,
+      "medoid": 2,
+      "device": "cuda",
+      "mean_member_cka": 0.9959914813600618,
+      "min_member_cka": 0.992569142647593,
+      "validation_loss": 5.481078624725342,
+      "median_noise_to_spread": 0.6554570360317032,
+      "stream": "metropt3",
+      "encoder": "cnn2",
+      "input_hash": "6d784c6c3184b2d9c9077e0d57589e8c8813132caf4e3e1690a730f0976560b4",
+      "backend": "colab:T4",
+      "outside_fit_range_fraction": 0.00034302963776070255,
+      "accepted": true
+    },
+    {
+      "name": "cnn2_nocond",
+      "seed": 1,
+      "fit_seconds": 17.38,
+      "medoid": 0,
+      "device": "cuda",
+      "mean_member_cka": 0.9978308038756563,
+      "min_member_cka": 0.9961379774125269,
+      "validation_loss": 5.707481575012207,
+      "median_noise_to_spread": 0.5533015226495923,
+      "stream": "metropt3",
+      "encoder": "cnn2",
+      "input_hash": "6d784c6c3184b2d9c9077e0d57589e8c8813132caf4e3e1690a730f0976560b4",
+      "backend": "colab:T4",
+      "outside_fit_range_fraction": 0.00027442371020856203,
+      "accepted": true
+    },
+    {
+      "name": "cnn2_nocond",
+      "seed": 2,
+      "fit_seconds": 17.61,
+      "medoid": 0,
+      "device": "cuda",
+      "mean_member_cka": 0.9977657933483716,
+      "min_member_cka": 0.9961561799138259,
+      "validation_loss": 5.617745304107666,
+      "median_noise_to_spread": 0.47574209139651197,
+      "stream": "metropt3",
+      "encoder": "cnn2",
+      "input_hash": "6d784c6c3184b2d9c9077e0d57589e8c8813132caf4e3e1690a730f0976560b4",
+      "backend": "colab:T4",
+      "outside_fit_range_fraction": 0.00027442371020856203,
+      "accepted": true
+    },
+    {
+      "name": "cnn2_nocond",
+      "seed": 3,
+      "fit_seconds": 17.58,
+      "medoid": 0,
+      "device": "cuda",
+      "mean_member_cka": 0.9961926346498622,
+      "min_member_cka": 0.9886504644790319,
+      "validation_loss": 5.473874855041504,
+      "median_noise_to_spread": 0.5569726947742366,
+      "stream": "metropt3",
+      "encoder": "cnn2",
+      "input_hash": "6d784c6c3184b2d9c9077e0d57589e8c8813132caf4e3e1690a730f0976560b4",
+      "backend": "colab:T4",
+      "outside_fit_range_fraction": 0.00027442371020856203,
+      "accepted": true
+    },
+    {
+      "name": "cnn2_nocond",
+      "seed": 4,
+      "fit_seconds": 17.51,
+      "medoid": 4,
+      "device": "cuda",
+      "mean_member_cka": 0.994962515333692,
+      "min_member_cka": 0.986422214816816,
+      "validation_loss": 5.526002597808838,
+      "median_noise_to_spread": 0.4837209524424626,
+      "stream": "metropt3",
+      "encoder": "cnn2",
+      "input_hash": "6d784c6c3184b2d9c9077e0d57589e8c8813132caf4e3e1690a730f0976560b4",
+      "backend": "colab:T4",
+      "outside_fit_range_fraction": 0.000411635565312843,
+      "accepted": true
+    }
+  ],
+  "gpu_conditioned": {
+    "accepted": false,
+    "seed": 0,
+    "failure": "noise covariance trimming left insufficient inliers; no fallback"
+  },
+  "cpu_fit_timing": {
+    "fit_windows": 2658,
+    "fit_seconds": 68.38672338700053,
+    "member_training_seconds": [
+      7.709867180999936,
+      6.9406523300003755,
+      6.9052536340004735,
+      6.608118848998856,
+      39.09819081999922
+    ]
+  },
+  "restored_checkpoint_check": {
+    "device": "cpu",
+    "cpu_torch_version": "2.14.1+cpu",
+    "windows_compared": 64,
+    "p99_error_noise_std": 0.0002875521181374894,
+    "max_error_noise_std": 0.00041420147269046083,
+    "gpu_training": {
+      "stream": "metropt3",
+      "encoder": "cnn2",
+      "seed": 0,
+      "input_hash": "6d784c6c3184b2d9c9077e0d57589e8c8813132caf4e3e1690a730f0976560b4",
+      "torch_version": "2.11.0+cu130",
+      "numpy_version": "2.1.3",
+      "mean_member_cka": 0.9959914813600618,
+      "min_member_cka": 0.992569142647593,
+      "validation_loss": 5.481078624725342,
+      "median_noise_to_spread": 0.6554570360317032,
+      "outside_fit_range_fraction": 0.00034302963776070255,
+      "accepted": true,
+      "fit_seconds": 26.015193229000005,
+      "backend": "cuda",
+      "medoid": 2
+    }
+  },
+  "cpu_gate_history": [
+    {
+      "seed": 0,
+      "encoder": "cnn",
+      "gate_passed": true,
+      "mean_member_cka": NaN,
+      "min_member_cka": NaN,
+      "validation_loss": NaN,
+      "median_noise_to_spread": 0.5170181618665879,
+      "calibration_outside_fit_range_fraction": 0.0008918770581778266,
+      "fit_seconds": null,
+      "member_training_seconds": null
+    },
+    {
+      "seed": 0,
+      "encoder": "cnn2",
+      "gate_passed": true,
+      "mean_member_cka": 0.9959305255310372,
+      "min_member_cka": 0.9915763038036645,
+      "validation_loss": 5.528256607055664,
+      "median_noise_to_spread": 0.5480770137458469,
+      "calibration_outside_fit_range_fraction": 0.0005488474204171241,
+      "fit_seconds": 186.67965283600097,
+      "member_training_seconds": [
+        49.73296012300125,
+        27.633921822998673,
+        38.08603127400056,
+        36.2709631380003,
+        34.54110652199961
+      ]
+    },
+    {
+      "seed": 0,
+      "encoder": "cnn2_cond",
+      "gate_passed": false,
+      "fit_error": "ValueError: noise covariance retained 0 inliers; need at least 32 at iteration 5"
+    },
+    {
+      "seed": 1,
+      "encoder": "cnn",
+      "gate_passed": true,
+      "mean_member_cka": NaN,
+      "min_member_cka": NaN,
+      "validation_loss": NaN,
+      "median_noise_to_spread": 0.5969415028938058,
+      "calibration_outside_fit_range_fraction": 0.0009604829857299671,
+      "fit_seconds": null,
+      "member_training_seconds": null
+    },
+    {
+      "seed": 1,
+      "encoder": "cnn2",
+      "gate_passed": true,
+      "mean_member_cka": 0.9979870231836594,
+      "min_member_cka": 0.9968327187147126,
+      "validation_loss": 5.67275857925415,
+      "median_noise_to_spread": 0.5178889164721143,
+      "calibration_outside_fit_range_fraction": 0.0006860592755214051,
+      "fit_seconds": 56.482971665998775,
+      "member_training_seconds": [
+        12.252727049999521,
+        11.608083014998556,
+        11.117562068000552,
+        10.547905081999488,
+        10.737709042999995
+      ]
+    },
+    {
+      "seed": 1,
+      "encoder": "cnn2_cond",
+      "gate_passed": false,
+      "fit_error": "ValueError: noise covariance retained 0 inliers; need at least 32 at iteration 5",
+      "skipped": true
+    },
+    {
+      "seed": 2,
+      "encoder": "cnn",
+      "gate_passed": true,
+      "mean_member_cka": NaN,
+      "min_member_cka": NaN,
+      "validation_loss": NaN,
+      "median_noise_to_spread": 0.4399389680171485,
+      "calibration_outside_fit_range_fraction": 0.0006860592755214051,
+      "fit_seconds": null,
+      "member_training_seconds": null
+    },
+    {
+      "seed": 2,
+      "encoder": "cnn2",
+      "gate_passed": false,
+      "fit_error": "ValueError: noise covariance retained 29 inliers; need at least 32 at iteration 5"
+    },
+    {
+      "seed": 2,
+      "encoder": "cnn2_cond",
+      "gate_passed": false,
+      "fit_error": "ValueError: noise covariance retained 0 inliers; need at least 32 at iteration 5",
+      "skipped": true
+    },
+    {
+      "seed": 3,
+      "encoder": "cnn",
+      "gate_passed": true,
+      "mean_member_cka": NaN,
+      "min_member_cka": NaN,
+      "validation_loss": NaN,
+      "median_noise_to_spread": 0.5120972677968956,
+      "calibration_outside_fit_range_fraction": 0.0010976948408342481,
+      "fit_seconds": null,
+      "member_training_seconds": null
+    },
+    {
+      "seed": 3,
+      "encoder": "cnn2",
+      "gate_passed": false,
+      "fit_error": "ValueError: noise covariance retained 2 inliers; need at least 32 at iteration 5"
+    },
+    {
+      "seed": 3,
+      "encoder": "cnn2_cond",
+      "gate_passed": false,
+      "fit_error": "ValueError: noise covariance retained 0 inliers; need at least 32 at iteration 5",
+      "skipped": true
+    },
+    {
+      "seed": 4,
+      "encoder": "cnn",
+      "gate_passed": true,
+      "mean_member_cka": NaN,
+      "min_member_cka": NaN,
+      "validation_loss": NaN,
+      "median_noise_to_spread": 0.47182419356674643,
+      "calibration_outside_fit_range_fraction": 0.0010976948408342481,
+      "fit_seconds": null,
+      "member_training_seconds": null
+    },
+    {
+      "seed": 4,
+      "encoder": "cnn2",
+      "gate_passed": true,
+      "mean_member_cka": 0.9960061515907197,
+      "min_member_cka": 0.9911217334125961,
+      "validation_loss": 5.481788539886475,
+      "median_noise_to_spread": 0.5612959868226397,
+      "calibration_outside_fit_range_fraction": 0.0006174533479692645,
+      "fit_seconds": 54.55273048100025,
+      "member_training_seconds": [
+        9.474491422000938,
+        10.95331357699979,
+        11.13316188600038,
+        11.617588320999857,
+        11.1348972830001
+      ]
+    },
+    {
+      "seed": 4,
+      "encoder": "cnn2_cond",
+      "gate_passed": false,
+      "fit_error": "ValueError: noise covariance retained 0 inliers; need at least 32 at iteration 5",
+      "skipped": true
+    }
+  ],
+  "cpu_gate_history_note": "Historical development diagnostics used the earlier 2*d inlier guard; the final guard requires max(10,d+1). These are not a current CPU acceptance-rate estimate and were not used to select favorable GPU seeds.",
+  "encoder_decision": "DSP selected for compressor confirmation: five-seed CNN2 v2 event detections are [1,1,3,1,3]/4 versus DSP 3/4. Representation gates are not fault-detection guarantees.",
+  "verification": {
+    "behavioral_tests_passed": 98,
+    "official_event_scorer_comparison_cases": 500,
+    "semgrep_python_code_files": 44,
+    "semgrep_findings": 0
+  }
+}

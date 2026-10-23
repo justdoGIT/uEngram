@@ -49,7 +49,7 @@ uv run python -m bench.run_metropt --seeds 0-4 --encoders dsp,cnn --jobs 2 --out
 uv run python -m bench.report --out docs/RESULTS.md
 ```
 
-Keep `--jobs` at 2 or below; the host has about 1 GB of RAM headroom.
+Use `--jobs 2` as a conservative default. CARE workers materialize full datasets and embeddings; measure RAM headroom before increasing concurrency.
 
 ## Layout
 
@@ -79,3 +79,40 @@ MetroPT-3 is distributed under CC BY 4.0: Davari et al., dataset
 The adapted MemStream core is based on
 [Stream-AD/MemStream](https://github.com/Stream-AD/MemStream), Apache-2.0;
 its license is included in `src/uengram/MemStream-LICENSE.txt`.
+
+## Alarm-policy confirmation and GPU training
+
+Protocol v2 separates novelty from actionable alarms, records input snapshots
+around each episode, and measures standing-alarm time and advisory workload as
+well as false-alarm openings. MetroPT-3 is now development data.
+[EXPLAINED section 17](docs/EXPLAINED.md#17-alarm-policy-confirmation-protocol-v2)
+freezes the MetroPT2 and CARE confirmation splits, configurations and criteria
+before their detector scores are generated.
+
+```bash
+uv run python -m bench.run_v2 --streams metropt2 --methods uengram:dsp,hst:dsp,memstream:dsp --seeds 0-4 --jobs 2 --out results/v2_metropt2.jsonl
+uv run python -m bench.run_v2 --streams care --methods uengram:tab,hst:tab,memstream:tab --seeds 0 --jobs 2 --out results/v2_care.jsonl
+uv run python -m bench.report
+```
+
+Data must be downloaded into the layout documented in section 17. MetroPT2:
+[Zenodo 7766691](https://doi.org/10.5281/zenodo.7766691), CC BY 4.0.
+CARE: [Zenodo 15846963](https://doi.org/10.5281/zenodo.15846963), CC BY-SA 4.0.
+The NumPy CARE event scorer adapts
+[EnergyFaultDetector](https://github.com/AEFDI/EnergyFaultDetector), MIT;
+its license is in `src/uengram/EnergyFaultDetector-LICENSE.txt`.
+Retrospective CARE status annotations filter evaluation, never runtime alarms.
+
+`bench.colab_train.prepare(stream, path)` exports a label-free input archive;
+`bench.colab_train.train(input_path, output_dir)` trains CNN2 and exports gated
+embeddings plus a CPU-device checkpoint. Colab CLI was used with a T4; observed
+fit times and the restored-checkpoint check are recorded in
+`results/encoder_v2_gate.json`. Sessions were stopped after downloading results.
+Keep the preinstalled CUDA PyTorch on Colab rather than installing this
+project's local CPU-wheel source. Use only authorized uploads and never load
+an untrusted pickle checkpoint.
+
+Faster training did not make CNN2 the better detector: its five development
+seeds were less reliable than DSP. DSP remains the selected compressor
+encoder; CARE uses tabular features, not invented waveforms. Detailed results
+and limitations are in [RESULTS](docs/RESULTS.md).
