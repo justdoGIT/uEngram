@@ -10,12 +10,13 @@ cnn = ["torch>=2.9,<3"]
 baselines = [
     "river>=0.21",
 ]
+laya = ["laya>=0.4.13,<0.5"]
 
 [dependency-groups]
 dev = ["pytest>=8"]
 
 [tool.uv.sources]
-torch = [{ index = "pytorch-cpu", extra = "cnn" }]
+torch = { index = "pytorch-cpu" }
 
 [[tool.uv.index]]
 name = "pytorch-cpu"

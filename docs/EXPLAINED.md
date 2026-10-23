@@ -730,10 +730,75 @@ conservative baseline preservation from advisory-only classification.
 Probability calibration against coarse report intervals is exploratory,
 not a safety guarantee. No equipment control is connected to this advisor.
 
-Use the documented [OpenRouter System One API](https://openrouter.ai/docs/guides/community/jev)
-or [TypeSafe API](https://docs.typesafe.ai/introduction), not chat completions
+Use the documented [OpenRouter Decisions API](https://openrouter.ai/docs/guides/community/jev)
+(`POST /api/alpha/decisions`) or [TypeSafe API](https://docs.typesafe.ai/introduction), not chat completions
 or the distinct Jev Router product. Schema-constrained output does not
 guarantee correct diagnoses or calibration on industrial data. Missing
 credentials, account credits or actual responses block empirical Jev
 results; do not replace them with heuristics or fabricate scores.
 
+
+### Laya comparison and hp inference
+
+Laya is a separate open-weight model, not an accessible substitute result
+for Jev. This experiment uses the English base checkpoint of
+[`convaiinnovations/laya`](https://huggingface.co/convaiinnovations/laya),
+with Laya 0.4.13, the same typed questions and a preregistered candidate
+cascade. It does not use the poker-specific `leduc` checkpoint.
+Compressor summaries are out of domain; model probabilities are not
+established diagnostic probabilities.
+
+`results/v3_laya_preregistration.json` freezes the model-file hashes,
+causal state format, questions and rule before machine-case responses.
+An elevation requires the `review` choice, its probability at least 0.80
+and the TypeSafe Choice confidence formula at least 0.50; Laya's separate
+confidence fields are descriptive only. Invalid or truncated answers are
+unavailable, never healthy. Whole-timeline metrics compare the baseline,
+baseline-preserving elevations and advisory-only classifications with
+baseline preservation during unavailable assessments.
+
+The first answers were computed on msi. Remaining inference runs on hp;
+msi prepares requests and stores the answers through an SSH local forward.
+hp uses four inference threads and RAM-backed `/tmp/laya-hp`, with the
+server bound only to loopback. This is temporary hosting, not a runit
+service: a reboot removes its environment and checkpoint cache.
+The hp addendum records a different repository revision identifier but
+byte-identical checkpoint files. Its 120-pair cross-host check found zero
+probability differences and zero thresholded decision flips. Each merged
+assessment records its host; existing msi answers take precedence.
+
+```bash
+# Optional Laya environment; torch resolves from the CPU-only index.
+uv sync --extra cnn --extra baselines --extra laya
+
+# Existing English laya-serve instance on hp, localhost:8000.
+ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 \
+  -L 127.0.0.1:18001:127.0.0.1:8000 hp
+
+# In another terminal; reuse existing preregistrations and cached answers.
+uv run python -u -m bench.laya_hosts run
+uv run python -u -m bench.laya_hosts build
+uv run python -u -m bench.advisory_report
+```
+
+The runner stops on an unavailable health endpoint or changed English
+revision. Restore the same server/tunnel and rerun `run` to reuse cached
+answers; do not overwrite preregistrations to bypass drift checks.
+`build` verifies frozen code/baseline hashes and writes raw
+`results/v3_laya.jsonl` and `results/v3_laya_summary.json` without new
+inference. Use `bench.advisory_report` for the evaluated outputs
+`results/v3_laya_evaluated.jsonl` and `results/v3_laya_evaluated_summary.json`:
+the frozen scorer's notification field omitted baseline policy alerts.
+The supplemental report replays existing numerical score caches, verifies
+the frozen scores, thresholds, decision states and alarm flags, and restores
+the original `alerts | opened` notification definition. Numerical alerts
+remain visible in both advisory interpretations; assessment requests are
+reported separately. This is an explicit post-answer reporting correction,
+not a changed model, prompt or escalation rule.
+
+Host-health checks are periodic rather than cryptographic per-response
+attestations. The hp process remains controlled and startup-configured;
+there is no documented model-reload API. Brier/ECE describe coarse
+report-interval labels on selected candidate assessments, not calibration
+for a deployed safety system. These consumed recordings remain exploratory,
+not fresh confirmation.

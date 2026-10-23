@@ -134,3 +134,13 @@ now retain original columns and fractional timestamps with explicit
 causal/post-decision boundaries. The typed Jev advisory comparison is
 preregistered but blocked pending OpenRouter credits or a TypeSafe key.
 Details: [RESULTS](docs/RESULTS.md) and [EXPLAINED section 18](docs/EXPLAINED.md).
+
+The separate English-base Laya comparison completed all 2,741 assessments,
+using hp for remaining inference and msi as its client. No assessment met
+the frozen escalation rule: preserving the baseline did not improve
+detection, and Laya-only decisions lost the MetroPT3 detections. Use
+`results/v3_laya_evaluated_summary.json` for corrected notification burden;
+raw advisory outputs omitted baseline policy alerts. The measured hp
+four-thread setting was faster than eight threads on the synthetic timing
+check. See [the completed comparison](docs/RESULTS.md#laya-paired-comparison-completed-no-diagnostic-improvement)
+and [reproduction commands](docs/EXPLAINED.md#laya-comparison-and-hp-inference).

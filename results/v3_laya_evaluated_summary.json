@@ -1,0 +1,824 @@
+{
+  "backend": "laya",
+  "caveats": [
+    "Laya (convaiinnovations/laya, English base, ModernBERT-large 421M) is a different model from TypeSafe Jev; nothing here is a Jev result.",
+    "Vendor typed-decisions benchmark: base English Laya 0.362 vs 0.766 fine-tuned; this checkpoint is the base model.",
+    "Compressor telemetry summaries are out-of-domain for Laya; probabilities are not claimed calibrated, and the checkpoint warns that some temperatures are invalid.",
+    "Brier/ECE use coarse window labels (event-interval overlap vs clean negatives) only.",
+    "All three recordings were consumed earlier; results are exploratory, not confirmatory."
+  ],
+  "evaluation_correction": "post-answer reporting correction only; no model rerun or retuning",
+  "protocol": "v3-laya-fixed-candidate-triage",
+  "raw_results": {
+    "path": "results/v3_laya.jsonl",
+    "sha256": "284533071b1c8280c1380d5245367f9f41fb8df400c84a41922479c3ce0d4c4d"
+  },
+  "report_code_sha256": "89efb35d7ebdbba3da539bbff54fa59d7cbbc06c5df75ecc9ddf79ca172809c6",
+  "results": "results/v3_laya_evaluated.jsonl",
+  "streams": {
+    "metropt2_apr": {
+      "baseline_reproduction": {
+        "alarm_time_share_clean": {
+          "frozen": 0.0,
+          "match": true,
+          "recomputed": 0.0
+        },
+        "alerts_per_week": {
+          "frozen": 37.71703713730457,
+          "match": true,
+          "recomputed": 37.71703713730457
+        },
+        "events_detected": {
+          "frozen": 0.0,
+          "match": true,
+          "recomputed": 0.0
+        },
+        "false_alarm_per_week": {
+          "frozen": 0.0,
+          "match": true,
+          "recomputed": 0.0
+        },
+        "lead_hours": {
+          "frozen": NaN,
+          "match": true,
+          "recomputed": NaN
+        },
+        "notifications_per_week_all": {
+          "frozen": 36.11237979510172,
+          "match": true,
+          "recomputed": 36.11237979510172
+        },
+        "operator_events_per_week": {
+          "frozen": 37.71703713730457,
+          "match": true,
+          "recomputed": 37.71703713730457
+        },
+        "window_balanced_accuracy": {
+          "frozen": 0.5,
+          "match": true,
+          "recomputed": 0.5
+        },
+        "window_f1": {
+          "frozen": 0.0,
+          "match": true,
+          "recomputed": 0.0
+        },
+        "window_sensitivity": {
+          "frozen": 0.0,
+          "match": true,
+          "recomputed": 0.0
+        },
+        "window_specificity": {
+          "frozen": 1.0,
+          "match": true,
+          "recomputed": 1.0
+        }
+      },
+      "burden": {
+        "assessment_episodes_per_week": 39.153422304162916,
+        "assessments": 456,
+        "assessments_per_week": 57.77980767216275,
+        "candidate_windows": 624,
+        "elevated_windows": 0,
+        "observed_weeks": 7.892030423280423
+      },
+      "calibration_vs_coarse_labels": {
+        "condition": {
+          "brier": 0.2302005044951923,
+          "ece": 0.2502781250000001,
+          "n": 416,
+          "positives": 89
+        },
+        "review": {
+          "brier": 0.16248779454326925,
+          "ece": 0.06421610576923079,
+          "n": 416,
+          "positives": 89
+        }
+      },
+      "coverage": 1.0,
+      "elevations": 0,
+      "events": {
+        "advisory_assessment_only": [
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 0,
+            "first_alarm": null,
+            "hours_before_lps": null,
+            "lead_hours": null,
+            "windows": 25
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 1,
+            "first_alarm": null,
+            "hours_before_lps": null,
+            "lead_hours": null,
+            "windows": 357
+          }
+        ],
+        "baseline": [
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 0,
+            "first_alarm": null,
+            "hours_before_lps": null,
+            "lead_hours": null,
+            "windows": 25
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 1,
+            "first_alarm": null,
+            "hours_before_lps": null,
+            "lead_hours": null,
+            "windows": 357
+          }
+        ],
+        "conservative_preserve_baseline": [
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 0,
+            "first_alarm": null,
+            "hours_before_lps": null,
+            "lead_hours": null,
+            "windows": 25
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 1,
+            "first_alarm": null,
+            "hours_before_lps": null,
+            "lead_hours": null,
+            "windows": 357
+          }
+        ]
+      },
+      "hosts": {
+        "hp": {
+          "assessments": 456,
+          "latency_ms": {
+            "p50": 3345.5933834998177,
+            "p95": 3395.77922400008
+          },
+          "revision": "7b928d828b7b0e022f929d9bd2e44165aa270148",
+          "unavailable": 0
+        },
+        "msi": {
+          "assessments": 0,
+          "latency_ms": {
+            "p50": null,
+            "p95": null
+          },
+          "revision": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851",
+          "unavailable": 0
+        }
+      },
+      "metrics": {
+        "advisory_assessment_only": {
+          "alarm_time_share_clean": 0.0,
+          "alerts_per_week": 37.71703713730457,
+          "ap": 0.16665409667505063,
+          "auroc": 0.8118714962831107,
+          "events_detected": 0.0,
+          "events_warned_before_lps": 0.0,
+          "false_alarm_per_week": 0.0,
+          "health_ap": 0.43398386236819336,
+          "health_auroc": 0.9692427043542409,
+          "hours_before_lps": NaN,
+          "lead_hours": NaN,
+          "notifications_per_week_all": 36.11237979510172,
+          "operator_events_per_week": 37.71703713730457,
+          "window_balanced_accuracy": 0.5,
+          "window_f1": 0.0,
+          "window_precision": NaN,
+          "window_sensitivity": 0.0,
+          "window_specificity": 1.0
+        },
+        "baseline": {
+          "alarm_time_share_clean": 0.0,
+          "alerts_per_week": 37.71703713730457,
+          "ap": 0.16665409667505063,
+          "auroc": 0.8118714962831107,
+          "events_detected": 0.0,
+          "events_warned_before_lps": 0.0,
+          "false_alarm_per_week": 0.0,
+          "health_ap": 0.43398386236819336,
+          "health_auroc": 0.9692427043542409,
+          "hours_before_lps": NaN,
+          "lead_hours": NaN,
+          "notifications_per_week_all": 36.11237979510172,
+          "operator_events_per_week": 37.71703713730457,
+          "window_balanced_accuracy": 0.5,
+          "window_f1": 0.0,
+          "window_precision": NaN,
+          "window_sensitivity": 0.0,
+          "window_specificity": 1.0
+        },
+        "conservative_preserve_baseline": {
+          "alarm_time_share_clean": 0.0,
+          "alerts_per_week": 37.71703713730457,
+          "ap": 0.16665409667505063,
+          "auroc": 0.8118714962831107,
+          "events_detected": 0.0,
+          "events_warned_before_lps": 0.0,
+          "false_alarm_per_week": 0.0,
+          "health_ap": 0.43398386236819336,
+          "health_auroc": 0.9692427043542409,
+          "hours_before_lps": NaN,
+          "lead_hours": NaN,
+          "notifications_per_week_all": 36.11237979510172,
+          "operator_events_per_week": 37.71703713730457,
+          "window_balanced_accuracy": 0.5,
+          "window_f1": 0.0,
+          "window_precision": NaN,
+          "window_sensitivity": 0.0,
+          "window_specificity": 1.0
+        }
+      },
+      "notification_reconstruction": {
+        "baseline_alert_windows": 587,
+        "definition": "baseline numerical alerts remain visible; add alarm openings; merge notification times less than one hour apart",
+        "raw_metric_correction": "notification_episodes_per_week_all omitted baseline alerts; replaced by notifications_per_week_all",
+        "score_cache": {
+          "path": "data/metropt2/v2_cddfbf1/metropt2_apr_uengram_dsp_0_final.npz",
+          "sha256": "973c22e2cafb0978ac2111eb57daf0121b30c9eb0d809a334bc24a33c9c210d0"
+        }
+      },
+      "token_budget": {
+        "head_max_len": 192,
+        "head_tokens": {
+          "condition": 55,
+          "evidence": 53,
+          "review": 47
+        },
+        "head_truncated_questions": [],
+        "max_len": 512,
+        "max_sequence_tokens": 362,
+        "max_state_tokens": 306,
+        "requests": 456,
+        "state_room": 456,
+        "truncated_requests": 0
+      },
+      "truncated_requests": 0
+    },
+    "metropt2_jan": {
+      "baseline_reproduction": {
+        "alarm_time_share_clean": {
+          "frozen": 0.0,
+          "match": true,
+          "recomputed": 0.0
+        },
+        "alerts_per_week": {
+          "frozen": 16.32496740547588,
+          "match": true,
+          "recomputed": 16.32496740547588
+        },
+        "events_detected": {
+          "frozen": 0.0,
+          "match": true,
+          "recomputed": 0.0
+        },
+        "false_alarm_per_week": {
+          "frozen": 0.0,
+          "match": true,
+          "recomputed": 0.0
+        },
+        "lead_hours": {
+          "frozen": NaN,
+          "match": true,
+          "recomputed": NaN
+        },
+        "notifications_per_week_all": {
+          "frozen": 17.340727937020258,
+          "match": true,
+          "recomputed": 17.340727937020258
+        },
+        "operator_events_per_week": {
+          "frozen": 16.32496740547588,
+          "match": true,
+          "recomputed": 16.32496740547588
+        },
+        "window_balanced_accuracy": {
+          "frozen": 0.5,
+          "match": true,
+          "recomputed": 0.5
+        },
+        "window_f1": {
+          "frozen": 0.0,
+          "match": true,
+          "recomputed": 0.0
+        },
+        "window_sensitivity": {
+          "frozen": 0.0,
+          "match": true,
+          "recomputed": 0.0
+        },
+        "window_specificity": {
+          "frozen": 1.0,
+          "match": true,
+          "recomputed": 1.0
+        }
+      },
+      "burden": {
+        "assessment_episodes_per_week": 18.04851275077619,
+        "assessments": 304,
+        "assessments_per_week": 21.51665833818024,
+        "candidate_windows": 393,
+        "elevated_windows": 0,
+        "observed_weeks": 14.128587962962962
+      },
+      "calibration_vs_coarse_labels": {
+        "condition": {
+          "brier": 0.21433024872262776,
+          "ece": 0.39533467153284674,
+          "n": 274,
+          "positives": 17
+        },
+        "review": {
+          "brier": 0.07454174321167883,
+          "ece": 0.11478175182481752,
+          "n": 274,
+          "positives": 17
+        }
+      },
+      "coverage": 1.0,
+      "elevations": 0,
+      "events": {
+        "advisory_assessment_only": [
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 0,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 25
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 1,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 4
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 2,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 323
+          }
+        ],
+        "baseline": [
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 0,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 25
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 1,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 4
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 2,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 323
+          }
+        ],
+        "conservative_preserve_baseline": [
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 0,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 25
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 1,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 4
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 2,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 323
+          }
+        ]
+      },
+      "hosts": {
+        "hp": {
+          "assessments": 304,
+          "latency_ms": {
+            "p50": 3336.9261955012917,
+            "p95": 3395.8570290498756
+          },
+          "revision": "7b928d828b7b0e022f929d9bd2e44165aa270148",
+          "unavailable": 0
+        },
+        "msi": {
+          "assessments": 0,
+          "latency_ms": {
+            "p50": null,
+            "p95": null
+          },
+          "revision": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851",
+          "unavailable": 0
+        }
+      },
+      "metrics": {
+        "advisory_assessment_only": {
+          "alarm_time_share_clean": 0.0,
+          "alerts_per_week": 16.32496740547588,
+          "ap": 0.025368678692885702,
+          "auroc": 0.49080716646634615,
+          "events_detected": 0.0,
+          "false_alarm_per_week": 0.0,
+          "health_ap": 0.035905493307324954,
+          "health_auroc": 0.6365971065067745,
+          "lead_hours": NaN,
+          "notifications_per_week_all": 17.340727937020258,
+          "operator_events_per_week": 16.32496740547588,
+          "window_balanced_accuracy": 0.5,
+          "window_f1": 0.0,
+          "window_precision": NaN,
+          "window_sensitivity": 0.0,
+          "window_specificity": 1.0
+        },
+        "baseline": {
+          "alarm_time_share_clean": 0.0,
+          "alerts_per_week": 16.32496740547588,
+          "ap": 0.025368678692885702,
+          "auroc": 0.49080716646634615,
+          "events_detected": 0.0,
+          "false_alarm_per_week": 0.0,
+          "health_ap": 0.035905493307324954,
+          "health_auroc": 0.6365971065067745,
+          "lead_hours": NaN,
+          "notifications_per_week_all": 17.340727937020258,
+          "operator_events_per_week": 16.32496740547588,
+          "window_balanced_accuracy": 0.5,
+          "window_f1": 0.0,
+          "window_precision": NaN,
+          "window_sensitivity": 0.0,
+          "window_specificity": 1.0
+        },
+        "conservative_preserve_baseline": {
+          "alarm_time_share_clean": 0.0,
+          "alerts_per_week": 16.32496740547588,
+          "ap": 0.025368678692885702,
+          "auroc": 0.49080716646634615,
+          "events_detected": 0.0,
+          "false_alarm_per_week": 0.0,
+          "health_ap": 0.035905493307324954,
+          "health_auroc": 0.6365971065067745,
+          "lead_hours": NaN,
+          "notifications_per_week_all": 17.340727937020258,
+          "operator_events_per_week": 16.32496740547588,
+          "window_balanced_accuracy": 0.5,
+          "window_f1": 0.0,
+          "window_precision": NaN,
+          "window_sensitivity": 0.0,
+          "window_specificity": 1.0
+        }
+      },
+      "notification_reconstruction": {
+        "baseline_alert_windows": 332,
+        "definition": "baseline numerical alerts remain visible; add alarm openings; merge notification times less than one hour apart",
+        "raw_metric_correction": "notification_episodes_per_week_all omitted baseline alerts; replaced by notifications_per_week_all",
+        "score_cache": {
+          "path": "data/metropt2/v2_cddfbf1/metropt2_jan_uengram_dsp_0_final.npz",
+          "sha256": "61439df7e28d26ea085fbb643f01dca74b4e00e6fc7da73b9a9fc6ba0e685dcf"
+        }
+      },
+      "token_budget": {
+        "head_max_len": 192,
+        "head_tokens": {
+          "condition": 55,
+          "evidence": 53,
+          "review": 47
+        },
+        "head_truncated_questions": [],
+        "max_len": 512,
+        "max_sequence_tokens": 361,
+        "max_state_tokens": 305,
+        "requests": 304,
+        "state_room": 456,
+        "truncated_requests": 0
+      },
+      "truncated_requests": 0
+    },
+    "metropt3": {
+      "baseline_reproduction": {
+        "alarm_time_share_clean": {
+          "frozen": 0.005996644230718761,
+          "match": true,
+          "recomputed": 0.005996644230718761
+        },
+        "alerts_per_week": {
+          "frozen": 40.263352654959384,
+          "match": true,
+          "recomputed": 40.263352654959384
+        },
+        "events_detected": {
+          "frozen": 3.0,
+          "match": true,
+          "recomputed": 3.0
+        },
+        "false_alarm_per_week": {
+          "frozen": 0.7407187085012238,
+          "match": true,
+          "recomputed": 0.7407187085012238
+        },
+        "lead_hours": {
+          "frozen": 6.825648148148148,
+          "match": true,
+          "recomputed": 6.825648148148148
+        },
+        "notifications_per_week_all": {
+          "frozen": 39.04619220402074,
+          "match": true,
+          "recomputed": 39.04619220402074
+        },
+        "operator_events_per_week": {
+          "frozen": 40.263352654959384,
+          "match": true,
+          "recomputed": 40.263352654959384
+        },
+        "window_balanced_accuracy": {
+          "frozen": 0.5878934715472681,
+          "match": true,
+          "recomputed": 0.5878934715472681
+        },
+        "window_f1": {
+          "frozen": 0.2564102564102564,
+          "match": true,
+          "recomputed": 0.2564102564102564
+        },
+        "window_sensitivity": {
+          "frozen": 0.18181818181818182,
+          "match": true,
+          "recomputed": 0.18181818181818182
+        },
+        "window_specificity": {
+          "frozen": 0.9939687612763545,
+          "match": true,
+          "recomputed": 0.9939687612763545
+        }
+      },
+      "burden": {
+        "assessment_episodes_per_week": 53.297330172442614,
+        "assessments": 1981,
+        "assessments_per_week": 95.37670376839098,
+        "candidate_windows": 3631,
+        "elevated_windows": 0,
+        "observed_weeks": 20.770271164021164
+      },
+      "calibration_vs_coarse_labels": {
+        "condition": {
+          "brier": 0.2215369276273023,
+          "ece": 0.4330635969664138,
+          "n": 1846,
+          "positives": 71
+        },
+        "review": {
+          "brier": 0.056209331468039005,
+          "ece": 0.1512197724810401,
+          "n": 1846,
+          "positives": 71
+        }
+      },
+      "coverage": 1.0,
+      "elevations": 0,
+      "events": {
+        "advisory_assessment_only": [
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 0,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 143
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 1,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 41
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 2,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 285
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 3,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 26
+          }
+        ],
+        "baseline": [
+          {
+            "alarm_windows": 8,
+            "detected": true,
+            "event": 0,
+            "first_alarm": "2020-04-18T03:12:21",
+            "lead_hours": 3.2058333333333335,
+            "windows": 143
+          },
+          {
+            "alarm_windows": 14,
+            "detected": true,
+            "event": 1,
+            "first_alarm": "2020-05-30T02:30:45",
+            "lead_hours": 3.0125,
+            "windows": 41
+          },
+          {
+            "alarm_windows": 68,
+            "detected": true,
+            "event": 2,
+            "first_alarm": "2020-06-06T00:15:31",
+            "lead_hours": 14.258611111111112,
+            "windows": 285
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 3,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 26
+          }
+        ],
+        "conservative_preserve_baseline": [
+          {
+            "alarm_windows": 8,
+            "detected": true,
+            "event": 0,
+            "first_alarm": "2020-04-18T03:12:21",
+            "lead_hours": 3.2058333333333335,
+            "windows": 143
+          },
+          {
+            "alarm_windows": 14,
+            "detected": true,
+            "event": 1,
+            "first_alarm": "2020-05-30T02:30:45",
+            "lead_hours": 3.0125,
+            "windows": 41
+          },
+          {
+            "alarm_windows": 68,
+            "detected": true,
+            "event": 2,
+            "first_alarm": "2020-06-06T00:15:31",
+            "lead_hours": 14.258611111111112,
+            "windows": 285
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 3,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 26
+          }
+        ]
+      },
+      "hosts": {
+        "hp": {
+          "assessments": 617,
+          "latency_ms": {
+            "p50": 3335.4201589972945,
+            "p95": 3383.406816801289
+          },
+          "revision": "7b928d828b7b0e022f929d9bd2e44165aa270148",
+          "unavailable": 0
+        },
+        "msi": {
+          "assessments": 1364,
+          "latency_ms": {
+            "p50": 6097.7830964984605,
+            "p95": 9531.006943950704
+          },
+          "revision": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851",
+          "unavailable": 0
+        }
+      },
+      "metrics": {
+        "advisory_assessment_only": {
+          "alarm_time_share_clean": 0.0,
+          "alerts_per_week": 40.263352654959384,
+          "ap": 0.45056744462127246,
+          "auroc": 0.9773936071889575,
+          "events_detected": 0.0,
+          "false_alarm_per_week": 0.0,
+          "health_ap": 0.5720680304267057,
+          "health_auroc": 0.9892591568554248,
+          "lead_hours": NaN,
+          "notifications_per_week_all": 39.04619220402074,
+          "operator_events_per_week": 40.263352654959384,
+          "window_balanced_accuracy": 0.5,
+          "window_f1": 0.0,
+          "window_precision": NaN,
+          "window_sensitivity": 0.0,
+          "window_specificity": 1.0
+        },
+        "baseline": {
+          "alarm_time_share_clean": 0.005996644230718761,
+          "alerts_per_week": 40.263352654959384,
+          "ap": 0.45056744462127246,
+          "auroc": 0.9773936071889575,
+          "events_detected": 3.0,
+          "false_alarm_per_week": 0.7407187085012238,
+          "health_ap": 0.5720680304267057,
+          "health_auroc": 0.9892591568554248,
+          "lead_hours": 6.825648148148148,
+          "notifications_per_week_all": 39.04619220402074,
+          "operator_events_per_week": 40.263352654959384,
+          "window_balanced_accuracy": 0.5878934715472681,
+          "window_f1": 0.2564102564102564,
+          "window_precision": 0.43478260869565216,
+          "window_sensitivity": 0.18181818181818182,
+          "window_specificity": 0.9939687612763545
+        },
+        "conservative_preserve_baseline": {
+          "alarm_time_share_clean": 0.005996644230718761,
+          "alerts_per_week": 40.263352654959384,
+          "ap": 0.45056744462127246,
+          "auroc": 0.9773936071889575,
+          "events_detected": 3.0,
+          "false_alarm_per_week": 0.7407187085012238,
+          "health_ap": 0.5720680304267057,
+          "health_auroc": 0.9892591568554248,
+          "lead_hours": 6.825648148148148,
+          "notifications_per_week_all": 39.04619220402074,
+          "operator_events_per_week": 40.263352654959384,
+          "window_balanced_accuracy": 0.5878934715472681,
+          "window_f1": 0.2564102564102564,
+          "window_precision": 0.43478260869565216,
+          "window_sensitivity": 0.18181818181818182,
+          "window_specificity": 0.9939687612763545
+        }
+      },
+      "notification_reconstruction": {
+        "baseline_alert_windows": 3291,
+        "definition": "baseline numerical alerts remain visible; add alarm openings; merge notification times less than one hour apart",
+        "raw_metric_correction": "notification_episodes_per_week_all omitted baseline alerts; replaced by notifications_per_week_all",
+        "score_cache": {
+          "path": "/home/kk/.local/state/uengram/v2scores/metropt3_uengram_dsp_0_final.npz",
+          "sha256": "7ba62cd59e29a9eac319081216196933f9f690c378b3891b4b66cdc0f98f3d5a"
+        }
+      },
+      "token_budget": {
+        "head_max_len": 192,
+        "head_tokens": {
+          "condition": 55,
+          "evidence": 53,
+          "review": 47
+        },
+        "head_truncated_questions": [],
+        "max_len": 512,
+        "max_sequence_tokens": 361,
+        "max_state_tokens": 305,
+        "requests": 1981,
+        "state_room": 456,
+        "truncated_requests": 0
+      },
+      "truncated_requests": 0
+    }
+  }
+}

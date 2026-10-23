@@ -3,9 +3,9 @@ from unittest import mock
 
 import pytest
 
+from bench.advisory_eval import assessment_schedule
 from bench.jev_advisory import QUESTIONS, assess, causal_state, parse_response
-from bench.jev_experiment import (REASSESS_SECONDS, advisory_elevation,
-                                 assessment_schedule, elevation_timeline)
+from bench.jev_experiment import advisory_elevation, advisory_timelines
 
 
 def _response():
@@ -61,12 +61,23 @@ def test_unknown_or_low_confidence_never_elevates_and_review_expires():
     assert not advisory_elevation({**answer, "choice": "uncertain"})
     states = [2, 2, 2, 2, 1, 3]
     ends = [0, 100, 3500, 3700, 4000, 5000]
-    elevated = elevation_timeline(states, ends, {0: answer, 5: answer})
-    assert elevated.tolist() == [True, True, True, False, False, True]
+    assessments = {i: {"available": True, "answers": {"review": answer}} for i in (0, 5)}
+    timelines = advisory_timelines([False] * 6, states, ends, assessments)
+    assert timelines["advisory_assessment_only"].tolist() == [True, True, True, False, False, True]
 
 
-def test_hour_threshold_is_fixed():
-    assert REASSESS_SECONDS == 3600
+def test_advisory_rejection_and_outage_have_distinct_baseline_effects():
+    review = {"choice": "review", "probabilities": {"review": .9}, "confidence": .6}
+    reject = {"choice": "no_review", "probabilities": {"review": .1}, "confidence": .8}
+    assessments = {
+        0: {"available": True, "answers": {"review": review}},
+        1: {"available": False, "answers": None},
+        2: {"available": True, "answers": {"review": reject}},
+    }
+    timelines = advisory_timelines([False, True, True], [2, 3, 3], [0, 100, 200], assessments)
+    assert timelines["baseline"].tolist() == [False, True, True]
+    assert timelines["conservative_preserve_baseline"].tolist() == [True, True, True]
+    assert timelines["advisory_assessment_only"].tolist() == [True, True, False]
 
 
 def test_assess_unavailable_without_key(monkeypatch):

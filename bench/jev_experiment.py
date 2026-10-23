@@ -9,7 +9,8 @@ from pathlib import Path
 
 import numpy as np
 
-from bench.alarm_eval import evaluate_alarms
+from bench.advisory_eval import REASSESS_SECONDS, assessment_schedule, fresh_timeline, interpretations
+from bench.advisory_report import corrected_metrics, replay
 from bench.jev_advisory import (MODEL, PROMPT_HASH, PROMPT_VERSION, assess, cache_key,
                                causal_state)
 from bench.streams import load_stream
@@ -17,7 +18,6 @@ from bench.streams import load_stream
 PROTOCOL = "v3-jev-fixed-candidate-triage"
 PROBABILITY_THRESHOLD = 0.8
 CONFIDENCE_THRESHOLD = 0.5
-REASSESS_SECONDS = 3600
 
 
 def sha(path):
@@ -61,59 +61,20 @@ def _candidate_summary(z, i):
             "physical": physical}
 
 
-def _opened(active):
-    return active & ~np.r_[False, active[:-1]]
-
-
-def _metrics(stream, z, active, opened, test):
-    valid = np.asarray(z["monitorable"], bool)
-    event_id = stream.event_id()[test]
-    negative = stream.clean_negative()[test]
-    if stream.metric_mask is not None:
-        valid &= stream.metric_mask[test]
-        negative &= stream.metric_mask[test]
-    events = [(a, b) for a, b in stream.events]
-    start = np.asarray(z["start"], dtype="datetime64[s]")
-    end = np.asarray(z["end"], dtype="datetime64[s]")
-    return evaluate_alarms(start, end, event_id, negative, valid, events, active, opened,
-                           z["novelty"], z["health"])[0]
-
-
-def assessment_schedule(decision_state, end):
-    """Candidate entry and hourly cadence, indexed only by observed time."""
-    due = np.zeros(len(end), dtype=bool)
-    last = None
-    for i, (state, timestamp) in enumerate(zip(decision_state, end)):
-        if int(state) not in (2, 3):
-            last = None
-            continue
-        now = float(timestamp)
-        if last is None or now - last >= REASSESS_SECONDS:
-            due[i] = True
-            last = now
-    return due
-
-
 def advisory_elevation(answer):
     return (answer.get("choice") == "review" and
             answer.get("probabilities", {}).get("review", 0) >= PROBABILITY_THRESHOLD and
             answer.get("confidence", 0) >= CONFIDENCE_THRESHOLD)
 
 
-def elevation_timeline(decision_state, end, assessment_answers):
-    """Hold a successful review decision only while the latest assessment is fresh."""
-    elevated = np.zeros(len(end), dtype=bool)
-    latest_time, latest_review = None, False
-    for i, (state, timestamp) in enumerate(zip(decision_state, end)):
-        if int(state) not in (2, 3):
-            latest_time, latest_review = None, False
-            continue
-        now = float(timestamp)
-        if i in assessment_answers:
-            latest_time, latest_review = now, advisory_elevation(assessment_answers[i])
-        elevated[i] = (latest_review and latest_time is not None and
-                       now - latest_time <= REASSESS_SECONDS)
-    return elevated
+def advisory_timelines(baseline, decision_state, end, assessments):
+    """Apply successful, negative and unavailable assessments on the same timeline."""
+    outcomes = {
+        i: advisory_elevation(result["answers"]["review"]) if result["available"] else None
+        for i, result in assessments.items()
+    }
+    elevated, unavailable = fresh_timeline(decision_state, end, outcomes)
+    return interpretations(baseline, elevated, unavailable)
 
 
 def run(freeze_path, out_path, cache_dir, ack_normal_frozen):
@@ -166,21 +127,19 @@ def run(freeze_path, out_path, cache_dir, ack_normal_frozen):
                     stream_failures += 1
                 assessments[int(i)] = {"cache_key": key, **result}
             previous = current
-        review = elevation_timeline(
-            z["decision_state"], z["end"],
-            {i: a["answers"]["review"] for i, a in assessments.items()
-             if a.get("available") and a.get("answers")})
-        advisory = baseline | review
-        opened_base, opened_adv = _opened(baseline), _opened(advisory)
-        metrics_base = _metrics(stream, z, baseline, opened_base, test)
-        metrics_adv = _metrics(stream, z, advisory, opened_adv, test)
+        timelines = advisory_timelines(baseline, z["decision_state"], z["end"], assessments)
+        alerts, score_cache, _ = replay(stream, record, z)
+        metrics = {name: corrected_metrics(stream, z, test, active, alerts)[0]
+                   for name, active in timelines.items()}
         assessments_path = cache_dir / f"{stream_name}_assessment_indices.json"
         assessments_path.write_text(json.dumps({str(i): a for i, a in assessments.items()}, separators=(",", ":")))
         output.append({"protocol": PROTOCOL, "stream": stream_name, "method": record["method"],
                        "encoder": record["encoder"], "variant": record["variant"], "seed": record["seed"],
                        "baseline_trace": record["trace"], "assessment_indices": str(assessments_path),
-                       "baseline_metrics": metrics_base, "conservative_preserve_baseline_metrics": metrics_base,
-                       "advisory_assessment_only_metrics": metrics_adv,
+                       "baseline_metrics": metrics["baseline"],
+                       "conservative_preserve_baseline_metrics": metrics["conservative_preserve_baseline"],
+                       "advisory_assessment_only_metrics": metrics["advisory_assessment_only"],
+                       "notification_reconstruction_score_cache": score_cache,
                        "candidate_windows": int(np.isin(z["decision_state"], (2, 3)).sum()),
                        "assessment_count": len(assessments),
                        "coverage": (sum(a.get("available", False) for a in assessments.values()) / len(assessments)

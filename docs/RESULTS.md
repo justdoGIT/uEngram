@@ -629,8 +629,8 @@ a safety alarm.
 
 ### Verification and artifact scope
 
-The final complete Python suite passes all 98 tests; Ruff's undefined-name
-and related checks pass. The NumPy CARE scorer matched the upstream scorer
+At the v2 confirmation checkpoint, the complete Python suite passed 98 tests;
+Ruff's undefined-name and related checks passed. The NumPy CARE scorer matched the upstream scorer
 on 500 seeded event cases. The full Python Semgrep scan found no findings
 in 44 code files; this is not a security guarantee.
 
@@ -658,11 +658,13 @@ The range/state normalization ablation fixes the TP2 pathological
 normalized scale (the healthy-range floor), but does **not** yield a
 within-budget improvement over the frozen policy on MetroPT3. No CNN
 configuration detects at least one event on every seed within budget.
-January's reports still have no threshold-crossing evidence in any
-configuration, consistent with the earlier diagnosis that there was no
-novelty crossing to turn into an alarm; the best January result is 2 of 3
-events. April is detected well (most configurations find both reports),
-which is replay, not transfer.
+The best January CNN result is 2 of 3 events. Physical residuals with
+`alpha=0.01`, one-window persistence and global thresholds detect all 3,
+but produce 4.62 false-alarm episodes/week (marginal) or 4.93/week
+(conditioned), above the one/week budget. The earlier no-crossing diagnosis
+applies to the frozen DSP novelty policy, not every follow-up configuration.
+April is detected well (most configurations find both reports), which is
+replay, not transfer.
 
 Removing the new-state veto and adding the health channel (`no_veto_health`)
 detects all 4 MetroPT3 events but holds the machine in alarm 4.75% of clean
@@ -690,8 +692,8 @@ snapshots are labelled separately from predicted alarms
 ### Jev advisory evaluation (blocked)
 
 The normal baseline freeze is written before any machine case was sent to
-Jev. The typed advisor cannot be evaluated yet: the correct
-[OpenRouter System One API](https://openrouter.ai/docs/guides/community/jev)
+Jev. The typed advisor cannot be evaluated yet: the documented
+[OpenRouter Decisions API](https://openrouter.ai/docs/guides/community/jev)
 returns HTTP 402 because the stored OpenRouter account has never purchased
 credits, and no `TYPESAFE_API_KEY` is present. No other model is substituted
 for Jev and no advisory results are fabricated. The fixed prompt/schema,
@@ -700,3 +702,68 @@ paired baseline-versus-advisory comparison runs when the prerequisite is
 satisfied (add credits or store `TYPESAFE_API_KEY`). The credential and
 blocker are recorded, not the key.
 
+
+### Laya paired comparison: completed, no diagnostic improvement
+
+The English base Laya checkpoint answered all **2,741** scheduled
+assessments: 1,364 previously computed on msi and 1,377 on hp. Coverage is
+100%, with no unavailable or truncated answers. None met the frozen
+escalation rule; this does not mean every answer chose `no_review`.
+The 120 identical-input cross-host checks had zero probability differences
+and zero decision flips.
+
+| Recording | Assessments | Baseline detected | Baseline + Laya detected | Laya-only detected | Notifications/week (all) |
+|---|---:|---:|---:|---:|---:|
+| MetroPT3 | 1,981 | 3 / 4 | 3 / 4 | 0 / 4 | 39.05 |
+| MetroPT2 January | 304 | 0 / 3 | 0 / 3 | 0 / 3 | 17.34 |
+| MetroPT2 April | 456 | 0 / 2 | 0 / 2 | 0 / 2 | 36.11 |
+
+Baseline preservation leaves the numerical detector unchanged. Letting
+Laya replace its alarm decisions removes the three MetroPT3 detections;
+zero false alarms in that interpretation are not improved diagnostic
+accuracy.
+All recordings were consumed earlier: this is exploratory replay, not a
+new independent-machine confirmation.
+
+The authoritative outputs are `results/v3_laya_evaluated.jsonl` and
+`results/v3_laya_evaluated_summary.json`. The supplemental scorer fixes an
+identified reporting defect: the frozen raw scorer counted only alarm
+openings under a notification name, omitting numerical policy alerts.
+Replaying the saved numerical scores reproduces frozen thresholds,
+decision states, alarm flags and baseline metrics, including notification
+rates. Those alerts remain visible in every interpretation, so Laya has not
+demonstrated a reduction in total operator notifications either. The raw
+outputs remain available for provenance, not as corrected burden estimates.
+
+| Timing check | Host | Inference threads | Median seconds/request |
+|---|---|---:|---:|
+| Same 120 historical input texts | msi | 2 | 6.077 |
+| Same 120 historical input texts | hp | 4 | 3.335 |
+| Synthetic 4/8/4 thread comparison | hp | 4 | 3.232 |
+| Synthetic 4/8/4 thread comparison | hp | 8 | 3.342 |
+
+The historical calls occurred at different times without randomized
+background load; this is not a pure hardware speedup experiment.
+The synthetic comparison used one warmup plus five timed calls per batch,
+with four-thread batches before and after the eight-thread batch. Its
+probabilities were identical across settings. Eight logical threads were
+slower here, so hp remains at four threads, one per physical core.
+Timing artifacts: `results/v3_laya_latency_pairing.json` and
+`results/v3_laya_thread_benchmark.json`. Temporary hp hosting and the
+interrupted-client recovery are recorded in
+`results/v3_laya_runtime_provenance.json`; the model still requires
+re-establishing after hp reboots.
+
+**Decision:** do not use this base Laya checkpoint to veto numerical
+alarms or claim higher accuracy. The next model experiment needs
+domain-specific, independently verified fault/normal examples and an
+asset-separated evaluation frozen before training. Keep event detection,
+false alarms, clean alarm time and total notifications as acceptance
+criteria; do not lower thresholds posthoc on these recordings.
+
+Verification for this addition: 163 Python tests pass, Ruff F/E9 checks
+pass, and the Python Semgrep scan reports zero findings in 59 production
+files (tests excluded by scan patterns). The final Jev-runner change also
+passes a separate scan. The actual hp run, artifact-building commands and
+all three baseline notification replays completed successfully. None of
+these checks establish deployment safety or empirical Jev performance.

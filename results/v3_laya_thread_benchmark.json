@@ -1,0 +1,56 @@
+{
+  "input": "preregistered synthetic example only; no machine cases",
+  "host": "hp",
+  "method": "in-process CPU inference; one warmup then five timed calls; 4/8/4 sandwich",
+  "model_revision": "7b928d828b7b0e022f929d9bd2e44165aa270148",
+  "weights_sha256": {
+    "encoder/config.json": "bf3ab80598fdccf414855a2ce80f22859e4492d06ca8a62ddd1cfb63972f8979",
+    "model.safetensors": "891102d372688fc2a094dac56a384bc537b87c63f21f9f3dac0be2b7cbc8d86c",
+    "rl_agent_config.json": "ae287b56bbcf5f8c4f4541ae9dfd00c914c4c48b940b8398c3058af37ba92bbd",
+    "tokenizer/tokenizer.json": "6c8aaa9a542084f2457eab775d4eeb51f92a70c0fd9de28d5edb0ddec3c08d30",
+    "tokenizer/tokenizer_config.json": "50044de60daaa73df97d262e15a40d4faf0160e7d742df64b377877a1320dd12"
+  },
+  "batches": [
+    {
+      "threads": 4,
+      "seconds": [
+        3.2279869519989006,
+        3.2320553489989834,
+        3.2400888619995385,
+        3.228933667000092,
+        3.2321949569995923
+      ],
+      "median_seconds": 3.2320553489989834
+    },
+    {
+      "threads": 8,
+      "seconds": [
+        3.3477352510017226,
+        3.3423187579974183,
+        3.3386623590013187,
+        3.3486362869989534,
+        3.3307244480020017
+      ],
+      "median_seconds": 3.3423187579974183
+    },
+    {
+      "threads": 4,
+      "seconds": [
+        3.228935832998104,
+        3.2323127039999235,
+        3.2325339689996326,
+        3.2375886640002136,
+        3.2324870070006
+      ],
+      "median_seconds": 3.2324870070006
+    }
+  ],
+  "median_seconds": {
+    "4": 3.232253830499758,
+    "8": 3.3423187579974183
+  },
+  "max_probability_difference": 0.0,
+  "recommended_threads": 4,
+  "selection_rule": "use 8 only if at least 5% faster than 4; otherwise keep four physical cores",
+  "caveat": "synthetic CPU timing, not a diagnostic-accuracy or server throughput benchmark"
+}

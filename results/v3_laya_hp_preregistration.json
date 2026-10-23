@@ -1,0 +1,174 @@
+{
+  "abort_if": "/health english revision differs from the preregistered one at any check",
+  "artifact": "preregistration-addendum (second host)",
+  "backend": "laya-http",
+  "baseline_freeze": {
+    "path": "results/v3_normal_freeze.json",
+    "sha256": "012274639d523d22d92d65c68ade7f24c87407f0eed6d39257c20098d3925bf8"
+  },
+  "caveats": [
+    "Laya (convaiinnovations/laya, English base, ModernBERT-large 421M) is a different model from TypeSafe Jev; nothing here is a Jev result.",
+    "Vendor typed-decisions benchmark: base English Laya 0.362 vs 0.766 fine-tuned; this checkpoint is the base model.",
+    "Compressor telemetry summaries are out-of-domain for Laya; probabilities are not claimed calibrated, and the checkpoint warns that some temperatures are invalid.",
+    "Brier/ECE use coarse window labels (event-interval overlap vs clean negatives) only.",
+    "All three recordings were consumed earlier; results are exploratory, not confirmatory."
+  ],
+  "code_sha256": {
+    "bench/advisory_eval.py": "512d821d4e22f18d39760479bfe13ac3cf24c8672ef8696c098928aac2f8889f",
+    "bench/advisory_experiment.py": "7cd73e2564e78b57c234e256c9f7ebccae26a976066059e2f6e23bf524364fb0",
+    "bench/jev_advisory.py": "75a1da3b7847251f2711b9e3619ae7e46ec931ee5f2c2def4d736dbd1fd95f6f",
+    "bench/laya_advisory.py": "46fe9da97eb58c76968cff2b7215b17c09d10338ff070ab6ab78fb5238597f43",
+    "bench/laya_hosts.py": "70b9df28931701a8ab6585ec5d2844ae763e862c50dc3aff810d97b67dcbf502",
+    "bench/laya_http.py": "7e7757fba316faafb526ee8939129dcc09c6d94e5d35dcfba7a73b0180c82b43"
+  },
+  "created_utc": "2026-10-23T06:22:43+00:00",
+  "crosscheck": {
+    "path": "results/v3_laya_hp_crosscheck.json",
+    "sha256": "b798104a185980784fd9ed07c13f249736844cd7d810cd0e41ebc3ec86e8ca57",
+    "summary": {
+      "d_condition_fault": {
+        "max": 0.0,
+        "mean": 0.0
+      },
+      "d_max_any": {
+        "max": 0.0,
+        "mean": 0.0
+      },
+      "d_review_confidence": {
+        "max": 0.0,
+        "mean": 0.0
+      },
+      "d_review_probability": {
+        "max": 0.0,
+        "mean": 0.0
+      },
+      "decision_flips": 0,
+      "pairs": 120
+    }
+  },
+  "host": "hp",
+  "hosts": {
+    "hp": {
+      "health_at_preregistration": {
+        "checkpoint_devices": {
+          "english": "cpu"
+        },
+        "cpu_fallbacks": {
+          "english": {
+            "count": 0,
+            "last_reason": null
+          }
+        },
+        "device": "cpu",
+        "device_is_preference": false,
+        "loaded": [
+          "english"
+        ],
+        "revisions": {
+          "english": "7b928d828b7b0e022f929d9bd2e44165aa270148"
+        },
+        "status": "ok"
+      },
+      "how": "laya-serve via parent SSH forward 127.0.0.1:18001 -> hp 127.0.0.1:8000",
+      "remote": {
+        "serve_env": {
+          "LAYA_HOST": "127.0.0.1",
+          "LAYA_MODELS": "english",
+          "LAYA_PORT": "8000",
+          "LAYA_THREADS": "4"
+        },
+        "versions": {
+          "laya": "0.4.13",
+          "torch": "2.14.1+cpu",
+          "transformers": "5.20.2"
+        },
+        "weights_sha256": {
+          "encoder/config.json": "bf3ab80598fdccf414855a2ce80f22859e4492d06ca8a62ddd1cfb63972f8979",
+          "model.safetensors": "891102d372688fc2a094dac56a384bc537b87c63f21f9f3dac0be2b7cbc8d86c",
+          "rl_agent_config.json": "ae287b56bbcf5f8c4f4541ae9dfd00c914c4c48b940b8398c3058af37ba92bbd",
+          "tokenizer/tokenizer.json": "6c8aaa9a542084f2457eab775d4eeb51f92a70c0fd9de28d5edb0ddec3c08d30",
+          "tokenizer/tokenizer_config.json": "50044de60daaa73df97d262e15a40d4faf0160e7d742df64b377877a1320dd12"
+        }
+      }
+    },
+    "msi": {
+      "how": "in-process laya.load, torch 2 threads",
+      "revision": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851",
+      "weights_sha256": {
+        "encoder/config.json": "bf3ab80598fdccf414855a2ce80f22859e4492d06ca8a62ddd1cfb63972f8979",
+        "model.safetensors": "891102d372688fc2a094dac56a384bc537b87c63f21f9f3dac0be2b7cbc8d86c",
+        "rl_agent_config.json": "ae287b56bbcf5f8c4f4541ae9dfd00c914c4c48b940b8398c3058af37ba92bbd",
+        "tokenizer/tokenizer.json": "6c8aaa9a542084f2457eab775d4eeb51f92a70c0fd9de28d5edb0ddec3c08d30",
+        "tokenizer/tokenizer_config.json": "50044de60daaa73df97d262e15a40d4faf0160e7d742df64b377877a1320dd12"
+      }
+    }
+  },
+  "local_preregistration": {
+    "path": "results/v3_laya_preregistration.json",
+    "sha256": "eb29da7deace3bf4b9b5172f60be029be877f1f11c621bd09df7b166d9644b52"
+  },
+  "per_request_requirements": {
+    "routing.model": "english",
+    "usage.state_tokens_dropped": 0,
+    "usage.truncated": false
+  },
+  "prompt_hash": "70bf9db6afeac66520737efba873dbed0fd2c1e262be5c2cf556d3ab63b5ed3a",
+  "questions": {
+    "condition": {
+      "criteria": {
+        "expected": "Observed evidence is consistent with expected operation",
+        "fault_consistent": "Observed evidence supports an abnormal/fault-consistent condition",
+        "insufficient": "Available evidence cannot distinguish expected from abnormal"
+      },
+      "instructions": "Which condition best fits the provided current and prior window evidence?",
+      "type": "choice"
+    },
+    "evidence": {
+      "criteria": {
+        "insufficient": "Missing, unsupported, or conflicting evidence prevents an assessment",
+        "sufficient": "Enough relevant evidence to make an assessment"
+      },
+      "instructions": "Is the provided physical and numerical evidence sufficient to assess this window? Choose insufficient if key evidence is missing or conflicting.",
+      "type": "choice"
+    },
+    "review": {
+      "criteria": {
+        "no_review": "Evidence does not warrant operator review",
+        "review": "Evidence warrants operator review",
+        "uncertain": "Cannot determine whether review is warranted"
+      },
+      "instructions": "Should this candidate window receive operator review based only on the evidence shown?",
+      "type": "choice"
+    }
+  },
+  "recorded_before_new_machine_cases_on_hp": true,
+  "route": "english",
+  "rule": {
+    "candidate_states": {
+      "alarm": 3,
+      "unresolved": 2
+    },
+    "elevate": "review.choice == 'review' AND P(review) >= 0.80 AND TypeSafe Choice confidence (p_max-1/n)/(1-1/n) of the review probabilities >= 0.50",
+    "fresh_seconds": 3600,
+    "interpretations": {
+      "advisory_assessment_only": "fresh elevation | (baseline & latest assessment unavailable)",
+      "conservative_preserve_baseline": "baseline | fresh elevation"
+    },
+    "laya_confidence_fields": "Laya `confidence` and `answer_confidence` are recorded descriptively and never used for decisions",
+    "reassess_seconds": 3600,
+    "review_confidence": 0.5,
+    "review_probability": 0.8,
+    "schedule": "assess on candidate entry, then at most once per observed hour while decision_state stays in {unresolved, alarm}; clean in-reference windows are never assessed (they appear only as previous-window context)",
+    "unavailable": "exception/invalid/truncated answer => explicit unavailable; never elevates and never suppresses a baseline alarm"
+  },
+  "state_format": "laya-state-1",
+  "statement": "Answers come from two hosts (msi local, hp) with byte-identical checkpoint files; msi answers are kept wherever they exist and hp answers every remaining scheduled state. The cross-host check bounds the host difference.",
+  "transport": {
+    "concurrency": 1,
+    "endpoint": "http://127.0.0.1:18001",
+    "pace_s": 0.25,
+    "retries": 1,
+    "timeout_s": 120.0
+  },
+  "weights_identical": true
+}
