@@ -1,0 +1,57 @@
+{
+  "uncorroborated_rows_differing_from_v6_ungated": 0,
+  "dataset": {
+    "rows": 504,
+    "clean_share_above_policy": 0,
+    "events_above_policy": 0,
+    "events_above_corroboration_ceiling": 0,
+    "rows_meeting_budget": 0,
+    "max_events_within_both_budgets": 2.0,
+    "corroboration_ceiling_by_rule": {
+      "dataset:m1:L0h": 3,
+      "dataset:m1:L1h": 3,
+      "dataset:m1:L3h": 3,
+      "dataset:m1:L6h": 3,
+      "dataset:m1:L12h": 3,
+      "dataset:m1:L24h": 3,
+      "dataset:m2:L0h": 0,
+      "dataset:m2:L1h": 0,
+      "dataset:m2:L3h": 0,
+      "dataset:m2:L6h": 0,
+      "dataset:m2:L12h": 0,
+      "dataset:m2:L24h": 0
+    },
+    "clean_share_lower_at_longer_lookback": 0,
+    "clean_share_higher_at_larger_m": 0
+  },
+  "calibrated": {
+    "rows": 756,
+    "clean_share_above_policy": 0,
+    "events_above_policy": 0,
+    "events_above_corroboration_ceiling": 0,
+    "rows_meeting_budget": 0,
+    "max_events_within_both_budgets": 3.0,
+    "corroboration_ceiling_by_rule": {
+      "calibrated:m1:L0h": 3,
+      "calibrated:m1:L1h": 4,
+      "calibrated:m1:L3h": 4,
+      "calibrated:m1:L6h": 4,
+      "calibrated:m1:L12h": 4,
+      "calibrated:m1:L24h": 4,
+      "calibrated:m2:L0h": 1,
+      "calibrated:m2:L1h": 1,
+      "calibrated:m2:L3h": 3,
+      "calibrated:m2:L6h": 3,
+      "calibrated:m2:L12h": 3,
+      "calibrated:m2:L24h": 4,
+      "calibrated:m3:L0h": 0,
+      "calibrated:m3:L1h": 0,
+      "calibrated:m3:L3h": 2,
+      "calibrated:m3:L6h": 3,
+      "calibrated:m3:L12h": 3,
+      "calibrated:m3:L24h": 4
+    },
+    "clean_share_lower_at_longer_lookback": 0,
+    "clean_share_higher_at_larger_m": 0
+  }
+}

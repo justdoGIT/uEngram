@@ -34,7 +34,7 @@ Instead of remembering raw waveforms, describe each window with a few numbers a 
 The memory needs a compact vector per window so that "is this like something I have seen?" becomes a distance. A hand-built, deterministic encoder needs no training loop on the device and no GPU.
 
 ### The math
-For each channel $c$ with samples $x_k$: mean $m=\frac1K\sum x_k$; $\log(\mathrm{std}+10^{-6})$; and four log band energies. With $\tilde x=x-m$, power $P_f=|\mathrm{rfft}(\tilde x)_f|^2/K$ for bins $f=1..K/2$, the bins are split into four contiguous equal-count bands $b$ and the feature is $\log(\sum_{f\in b}P_f+10^{-8})$. That is $6C$ features. Each feature is robust-standardised, $(F-\mathrm{median})/(\mathrm{IQR}/1.349)$, with IQR floored at $10^{-6}$ ($1.349$ makes IQR equal one standard deviation for Gaussian data). The result is whitened (section 4) to $d=16$ dimensions.
+For each channel $c$ with samples $x_k$: mean $m=\frac1K\sum x_k$; $\log(\mathrm{std}+10^{-6})$; and four log band energies. With $\tilde x=x-m$, power $P_f=|\mathrm{rfft}(\tilde x)_f|^2/K$ for bins $f=1..K/2$, the bins are split into four contiguous equal-count bands $b$ and the feature is $\log(\sum_{f\in b}P_f+10^{-8})$. That is $6C$ features. Each feature is centered by its training median and divided by its IQR/1.349 scale; if that scale is at most $10^{-6}$, its training standard deviation is used instead, floored at $10^{-6}$ for a constant feature. The result is whitened (section 4) to $d=16$ dimensions.
 
 ### Why this and not the obvious alternative
 Logs make multiplicative changes (vibration doubling) additive, so a Euclidean or Mahalanobis distance treats "2x louder" and "half as loud" symmetrically. Median/IQR standardisation keeps the training anomalies from stretching the scale. Raw FFT bins would give a few-hundred-dimensional vector dominated by whichever band is loudest.
@@ -53,10 +53,10 @@ A tiny neural network is taught to squeeze a window into 16 numbers and then reb
 It is the learned alternative to section 2, and the architecture doc's proposal. Having both shows that the memory logic does not depend on a particular encoder.
 
 ### The math
-Per-channel standardisation first: $x\leftarrow (x-\mu_c)/\max(\sigma_c,10^{-6})$ with training statistics. Encoder: `Conv1d(C,32,5,s2)–GELU–Conv1d(32,64,5,s2)–GELU–AvgPool–Linear(64,16)`. Decoder: `Linear(16,128)–GELU–Linear(128,CK)`. Loss is the MSE on the standardised input, minimised with AdamW (lr $10^{-3}$, weight decay $10^{-4}$, 30 epochs, batch 128). The 16-d latents are then whitened. No L2 normalisation of the latent (section 14, correction 2).
+Per-channel standardisation first: $x\leftarrow (x-\mu_c)/\max(\sigma_c,10^{-6})$ with training statistics. Encoder: `Conv1d(C,32,5,s2)–GELU–Conv1d(32,64,5,s2)–GELU–AdaptiveAvgPool1d(1)–Linear(64,16)`. Decoder: `Linear(16,128)–GELU–Linear(128,CK)`. Loss is the MSE on the standardised input, minimised with AdamW (lr $10^{-3}$, weight decay $10^{-4}$, 30 epochs, batch 128). The 16-d latents are then whitened. No L2 normalisation of the latent (section 14, correction 2). After a successful fit, the encoder restores the prior PyTorch thread count and deterministic-algorithm setting.
 
 ### Why this and not the obvious alternative
-The doc trains on unscaled channels, so a channel with large units (rpm) dominates the loss and the code would "learn rpm". The MLP decoder (not a transposed convolution) works for any $K$ so the same class serves $K=64$ and $K=16$.
+Per-channel standardisation prevents high-unit channels such as rpm from dominating the reconstruction loss. The MLP decoder (not a transposed convolution) works for any $K$, so the class serves $K=64$ and $K=16$.
 
 ### Where in code
 `src/uengram/encoder_cnn.py:CNNEncoder`. Torch is imported lazily so the DSP path never needs it.
@@ -74,7 +74,7 @@ In v1, 35% of normal windows within 4 steps of a regime change were flagged agai
 ### The math
 Fit a line to the coolant samples in each window: ramp $r_t$ = end minus start. Drive $u_t$ = mean rpm. A first-order lag $x_t = x_{t-1} + a\,(T_{eq}(u_t) - x_{t-1})$ with a quadratic equilibrium temperature $T_{eq}$ gives, between consecutive windows,
 $$r_t = (1-a)\,r_{t-1} + a\,[T_{eq}(u_t) - T_{eq}(u_{t-1})] = b_0\,r_{t-1} + b_1\,\Delta u + b_2\,\Delta(u^2).$$
-Slow wear shifts $T_{eq}$ by the same amount in both windows and cancels. $b$ is fitted by trimmed least squares (6 rounds, keep $|e| < 4\,$MAD) on the training stream. The feature is the residual $e_t = r_t - \hat r_t$, plus the log std of the linearly detrended coolant signal; they replace the channel's six spectral features. Encoding is sequential: if $|e_t|$ exceeds 5 robust scales the window is treated as faulty and does not update the context, which is propagated as $b_0\,r_{t-1}$ with $u$ held (innovation gating). Independent windows (`sequential=False`, e.g. the probe set) assume steady state, $\hat r = 0$.
+Slow wear shifts $T_{eq}$ by the same amount in both windows and cancels. $b$ is fitted by trimmed least squares (6 rounds, keep $|e| < 4\,$MAD) on the training stream. The feature is the residual $e_t = r_t - \hat r_t$, plus the log std of the linearly detrended coolant signal; they replace the channel's six spectral features. Encoding is sequential: if $|e_t|$ exceeds 5 robust scales the window is treated as faulty and does not update the context ramp, which is propagated as $b_0\,r_{t-1}$; the observed drive still advances to $u_t$, so the next prediction uses the actual drive change. Independent windows (`sequential=False`, e.g. the probe set) assume steady state, $\hat r = 0$.
 
 ### Why this and not the obvious alternative
 Three simpler fits failed on the same data (`docs/IMPROVEMENT-ANALYSIS.md`): one-window least squares was pulled by fault windows (a seizure's 0.3 rpm is a high-leverage point); robust trimming discarded the transitions as outliers and learned "temperature never changes" ($b_0 = 0.99$); a one-window equilibrium model was confounded by wear ($a = 0.019$). The two-window form recovers $a = 0.523$ (truth 0.5) and equilibrium steps 0.234 / 0.141 (truth 0.25 / 0.15) from unlabelled data. This is residual generation by analytical redundancy ([Willsky 1984](https://willsky.lids.mit.edu/publ_pdfs/43_pub_IEEE.pdf); [Isermann](https://link.springer.com/book/10.1007/3-540-30368-5)).
@@ -93,7 +93,7 @@ Two re-measurements. First, rotate and rescale the features so that over all tra
 The statistical machinery (chi-square gate, step detector, Bhattacharyya distance, Ward cost) treats the 16 dimensions as independent. If one fluctuation moves several dimensions, a per-dimension distance counts it several times and the gate fires too often.
 
 ### The math
-PCA whitening: training features $F\in\mathbb{R}^{N\times p}$, mean $m$, covariance $\Sigma=V\Lambda V^\top$, top-$d$ eigenpairs, $y=(F-m)V_d\Lambda_d^{-1/2}$ (eigenvalues floored at $10^{-8}\lambda_{\max}$).
+PCA whitening: training features $F\in\mathbb{R}^{N\times p}$, mean $m$, covariance $\Sigma=V\Lambda V^\top$, top-$d$ eigenpairs, $y=(F-m)V_d\Lambda_d^{-1/2}$. PCA eigenvalues are floored at $10^{-8}\max(\lambda_{\max},10^{-12})$; noise-covariance eigenvalues are floored at $10^{-12}\max(\nu_{\max},10^{-12})$, so both roots remain finite even when the estimated covariance is all zero.
 
 Noise whitening: estimate the within-state noise covariance $N$ of $y$ robustly from lag differences (section 5) and set $z = y\,N^{-1/2}$ with the symmetric root $N^{-1/2} = U\,\mathrm{diag}(\nu)^{-1/2}\,U^\top$ (minimal rotation). The noise in $z$ is then uncorrelated with unit variance (tested to 0.01), so the diagonal slot statistics count each correlated fluctuation once. This is the noise-adjustment step of the maximum-noise-fraction transform ([Green et al. 1988](https://doi.org/10.1109/36.3001)), applied after PCA so the kept subspace does not change.
 
@@ -547,3 +547,449 @@ Average precision now groups equal scores at one threshold. A constant score mus
 - Frozen healthy reference and health score; CMAPSS commissioning from the first 30 windows of each training unit (section 7c).
 - RUL from the health score through a 20-bin lookup table fitted on run-to-failure data (section 7c); drift checkpoints as retrievable RUL items were measured and rejected.
 - Level-plus-rate Kalman wear tracking (`docs/IMPROVEMENT-ANALYSIS.md` item 9), learned process noise and a lag-feedback gain were implemented, measured and removed (section 10c).
+
+## 17. Alarm-policy confirmation (protocol v2)
+
+### Scope and decision, frozen before confirmation scores
+
+MetroPT-3 has already been consumed by section 16 and is **development data**, not another held-out success claim. All alarm-policy development iterations, including counter/eligibility corrections and rejection of unavailable score channels, are recorded in `results/v2_dev.json`. `results/v2_development.jsonl` compares the final policies on all five development seeds. The source/protocol commit preceding `results/v2_metropt2.jsonl` and `results/v2_care.jsonl` is the freeze boundary. No policy, encoder, split, or acceptance criterion may be selected from those confirmation outcomes.
+
+Decision: confirm **DSP on MetroPT2** and **tabular whitening on CARE**. CNN2 is implemented and trained, but is not the selected encoder: its five GPU seeds detect only 1–3 of the four development reports under the transferred policy, versus 3/4 for DSP. Passing a representation diagnostic is not evidence of useful fault detection. No best-seed selection or additional CNN alarm tuning is used.
+
+### Alarm design and machine snapshots
+
+An alarm is a decision about an abnormal condition requiring a response, not a complete state description. [ISA guidance](https://www.isa.org/intech-home/2019/january-february/features/applying-alarm-management) distinguishes alarms from advisory alerts, recommends state-dependent settings where necessary, and links contextual information to an alarm. Here the inputs are pressure, temperature, current, digital load state and recent history. A snapshot records the evidence for a decision; it does not establish a fault's cause.
+
+`src/uengram/alarm.py` separates novelty, frozen-reference health, new-state advisories, and actionable episodes:
+
+- Compressor state: loaded share of `DV_eletric`, with edges 0.05 and 0.4. Idle/offloaded, cycling and sustained load have separate calibration distributions when at least 100 eligible calibration windows exist; otherwise use the pooled distribution.
+- The conformal order statistic is rank `ceil((1-alpha)*(n+1))`. It is infinite if that rank exceeds `n`; state-level support counts are reported, not silently called sufficient. A run with no finite threshold for any enabled channel fails calibration rather than reporting an all-quiet detector.
+- Persistence is a capped up/down counter: increment on an exceedance, decrement by one otherwise, cap at `k`. It is not necessarily `k` consecutive exceedances. Disabled channels stay at zero. An alarm closes when both counters return to zero; an arbitrarily long deviation does not produce an arbitrarily long off-delay.
+- A new memory candidate becomes an advisory when trusted health does not corroborate it. `health_needs_baseline` prevents judging an unknown operating state against an unrelated healthy state. Logging gaps pause counters and produce no observed alarm output, not an inference that the machine is healthy.
+- Optional ACI changes the novelty quantile level only on eligible, inactive, healthy-looking observations. This gated, label-free score adaptation has **no demonstrated guarantee on fault false-alarm rates**, excluded windows, or event recall. uEngram's selected configuration does not use it.
+
+Every observed episode has a frame archive: two preceding input windows, the opening window, and up to two subsequently observed windows. Missing context remains explicitly missing; context never crosses a logging segment. Post-context is collected only after it arrives and never affects the alarm decision. Archives contain model-input values, time bounds, state, thresholds, memory action, peak scores, feature deviations, and, for uEngram, the frozen reference and nearest reference index. Deviations are associations, not causal explanations.
+
+`bench/freeze_frames.py` writes complete NPZ evidence under `~/.local/state/uengram/evidence`; each run records its path, SHA-256 and measured bytes. JSON previews contain at most 50 episodes, but the archive contains all episodes. These are decimated model inputs, not every native 1 Hz channel or a complete physical machine state. Evidence storage and the Python episode/advisory histories are **outside** the engine's 256-item memory budget; no end-to-end bounded-RAM or flash-endurance claim is made.
+
+### Development selection and frozen configurations
+
+For each method, sweep the grid in `bench/alarm_dev.py` on MetroPT-3, seed 0. First retain at most 1 false-alarm episode per clean observed week **and** at most 2% clean observed time in alarm. Maximize detected events; tie-break by smaller total persistence, fewer false alarms, fewer optional components, then larger alpha. Unsupported health-only baseline configurations are invalid, not zero-alarm successes. Five-seed evaluation follows selection; it is not used to pick a favorable seed.
+
+| method | alpha | novelty k | health k | per-state | new-state advisory | ACI gamma | health needs own baseline |
+|---|---:|---:|---:|---|---|---:|---|
+| uEngram | 0.003 | 3 | 0 | yes | yes | 0 | yes |
+| Half-Space Trees | 0.01 | 2 | 0 | no | no | 0.005 | no |
+| MemStream | 0.01 | 3 | 0 | no | no | 0.005 | no |
+
+These settings are in `bench/run_v2.py:FROZEN`. Health remains a diagnostic even though no selected policy uses it as a direct alarm branch. Advisory volume is reported separately and together with alarm openings: lowering critical alarm counts by relabeling notifications is **not** evidence of lower operator workload.
+
+Each detector runs continuously into test, with no test-time restart. uEngram/HST ingest commissioning; uEngram's healthy reference freezes at its end. MemStream retains its section-16 initialization/training on the first 256 commissioning latents, then continues through calibration and test. All policies for a detector evaluate identical cached scores. The comparator `v1_rule` is novelty above the pooled alpha=0.01 calibration threshold, with persistence 1 and no advisory veto. It is a policy ablation on v2's continuous stream, **not a rerun of section 16's reset-at-test protocol**.
+
+### Fresh confirmation datasets and preprocessing
+
+**MetroPT2:** [Zenodo 7766691](https://doi.org/10.5281/zenodo.7766691), CC BY 4.0. `dataset_train.csv` (January–June 2022) and `MetroPT2.csv` (April–July 2022) are distinct recordings with different values at equal times. Their physical-machine independence is unverified; they must not be presented as two independently identified machines.
+
+- Retain the first observation in each 10-second bin, using its measurement time to whole seconds, not the earlier bin start. Use the seven section-16 analog channels and the same digital state channels; do not mix the files' differently scaled Flowmeter values.
+- January file: fit before January 22; calibrate January 22–29; test January 29 onward. Three reported failures: February 28–March 1, March 23, May 30–June 2, from [Veloso et al., Table 2](https://doi.org/10.1038/s41597-022-01877-3).
+- April file: fit before May 19; calibrate May 19–26; test May 26 onward. Two failures and their LPS warning times are from [Jakobs, Veloso and Gama, Table 1](https://arxiv.org/abs/2502.07394): June 4 and July 11–14. Exact timestamps live in `src/uengram/metropt2.py`.
+- Windows have 60 samples and do not cross logging gaps over 60 seconds. No detector tuning uses these test windows.
+- Run uEngram once (deterministic DSP), HST and MemStream for seeds 0–4, for each recording. Compare both policies on each run.
+
+**CARE to Compare:** [dataset version 15846963](https://doi.org/10.5281/zenodo.15846963), CC BY-SA 4.0; [Gück, Roelofs and Faulstich](https://arxiv.org/abs/2404.10320). All 95 event datasets, 36 assets and three farms are attempted. Models are separate per dataset; asset identities group uncertainty estimates, not encoder inputs.
+
+**Post-confirmation count correction:** the frozen prose stated 44 anomaly
+and 51 normal labels. The supplied `event_info.csv` tables actually contain
+45 anomaly and 50 normal labels. No dataset was added, dropped or relabeled;
+all 95 predefined datasets were attempted, and scoring used their supplied
+labels throughout. `results/v2_confirmation_manifest.json` records the
+per-farm counts and source-table hashes. This corrects descriptive prose,
+not the registered cohort, model, thresholds or scoring rule.
+
+- Use 10-minute averages, drop counters, map angles to sin/cos, retain missing values for commissioning-median imputation, drop commissioning-constant features, and fit robust scaling/PCA/noise whitening on commissioning only. CARE provides aggregates, not compressor waveforms; it uses `TabularEncoder`, not a fabricated CNN waveform input.
+- Respect supplied train/prediction partitions. Calibration is the final 28 days of training; commissioning is earlier status-0 training rows. No event label, asset ID, timestamp or status ID is a sensor feature.
+- **Test statuses are evaluation-only.** Farm A status labels use fault logs, including the preceding 14 days; using them to suppress runtime alarms would leak future fault information. Every observed prediction row advances the policy regardless of those retrospective labels. Only training statuses split noise-estimation runs. The metric mask cannot change prediction or persistence.
+- Status 0 filters calibration and CARE scoring, following the reference-package convention used here. The paper's table also considers idle status 2 normal, so this is an explicit status-0 benchmark variant, not an identical reproduction of every published preprocessing choice. The code port is checked against the [reference event scorer](https://github.com/AEFDI/EnergyFaultDetector/blob/main/energy_fault_detector/evaluation/care_score.py); MIT attribution is retained.
+- A prediction is available at the supplied row time; 600 seconds per row is nominal exposure accounting, not an independently verified vendor timestamp convention. Event membership uses the exact row timestamp, not interval overlap.
+- Run uEngram, HST and MemStream with seed 0 on all 95 datasets. CARE uncertainty is across assets, not training seeds. No direct comparison of anomaly prevalence, sampling rate or physical units with MetroPT2 is claimed.
+
+### Metrics, acceptance and failure handling
+
+Retain section-16 buffered clean negatives and signed lead-time convention: positive lead means late. Count alarm **openings** on eligible clean windows, merging openings strictly less than one hour apart; continuing alarms contribute to duration-weighted clean alarm time, not additional openings. Exclude missing scores and logging gaps from observed exposure. Report advisory episodes, combined clean operator-event rate, and notifications per all observed week (including true faults and non-normal CARE statuses). This last rate does not require retrospective labels.
+
+MetroPT2 primary criteria, separately per recording: **Q1** every reported event has an eligible alarm; **Q2** at most 1 false-alarm episode per clean observed week and at most 2% clean time in alarm; **Q3** every event survives in live provenance. Where published LPS times exist, **Q4** at least two hours' warning before every LPS warning. Provenance is neither raw-exemplar survival nor successful retrieval; report each criterion independently.
+
+CARE reports the four sub-scores, their CARE aggregate, criticality detections (threshold 72), normal datasets flagged and observed alarm/notification burden. CIs use 2,000 asset-cluster bootstrap draws within farms, seed 12345; an asset's datasets remain together. Reject draws missing either class. Paired v2-minus-v1-rule CIs use the same draws. These are exploratory intervals without multiplicity correction or inference to unseen farms.
+
+Numerical/quantile calibration failure is a failed run with its reason, never an implicit independence assumption or an all-quiet fallback. The runner finishes other tasks and exits nonzero. A CARE method missing any dataset has no aggregate score or CI; missing results are not silently removed to improve performance.
+
+Secondary MetroPT2 analysis: parked share at least 0.9 using the fixed published parking/workshop polygons, stationary GPS and valid GPS quality. Compare loaded duty with a pooled commissioning/calibration parked-window alpha=0.01 threshold, persistence 3. Exposure is parked observed time, not all operating time. This is not a primary pass criterion: parked does not prove zero pneumatic demand, and a proper leak test still requires isolation/known demand and physical confirmation.
+
+### CNN2 training, diagnostics and compute
+
+`CNN2Encoder`: 24 epochs maximum, batch 128, five members, early-stopping patience 5, final chronological 15% of commissioning for validation. Shift/jitter views use NT-Xent plus auxiliary phase-invariant sensor statistics; no amplitude scaling augmentation. Select the member with greatest mean linear CKA and retain only that network for inference. State channels are optional, but the development state-conditioned candidate failed noise-covariance estimation and is rejected, not repaired with fabricated noise. After a successful fit, it restores the prior PyTorch thread count and deterministic-algorithm setting.
+
+The provisional label-free gate requires finite validation loss, mean member CKA at least 0.98, minimum CKA at least 0.95, median noise/spread at most 1, and calibration outside-fit-range fraction at most 0.01. These development choices do not guarantee stable event detection, as the five-seed result demonstrates. Covariance trimming without enough inliers fails explicitly. DSP remains selected regardless of favorable individual CNN seeds.
+
+`bench/colab_train.py` prepares label-free input archives and trains on the available device. It records input fingerprints, versions, gate results and timing, exports embeddings and a CPU-device checkpoint, and leaves authentication/resource allocation to Colab CLI. Only upload authorized data. Set `CUBLAS_WORKSPACE_CONFIG=:4096:8` before CUDA initialization; do not disable deterministic-algorithm errors to get a run through. See [PyTorch reproducibility guidance](https://docs.pytorch.org/docs/stable/notes/randomness.html). Never unpickle an untrusted checkpoint.
+
+Colab CLI was exercised on a requested T4: five warmed fits took 17.4–18.2 seconds each; a fresh-session reusable-utility fit took 26.0 seconds. The measured full-size CPU fit was 68.4 seconds. These are observed fit times, not controlled same-framework hardware benchmarks or end-to-end upload/startup savings (cloud PyTorch 2.11/CUDA versus local PyTorch 2.14 CPU). The exported model was loaded on CPU and its 64-window inference compared with GPU embeddings. Both GPU sessions were terminated after artifact retrieval. Diagnostics and timing evidence are in `results/encoder_v2_gate.json`.
+
+Confirmation commands: `python -m bench.run_v2 --streams metropt2 --methods uengram:dsp,hst:dsp,memstream:dsp --seeds 0-4 --jobs 2 --out results/v2_metropt2.jsonl`; `python -m bench.run_v2 --streams care --methods uengram:tab,hst:tab,memstream:tab --seeds 0 --jobs 2 --out results/v2_care.jsonl`. `python -m bench.report` regenerates the tables while retaining handwritten findings.
+
+Required file layout: `data/metropt2/dataset_train.csv`, `data/metropt2/MetroPT2.csv`, and `data/care/CARE_To_Compare.zip`. Large data/cache directories may be symlinked to a data volume; scratch scores and evidence are not committed. Delete or change the cache directory when changing the encoder/scoring implementation: fingerprints identify inputs, not arbitrary future code revisions.
+
+## 18. Exploratory follow-up: normalization, physical residuals and native evidence
+
+All three compressor recordings have already been inspected. These runs are
+development/exploratory replays, not independent confirmation. The v2 result
+files and frozen alarm configurations remain unchanged. Fixing a measurement
+or representation defect is not, by itself, proof of improved fault warning.
+
+### Normal numerical experiments
+
+- CNN3 reuses CNN2's architecture, objective, 24-epoch maximum, five members
+  and chronological validation split. Both ablations use only commissioning
+  prefix statistics. `range` divides by the larger of the IQR-derived scale
+  and `(healthy maximum - healthy minimum) / 6`; `state` estimates IQR scales
+  by observed duty bin, with that same full-range floor. The global center
+  remains fixed, preserving absolute level shifts. A valid unseen duty bin
+  uses the global scale without asserting healthy-state support. No clipping
+  of out-of-range faults is performed. This range floor is a heuristic,
+  not an estimate of physical sensor noise.
+- Train both modes on each recording's own commissioning period, seeds 0–4,
+  with COMP/DV_eletric/MPG conditioning. Exclude LPS and other equipment
+  warning outputs from predictive inputs. Report raw-latent spectrum/rank,
+  cross-member agreement, numerical failures and downstream metrics. The old
+  CKA gate is diagnostic; high agreement is not an acceptance certificate.
+- Physical marginal and conditional-ridge baselines use loaded pressure
+  recovery, unloaded pressure decay, duty, oil-temperature rate, current and
+  compressor-to-panel pressure difference. Slopes use actual decimated
+  observation times and same-phase adjacent samples. Unsupported phase
+  slopes remain missing. Fit coefficients and residual scales on commissioning
+  only. Starting pressure, prior duty, controls and parked share where
+  available are **demand proxies**, not measured customer air demand.
+  A leak can itself affect these proxies, so conditioning can hide faults.
+- Evaluate physical score thresholds at alpha 0.01/0.003, persistence
+  1/3/6 and global/per-state calibration. Compare the frozen policy with
+  no-veto and no-veto-plus-health variants on identical DSP/CNN scores.
+  A separate DSP/physical union uses alpha 0.005 per channel and persistence
+  1/3/6. Do not silently search further settings after looking at replay
+  outcomes.
+- Decision labels distinguish unobserved, in-reference, unresolved and alarm.
+  A new candidate or unsupported state is not declared benign. Unresolved
+  states do not count as detected faults; their workload is reported
+  separately. In-reference does not certify physical health.
+- Retain event detection, lead, false alarms per observed clean week and
+  clean alarm-time share. Add window sensitivity, specificity, precision,
+  F1 and balanced accuracy on the existing eligible labeled population.
+  Do not advertise plain accuracy dominated by normal observations.
+
+Select only on MetroPT3, with all five CNN seeds present: each seed must
+detect at least one event, have at most one false-alarm episode per clean
+week and at most 2% clean alarm time. Rank by mean events detected, worst
+normalized alarm burden, balanced accuracy and then lower complexity.
+Seed ranges describe encoder variation, not independent-machine confidence
+intervals. Apply the identical selected configuration to both MetroPT2
+recordings without tuning there; preserve outside-budget tradeoffs.
+
+### Native-source snapshots
+
+The original recorder preserves decimated model inputs, not all native
+measurements. The new recorder scans the original CSV once for requested
+same-segment context, retaining every observed source column and timestamp,
+raw cell strings, source row indices/hashes and a complete-file SHA-256.
+It does not interpolate missing rows or invent sensors. Original fractional
+timestamps and the rounded model timestamp are both retained.
+
+Identify the precise native observation corresponding to the last model
+sample. Causal and post-decision context are separate; post-context becomes
+available later and never feeds the decision. Missing matches, unsupported
+time precision, gaps and clipped context are explicit. Published-report
+diagnostic snapshots are labeled separately from actual predicted alarms.
+These are observations of instrumented channels, not complete physical
+machine states. Sensor timestamps also do not establish server receipt
+time: the [dataset paper](https://pmc.ncbi.nlm.nih.gov/articles/PMC9747912/)
+describes five-minute GSM transfers, whose latency is not measured here.
+
+### Jev as a separately evaluated advisory layer
+
+Freeze normal result-file and selected-trace hashes before sending machine
+cases to Jev. The typed advisor receives only current/prior causal evidence,
+numerical residuals/scores, calibration support and missingness; no fault
+labels, report dates/IDs, absolute timestamps, file/asset identifiers,
+future context or direct LPS/oil-level warning outputs. Candidate entry and
+at most hourly reassessment define a cascade; it cannot recover faults
+with no candidate evidence. Thresholds and prompt/schema are fixed before
+advisory outcomes, not fitted to these consumed reports.
+
+Compare whole-timeline event misses, false escalations, clean alarm time
+and operator burden against the same frozen baseline. Preserve unavailable
+responses explicitly, report request coverage/latency, and distinguish
+conservative baseline preservation from advisory-only classification.
+Probability calibration against coarse report intervals is exploratory,
+not a safety guarantee. No equipment control is connected to this advisor.
+
+Use the documented [OpenRouter Decisions API](https://openrouter.ai/docs/guides/community/jev)
+(`POST /api/alpha/decisions`) or [TypeSafe API](https://docs.typesafe.ai/introduction), not chat completions
+or the distinct Jev Router product. Schema-constrained output does not
+guarantee correct diagnoses or calibration on industrial data. Missing
+credentials, account credits or actual responses block empirical Jev
+results; do not replace them with heuristics or fabricate scores.
+
+
+### Laya comparison and hp inference
+
+Laya is a separate open-weight model, not an accessible substitute result
+for Jev. This experiment uses the English base checkpoint of
+[`convaiinnovations/laya`](https://huggingface.co/convaiinnovations/laya),
+with Laya 0.4.13, the same typed questions and a preregistered candidate
+cascade. It does not use the poker-specific `leduc` checkpoint.
+Compressor summaries are out of domain; model probabilities are not
+established diagnostic probabilities.
+
+`results/v3_laya_preregistration.json` freezes the model-file hashes,
+causal state format, questions and rule before machine-case responses.
+An elevation requires the `review` choice, its probability at least 0.80
+and the TypeSafe Choice confidence formula at least 0.50; Laya's separate
+confidence fields are descriptive only. Invalid or truncated answers are
+unavailable, never healthy. Whole-timeline metrics compare the baseline,
+baseline-preserving elevations and advisory-only classifications with
+baseline preservation during unavailable assessments.
+
+The first answers were computed on msi. Remaining inference runs on hp;
+msi prepares requests and stores the answers through an SSH local forward.
+hp uses four inference threads and RAM-backed `/tmp/laya-hp`, with the
+server bound only to loopback. This is temporary hosting, not a runit
+service: a reboot removes its environment and checkpoint cache.
+The hp addendum records a different repository revision identifier but
+byte-identical checkpoint files. Its 120-pair cross-host check found zero
+probability differences and zero thresholded decision flips. Each merged
+assessment records its host; existing msi answers take precedence.
+
+```bash
+# Optional Laya environment; torch resolves from the CPU-only index.
+uv sync --extra cnn --extra baselines --extra laya
+
+# Existing English laya-serve instance on hp, localhost:8000.
+ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 \
+  -L 127.0.0.1:18001:127.0.0.1:8000 hp
+
+# In another terminal; reuse existing preregistrations and cached answers.
+uv run python -u -m bench.laya_hosts run
+uv run python -u -m bench.laya_hosts build
+uv run python -u -m bench.advisory_report
+```
+
+The runner stops on an unavailable health endpoint or changed English
+revision. Restore the same server/tunnel and rerun `run` to reuse cached
+answers; do not overwrite preregistrations to bypass drift checks.
+`build` verifies frozen code/baseline hashes and writes raw
+`results/v3_laya.jsonl` and `results/v3_laya_summary.json` without new
+inference. Use `bench.advisory_report` for the evaluated outputs
+`results/v3_laya_evaluated.jsonl` and `results/v3_laya_evaluated_summary.json`:
+the frozen scorer's notification field omitted baseline policy alerts.
+The supplemental report replays existing numerical score caches, verifies
+the frozen scores, thresholds, decision states and alarm flags, and restores
+the original `alerts | opened` notification definition. Numerical alerts
+remain visible in both advisory interpretations; assessment requests are
+reported separately. This is an explicit post-answer reporting correction,
+not a changed model, prompt or escalation rule.
+
+Host-health checks are periodic rather than cryptographic per-response
+attestations. The hp process remains controlled and startup-configured;
+there is no documented model-reload API. Brier/ECE describe coarse
+report-interval labels on selected candidate assessments, not calibration
+for a deployed safety system. These consumed recordings remain exploratory,
+not fresh confirmation.
+
+### Domain dataset readiness (v4, no training)
+
+Audited seven public candidates against the question: is there an
+independent, compressor-semantics-matched, asset-disjoint cohort with
+verified pointwise physical-fault labels, usable to fine-tune and then
+evaluate Laya without reusing consumed data? **No.** MetroPT-3 and
+MetroPT-2 are already consumed; their report intervals are company
+maintenance proxies, not adjudicated pointwise fault truth, and asset
+independence across recordings is unverified. The IIT Kanpur air
+compressor set is lab-seeded, acoustic-only, and a single machine. The
+Mendeley rotating-machine and SKAB sets are different equipment (bearing
+testbench; water-pump loop), not air compressors. The SCANIA APS and
+Component X sets are a different system and an anonymized component with
+no established compressor identity. Full source citations, license
+status (CC BY 4.0, GPL-3.0, or unverified) and the per-candidate blockers
+are in `results/v4_dataset_audit.json`.
+
+`bench/domain_dataset.py` exports development-only, weak report-association
+examples from the already-frozen MetroPT traces, reusing the unchanged
+Laya state builder and causal schedule. A candidate window is labelled
+`reported_fault` only if fully inside a published report interval, and
+`outside_report_buffer` only if the current, previous and every
+strictly-prior reference window `StateBuilder` would use are all outside
+the existing 24h-before/48h-after exclusion margins. A window whose
+report overlap is partial, or whose context falls inside those margins
+without full containment, is excluded rather than guessed. Identical
+serialized inputs across streams deduplicate to one row; an identical
+input with conflicting labels is dropped entirely, not resolved by
+precedence. Every row has exactly `{state, questions, expected}`,
+matching Laya's documented fine-tuning schema; all identifiers, trace
+hashes, timestamps and dependency indices live only in a separate
+`provenance.jsonl`, keyed by the same input hash. The question text
+itself states this is a weak report-association proxy, not a verified
+physical-health or operator-review judgment.
+
+```bash
+uv run python -m bench.domain_dataset \
+  --freeze results/v3_normal_freeze.json \
+  --out-dir ~/.local/state/uengram/domain_dataset \
+  --manifest results/v4_domain_dataset_manifest.json
+```
+
+The run produced 2,503 distinct inference inputs (176 `reported_fault`,
+2,327 `outside_report_buffer`), zero duplicate-conflict drops, and zero
+truncated requests when checked against Laya's own tokenizer and
+`items_from_rows` loader (`laya.evals.Dataset`, `laya.train.to_internal`).
+`results/v4_domain_dataset_manifest.json` records
+`independent_evaluation_eligible: false` and `production_ready: false`
+with the exact missing prerequisites: independent asset-disjoint data,
+adjudicated pointwise labels, and an untouched preregistered evaluation
+split. This dataset is for weak-supervision development only; it does
+not support a validated accuracy claim, and nothing here retrains or
+changes the frozen Laya evaluation in `results/v3_laya_evaluated.jsonl`.
+
+### v4: why no AlarmConfig closes the MetroPT3 recall/clean-time gap
+
+A dedicated mechanism study (`docs/research-alarm-tradeoff.md`) replays the
+frozen novelty/health scores through `AlarmPolicy` under 30+ configurations
+to explain, not just report, the v2/v3 tradeoff above: detecting July 15's
+air leak requires trusting the health channel for an unbaselined operating
+state (`health_needs_baseline=False`) AND enabling its persistence counter
+(`k_health>0`) together, an AND-gate rather than an additive effect; the
+originally named "no-veto" fix (`new_state_alert=False`) is not the active
+mechanism once the health channel is open. No single parameter, and no
+explored 3-parameter grid, closes `alarm_time_share_clean` to the 2%
+budget while keeping all 4 events detected. Harness: `bench/alarm_sensitivity.py`.
+
+### v5: a per-modality two-condition alarm does not close it either
+
+`docs/research-two-condition-alarm.md` replaces the pooled distance with
+two conditions. Condition A: at least `m` modalities are in error. These are
+physical channels with label-free conformal thresholds, plus a
+sustained-load duty modality. Condition B: A has held for `k_hold`
+consecutive windows (`bench/modality_alarm.py`).
+
+None of 159 MetroPT3 configurations meets the budget. The reason is the
+duty modality's run lengths, not a threshold:
+
+- One healthy sustained-load run (309 windows) is longer than every event
+  run, and five more are longer than the two short event runs.
+- With `m=1`, detecting all 4 events forces `k_hold <= 41`, which means at
+  least 3.05% clean alarm time.
+- Reaching 2% forces `k_hold >= 78`, which loses July 15.
+
+A closed form of the duty-only alarm matches the harness exactly. The
+fallback-selected configuration (4/4, 0.32 false alarms per week, 3.11%)
+was replayed unchanged on MetroPT2 and detected 0/3 and 0/2 events:
+
+- Those failures happen while the compressor idles or cycles, so windows
+  without loaded samples break the condition-A run before 40 windows.
+- On the judgeable event windows, the physical channels were nearly always
+  in error.
+
+### v6: the actual alarm, gated by threshold-crossing errors
+
+`docs/research-error-gated-alarm.md` keeps `AlarmPolicy` unchanged as the
+alarm measure. It adds `A(t) = P(t) AND [at least m errors seen within the
+last L hours]` (`bench/error_gated_alarm.py`).
+
+The errors are the threshold crossings the MetroPT documentation defines:
+`LPS` (pressure below 7 bar), `Oil_level` (oil below expected; healthy
+value taken from calibration) and TP3 below 7 bar. The v5 calibrated
+per-channel crossings are a comparison family.
+
+On MetroPT3:
+
+- The gate can only remove alarm time. All 1512 gated rows confirm this,
+  though false alarms can rise when an error flickers.
+- The May 29-30 failure has no dataset-defined error from 24 h before it
+  to its end, so no dataset-gated alarm reaches 4/4. The best that meets
+  both alarm budgets detects 3/4 (1.97% clean time, 0.21 false alarms per
+  week).
+- Calibrated crossings meet the full budget: 4/4, 1.06%, 0.95 false alarms
+  per week. But those thresholds never fire in sustained load, which has no
+  calibration baseline. A pure "idle or cycling within 6 h" gate gives 4/4
+  at 1.25%, so the effect is mostly operating-state recency.
+
+Replayed unchanged on MetroPT2, both selections detect nothing, because the
+policy itself never opens there. Inside the Jan events the frozen scores
+cross no threshold, while the dataset errors cover both Apr events and 0%
+of clean windows.
+
+### v7: what causes an alarm, defined and checked
+
+`docs/research-alarm-definition.md` defines an alarm from ISA-18.2 /
+IEC 62682 and from the published MetroPT practice (Jakobs et al. 2025:
+threshold, then a low-pass persistence filter, then 0.5, which is an
+exact 5-slice on/off-delay). An alarm needs all of:
+
+- a valid window;
+- a uEngram setpoint crossing;
+- corroboration by at least m independent errors seen in the last L hours,
+  voted three-valued (an unknown error is not a normal one);
+- that corroborated crossing persisting through the on-delay;
+- clearing only through the off-delay.
+
+An independent audit reproduced every uEngram step exactly: conformal
+setpoints, persistence counters, metrics and scoring causality. A second
+independent implementation reproduced the v7 rows and per-event traces
+exactly.
+
+Corrections: a uEngram error with unknown evidence holds the counters,
+instead of counting as normal. This removes the v6 recency artifact. v8
+made the rule an exact Kleene AND: no error lowers the counter even when
+the evidence is unknown. Persistence applies to the combined condition,
+LPS and TP3 < 7 bar are one vote, and early warnings are reported
+positive.
+
+On MetroPT3, no configuration meets the budget. Within both alarm budgets,
+the best rows reach 2/4 with dataset corroboration and 3/4 with the
+calibrated crossings.
+
+The per-event trace shows the cause. uEngram crosses its setpoint before
+the May 29-30 and June 5-7 reports, but not for three windows in a row,
+and dataset errors either never occur (May 29-30) or arrive 34 h into the
+report (June 5-7). On MetroPT2, uEngram never crosses inside the April
+events, although the oil-level error precedes both LPS warnings by 3.0 h
+and 59.4 h.
+
+### v8: how each component behaves, and why
+
+`docs/research-alarm-components.md` profiles every component by operating
+state, derives the false-alarm arithmetic exactly, and crosses eight
+components in a 1,728-alarm factorial on MetroPT3. The components are α,
+the health channel, the setpoint for a state without a reference, the
+new-state veto, the persistence filter and its length, corroboration and
+staleness.
+
+- **The air leaks' signature is the operating state.** 492 of 495 event
+  windows are sustained load, a state uEngram never saw before the test (0
+  commissioning windows). So 87% of healthy sustained-load windows exceed
+  the health setpoint.
+- **Within sustained load, the scores carry no early warning.** AUROC,
+  clean vs the 24 h before a report: health 0.07, novelty 0.35.
+- **Exceedances cluster in time.** P(exceed | exceeded) = 0.30 vs 0.009
+  otherwise. A two-state Markov model predicts 0.80 false alarms per week
+  against 0.74 observed, while independence predicts 0.002. That is also
+  why the filter type (counter, ISA timers, m-of-n, EWMA) barely matters.
+- **No combination reaches 4/4 within budget.** Jul 15 is caught only by
+  trusting health in sustained load, which costs at least 2.53% of healthy
+  time. Commissioning sustained load online removes that catch, so it was
+  the state, not the leak, being detected.
+
+Fixes: Kleene corroboration (provably only removes alarm time), four
+three-valued filters, veto-hold, unknown/online-commissioned states,
+staleness, physically conditioned errors, an episode-based early-warning
+metric, and a three-valued v5 hold. The v5 hold fix exposes calibration
+drift that the old run reset had hidden. Every default reproduces the
+earlier results byte for byte. Independent implementations reproduced the
+v8 rows, the clustering arithmetic and the corrected v7 rows exactly.

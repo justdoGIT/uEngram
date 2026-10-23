@@ -50,7 +50,7 @@ uv run python -m bench.run_metropt --seeds 0-4 --encoders dsp,cnn --jobs 2 --out
 uv run python -m bench.report --out docs/RESULTS.md
 ```
 
-Keep `--jobs` at 2 or below; the host has about 1 GB of RAM headroom.
+Use `--jobs 2` as a conservative default. CARE workers materialize full datasets and embeddings; measure RAM headroom before increasing concurrency.
 
 ## Host telemetry (cluster nodes)
 
@@ -78,9 +78,9 @@ python3 -m uengram.host campaign status --dir ~/Backup/uengram-host/campaign
 ## Layout
 
 ```
-src/uengram/   library: stats, metrics, synth, encoders, ledger, store, baselines, stream_baselines, engine, lifecycle, cmapss, metropt
+src/uengram/   library: alarm, baselines, baseline_reference, cmapss, encoders, encoder_{cnn,cnn2,cnn3,ctx,tab}, engine, health, ledger, lifecycle, metrics, metropt, metropt2, persistence, stats, store, stream_baselines, synth
 src/uengram/host/  host telemetry: schema, perf, sources, collector, stream, hub, cluster, psi (stdlib); features, encoder, events, stepcal, node, daemon, synth (numpy); campaign, campaign_exec, tune, knob.sh, validate, validate_criteria, validate_variants, validate_signals
-bench/         harness: provenance, evaluate, common, run_synth, run_cmapss, run_metropt, metropt_calibration, metropt_eval, run_host_synth, report
+bench/         harness: advisory_{experiment,eval,report}, alarm_{components,definition,definition_sweep,dev,eval,interaction,math,sensitivity}, care_score, colab_train, common, cnn3_experiment, domain_dataset, encoding_cache, encoder_gate, error_gated_{alarm,sweep}, evaluate, followup_{experiment,policy}, freeze_frames, jev_{advisory,experiment}, laya_{advisory,hosts,http}, leak_duty, metropt_{calibration,eval}, modality_{alarm,sweep}, native_snapshots, physical_residuals, provenance, report, report_{followup,v2}, run_{cmapss,metropt,synth,v2}, run_host_synth, stream_care, streams, v2_scoring
 deploy/        runit services (uengram-hostd, uengram-campaign, uengram-hub) and the node installer
 tests/         unit and behaviour tests
 results/       committed run outputs (JSONL)
@@ -105,3 +105,79 @@ MetroPT-3 is distributed under CC BY 4.0: Davari et al., dataset
 The adapted MemStream core is based on
 [Stream-AD/MemStream](https://github.com/Stream-AD/MemStream), Apache-2.0;
 its license is included in `src/uengram/MemStream-LICENSE.txt`.
+
+## Alarm-policy confirmation and GPU training
+
+Protocol v2 separates novelty from actionable alarms, records input snapshots
+around each episode, and measures standing-alarm time and advisory workload as
+well as false-alarm openings. MetroPT-3 is now development data.
+[EXPLAINED section 17](docs/EXPLAINED.md#17-alarm-policy-confirmation-protocol-v2)
+freezes the MetroPT2 and CARE confirmation splits, configurations and criteria
+before their detector scores are generated.
+
+```bash
+uv run python -m bench.run_v2 --streams metropt2 --methods uengram:dsp,hst:dsp,memstream:dsp --seeds 0-4 --jobs 2 --out results/v2_metropt2.jsonl
+uv run python -m bench.run_v2 --streams care --methods uengram:tab,hst:tab,memstream:tab --seeds 0 --jobs 2 --out results/v2_care.jsonl
+uv run python -m bench.report
+```
+
+Data must be downloaded into the layout documented in section 17. MetroPT2:
+[Zenodo 7766691](https://doi.org/10.5281/zenodo.7766691), CC BY 4.0.
+CARE: [Zenodo 15846963](https://doi.org/10.5281/zenodo.15846963), CC BY-SA 4.0.
+The NumPy CARE event scorer adapts
+[EnergyFaultDetector](https://github.com/AEFDI/EnergyFaultDetector), MIT;
+its license is in `src/uengram/EnergyFaultDetector-LICENSE.txt`.
+Retrospective CARE status annotations filter evaluation, never runtime alarms.
+
+`bench.colab_train.prepare(stream, path)` exports a label-free input archive;
+`bench.colab_train.train(input_path, output_dir)` trains CNN2 and exports gated
+embeddings plus a CPU-device checkpoint. Colab CLI was used with a T4; observed
+fit times and the restored-checkpoint check are recorded in
+`results/encoder_v2_gate.json`. Sessions were stopped after downloading results.
+Keep the preinstalled CUDA PyTorch on Colab rather than installing this
+project's local CPU-wheel source. Use only authorized uploads and never load
+an untrusted pickle checkpoint.
+
+Faster training did not make CNN2 the better detector: its five development
+seeds were less reliable than DSP. DSP was selected for compressor
+confirmation; CARE uses tabular features, not invented waveforms.
+
+**Confirmation rejected the v2 alarm policy for deployment:** it detected
+none of the five published MetroPT2 failure intervals. Low critical-alarm
+counts and preserved provenance do not establish useful fault warning.
+CARE attempted all 95 datasets; six have no eligible evaluation rows, so no
+full-cohort CARE score or confidence interval is reported.
+See [RESULTS](docs/RESULTS.md) for the complete comparison and limitations.
+
+## Follow-up experiments (exploratory, not confirmation)
+
+Healthy-range and state-conditioned normalization, demand-conditioned
+pressure/duty/thermal residuals, unresolved-state handling and native-source
+snapshots were added after the v2 rejection. On the consumed recordings no
+new configuration improves both recall and the clean-alarm-time budget at
+once; the frozen baseline remains the selected fallback. Native snapshots
+now retain original columns and fractional timestamps with explicit
+causal/post-decision boundaries. The typed Jev advisory comparison is
+preregistered but blocked pending OpenRouter credits or a TypeSafe key.
+Details: [RESULTS](docs/RESULTS.md) and [EXPLAINED section 18](docs/EXPLAINED.md).
+
+The separate English-base Laya comparison completed all 2,741 assessments,
+using hp for remaining inference and msi as its client. No assessment met
+the frozen escalation rule: preserving the baseline did not improve
+detection, and Laya-only decisions lost the MetroPT3 detections. Use
+`results/v3_laya_evaluated_summary.json` for corrected notification burden;
+raw advisory outputs omitted baseline policy alerts. The measured hp
+four-thread setting was faster than eight threads on the synthetic timing
+check. See [the completed comparison](docs/RESULTS.md#laya-paired-comparison-completed-no-diagnostic-improvement)
+and [reproduction commands](docs/EXPLAINED.md#laya-comparison-and-hp-inference).
+
+A follow-up public-dataset audit found **no independent, compressor-matched,
+asset-disjoint cohort with verified pointwise physical-fault labels**: the
+MetroPT recordings are already consumed, and every other reviewed source is
+a different system, lab-seeded, or has anonymized components. A
+development-only weak-supervision export from the existing frozen traces
+(2,503 cases, zero truncation against Laya's tokenizer) is available for
+future fine-tuning experiments; it explicitly carries
+`independent_evaluation_eligible: false`. See
+[the dataset audit](docs/EXPLAINED.md#domain-dataset-readiness-v4-no-training)
+and `results/v4_dataset_audit.json`.

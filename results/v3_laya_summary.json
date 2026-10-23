@@ -1,0 +1,526 @@
+{
+  "backend": "laya",
+  "caveats": [
+    "Laya (convaiinnovations/laya, English base, ModernBERT-large 421M) is a different model from TypeSafe Jev; nothing here is a Jev result.",
+    "Vendor typed-decisions benchmark: base English Laya 0.362 vs 0.766 fine-tuned; this checkpoint is the base model.",
+    "Compressor telemetry summaries are out-of-domain for Laya; probabilities are not claimed calibrated, and the checkpoint warns that some temperatures are invalid.",
+    "Brier/ECE use coarse window labels (event-interval overlap vs clean negatives) only.",
+    "All three recordings were consumed earlier; results are exploratory, not confirmatory."
+  ],
+  "crosscheck_summary": {
+    "d_condition_fault": {
+      "max": 0.0,
+      "mean": 0.0
+    },
+    "d_max_any": {
+      "max": 0.0,
+      "mean": 0.0
+    },
+    "d_review_confidence": {
+      "max": 0.0,
+      "mean": 0.0
+    },
+    "d_review_probability": {
+      "max": 0.0,
+      "mean": 0.0
+    },
+    "decision_flips": 0,
+    "pairs": 120
+  },
+  "hp_addendum_sha256": "c332266ea32d695b8469121e915cd96074cd724c173f334e095c78e9b78411e8",
+  "model_id": "convaiinnovations/laya",
+  "preregistration_sha256": "eb29da7deace3bf4b9b5172f60be029be877f1f11c621bd09df7b166d9644b52",
+  "protocol": "v3-laya-fixed-candidate-triage",
+  "results": "results/v3_laya.jsonl",
+  "streams": {
+    "metropt2_apr": {
+      "advisory_assessment_only": {
+        "alarm_time_share_clean": 0.0,
+        "events_detected": 0.0,
+        "false_alarm_per_week": 0.0,
+        "lead_hours": NaN,
+        "notification_episodes_per_week_all": 0.0,
+        "window_balanced_accuracy": 0.5,
+        "window_f1": 0.0
+      },
+      "baseline": {
+        "alarm_time_share_clean": 0.0,
+        "events_detected": 0.0,
+        "false_alarm_per_week": 0.0,
+        "lead_hours": NaN,
+        "notification_episodes_per_week_all": 0.0,
+        "window_balanced_accuracy": 0.5,
+        "window_f1": 0.0
+      },
+      "baseline_reproduced": true,
+      "burden": {
+        "assessment_episodes_per_week": 39.153422304162916,
+        "assessments": 456,
+        "assessments_per_week": 57.77980767216275,
+        "candidate_windows": 624,
+        "elevated_windows": 0,
+        "observed_weeks": 7.892030423280423
+      },
+      "calibration_vs_coarse_labels": {
+        "condition": {
+          "brier": 0.2302005044951923,
+          "ece": 0.2502781250000001,
+          "n": 416,
+          "positives": 89
+        },
+        "review": {
+          "brier": 0.16248779454326925,
+          "ece": 0.06421610576923079,
+          "n": 416,
+          "positives": 89
+        }
+      },
+      "conservative_preserve_baseline": {
+        "alarm_time_share_clean": 0.0,
+        "events_detected": 0.0,
+        "false_alarm_per_week": 0.0,
+        "lead_hours": NaN,
+        "notification_episodes_per_week_all": 0.0,
+        "window_balanced_accuracy": 0.5,
+        "window_f1": 0.0
+      },
+      "coverage": 1.0,
+      "elevations": 0,
+      "events": {
+        "advisory_assessment_only": [
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 0,
+            "first_alarm": null,
+            "hours_before_lps": null,
+            "lead_hours": null,
+            "windows": 25
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 1,
+            "first_alarm": null,
+            "hours_before_lps": null,
+            "lead_hours": null,
+            "windows": 357
+          }
+        ],
+        "baseline": [
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 0,
+            "first_alarm": null,
+            "hours_before_lps": null,
+            "lead_hours": null,
+            "windows": 25
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 1,
+            "first_alarm": null,
+            "hours_before_lps": null,
+            "lead_hours": null,
+            "windows": 357
+          }
+        ],
+        "conservative_preserve_baseline": [
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 0,
+            "first_alarm": null,
+            "hours_before_lps": null,
+            "lead_hours": null,
+            "windows": 25
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 1,
+            "first_alarm": null,
+            "hours_before_lps": null,
+            "lead_hours": null,
+            "windows": 357
+          }
+        ]
+      },
+      "hosts": {
+        "hp": {
+          "assessments": 456,
+          "latency_ms": {
+            "p50": 3345.5933834998177,
+            "p95": 3395.77922400008
+          },
+          "revision": "7b928d828b7b0e022f929d9bd2e44165aa270148",
+          "unavailable": 0
+        },
+        "msi": {
+          "assessments": 0,
+          "latency_ms": {
+            "p50": null,
+            "p95": null
+          },
+          "revision": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851",
+          "unavailable": 0
+        }
+      },
+      "max_sequence_tokens": 362,
+      "review_choice_counts": {
+        "no_review": 455,
+        "review": 1,
+        "uncertain": 0
+      },
+      "truncated_requests": 0
+    },
+    "metropt2_jan": {
+      "advisory_assessment_only": {
+        "alarm_time_share_clean": 0.0,
+        "events_detected": 0.0,
+        "false_alarm_per_week": 0.0,
+        "lead_hours": NaN,
+        "notification_episodes_per_week_all": 0.0,
+        "window_balanced_accuracy": 0.5,
+        "window_f1": 0.0
+      },
+      "baseline": {
+        "alarm_time_share_clean": 0.0,
+        "events_detected": 0.0,
+        "false_alarm_per_week": 0.0,
+        "lead_hours": NaN,
+        "notification_episodes_per_week_all": 0.0,
+        "window_balanced_accuracy": 0.5,
+        "window_f1": 0.0
+      },
+      "baseline_reproduced": true,
+      "burden": {
+        "assessment_episodes_per_week": 18.04851275077619,
+        "assessments": 304,
+        "assessments_per_week": 21.51665833818024,
+        "candidate_windows": 393,
+        "elevated_windows": 0,
+        "observed_weeks": 14.128587962962962
+      },
+      "calibration_vs_coarse_labels": {
+        "condition": {
+          "brier": 0.21433024872262776,
+          "ece": 0.39533467153284674,
+          "n": 274,
+          "positives": 17
+        },
+        "review": {
+          "brier": 0.07454174321167883,
+          "ece": 0.11478175182481752,
+          "n": 274,
+          "positives": 17
+        }
+      },
+      "conservative_preserve_baseline": {
+        "alarm_time_share_clean": 0.0,
+        "events_detected": 0.0,
+        "false_alarm_per_week": 0.0,
+        "lead_hours": NaN,
+        "notification_episodes_per_week_all": 0.0,
+        "window_balanced_accuracy": 0.5,
+        "window_f1": 0.0
+      },
+      "coverage": 1.0,
+      "elevations": 0,
+      "events": {
+        "advisory_assessment_only": [
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 0,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 25
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 1,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 4
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 2,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 323
+          }
+        ],
+        "baseline": [
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 0,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 25
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 1,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 4
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 2,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 323
+          }
+        ],
+        "conservative_preserve_baseline": [
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 0,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 25
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 1,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 4
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 2,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 323
+          }
+        ]
+      },
+      "hosts": {
+        "hp": {
+          "assessments": 304,
+          "latency_ms": {
+            "p50": 3336.9261955012917,
+            "p95": 3395.8570290498756
+          },
+          "revision": "7b928d828b7b0e022f929d9bd2e44165aa270148",
+          "unavailable": 0
+        },
+        "msi": {
+          "assessments": 0,
+          "latency_ms": {
+            "p50": null,
+            "p95": null
+          },
+          "revision": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851",
+          "unavailable": 0
+        }
+      },
+      "max_sequence_tokens": 361,
+      "review_choice_counts": {
+        "no_review": 304,
+        "review": 0,
+        "uncertain": 0
+      },
+      "truncated_requests": 0
+    },
+    "metropt3": {
+      "advisory_assessment_only": {
+        "alarm_time_share_clean": 0.0,
+        "events_detected": 0.0,
+        "false_alarm_per_week": 0.0,
+        "lead_hours": NaN,
+        "notification_episodes_per_week_all": 0.0,
+        "window_balanced_accuracy": 0.5,
+        "window_f1": 0.0
+      },
+      "baseline": {
+        "alarm_time_share_clean": 0.005996644230718761,
+        "events_detected": 3.0,
+        "false_alarm_per_week": 0.7407187085012238,
+        "lead_hours": 6.825648148148148,
+        "notification_episodes_per_week_all": 1.05920620035568,
+        "window_balanced_accuracy": 0.5878934715472681,
+        "window_f1": 0.2564102564102564
+      },
+      "baseline_reproduced": true,
+      "burden": {
+        "assessment_episodes_per_week": 53.297330172442614,
+        "assessments": 1981,
+        "assessments_per_week": 95.37670376839098,
+        "candidate_windows": 3631,
+        "elevated_windows": 0,
+        "observed_weeks": 20.770271164021164
+      },
+      "calibration_vs_coarse_labels": {
+        "condition": {
+          "brier": 0.2215369276273023,
+          "ece": 0.4330635969664138,
+          "n": 1846,
+          "positives": 71
+        },
+        "review": {
+          "brier": 0.056209331468039005,
+          "ece": 0.1512197724810401,
+          "n": 1846,
+          "positives": 71
+        }
+      },
+      "conservative_preserve_baseline": {
+        "alarm_time_share_clean": 0.005996644230718761,
+        "events_detected": 3.0,
+        "false_alarm_per_week": 0.7407187085012238,
+        "lead_hours": 6.825648148148148,
+        "notification_episodes_per_week_all": 1.05920620035568,
+        "window_balanced_accuracy": 0.5878934715472681,
+        "window_f1": 0.2564102564102564
+      },
+      "coverage": 1.0,
+      "elevations": 0,
+      "events": {
+        "advisory_assessment_only": [
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 0,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 143
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 1,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 41
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 2,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 285
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 3,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 26
+          }
+        ],
+        "baseline": [
+          {
+            "alarm_windows": 8,
+            "detected": true,
+            "event": 0,
+            "first_alarm": "2020-04-18T03:12:21",
+            "lead_hours": 3.2058333333333335,
+            "windows": 143
+          },
+          {
+            "alarm_windows": 14,
+            "detected": true,
+            "event": 1,
+            "first_alarm": "2020-05-30T02:30:45",
+            "lead_hours": 3.0125,
+            "windows": 41
+          },
+          {
+            "alarm_windows": 68,
+            "detected": true,
+            "event": 2,
+            "first_alarm": "2020-06-06T00:15:31",
+            "lead_hours": 14.258611111111112,
+            "windows": 285
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 3,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 26
+          }
+        ],
+        "conservative_preserve_baseline": [
+          {
+            "alarm_windows": 8,
+            "detected": true,
+            "event": 0,
+            "first_alarm": "2020-04-18T03:12:21",
+            "lead_hours": 3.2058333333333335,
+            "windows": 143
+          },
+          {
+            "alarm_windows": 14,
+            "detected": true,
+            "event": 1,
+            "first_alarm": "2020-05-30T02:30:45",
+            "lead_hours": 3.0125,
+            "windows": 41
+          },
+          {
+            "alarm_windows": 68,
+            "detected": true,
+            "event": 2,
+            "first_alarm": "2020-06-06T00:15:31",
+            "lead_hours": 14.258611111111112,
+            "windows": 285
+          },
+          {
+            "alarm_windows": 0,
+            "detected": false,
+            "event": 3,
+            "first_alarm": null,
+            "lead_hours": null,
+            "windows": 26
+          }
+        ]
+      },
+      "hosts": {
+        "hp": {
+          "assessments": 617,
+          "latency_ms": {
+            "p50": 3335.4201589972945,
+            "p95": 3383.406816801289
+          },
+          "revision": "7b928d828b7b0e022f929d9bd2e44165aa270148",
+          "unavailable": 0
+        },
+        "msi": {
+          "assessments": 1364,
+          "latency_ms": {
+            "p50": 6097.7830964984605,
+            "p95": 9531.006943950704
+          },
+          "revision": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851",
+          "unavailable": 0
+        }
+      },
+      "max_sequence_tokens": 361,
+      "review_choice_counts": {
+        "no_review": 1916,
+        "review": 65,
+        "uncertain": 0
+      },
+      "truncated_requests": 0
+    }
+  }
+}

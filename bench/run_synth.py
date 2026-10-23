@@ -25,6 +25,10 @@ def make_encoder(name: str, seed: int):
         from uengram.encoder_ctx import ContextEncoder
 
         return ContextEncoder(lag_channels=(TEMP_CH,), drive_channel=RPM_CH)
+    if name == "cnn2":
+        from uengram.encoder_cnn2 import CNN2Encoder
+
+        return CNN2Encoder(seed=seed)
     from uengram.encoder_cnn import CNNEncoder
 
     return CNNEncoder(seed=seed)

@@ -1,0 +1,35 @@
+{
+  "artifact": "supplemental runtime observations; not a new model preregistration",
+  "client_host": "msi",
+  "inference_host": "hp",
+  "process": {
+    "pid": 2257,
+    "started_host_local_time": "Fri Oct 23 11:40:25 2026",
+    "command": "/tmp/laya-hp/.venv/bin/python3 .venv/bin/laya-serve",
+    "observation": "same serving PID and start time observed after client tunnel restoration"
+  },
+  "transport": {
+    "client_endpoint": "http://127.0.0.1:18001",
+    "server_endpoint": "http://127.0.0.1:8000",
+    "mechanism": "SSH local forwarding; server remains loopback-only"
+  },
+  "observed_health": {
+    "status": "ok",
+    "loaded": ["english"],
+    "english_revision": "7b928d828b7b0e022f929d9bd2e44165aa270148",
+    "device": "cpu",
+    "cpu_fallback_count": 0
+  },
+  "health_scope": "periodic checks and controlled startup-configured process, not cryptographic per-response revision attestation",
+  "hosting_lifetime": "temporary RAM-backed /tmp/laya-hp, not a runit service; reboot removes the environment and weights",
+  "client_recovery": "restored failed SSH tunnel and resumed cached remaining assessments without changing questions, thresholds or model answers",
+  "setup_cache_recovery": {
+    "source": "/home/kk/.cache/pip",
+    "recoverable_trash": "/tmp/laya-hp/setup-trash",
+    "cache_size_observed": "1.8 GiB",
+    "root_usage_before_pct": 95,
+    "root_usage_after_pct": 82,
+    "root_available_after": "2.5 GiB",
+    "note": "Laya-setup download cache relocated to RAM-backed trash; server environment and weights untouched. This trash is also lost on reboot."
+  }
+}

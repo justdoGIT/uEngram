@@ -160,7 +160,7 @@ def main():
     if a.quick:
         a.seeds, a.encoders = "0", "dsp"
     methods, encoders = tuple(a.methods.split(",")), a.encoders.split(",")
-    if not set(methods) <= set(METHODS) or not set(encoders) <= {"dsp", "cnn"}:
+    if not set(methods) <= set(METHODS) or not set(encoders) <= {"dsp", "cnn", "cnn2"}:
         ap.error("unknown method or encoder")
     metropt.fetch()  # fetch once, before workers can race to create the cache
     tasks = [(s, e, methods) for s in parse_seeds(a.seeds) for e in encoders]

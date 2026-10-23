@@ -1,0 +1,173 @@
+{
+  "abort_if": "/health english revision differs from the preregistered one at any check",
+  "artifact": "preregistration-addendum",
+  "backend": "laya-http",
+  "code_sha256": {
+    "bench/advisory_eval.py": "512d821d4e22f18d39760479bfe13ac3cf24c8672ef8696c098928aac2f8889f",
+    "bench/advisory_experiment.py": "7cd73e2564e78b57c234e256c9f7ebccae26a976066059e2f6e23bf524364fb0",
+    "bench/jev_advisory.py": "75a1da3b7847251f2711b9e3619ae7e46ec931ee5f2c2def4d736dbd1fd95f6f",
+    "bench/laya_advisory.py": "46fe9da97eb58c76968cff2b7215b17c09d10338ff070ab6ab78fb5238597f43",
+    "bench/laya_http.py": "7e7757fba316faafb526ee8939129dcc09c6d94e5d35dcfba7a73b0180c82b43"
+  },
+  "comparison": "per-assessment agreement of the thresholded decision and |dP| vs the local (convaiinnovations/laya 55cf4c4e) run on identical state text",
+  "created_utc": "2026-10-23T04:28:13+00:00",
+  "instance": {
+    "endpoint": "http://127.0.0.1:18000",
+    "endpoint_note": "SSH local forward to lenovo-worker 127.0.0.1:8000 (laya-serve)",
+    "english_revision": "7b928d828b7b0e022f929d9bd2e44165aa270148",
+    "health_at_preregistration": {
+      "checkpoint_devices": {
+        "english": "cpu",
+        "multilingual": "cpu"
+      },
+      "cpu_fallbacks": {
+        "english": {
+          "count": 0,
+          "last_reason": null
+        },
+        "multilingual": {
+          "count": 0,
+          "last_reason": null
+        }
+      },
+      "device": "cpu",
+      "device_is_preference": false,
+      "loaded": [
+        "multilingual",
+        "english"
+      ],
+      "revisions": {
+        "english": "7b928d828b7b0e022f929d9bd2e44165aa270148",
+        "multilingual": "7b928d828b7b0e022f929d9bd2e44165aa270148"
+      },
+      "status": "ok"
+    },
+    "label": "lenovo",
+    "remote": {
+      "versions": {
+        "laya": "0.4.13",
+        "torch": "2.14.1+cpu"
+      },
+      "weights_sha256": {
+        "encoder/config.json": "bf3ab80598fdccf414855a2ce80f22859e4492d06ca8a62ddd1cfb63972f8979",
+        "model.safetensors": "891102d372688fc2a094dac56a384bc537b87c63f21f9f3dac0be2b7cbc8d86c",
+        "rl_agent_config.json": "ae287b56bbcf5f8c4f4541ae9dfd00c914c4c48b940b8398c3058af37ba92bbd",
+        "tokenizer/tokenizer.json": "6c8aaa9a542084f2457eab775d4eeb51f92a70c0fd9de28d5edb0ddec3c08d30",
+        "tokenizer/tokenizer_config.json": "50044de60daaa73df97d262e15a40d4faf0160e7d742df64b377877a1320dd12"
+      }
+    },
+    "weights_identical_to_local": true
+  },
+  "local_preregistration": {
+    "path": "results/v3_laya_preregistration.json",
+    "sha256": "eb29da7deace3bf4b9b5172f60be029be877f1f11c621bd09df7b166d9644b52"
+  },
+  "per_request_requirements": {
+    "otherwise": "explicit unavailable, counted",
+    "routing.model": "english",
+    "usage.state_tokens_dropped": 0,
+    "usage.truncated": false
+  },
+  "prompt_hash": "70bf9db6afeac66520737efba873dbed0fd2c1e262be5c2cf556d3ab63b5ed3a",
+  "questions": {
+    "condition": {
+      "criteria": {
+        "expected": "Observed evidence is consistent with expected operation",
+        "fault_consistent": "Observed evidence supports an abnormal/fault-consistent condition",
+        "insufficient": "Available evidence cannot distinguish expected from abnormal"
+      },
+      "instructions": "Which condition best fits the provided current and prior window evidence?",
+      "type": "choice"
+    },
+    "evidence": {
+      "criteria": {
+        "insufficient": "Missing, unsupported, or conflicting evidence prevents an assessment",
+        "sufficient": "Enough relevant evidence to make an assessment"
+      },
+      "instructions": "Is the provided physical and numerical evidence sufficient to assess this window? Choose insufficient if key evidence is missing or conflicting.",
+      "type": "choice"
+    },
+    "review": {
+      "criteria": {
+        "no_review": "Evidence does not warrant operator review",
+        "review": "Evidence warrants operator review",
+        "uncertain": "Cannot determine whether review is warranted"
+      },
+      "instructions": "Should this candidate window receive operator review based only on the evidence shown?",
+      "type": "choice"
+    }
+  },
+  "recorded_before_model_answers_on_machine_cases": true,
+  "route": "english",
+  "rule": {
+    "candidate_states": {
+      "alarm": 3,
+      "unresolved": 2
+    },
+    "elevate": "review.choice == 'review' AND P(review) >= 0.80 AND TypeSafe Choice confidence (p_max-1/n)/(1-1/n) of the review probabilities >= 0.50",
+    "fresh_seconds": 3600,
+    "interpretations": {
+      "advisory_assessment_only": "fresh elevation | (baseline & latest assessment unavailable)",
+      "conservative_preserve_baseline": "baseline | fresh elevation"
+    },
+    "laya_confidence_fields": "Laya `confidence` and `answer_confidence` are recorded descriptively and never used for decisions",
+    "reassess_seconds": 3600,
+    "review_confidence": 0.5,
+    "review_probability": 0.8,
+    "schedule": "assess on candidate entry, then at most once per observed hour while decision_state stays in {unresolved, alarm}; clean in-reference windows are never assessed (they appear only as previous-window context)",
+    "unavailable": "exception/invalid/truncated answer => explicit unavailable; never elevates and never suppresses a baseline alarm"
+  },
+  "state_format": "laya-state-1",
+  "status_note_appended_after_abort": {
+    "abort_record": "results/v3_laya_lenovo.aborted.json",
+    "assessments_completed": 9,
+    "cross_host_check_on_completed_assessments": {
+      "decision_agreement": 1.0,
+      "paired_assessments": 9,
+      "probability": {
+        "condition": {
+          "max_abs_diff": 0.0,
+          "mean_abs_diff": 0.0
+        },
+        "review": {
+          "max_abs_diff": 0.0,
+          "mean_abs_diff": 0.0
+        }
+      }
+    },
+    "evaluation_instance": "local msi CPU run of convaiinnovations/laya 55cf4c4e, whose 5 checkpoint files are byte-identical (SHA-256) to lenovo's English 7b928d82",
+    "frozen_text_sha256_before_note": "705fedec34cadea2b946e100be3bbbfdf7c6ec1b36ba4376deeac963c2652bb9",
+    "health_checks_before_abort": 8,
+    "note": "All other keys are the unchanged preregistered addendum.",
+    "reason": "lenovo laya-serve was restarted by another user serving only an unpinned 'leduc' checkpoint (revision null); the English 7b928d82 checkpoint was no longer served",
+    "server_inference_ms_observed": [
+      26536.17,
+      26616.66,
+      26797.17,
+      27161.11,
+      30052.39,
+      31009.52,
+      31255.16,
+      31663.88,
+      32407.26
+    ],
+    "status": "aborted by the preregistered health rule; not resumed (parent decision)",
+    "throughput_note": "27-32 s per 3-question assessment on lenovo (~22 h for 2741), versus the 2.5-4 s parent estimate from a 1-question short-state probe",
+    "written_utc": "2026-10-23T04:33:54+00:00"
+  },
+  "transport": {
+    "concurrency": 1,
+    "pace_s": 0.25,
+    "retries": 1,
+    "timeout_s": 120.0
+  },
+  "unchanged_from_local": [
+    "rule",
+    "questions",
+    "prompt_hash",
+    "state_format",
+    "thresholds",
+    "input_exclusions",
+    "caveats"
+  ]
+}

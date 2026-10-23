@@ -61,7 +61,8 @@ class ContextEncoder(DSPEncoder):
             pred = np.einsum("ck,ck->c", self._design(prev_ramp, prev_u, drive[t]), self.b)
             r[t] = ramps[t] - pred
             if np.any(np.abs(r[t]) > self.reject_k * self.rscale):
-                prev_ramp = self.b[:, 0] * prev_ramp  # propagate; keep prev_u
+                prev_ramp = self.b[:, 0] * prev_ramp
+                prev_u = drive[t]
             else:
                 prev_ramp, prev_u = ramps[t].copy(), drive[t]
         return r

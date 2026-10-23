@@ -59,13 +59,15 @@ class _StepInputs(Engram):
             self.generation[int(iid)] += 1
 
 
-def calibrate_steps(Z, groups, cfg: EngramConfig, sigma0, raw_bytes: int):
+def calibrate_steps(Z, groups, cfg: EngramConfig, sigma0, raw_bytes: int, progress=None):
     """Fit only on pre-test commissioning windows; return inflation and evidence."""
     recorder = _StepInputs(replace(cfg, use_step_detect=True), Z.shape[1], sigma0, raw_bytes)
     for t, z in enumerate(Z):
         if t and groups[t] != groups[t - 1]:
             recorder.restart(recorder.item_id[recorder.item_id >= 0])
         recorder.ingest(z, t, t)
+        if progress is not None:
+            progress(t, len(Z))
         for event in recorder.drain_events():
             if event[0] == "merge":
                 recorder.restart([event[2]])

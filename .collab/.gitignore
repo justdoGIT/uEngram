@@ -1,0 +1,3 @@
+# Large recovered inputs/checkpoints and generated training artifacts remain local.
+recovered/
+v3/

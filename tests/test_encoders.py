@@ -20,6 +20,39 @@ def test_dsp_noise_whitened_and_separates_anomalies():
     score = np.linalg.norm(z, axis=1)
     assert auroc(score[200:], s.anomaly[200:] > 0) > 0.8
 
+def test_dsp_zero_iqr_features_use_observed_spread_instead_of_amplifying_outliers():
+    from uengram.encoders import band_features
+
+    rng = np.random.default_rng(5)
+    windows = rng.normal(0, 0.1, (100, 4, 16))
+    windows[:, 0] = 0
+    windows[0, 0] = np.sin(np.arange(16))
+    features = band_features(windows)
+    encoder = DSPEncoder(d=4).fit(windows, 1, None)
+    # The exceptional channel's mean has zero IQR but nonzero spread.
+    assert encoder.scale[0] == pytest.approx(features.std(axis=0)[0])
+    assert encoder.scale[0] > 1e-6
+
+
+def test_whitener_handles_constant_features():
+    from uengram.encoders import Whitener
+
+    z = Whitener().fit(np.ones((8, 4)), 4).transform(np.ones((8, 4)))
+    assert np.isfinite(z).all()
+
+
+def test_cnn_restores_torch_global_settings():
+    pytest.importorskip("torch")
+    import torch
+    from uengram.encoder_cnn import CNNEncoder
+
+    previous_threads = torch.get_num_threads()
+    previous_determinism = torch.are_deterministic_algorithms_enabled()
+    x = synth.generate(64, seed=17).windows
+    CNNEncoder(seed=0, d=4, epochs=1, batch=32).fit(x, 1, None)
+    assert torch.get_num_threads() == previous_threads
+    assert torch.are_deterministic_algorithms_enabled() == previous_determinism
+
 
 def test_cnn_shapes_finite():
     pytest.importorskip("torch")
@@ -66,3 +99,16 @@ def test_context_encoder_learns_lag_and_explains_transitions():
     near, steady = frac_far(ctx)
     assert near < steady + 0.02  # ... but not once the lag is predicted
     assert ctx.encode(s.windows[:10], sequential=False).shape == (10, 16)
+
+def test_context_rejected_window_updates_drive_but_propagates_ramp():
+    from uengram.encoder_ctx import ContextEncoder
+
+    enc = ContextEncoder(reject_k=1)
+    enc.b = np.array([[0.5, 1., 0.]])
+    enc.rscale = np.array([0.1])
+    drive = np.array([0., 1., 2.])
+    ramps = np.array([[0.], [10.], [0.]])
+    residual = enc._residuals(drive, ramps, sequential=True)
+    # The rejected ramp at t=1 is not accepted; at t=2 the ramp prediction
+    # uses propagated ramp 0 and the immediately previous drive u=1.
+    assert residual[2, 0] == pytest.approx(-1.)

@@ -1,0 +1,81 @@
+{
+  "artifact": "preregistration",
+  "cascade_rule": {
+    "assessment_schedule": "assess on candidate entry, then at most once per observed hour while candidate state persists",
+    "elevation": "elevate to operator review only while candidate state persists AND latest review assessment <= 3600 observed seconds old",
+    "no_query": "clean in-reference (decision_state==1) windows are never queried except as prior transition context",
+    "thresholds": {
+      "reassessment_seconds": 3600,
+      "review_confidence_min": 0.5,
+      "review_probability_min": 0.8
+    },
+    "trigger": "candidate state only (decision_state in {unresolved(2), alarm(3)})"
+  },
+  "endpoint": "https://openrouter.ai/api/alpha/decisions",
+  "fail_closed": "missing key / HTTP error / timeout / invalid response => explicit unavailable, never healthy",
+  "input_exclusions": {
+    "allowed_state": [
+      "COMP",
+      "DV_eletric",
+      "MPG",
+      "analog physical values",
+      "novelty",
+      "health",
+      "thresholds",
+      "support",
+      "missingness"
+    ],
+    "existing_warning_channels": [
+      "lps_share",
+      "lps",
+      "oil_level",
+      "pressure_switch"
+    ],
+    "never_send": [
+      "report labels",
+      "fault dates/ids",
+      "stream/file/asset identifiers",
+      "future windows",
+      "post-decision context"
+    ],
+    "relative_time_only": true
+  },
+  "interpretations": [
+    "conservative_preserve_baseline",
+    "advisory_assessment_only"
+  ],
+  "model_pinned": "typesafe/jev-1.14",
+  "prompt_hash": "70bf9db6afeac66520737efba873dbed0fd2c1e262be5c2cf556d3ab63b5ed3a",
+  "prompt_version": "jev-advisory-1",
+  "protocol": "v3-jev-fixed-candidate-triage",
+  "question_schema": {
+    "condition": {
+      "criteria": {
+        "expected": "Observed evidence is consistent with expected operation",
+        "fault_consistent": "Observed evidence supports an abnormal/fault-consistent condition",
+        "insufficient": "Available evidence cannot distinguish expected from abnormal"
+      },
+      "instructions": "Which condition best fits the provided current and prior window evidence?",
+      "type": "choice"
+    },
+    "evidence": {
+      "criteria": {
+        "insufficient": "Missing, unsupported, or conflicting evidence prevents an assessment",
+        "sufficient": "Enough relevant evidence to make an assessment"
+      },
+      "instructions": "Is the provided physical and numerical evidence sufficient to assess this window? Choose insufficient if key evidence is missing or conflicting.",
+      "type": "choice"
+    },
+    "review": {
+      "criteria": {
+        "no_review": "Evidence does not warrant operator review",
+        "review": "Evidence warrants operator review",
+        "uncertain": "Cannot determine whether review is warranted"
+      },
+      "instructions": "Should this candidate window receive operator review based only on the evidence shown?",
+      "type": "choice"
+    }
+  },
+  "recorded_before_outcomes": true,
+  "secrets": "OPENROUTER_API_KEY via kepr exec --env OPENROUTER_API_KEY -- (never argv/files/logs)"
+}

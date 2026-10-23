@@ -1,0 +1,1171 @@
+{
+  "artifact": "cross-host check (msi vs hp, identical requests)",
+  "hp_health_end": {
+    "checkpoint_devices": {
+      "english": "cpu"
+    },
+    "cpu_fallbacks": {
+      "english": {
+        "count": 0,
+        "last_reason": null
+      }
+    },
+    "device": "cpu",
+    "device_is_preference": false,
+    "loaded": [
+      "english"
+    ],
+    "revisions": {
+      "english": "7b928d828b7b0e022f929d9bd2e44165aa270148"
+    },
+    "status": "ok"
+  },
+  "hp_health_start": {
+    "checkpoint_devices": {
+      "english": "cpu"
+    },
+    "cpu_fallbacks": {
+      "english": {
+        "count": 0,
+        "last_reason": null
+      }
+    },
+    "device": "cpu",
+    "device_is_preference": false,
+    "loaded": [
+      "english"
+    ],
+    "revisions": {
+      "english": "7b928d828b7b0e022f929d9bd2e44165aa270148"
+    },
+    "status": "ok"
+  },
+  "hp_remote": {
+    "serve_env": {
+      "LAYA_HOST": "127.0.0.1",
+      "LAYA_MODELS": "english",
+      "LAYA_PORT": "8000",
+      "LAYA_THREADS": "4"
+    },
+    "versions": {},
+    "weights_sha256": {
+      "encoder/config.json": "bf3ab80598fdccf414855a2ce80f22859e4492d06ca8a62ddd1cfb63972f8979",
+      "model.safetensors": "891102d372688fc2a094dac56a384bc537b87c63f21f9f3dac0be2b7cbc8d86c",
+      "rl_agent_config.json": "ae287b56bbcf5f8c4f4541ae9dfd00c914c4c48b940b8398c3058af37ba92bbd",
+      "tokenizer/tokenizer.json": "6c8aaa9a542084f2457eab775d4eeb51f92a70c0fd9de28d5edb0ddec3c08d30",
+      "tokenizer/tokenizer_config.json": "50044de60daaa73df97d262e15a40d4faf0160e7d742df64b377877a1320dd12"
+    }
+  },
+  "hp_unavailable": 0,
+  "pairs": [
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 21,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 191,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 208,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 394,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 472,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 485,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 776,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 782,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 851,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 933,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1016,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1036,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1112,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1125,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1128,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1161,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1173,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1217,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1234,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1338,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1432,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1595,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1649,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1807,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1814,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1897,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 1998,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 2142,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3049,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3112,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3162,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3179,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3188,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3343,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3352,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3424,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3444,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3488,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3630,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3693,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3723,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3730,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3735,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3781,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3861,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3866,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3873,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 3973,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4016,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4019,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4095,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4145,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4184,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4190,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4301,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4340,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4412,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4482,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4486,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4520,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4584,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4594,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4633,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4655,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4661,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4691,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4916,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4947,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 4963,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 5293,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 5388,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 5474,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 5542,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 5813,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 5834,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 6031,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 6129,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 6154,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 6219,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 6323,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 6804,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 6885,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 6887,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 7008,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 7010,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 7034,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 7060,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 7091,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 7321,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 7359,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 7402,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 7646,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 7654,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 7719,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 7881,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 8104,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 8128,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 8179,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 8257,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 8260,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 8320,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 8373,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 8389,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 8517,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 8707,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 8928,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 8986,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 9021,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 9085,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 9088,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 9111,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 9187,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 9256,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 9273,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 9385,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 9407,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 9416,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 9572,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 9688,
+      "stream": "metropt3"
+    },
+    {
+      "d_condition_fault": 0.0,
+      "d_max_any": 0.0,
+      "d_review_confidence": 0.0,
+      "d_review_probability": 0.0,
+      "flip": false,
+      "index": 9792,
+      "stream": "metropt3"
+    }
+  ],
+  "sample_rule": "random.Random(0).sample of msi-answered scheduled states, n=120",
+  "sampled_per_stream": {
+    "metropt3": 120
+  },
+  "seed": 0,
+  "streams_available_in_msi_cache": [
+    "metropt3"
+  ],
+  "summary": {
+    "d_condition_fault": {
+      "max": 0.0,
+      "mean": 0.0
+    },
+    "d_max_any": {
+      "max": 0.0,
+      "mean": 0.0
+    },
+    "d_review_confidence": {
+      "max": 0.0,
+      "mean": 0.0
+    },
+    "d_review_probability": {
+      "max": 0.0,
+      "mean": 0.0
+    },
+    "decision_flips": 0,
+    "pairs": 120
+  },
+  "weights_identical_to_msi": true
+}
