@@ -21,6 +21,8 @@ def input_hash(stream, name):
         h.update(np.ascontiguousarray(array))
     if name == "cnn2s":
         h.update(np.ascontiguousarray(stream.cond, dtype=np.float32))
+    elif name.startswith("cnn3_"):
+        h.update(np.ascontiguousarray(stream.cond[:, :3], dtype=np.float32))
     return h.hexdigest()
 
 

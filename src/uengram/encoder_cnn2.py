@@ -47,6 +47,15 @@ class CNN2Encoder:
             x = np.concatenate((x, c), axis=1)
         return x
 
+    def _fit_normalizer(self, x, split):
+        """Fit default CNN2 normalization on the chronological fit prefix."""
+        channels = x.shape[1]
+        analog = x[:split, :self.analog_channels]
+        self.center = np.median(analog, axis=(0, 2), keepdims=True).astype(np.float32)
+        q25, q75 = np.percentile(analog, [25, 75], axis=(0, 2), keepdims=True)
+        self.scale = np.maximum((q75 - q25) / 1.349, 1e-6).astype(np.float32)
+        self.cond_center = (np.mean(x[:split, self.analog_channels:], axis=(0, 2), keepdims=True).astype(np.float32)
+                            if channels > self.analog_channels else np.zeros((1, 0, 1), np.float32))
     def _scaled(self, x):
         analog = (x[:, :self.analog_channels] - self.center) / self.scale
         if self.analog_channels < x.shape[1]:
@@ -84,12 +93,8 @@ class CNN2Encoder:
         self.analog_channels = np.asarray(train_windows).shape[1]
         # Hold out the final chronological 15% before estimating input scales.
         split = min(max(int(n * .85), 2), n - 1)
-        analog = x[:split, :self.analog_channels]
-        self.center = np.median(analog, axis=(0, 2), keepdims=True).astype(np.float32)
-        q25, q75 = np.percentile(analog, [25, 75], axis=(0, 2), keepdims=True)
-        self.scale = np.maximum((q75 - q25) / 1.349, 1e-6).astype(np.float32)
-        self.cond_center = (np.mean(x[:split, self.analog_channels:], axis=(0, 2), keepdims=True).astype(np.float32)
-                            if channels > self.analog_channels else np.zeros((1, 0, 1), np.float32))
+        self._fit_normalizer(x, split)
+
         xs = self._scaled(x)
         xt = torch.from_numpy(xs).to(self.device)
         train = xt[:split]

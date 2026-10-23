@@ -26,6 +26,8 @@ def gate_stats(encoder, W_fit, W_cal, groups_fit, cond_fit=None, cond_cal=None) 
             "outside_fit_range_fraction": float(outside.mean())}
 
 
+
+
 def accept_gate(stats: dict) -> bool:
     """Apply provisional development thresholds; these are not guarantees."""
     keys = ("validation_loss", "mean_member_cka", "min_member_cka",

@@ -1,0 +1,241 @@
+{
+  "schema": 1,
+  "selection_rule": "Select only complete MetroPT3 configurations: all expected seeds, >=1 event detected per seed, false_alarm_per_week <= 1 and alarm_time_share_clean <= 0.02 per seed. Rank by mean event detections, then worst max(FA/week, 50*clean alarm share), mean window balanced accuracy, then lower persistence/complexity. Use fixed seed 0 and the identical method/encoder/variant/config on MetroPT2 Jan and Apr; never tune holdouts.",
+  "selection_rule_sha256": "a720aa2568f821056bca1c9d3dc9c7c43c7cc7773789098ca4b52b0299ea54bd",
+  "inputs": {
+    "results/v3_physical.jsonl": {
+      "sha256": "537654fd0f6b91fdf278a62cd51ba8449dadfd5e1a31c04305282576970f2344",
+      "bytes": 387696
+    },
+    "results/v3_cnn.jsonl": {
+      "sha256": "b7c37aaa2c1164c68db686e5f65c4dd73ed40f8c7c1c3f802e540438652d4aea",
+      "bytes": 502776
+    }
+  },
+  "selected_candidate": {
+    "method": "uengram",
+    "encoder": "dsp",
+    "variant": "v2_frozen",
+    "config": {
+      "aci_gamma": 0.0,
+      "alpha": 0.003,
+      "health_needs_baseline": true,
+      "k_health": 0,
+      "k_novelty": 3,
+      "min_state_windows": 100,
+      "new_state_alert": true,
+      "per_state": true
+    },
+    "expected_seeds": [
+      0
+    ],
+    "event_count": 4,
+    "metrics": {
+      "events_detected": {
+        "mean": 3.0,
+        "min": 3.0,
+        "max": 3.0
+      },
+      "false_alarm_per_week": {
+        "mean": 0.7407187085012238,
+        "min": 0.7407187085012238,
+        "max": 0.7407187085012238
+      },
+      "alarm_time_share_clean": {
+        "mean": 0.005996644230718761,
+        "min": 0.005996644230718761,
+        "max": 0.005996644230718761
+      },
+      "alerts_per_week": {
+        "mean": 40.263352654959384,
+        "min": 40.263352654959384,
+        "max": 40.263352654959384
+      },
+      "operator_events_per_week": {
+        "mean": 40.263352654959384,
+        "min": 40.263352654959384,
+        "max": 40.263352654959384
+      },
+      "notifications_per_week_all": {
+        "mean": 39.04619220402074,
+        "min": 39.04619220402074,
+        "max": 39.04619220402074
+      },
+      "unresolved_episodes_per_week": {
+        "mean": 43.9669461974655,
+        "min": 43.9669461974655,
+        "max": 43.9669461974655
+      },
+      "operator_events_with_unresolved_per_week": {
+        "mean": 44.07276315582282,
+        "min": 44.07276315582282,
+        "max": 44.07276315582282
+      },
+      "window_precision": {
+        "mean": 0.43478260869565216,
+        "min": 0.43478260869565216,
+        "max": 0.43478260869565216
+      },
+      "window_sensitivity": {
+        "mean": 0.18181818181818182,
+        "min": 0.18181818181818182,
+        "max": 0.18181818181818182
+      },
+      "window_specificity": {
+        "mean": 0.9939687612763545,
+        "min": 0.9939687612763545,
+        "max": 0.9939687612763545
+      },
+      "window_balanced_accuracy": {
+        "mean": 0.5878934715472681,
+        "min": 0.5878934715472681,
+        "max": 0.5878934715472681
+      }
+    }
+  },
+  "selected": {
+    "metropt3": {
+      "stream": "metropt3",
+      "method": "uengram",
+      "encoder": "dsp",
+      "variant": "v2_frozen",
+      "config": {
+        "alpha": 0.003,
+        "k_novelty": 3,
+        "k_health": 0,
+        "per_state": true,
+        "min_state_windows": 100,
+        "new_state_alert": true,
+        "aci_gamma": 0.0,
+        "health_needs_baseline": true
+      },
+      "seed": 0,
+      "expected_seeds": [
+        0
+      ],
+      "event_count": 4,
+      "trace": {
+        "path": "data/metropt3/v3_followup_traces/metropt3_uengram_dsp_0_v2_frozen.npz",
+        "sha256": "dc48e3413e5678dd9502ab37eb9f15e4053a0712e162ff92f21ca240d7ab387b",
+        "bytes": 1095969
+      },
+      "metrics": {
+        "auroc": 0.9773936071889575,
+        "ap": 0.45056744462127246,
+        "health_auroc": 0.9892591568554248,
+        "health_ap": 0.5720680304267057,
+        "false_alarm_per_week": 0.7407187085012238,
+        "alerts_per_week": 40.263352654959384,
+        "operator_events_per_week": 40.263352654959384,
+        "alarm_time_share_clean": 0.005996644230718761,
+        "events_detected": 3.0,
+        "lead_hours": 6.825648148148148,
+        "notifications_per_week_all": 39.04619220402074,
+        "unresolved_share_clean": 0.14457556866992213,
+        "unresolved_episodes_per_week": 43.9669461974655,
+        "operator_events_with_unresolved_per_week": 44.07276315582282,
+        "window_sensitivity": 0.18181818181818182,
+        "window_specificity": 0.9939687612763545,
+        "window_balanced_accuracy": 0.5878934715472681,
+        "window_precision": 0.43478260869565216,
+        "window_f1": 0.2564102564102564
+      }
+    },
+    "metropt2_jan": {
+      "stream": "metropt2_jan",
+      "method": "uengram",
+      "encoder": "dsp",
+      "variant": "v2_frozen",
+      "config": {
+        "alpha": 0.003,
+        "k_novelty": 3,
+        "k_health": 0,
+        "per_state": true,
+        "min_state_windows": 100,
+        "new_state_alert": true,
+        "aci_gamma": 0.0,
+        "health_needs_baseline": true
+      },
+      "seed": 0,
+      "expected_seeds": [
+        0
+      ],
+      "event_count": 3,
+      "trace": {
+        "path": "data/metropt3/v3_followup_traces/metropt2_jan_uengram_dsp_0_v2_frozen.npz",
+        "sha256": "a863250276c859f1cc50beab4f29a81e1460264eb6b6bd0c72675fa8f454edab",
+        "bytes": 730423
+      },
+      "metrics": {
+        "auroc": 0.49080716646634615,
+        "ap": 0.025368678692885702,
+        "health_auroc": 0.6365971065067745,
+        "health_ap": 0.035905493307324954,
+        "false_alarm_per_week": 0.0,
+        "alerts_per_week": 16.32496740547588,
+        "operator_events_per_week": 16.32496740547588,
+        "alarm_time_share_clean": 0.0,
+        "events_detected": 0.0,
+        "lead_hours": null,
+        "notifications_per_week_all": 17.340727937020258,
+        "unresolved_share_clean": 0.02381310096153846,
+        "unresolved_episodes_per_week": 16.478976531942635,
+        "operator_events_with_unresolved_per_week": 16.478976531942635,
+        "window_sensitivity": 0.0,
+        "window_specificity": 1.0,
+        "window_balanced_accuracy": 0.5,
+        "window_precision": null,
+        "window_f1": 0.0
+      }
+    },
+    "metropt2_apr": {
+      "stream": "metropt2_apr",
+      "method": "uengram",
+      "encoder": "dsp",
+      "variant": "v2_frozen",
+      "config": {
+        "alpha": 0.003,
+        "k_novelty": 3,
+        "k_health": 0,
+        "per_state": true,
+        "min_state_windows": 100,
+        "new_state_alert": true,
+        "aci_gamma": 0.0,
+        "health_needs_baseline": true
+      },
+      "seed": 0,
+      "expected_seeds": [
+        0
+      ],
+      "event_count": 2,
+      "trace": {
+        "path": "data/metropt3/v3_followup_traces/metropt2_apr_uengram_dsp_0_v2_frozen.npz",
+        "sha256": "941dc9086261c6339e7a1d2eebc0bcf05762054bf5c7b4b76457a1c068875c05",
+        "bytes": 418903
+      },
+      "metrics": {
+        "auroc": 0.8118714962831107,
+        "ap": 0.16665409667505063,
+        "health_auroc": 0.9692427043542409,
+        "health_ap": 0.43398386236819336,
+        "false_alarm_per_week": 0.0,
+        "alerts_per_week": 37.71703713730457,
+        "operator_events_per_week": 37.71703713730457,
+        "alarm_time_share_clean": 0.0,
+        "events_detected": 0.0,
+        "lead_hours": null,
+        "events_warned_before_lps": 0.0,
+        "hours_before_lps": null,
+        "notifications_per_week_all": 36.11237979510172,
+        "unresolved_share_clean": 0.05148317170564746,
+        "unresolved_episodes_per_week": 38.59417753584654,
+        "operator_events_with_unresolved_per_week": 38.59417753584654,
+        "window_sensitivity": 0.0,
+        "window_specificity": 1.0,
+        "window_balanced_accuracy": 0.5,
+        "window_precision": null,
+        "window_f1": 0.0
+      }
+    }
+  }
+}

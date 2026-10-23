@@ -645,3 +645,58 @@ Large data, raw score/embedding caches, checkpoints and snapshot archives
 remain local under the paths recorded in the result files; they are not
 embedded in the Git repository.
 
+### Exploratory v3 follow-up (development data, not confirmation)
+
+All three compressor recordings are consumed, so these are development and
+exploratory replay results. The v2 freeze `cddfbf1`, its result files and
+alarm configurations are unchanged. Details and commands are in
+`docs/EXPLAINED.md` section 18; selection logic and the complete per-stream
+comparison are in `results/v3_followup_summary.json`, with the immutable
+baseline freeze in `results/v3_normal_freeze.json`.
+
+The range/state normalization ablation fixes the TP2 pathological
+normalized scale (the healthy-range floor), but does **not** yield a
+within-budget improvement over the frozen policy on MetroPT3. No CNN
+configuration detects at least one event on every seed within budget.
+January's reports still have no threshold-crossing evidence in any
+configuration, consistent with the earlier diagnosis that there was no
+novelty crossing to turn into an alarm; the best January result is 2 of 3
+events. April is detected well (most configurations find both reports),
+which is replay, not transfer.
+
+Removing the new-state veto and adding the health channel (`no_veto_health`)
+detects all 4 MetroPT3 events but holds the machine in alarm 4.75% of clean
+time (budget 2%), and its January result is unchanged at 0 of 3. Physical
+residuals detect all 4 MetroPT3 events with 0.79 false-alarm episodes per
+week, but clean alarm time is 4.99%, still above budget: the gain in recall
+comes from longer standing alarms. The conditional physical baseline on the
+April replay detects both reports at 0.15 false-alarm episodes per week and
+0.04% clean alarm time (precision 0.978), but this is posthoc and must not
+be read as transfer or a fresh confirmation.
+
+**Honest conclusion:** no new configuration satisfies both the recall and
+the clean-alarm-time budget simultaneously on MetroPT3; the selection rule
+therefore falls back to the frozen `uengram/dsp/v2_frozen` baseline. Improved
+fault detection and low false-alarm burden remain unresolved, and the
+remaining alarms are dominated by advisory/unresolved notifications rather
+than a deployable fault alarm.
+
+Native-source snapshots now preserve original CSV columns and fractional
+timestamps, with the exact last model observation matched to its source
+row and causal/post-decision context separated; published-report diagnostic
+snapshots are labelled separately from predicted alarms
+(`results/v3_native_snapshots.json`).
+
+### Jev advisory evaluation (blocked)
+
+The normal baseline freeze is written before any machine case was sent to
+Jev. The typed advisor cannot be evaluated yet: the correct
+[OpenRouter System One API](https://openrouter.ai/docs/guides/community/jev)
+returns HTTP 402 because the stored OpenRouter account has never purchased
+credits, and no `TYPESAFE_API_KEY` is present. No other model is substituted
+for Jev and no advisory results are fabricated. The fixed prompt/schema,
+candidate-cascade rule and threshold preregistration are recorded; the
+paired baseline-versus-advisory comparison runs when the prerequisite is
+satisfied (add credits or store `TYPESAFE_API_KEY`). The credential and
+blocker are recorded, not the key.
+

@@ -122,3 +122,15 @@ counts and preserved provenance do not establish useful fault warning.
 CARE attempted all 95 datasets; six have no eligible evaluation rows, so no
 full-cohort CARE score or confidence interval is reported.
 See [RESULTS](docs/RESULTS.md) for the complete comparison and limitations.
+
+## Follow-up experiments (exploratory, not confirmation)
+
+Healthy-range and state-conditioned normalization, demand-conditioned
+pressure/duty/thermal residuals, unresolved-state handling and native-source
+snapshots were added after the v2 rejection. On the consumed recordings no
+new configuration improves both recall and the clean-alarm-time budget at
+once; the frozen baseline remains the selected fallback. Native snapshots
+now retain original columns and fractional timestamps with explicit
+causal/post-decision boundaries. The typed Jev advisory comparison is
+preregistered but blocked pending OpenRouter credits or a TypeSafe key.
+Details: [RESULTS](docs/RESULTS.md) and [EXPLAINED section 18](docs/EXPLAINED.md).

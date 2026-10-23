@@ -639,3 +639,101 @@ Confirmation commands: `python -m bench.run_v2 --streams metropt2 --methods ueng
 
 Required file layout: `data/metropt2/dataset_train.csv`, `data/metropt2/MetroPT2.csv`, and `data/care/CARE_To_Compare.zip`. Large data/cache directories may be symlinked to a data volume; scratch scores and evidence are not committed. Delete or change the cache directory when changing the encoder/scoring implementation: fingerprints identify inputs, not arbitrary future code revisions.
 
+## 18. Exploratory follow-up: normalization, physical residuals and native evidence
+
+All three compressor recordings have already been inspected. These runs are
+development/exploratory replays, not independent confirmation. The v2 result
+files and frozen alarm configurations remain unchanged. Fixing a measurement
+or representation defect is not, by itself, proof of improved fault warning.
+
+### Normal numerical experiments
+
+- CNN3 reuses CNN2's architecture, objective, 24-epoch maximum, five members
+  and chronological validation split. Both ablations use only commissioning
+  prefix statistics. `range` divides by the larger of the IQR-derived scale
+  and `(healthy maximum - healthy minimum) / 6`; `state` estimates IQR scales
+  by observed duty bin, with that same full-range floor. The global center
+  remains fixed, preserving absolute level shifts. A valid unseen duty bin
+  uses the global scale without asserting healthy-state support. No clipping
+  of out-of-range faults is performed. This range floor is a heuristic,
+  not an estimate of physical sensor noise.
+- Train both modes on each recording's own commissioning period, seeds 0–4,
+  with COMP/DV_eletric/MPG conditioning. Exclude LPS and other equipment
+  warning outputs from predictive inputs. Report raw-latent spectrum/rank,
+  cross-member agreement, numerical failures and downstream metrics. The old
+  CKA gate is diagnostic; high agreement is not an acceptance certificate.
+- Physical marginal and conditional-ridge baselines use loaded pressure
+  recovery, unloaded pressure decay, duty, oil-temperature rate, current and
+  compressor-to-panel pressure difference. Slopes use actual decimated
+  observation times and same-phase adjacent samples. Unsupported phase
+  slopes remain missing. Fit coefficients and residual scales on commissioning
+  only. Starting pressure, prior duty, controls and parked share where
+  available are **demand proxies**, not measured customer air demand.
+  A leak can itself affect these proxies, so conditioning can hide faults.
+- Evaluate physical score thresholds at alpha 0.01/0.003, persistence
+  1/3/6 and global/per-state calibration. Compare the frozen policy with
+  no-veto and no-veto-plus-health variants on identical DSP/CNN scores.
+  A separate DSP/physical union uses alpha 0.005 per channel and persistence
+  1/3/6. Do not silently search further settings after looking at replay
+  outcomes.
+- Decision labels distinguish unobserved, in-reference, unresolved and alarm.
+  A new candidate or unsupported state is not declared benign. Unresolved
+  states do not count as detected faults; their workload is reported
+  separately. In-reference does not certify physical health.
+- Retain event detection, lead, false alarms per observed clean week and
+  clean alarm-time share. Add window sensitivity, specificity, precision,
+  F1 and balanced accuracy on the existing eligible labeled population.
+  Do not advertise plain accuracy dominated by normal observations.
+
+Select only on MetroPT3, with all five CNN seeds present: each seed must
+detect at least one event, have at most one false-alarm episode per clean
+week and at most 2% clean alarm time. Rank by mean events detected, worst
+normalized alarm burden, balanced accuracy and then lower complexity.
+Seed ranges describe encoder variation, not independent-machine confidence
+intervals. Apply the identical selected configuration to both MetroPT2
+recordings without tuning there; preserve outside-budget tradeoffs.
+
+### Native-source snapshots
+
+The original recorder preserves decimated model inputs, not all native
+measurements. The new recorder scans the original CSV once for requested
+same-segment context, retaining every observed source column and timestamp,
+raw cell strings, source row indices/hashes and a complete-file SHA-256.
+It does not interpolate missing rows or invent sensors. Original fractional
+timestamps and the rounded model timestamp are both retained.
+
+Identify the precise native observation corresponding to the last model
+sample. Causal and post-decision context are separate; post-context becomes
+available later and never feeds the decision. Missing matches, unsupported
+time precision, gaps and clipped context are explicit. Published-report
+diagnostic snapshots are labeled separately from actual predicted alarms.
+These are observations of instrumented channels, not complete physical
+machine states. Sensor timestamps also do not establish server receipt
+time: the [dataset paper](https://pmc.ncbi.nlm.nih.gov/articles/PMC9747912/)
+describes five-minute GSM transfers, whose latency is not measured here.
+
+### Jev as a separately evaluated advisory layer
+
+Freeze normal result-file and selected-trace hashes before sending machine
+cases to Jev. The typed advisor receives only current/prior causal evidence,
+numerical residuals/scores, calibration support and missingness; no fault
+labels, report dates/IDs, absolute timestamps, file/asset identifiers,
+future context or direct LPS/oil-level warning outputs. Candidate entry and
+at most hourly reassessment define a cascade; it cannot recover faults
+with no candidate evidence. Thresholds and prompt/schema are fixed before
+advisory outcomes, not fitted to these consumed reports.
+
+Compare whole-timeline event misses, false escalations, clean alarm time
+and operator burden against the same frozen baseline. Preserve unavailable
+responses explicitly, report request coverage/latency, and distinguish
+conservative baseline preservation from advisory-only classification.
+Probability calibration against coarse report intervals is exploratory,
+not a safety guarantee. No equipment control is connected to this advisor.
+
+Use the documented [OpenRouter System One API](https://openrouter.ai/docs/guides/community/jev)
+or [TypeSafe API](https://docs.typesafe.ai/introduction), not chat completions
+or the distinct Jev Router product. Schema-constrained output does not
+guarantee correct diagnoses or calibration on industrial data. Missing
+credentials, account credits or actual responses block empirical Jev
+results; do not replace them with heuristics or fabricate scores.
+

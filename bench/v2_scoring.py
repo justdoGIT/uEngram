@@ -68,6 +68,16 @@ def score_stream(stream, method: str, enc_name: str, seed: int, label: str = "",
     """Per-window novelty, health, memory action and run facts for one method."""
     enc, Z = (cached_encoding(stream, enc_name, seed, encoding_dir) if encoding_dir else
               encode(stream, enc_name, seed))
+    return score_embeddings(stream, method, enc_name, seed, enc, Z, label,
+                            record_encoding=encoding_dir is not None)
+
+
+def score_embeddings(stream, method, enc_name, seed, enc, Z, label="", *, record_encoding=True):
+    """Reuse the continuous scoring loop with explicitly supplied embeddings.
+
+    This entry point permits normalization ablations without changing the
+    frozen v2 encoder factory or any existing detector mathematics.
+    """
     n = len(Z)
     nov, health = np.full(n, np.nan), np.full(n, np.nan)
     act = np.zeros(n, np.int8)
@@ -77,7 +87,7 @@ def score_stream(stream, method: str, enc_name: str, seed: int, label: str = "",
     meta = {"method": method, "encoder": enc_name, "seed": seed, "stream": stream.name}
     meta["input_hash"] = input_hash(stream, enc_name)
     reference_mu, reference_var = np.empty((0, D)), np.empty((0, D))
-    if encoding_dir:
+    if record_encoding:
         meta["encoding"] = enc.encoding_meta
         meta["encoding_path"] = enc.encoding_path
     if method == "uengram":

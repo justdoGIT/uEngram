@@ -1,0 +1,112 @@
+{
+  "purpose": "Recovered local Colab training files; no credentials or account configuration selected.",
+  "files": [
+    {
+      "path": "recovered/colab_package.zip",
+      "source": "/home/kk/.local/state/uengram/colab_package.zip",
+      "bytes": 12115,
+      "sha256": "a5066141b18f642190c9de18f5ca7dafaf539006a5fc13fbbb24e13f7306f419"
+    },
+    {
+      "path": "recovered/uengram_encoder.zip",
+      "source": "/home/kk/.local/state/uengram/uengram_encoder.zip",
+      "bytes": 3060564,
+      "sha256": "3b213384116766505574fd857704eb6b9f844ae3937156962381bdf0de87bda6"
+    },
+    {
+      "path": "recovered/metropt3_colab_input.npz",
+      "source": "/home/kk/.local/state/uengram/metropt3_colab_input.npz",
+      "bytes": 12580088,
+      "sha256": "48346bb91a759aeaaea1bc3983e06c342e30b118d7d0bdc6c1dd0524bf4c192d"
+    },
+    {
+      "path": "recovered/colab_cnn2_gate.json",
+      "source": "/home/kk/.local/state/uengram/colab_cnn2_gate.json",
+      "bytes": 1698,
+      "sha256": "b54180b1148f83c6d285db53115fd4b3d35bfa44e665af3cfa1eddf6cd3135bf"
+    },
+    {
+      "path": "recovered/colab_cnn2.log",
+      "source": "/home/kk/.local/state/uengram/colab_cnn2.log",
+      "bytes": 7809,
+      "sha256": "818f8ab824e7f36ded91684711bbb7876f2438ce339bf6b78309f8d7b9950d39"
+    },
+    {
+      "path": "recovered/colab_training_smoke.log",
+      "source": "/home/kk/.local/state/uengram/colab_training_smoke.log",
+      "bytes": 549,
+      "sha256": "af9cf493a290fc424e785f11868ad1326256d373982318a3011057b819005825"
+    },
+    {
+      "path": "recovered/colab_checkpoint_check.json",
+      "source": "/home/kk/.local/state/uengram/colab_checkpoint_check.json",
+      "bytes": 757,
+      "sha256": "91011b66101f26f7811f93784f886cb0e1f1d400758e8c3f310ec1d67a2eae71"
+    },
+    {
+      "path": "recovered/cnn2_cpu_fit.log",
+      "source": "/home/kk/.local/state/uengram/cnn2_cpu_fit.log",
+      "bytes": 182,
+      "sha256": "dcece98b8866fab9a62a239db6b9dd921c54ec73223b4f83245fb2f35af9f214"
+    },
+    {
+      "path": "recovered/metropt3_cnn2_0.npz",
+      "source": "/home/kk/.local/state/uengram/metropt3_cnn2_0.npz",
+      "bytes": 2988495,
+      "sha256": "5f39dd1eaa4921336fbe82f5ac00a3c21fdbb05fb059b09ed7fca147348f3688"
+    },
+    {
+      "path": "recovered/metropt3_cnn2_1.npz",
+      "source": "/home/kk/.local/state/uengram/metropt3_cnn2_1.npz",
+      "bytes": 2989118,
+      "sha256": "4bf0189d0d5e6b2c2aba7526c93d7f59fb37e4f2d0c600639f712f91ee689e5b"
+    },
+    {
+      "path": "recovered/metropt3_cnn2_2.npz",
+      "source": "/home/kk/.local/state/uengram/metropt3_cnn2_2.npz",
+      "bytes": 2994472,
+      "sha256": "f5d13c1949c5d0077ef6167e2acb1f995eda20e29bbc5a8e48332c8b12780615"
+    },
+    {
+      "path": "recovered/metropt3_cnn2_3.npz",
+      "source": "/home/kk/.local/state/uengram/metropt3_cnn2_3.npz",
+      "bytes": 2989305,
+      "sha256": "4edb2511f5e9fcfda7b3bbbd24d23d98243695810fc6bc0714b4d5a536e73c32"
+    },
+    {
+      "path": "recovered/metropt3_cnn2_4.npz",
+      "source": "/home/kk/.local/state/uengram/metropt3_cnn2_4.npz",
+      "bytes": 2989936,
+      "sha256": "c1f2fd3fba095102af9fbfb54cbd327e2295d05862fb8e7502b7519463cb072d"
+    },
+    {
+      "path": "recovered/checkpoint/metropt3_cnn2_0.npz",
+      "source": "/home/kk/.local/state/uengram/colab_checkpoint/metropt3_cnn2_0.npz",
+      "bytes": 2988672,
+      "sha256": "4cfd4d6ac7a3e027a8af777b161ea352c3841c07ee3468e7a6eef344bdc7cfc9"
+    },
+    {
+      "path": "recovered/checkpoint/metropt3_cnn2_0.pkl",
+      "source": "/home/kk/.local/state/uengram/colab_checkpoint/metropt3_cnn2_0.pkl",
+      "bytes": 79557,
+      "sha256": "27e421906fc054b2eb2c94e6cfef8a251fd9b27eccdd0f92d6e9462fa1400ee4"
+    },
+    {
+      "path": "recovered/checkpoint/metropt3_cnn2_gate.json",
+      "source": "/home/kk/.local/state/uengram/colab_checkpoint/metropt3_cnn2_gate.json",
+      "bytes": 562,
+      "sha256": "afa4f16955ce653b96852b4d76847e1d46d550c005a6501b669eaaa10035ead7"
+    },
+    {
+      "path": "recovered/encoder_v2_gate.json",
+      "source": "/home/kk/projects/uEngram/results/encoder_v2_gate.json",
+      "bytes": 9645,
+      "sha256": "85e291b60f80d0207cf0821762b2ead0245be82ac334fdda6dbf379882324aa5"
+    }
+  ],
+  "skipped": [],
+  "runtime_recovery": "Server reported no active sessions. Files existing only on terminated VMs are unavailable.",
+  "checkpoint_scope": "Seed-0 CPU-portable CNN2 checkpoint available; five seed embeddings recovered. Other seed checkpoints were not retained.",
+  "script_recovery": "Historical executable source is retained in colab_package.zip. No Colab helper scripts were found in the task directory or accessible trash listing; project archive lookup returned no sessions.",
+  "safety": "Load pickle only if trusted. Artifact scanning is not a security guarantee. No OAuth/ADC/Kepr/config files were copied."
+}
