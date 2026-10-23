@@ -15,7 +15,7 @@ class Whitener:
         lam, vec = np.linalg.eigh(np.cov(F, rowvar=False))
         order = np.argsort(lam)[::-1][:d]
         lam, vec = lam[order], vec[:, order]
-        lam = np.maximum(lam, 1e-8 * lam.max())
+        lam = np.maximum(lam, 1e-8 * max(float(lam.max()), 1e-12))
         self.V = vec
         self.lam = lam
         return self
@@ -38,7 +38,7 @@ class NoiseWhitener:
 
     def fit(self, z: np.ndarray, noise_lag: int, groups: np.ndarray | None) -> "NoiseWhitener":
         lam, V = np.linalg.eigh(robust_noise_cov(z, noise_lag, groups))
-        lam = np.maximum(lam, 1e-12 * lam.max())
+        lam = np.maximum(lam, 1e-12 * max(float(lam.max()), 1e-12))
         self.W = (V / np.sqrt(lam)) @ V.T
         return self
 
@@ -80,7 +80,9 @@ class DSPEncoder:
         F = self._raw(train_windows, True)
         self.med = np.median(F, axis=0)
         q75, q25 = np.percentile(F, [75, 25], axis=0)
-        self.scale = np.maximum((q75 - q25) / 1.349, 1e-6)
+        robust = (q75 - q25) / 1.349
+        spread = F.std(axis=0)
+        self.scale = np.where(robust > 1e-6, robust, np.maximum(spread, 1e-6))
         self.whitener, self.noise, self.sigma0 = fit_projection(
             (F - self.med) / self.scale, self.d, noise_lag, groups)
         return self

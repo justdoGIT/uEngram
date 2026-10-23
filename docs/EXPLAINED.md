@@ -34,7 +34,7 @@ Instead of remembering raw waveforms, describe each window with a few numbers a 
 The memory needs a compact vector per window so that "is this like something I have seen?" becomes a distance. A hand-built, deterministic encoder needs no training loop on the device and no GPU.
 
 ### The math
-For each channel $c$ with samples $x_k$: mean $m=\frac1K\sum x_k$; $\log(\mathrm{std}+10^{-6})$; and four log band energies. With $\tilde x=x-m$, power $P_f=|\mathrm{rfft}(\tilde x)_f|^2/K$ for bins $f=1..K/2$, the bins are split into four contiguous equal-count bands $b$ and the feature is $\log(\sum_{f\in b}P_f+10^{-8})$. That is $6C$ features. Each feature is robust-standardised, $(F-\mathrm{median})/(\mathrm{IQR}/1.349)$, with IQR floored at $10^{-6}$ ($1.349$ makes IQR equal one standard deviation for Gaussian data). The result is whitened (section 4) to $d=16$ dimensions.
+For each channel $c$ with samples $x_k$: mean $m=\frac1K\sum x_k$; $\log(\mathrm{std}+10^{-6})$; and four log band energies. With $\tilde x=x-m$, power $P_f=|\mathrm{rfft}(\tilde x)_f|^2/K$ for bins $f=1..K/2$, the bins are split into four contiguous equal-count bands $b$ and the feature is $\log(\sum_{f\in b}P_f+10^{-8})$. That is $6C$ features. Each feature is centered by its training median and divided by its IQR/1.349 scale; if that scale is at most $10^{-6}$, its training standard deviation is used instead, floored at $10^{-6}$ for a constant feature. The result is whitened (section 4) to $d=16$ dimensions.
 
 ### Why this and not the obvious alternative
 Logs make multiplicative changes (vibration doubling) additive, so a Euclidean or Mahalanobis distance treats "2x louder" and "half as loud" symmetrically. Median/IQR standardisation keeps the training anomalies from stretching the scale. Raw FFT bins would give a few-hundred-dimensional vector dominated by whichever band is loudest.
@@ -53,10 +53,10 @@ A tiny neural network is taught to squeeze a window into 16 numbers and then reb
 It is the learned alternative to section 2, and the architecture doc's proposal. Having both shows that the memory logic does not depend on a particular encoder.
 
 ### The math
-Per-channel standardisation first: $x\leftarrow (x-\mu_c)/\max(\sigma_c,10^{-6})$ with training statistics. Encoder: `Conv1d(C,32,5,s2)–GELU–Conv1d(32,64,5,s2)–GELU–AvgPool–Linear(64,16)`. Decoder: `Linear(16,128)–GELU–Linear(128,CK)`. Loss is the MSE on the standardised input, minimised with AdamW (lr $10^{-3}$, weight decay $10^{-4}$, 30 epochs, batch 128). The 16-d latents are then whitened. No L2 normalisation of the latent (section 14, correction 2).
+Per-channel standardisation first: $x\leftarrow (x-\mu_c)/\max(\sigma_c,10^{-6})$ with training statistics. Encoder: `Conv1d(C,32,5,s2)–GELU–Conv1d(32,64,5,s2)–GELU–AdaptiveAvgPool1d(1)–Linear(64,16)`. Decoder: `Linear(16,128)–GELU–Linear(128,CK)`. Loss is the MSE on the standardised input, minimised with AdamW (lr $10^{-3}$, weight decay $10^{-4}$, 30 epochs, batch 128). The 16-d latents are then whitened. No L2 normalisation of the latent (section 14, correction 2). After a successful fit, the encoder restores the prior PyTorch thread count and deterministic-algorithm setting.
 
 ### Why this and not the obvious alternative
-The doc trains on unscaled channels, so a channel with large units (rpm) dominates the loss and the code would "learn rpm". The MLP decoder (not a transposed convolution) works for any $K$ so the same class serves $K=64$ and $K=16$.
+Per-channel standardisation prevents high-unit channels such as rpm from dominating the reconstruction loss. The MLP decoder (not a transposed convolution) works for any $K$, so the class serves $K=64$ and $K=16$.
 
 ### Where in code
 `src/uengram/encoder_cnn.py:CNNEncoder`. Torch is imported lazily so the DSP path never needs it.
@@ -74,7 +74,7 @@ In v1, 35% of normal windows within 4 steps of a regime change were flagged agai
 ### The math
 Fit a line to the coolant samples in each window: ramp $r_t$ = end minus start. Drive $u_t$ = mean rpm. A first-order lag $x_t = x_{t-1} + a\,(T_{eq}(u_t) - x_{t-1})$ with a quadratic equilibrium temperature $T_{eq}$ gives, between consecutive windows,
 $$r_t = (1-a)\,r_{t-1} + a\,[T_{eq}(u_t) - T_{eq}(u_{t-1})] = b_0\,r_{t-1} + b_1\,\Delta u + b_2\,\Delta(u^2).$$
-Slow wear shifts $T_{eq}$ by the same amount in both windows and cancels. $b$ is fitted by trimmed least squares (6 rounds, keep $|e| < 4\,$MAD) on the training stream. The feature is the residual $e_t = r_t - \hat r_t$, plus the log std of the linearly detrended coolant signal; they replace the channel's six spectral features. Encoding is sequential: if $|e_t|$ exceeds 5 robust scales the window is treated as faulty and does not update the context, which is propagated as $b_0\,r_{t-1}$ with $u$ held (innovation gating). Independent windows (`sequential=False`, e.g. the probe set) assume steady state, $\hat r = 0$.
+Slow wear shifts $T_{eq}$ by the same amount in both windows and cancels. $b$ is fitted by trimmed least squares (6 rounds, keep $|e| < 4\,$MAD) on the training stream. The feature is the residual $e_t = r_t - \hat r_t$, plus the log std of the linearly detrended coolant signal; they replace the channel's six spectral features. Encoding is sequential: if $|e_t|$ exceeds 5 robust scales the window is treated as faulty and does not update the context ramp, which is propagated as $b_0\,r_{t-1}$; the observed drive still advances to $u_t$, so the next prediction uses the actual drive change. Independent windows (`sequential=False`, e.g. the probe set) assume steady state, $\hat r = 0$.
 
 ### Why this and not the obvious alternative
 Three simpler fits failed on the same data (`docs/IMPROVEMENT-ANALYSIS.md`): one-window least squares was pulled by fault windows (a seizure's 0.3 rpm is a high-leverage point); robust trimming discarded the transitions as outliers and learned "temperature never changes" ($b_0 = 0.99$); a one-window equilibrium model was confounded by wear ($a = 0.019$). The two-window form recovers $a = 0.523$ (truth 0.5) and equilibrium steps 0.234 / 0.141 (truth 0.25 / 0.15) from unlabelled data. This is residual generation by analytical redundancy ([Willsky 1984](https://willsky.lids.mit.edu/publ_pdfs/43_pub_IEEE.pdf); [Isermann](https://link.springer.com/book/10.1007/3-540-30368-5)).
@@ -93,7 +93,7 @@ Two re-measurements. First, rotate and rescale the features so that over all tra
 The statistical machinery (chi-square gate, step detector, Bhattacharyya distance, Ward cost) treats the 16 dimensions as independent. If one fluctuation moves several dimensions, a per-dimension distance counts it several times and the gate fires too often.
 
 ### The math
-PCA whitening: training features $F\in\mathbb{R}^{N\times p}$, mean $m$, covariance $\Sigma=V\Lambda V^\top$, top-$d$ eigenpairs, $y=(F-m)V_d\Lambda_d^{-1/2}$ (eigenvalues floored at $10^{-8}\lambda_{\max}$).
+PCA whitening: training features $F\in\mathbb{R}^{N\times p}$, mean $m$, covariance $\Sigma=V\Lambda V^\top$, top-$d$ eigenpairs, $y=(F-m)V_d\Lambda_d^{-1/2}$. PCA eigenvalues are floored at $10^{-8}\max(\lambda_{\max},10^{-12})$; noise-covariance eigenvalues are floored at $10^{-12}\max(\nu_{\max},10^{-12})$, so both roots remain finite even when the estimated covariance is all zero.
 
 Noise whitening: estimate the within-state noise covariance $N$ of $y$ robustly from lag differences (section 5) and set $z = y\,N^{-1/2}$ with the symmetric root $N^{-1/2} = U\,\mathrm{diag}(\nu)^{-1/2}\,U^\top$ (minimal rotation). The noise in $z$ is then uncorrelated with unit variance (tested to 0.01), so the diagonal slot statistics count each correlated fluctuation once. This is the noise-adjustment step of the maximum-noise-fraction transform ([Green et al. 1988](https://doi.org/10.1109/36.3001)), applied after PCA so the kept subspace does not change.
 
@@ -627,7 +627,7 @@ Secondary MetroPT2 analysis: parked share at least 0.9 using the fixed published
 
 ### CNN2 training, diagnostics and compute
 
-`CNN2Encoder`: 24 epochs maximum, batch 128, five members, early-stopping patience 5, final chronological 15% of commissioning for validation. Shift/jitter views use NT-Xent plus auxiliary phase-invariant sensor statistics; no amplitude scaling augmentation. Select the member with greatest mean linear CKA and retain only that network for inference. State channels are optional, but the development state-conditioned candidate failed noise-covariance estimation and is rejected, not repaired with fabricated noise.
+`CNN2Encoder`: 24 epochs maximum, batch 128, five members, early-stopping patience 5, final chronological 15% of commissioning for validation. Shift/jitter views use NT-Xent plus auxiliary phase-invariant sensor statistics; no amplitude scaling augmentation. Select the member with greatest mean linear CKA and retain only that network for inference. State channels are optional, but the development state-conditioned candidate failed noise-covariance estimation and is rejected, not repaired with fabricated noise. After a successful fit, it restores the prior PyTorch thread count and deterministic-algorithm setting.
 
 The provisional label-free gate requires finite validation loss, mean member CKA at least 0.98, minimum CKA at least 0.95, median noise/spread at most 1, and calibration outside-fit-range fraction at most 0.01. These development choices do not guarantee stable event detection, as the five-seed result demonstrates. Covariance trimming without enough inliers fails explicitly. DSP remains selected regardless of favorable individual CNN seeds.
 

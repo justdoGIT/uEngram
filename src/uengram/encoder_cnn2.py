@@ -82,6 +82,8 @@ class CNN2Encoder:
     def fit(self, train_windows, noise_lag: int, groups: np.ndarray | None, cond=None):
         import time
         import torch
+        previous_threads = torch.get_num_threads()
+        previous_determinism = torch.are_deterministic_algorithms_enabled()
         started = time.perf_counter()
         if self.device == "auto":
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -160,6 +162,8 @@ class CNN2Encoder:
         self.medoid = int(np.argmax(means))
         self.enc = member_nets[self.medoid]
         del member_nets
+        torch.set_num_threads(previous_threads)
+        torch.use_deterministic_algorithms(previous_determinism)
         self.whitener, self.noise, self.sigma0 = fit_projection(latent_members[self.medoid], self.d, noise_lag, groups)
         self.fit_seconds = time.perf_counter() - started
         return self

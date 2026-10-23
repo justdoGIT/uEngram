@@ -27,6 +27,8 @@ class CNNEncoder:
     def fit(self, train_windows, noise_lag: int, groups: np.ndarray | None) -> "CNNEncoder":
         import torch
 
+        previous_threads = torch.get_num_threads()
+        previous_determinism = torch.are_deterministic_algorithms_enabled()
         torch.manual_seed(self.seed)
         torch.set_num_threads(4)
         torch.use_deterministic_algorithms(True)
@@ -49,6 +51,8 @@ class CNNEncoder:
                 loss.backward()
                 opt.step()
         self.enc.eval()
+        torch.set_num_threads(previous_threads)
+        torch.use_deterministic_algorithms(previous_determinism)
         self.whitener, self.noise, self.sigma0 = fit_projection(self._latent(x), self.d, noise_lag, groups)
         return self
 

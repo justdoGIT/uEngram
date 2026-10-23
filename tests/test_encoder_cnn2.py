@@ -49,3 +49,12 @@ def test_determinism_cond_and_member_diagnostics():
     np.testing.assert_allclose(np.diag(a.member_cka), 1.)
     means = (a.member_cka.sum(1) - 1) / 2
     assert a.medoid == int(np.argmax(means))
+
+
+def test_cnn2_restores_torch_global_settings():
+    previous_threads = torch.get_num_threads()
+    previous_determinism = torch.are_deterministic_algorithms_enabled()
+    x = duty_windows(n=24)
+    CNN2Encoder(d=4, epochs=1, batch=8, members=1, patience=1).fit(x, 1, None)
+    assert torch.get_num_threads() == previous_threads
+    assert torch.are_deterministic_algorithms_enabled() == previous_determinism
