@@ -869,3 +869,29 @@ originally named "no-veto" fix (`new_state_alert=False`) is not the active
 mechanism once the health channel is open. No single parameter, and no
 explored 3-parameter grid, closes `alarm_time_share_clean` to the 2%
 budget while keeping all 4 events detected. Harness: `bench/alarm_sensitivity.py`.
+
+### v5: a per-modality two-condition alarm does not close it either
+
+`docs/research-two-condition-alarm.md` replaces the pooled distance with
+two conditions. Condition A: at least `m` modalities are in error. These are
+physical channels with label-free conformal thresholds, plus a
+sustained-load duty modality. Condition B: A has held for `k_hold`
+consecutive windows (`bench/modality_alarm.py`).
+
+None of 159 MetroPT3 configurations meets the budget. The reason is the
+duty modality's run lengths, not a threshold:
+
+- One healthy sustained-load run (309 windows) is longer than every event
+  run, and five more are longer than the two short event runs.
+- With `m=1`, detecting all 4 events forces `k_hold <= 41`, which means at
+  least 3.05% clean alarm time.
+- Reaching 2% forces `k_hold >= 78`, which loses July 15.
+
+A closed form of the duty-only alarm matches the harness exactly. The
+fallback-selected configuration (4/4, 0.32 false alarms per week, 3.11%)
+was replayed unchanged on MetroPT2 and detected 0/3 and 0/2 events:
+
+- Those failures happen while the compressor idles or cycles, so windows
+  without loaded samples break the condition-A run before 40 windows.
+- On the judgeable event windows, the physical channels were nearly always
+  in error.
