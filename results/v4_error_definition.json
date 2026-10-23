@@ -1,0 +1,39 @@
+{
+  "error_statement": {
+    "claim": "No explored AlarmPolicy configuration on MetroPT3 (DSP encoder, seed 0, frozen scores) jointly satisfies full recall and the clean-alarm-time budget.",
+    "testable_condition": "events_detected == 4 AND alarm_time_share_clean <= 0.02 AND false_alarm_per_week <= 1",
+    "evidence": {
+      "v2_frozen": {"events_detected": 3, "missed_event": 3, "alarm_time_share_clean": 0.005996644230718761, "false_alarm_per_week": 0.7407187085012238, "satisfies_budget": true, "satisfies_recall": false},
+      "no_veto_health": {"events_detected": 4, "alarm_time_share_clean": 0.04746541440601309, "false_alarm_per_week": 0.9523526252158592, "satisfies_budget": false, "satisfies_recall": true}
+    },
+    "missed_event_detail": {
+      "stream": "metropt3", "event_index": 3, "interval": ["2020-07-15T14:30", "2020-07-15T19:00"],
+      "eligible_windows": 26, "alarm_windows_v2_frozen": 0, "alarm_windows_no_veto_health": 10
+    },
+    "mechanism": "src/uengram/alarm.py AlarmPolicy.step lines 149-151: when action=='new_candidate' (engine opens a brand-new memory slot: the window is far from every existing normal slot) and health is not simultaneously exceeding its threshold, new_state_alert forces n_count=False. The novelty exceedance is logged only as a 'new_state' alert and never raised toward the alarm counter c_nov, so an event entered through an unseen operating regime with normal-looking health can never open an alarm under v2_frozen.",
+    "side_effect_of_the_fix": "Removing the veto and adding the health channel (k_health=3, health_needs_baseline=False) does not only add event 3: it also raises alarm_windows on events 0-2 from {8,14,68} to {140,40,284} out of {143,41,285} eligible windows -- i.e. the policy stands in alarm for nearly the entire duration of every event, not just opens it. alarm_time_share_clean grows 7.9x (0.60%->4.75%) while false_alarm_per_week barely moves (0.74->0.95/week). The budget violation is driven by standing-alarm duration via k_health's clearing delay, not by a rise in false-alarm episode count."
+  },
+  "math_and_state_inventory": {
+    "scores": {
+      "novelty(x)": "min over gated memory slots j of (x-mu_j)^T diag(1/var_j) (x-mu_j); var_j = shrunk_var (engine.py _gate_var/_pred_var: slot sample variance shrunk toward sigma0 by kappa0, inflated by (1+1/n_eff)). File: src/uengram/engine.py:93-158.",
+      "health(x)": "min over frozen reference states r of (x-ref_mu_r)^2/ref_var_r, summed over dims; NaN if no reference set. File: src/uengram/engine.py:125-131."
+    },
+    "thresholds": {
+      "conformal_threshold(scores,alpha)": "ceil((1-alpha)(m+1))-th smallest calibration score, m=|scores|; +inf if m too small for alpha. File: src/uengram/stats.py:59-70.",
+      "per_state_vs_global": "AlarmPolicy.calibrate groups calibration windows by state when per_state=True and the state has >= min_state_windows samples, else falls back to the GLOBAL(-1) pool. File: src/uengram/alarm.py:99-125."
+    },
+    "decision_variables": {
+      "n_ex, h_ex": "novelty/health score exceeds its calibrated threshold this window (alarm.py:143-144)",
+      "h_trusted": "False when health_needs_baseline and per_state and the state has no own baseline: health neither counts nor vetoes (alarm.py:147)",
+      "n_count, h_count": "n_ex gated by the new_state veto; h_ex gated by h_trusted (alarm.py:148-153)",
+      "c_nov, c_health": "persistence counters, incremented on *_count else decremented, clamped to [0,k_*] (alarm.py:160-163)",
+      "active, opened": "alarm open/close state machine: opens when a counter reaches its k, closes only when BOTH counters return to 0 (alarm.py:164-181)",
+      "decision_state (followup_policy.py)": "0 unobserved, 1 in_reference, 2 unresolved (candidate/unsupported, not a fault label), 3 alarm (details['active'])",
+      "aci_gamma update": "self.level += aci_gamma*(alpha-n_ex) only when not active, health below threshold, and novelty finite (alarm.py:156): adapts the effective alpha used by conformal_threshold at the *current* level only when the machine looks healthy and quiet."
+    },
+    "free_parameters_AlarmConfig": ["alpha", "k_novelty", "k_health", "per_state", "min_state_windows", "new_state_alert", "aci_gamma", "health_needs_baseline"],
+    "dependent_metrics": ["events_detected", "false_alarm_per_week", "alarm_time_share_clean", "lead_hours", "window_balanced_accuracy", "window_f1", "notifications_per_week_all"],
+    "code_references": {"apply_policy": "bench/alarm_eval.py:28-65", "evaluate_alarms": "bench/alarm_eval.py:70-131", "evaluate_followup": "bench/followup_policy.py:17-67"}
+  },
+  "scope": ["Development-only, MetroPT3 consumed data, DSP encoder seed 0.", "Not a fresh confirmation; no claim of transfer to MetroPT2 or unseen machines."]
+}

@@ -856,3 +856,16 @@ adjudicated pointwise labels, and an untouched preregistered evaluation
 split. This dataset is for weak-supervision development only; it does
 not support a validated accuracy claim, and nothing here retrains or
 changes the frozen Laya evaluation in `results/v3_laya_evaluated.jsonl`.
+
+### v4: why no AlarmConfig closes the MetroPT3 recall/clean-time gap
+
+A dedicated mechanism study (`docs/research-alarm-tradeoff.md`) replays the
+frozen novelty/health scores through `AlarmPolicy` under 30+ configurations
+to explain, not just report, the v2/v3 tradeoff above: detecting July 15's
+air leak requires trusting the health channel for an unbaselined operating
+state (`health_needs_baseline=False`) AND enabling its persistence counter
+(`k_health>0`) together, an AND-gate rather than an additive effect; the
+originally named "no-veto" fix (`new_state_alert=False`) is not the active
+mechanism once the health channel is open. No single parameter, and no
+explored 3-parameter grid, closes `alarm_time_share_clean` to the 2%
+budget while keeping all 4 events detected. Harness: `bench/alarm_sensitivity.py`.
