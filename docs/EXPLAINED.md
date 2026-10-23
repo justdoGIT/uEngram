@@ -924,3 +924,38 @@ Replayed unchanged on MetroPT2, both selections detect nothing, because the
 policy itself never opens there. Inside the Jan events the frozen scores
 cross no threshold, while the dataset errors cover both Apr events and 0%
 of clean windows.
+
+### v7: what causes an alarm, defined and checked
+
+`docs/research-alarm-definition.md` defines an alarm from ISA-18.2 /
+IEC 62682 and from the published MetroPT practice (Jakobs et al. 2025:
+threshold, then a low-pass persistence filter, then 0.5, which is an
+exact 5-slice on/off-delay). An alarm needs all of:
+
+- a valid window;
+- a uEngram setpoint crossing;
+- corroboration by at least m independent errors seen in the last L hours,
+  voted three-valued (an unknown error is not a normal one);
+- that corroborated crossing persisting through the on-delay;
+- clearing only through the off-delay.
+
+An independent audit reproduced every uEngram step exactly: conformal
+setpoints, persistence counters, metrics and scoring causality. A second
+independent implementation reproduced the v7 rows and per-event traces
+exactly.
+
+Corrections: unknown evidence holds the counters (this removes the v6
+recency artifact and the v5 run-breaking), persistence applies to the
+combined condition, LPS and TP3 < 7 bar are one vote, and early warnings
+are reported positive.
+
+On MetroPT3, no configuration meets the budget. Within both alarm budgets,
+the best rows reach 2/4 with dataset corroboration and 3/4 with the
+calibrated crossings.
+
+The per-event trace shows the cause. uEngram crosses its setpoint before
+the May 29-30 and June 5-7 reports, but not for three windows in a row,
+and dataset errors either never occur (May 29-30) or arrive 34 h into the
+report (June 5-7). On MetroPT2, uEngram never crosses inside the April
+events, although the oil-level error precedes both LPS warnings by 3.0 h
+and 59.4 h.

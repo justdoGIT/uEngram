@@ -131,12 +131,14 @@ def calibrate(stream, cfg: ModalityConfig, values: np.ndarray | None = None) -> 
     return baselines
 
 
-def modality_errors(stream, test: np.ndarray, cfg: ModalityConfig, baselines: dict,
-                    values: np.ndarray | None = None) -> tuple[np.ndarray, list[str]]:
-    """Boolean matrix [len(test), J]: which modalities are in error on each test window."""
+def channel_judgement(stream, test: np.ndarray, cfg: ModalityConfig, baselines: dict,
+                      values: np.ndarray | None = None) -> tuple[np.ndarray, np.ndarray]:
+    """(errors, known) over [len(test), J] physical channels. A channel is known on a window
+    when its operating state has a reference (or falls back to GLOBAL), its threshold is
+    finite and the window has a value; an unknown channel is never in error."""
     values = (channel_values(stream, cfg) if values is None else values)[test]
     state = stream.state[test]
-    errors = np.zeros(values.shape, bool)
+    errors, known = np.zeros(values.shape, bool), np.zeros(values.shape, bool)
     for s in np.unique(state) if values.shape[1] else ():
         rows = state == s
         own = int(s) in baselines  # only GLOBAL exists without per-state baselines
@@ -145,9 +147,17 @@ def modality_errors(stream, test: np.ndarray, cfg: ModalityConfig, baselines: di
         b = baselines[int(s)] if own else baselines[GLOBAL]
         z2 = ((values[rows] - b["median"]) / b["scale"]) ** 2
         errors[rows] = z2 > b["threshold"]  # NaN compares False: missing never errs
+        known[rows] = np.isfinite(values[rows]) & np.isfinite(b["threshold"])
+    return errors, known
+
+
+def modality_errors(stream, test: np.ndarray, cfg: ModalityConfig, baselines: dict,
+                    values: np.ndarray | None = None) -> tuple[np.ndarray, list[str]]:
+    """Boolean matrix [len(test), J]: which modalities are in error on each test window."""
+    errors, _ = channel_judgement(stream, test, cfg, baselines, values)
     names = list(cfg.channels)
     if cfg.duty:
-        errors = np.column_stack([errors, state == SUSTAINED_LOAD])
+        errors = np.column_stack([errors, stream.state[test] == SUSTAINED_LOAD])
         names.append(DUTY)
     return errors, names
 

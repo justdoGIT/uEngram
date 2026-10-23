@@ -25,18 +25,24 @@ class CalibrationUnavailable(ValueError):
     """No enabled alarm channel has an estimable finite calibration quantile."""
 
 
-def apply_policy(stream, sc: dict, cfg: AlarmConfig):
+def eligible(stream, sc: dict, cfg: AlarmConfig, idx: np.ndarray) -> np.ndarray:
+    """Windows idx the policy may use: monitorable and scored by an enabled channel."""
+    scored = ((np.isfinite(sc["novelty"][idx]) if cfg.k_novelty > 0 else False) |
+              (np.isfinite(sc["health"][idx]) if cfg.k_health > 0 else False))
+    return stream.monitorable[idx] & scored
+
+
+def apply_policy(stream, sc: dict, cfg: AlarmConfig, evidence=None):
     """Calibrate the policy on the calibration windows, stream the test
-    windows, and evaluate. Returns (metrics, details, policy)."""
+    windows, and evaluate. Returns (metrics, details, policy).
+
+    `evidence` (optional): one True/False/None per test window, the policy's
+    corroboration input (src/uengram/alarm.py); None corroborates every window."""
     nov, health, act = sc["novelty"], sc["health"], sc["action"]
     cal, test = stream.cal, np.flatnonzero(stream.test)
     novelty_enabled, health_enabled = cfg.k_novelty > 0, cfg.k_health > 0
-    cal_scores = ((np.isfinite(nov[cal]) if novelty_enabled else False) |
-                  (np.isfinite(health[cal]) if health_enabled else False))
-    test_scores = ((np.isfinite(nov[test]) if novelty_enabled else False) |
-                   (np.isfinite(health[test]) if health_enabled else False))
-    cal_valid = stream.monitorable[cal] & cal_scores
-    valid = stream.monitorable[test] & test_scores
+    cal_valid = eligible(stream, sc, cfg, np.flatnonzero(cal))
+    valid = eligible(stream, sc, cfg, test)
     pol = AlarmPolicy(cfg, stream.feature_names).calibrate(
         nov[cal], health[cal], stream.state[cal], cal_valid, stream.features[cal])
     supported = any((novelty_enabled and b["novelty_threshold_supported"]) or
@@ -47,7 +53,7 @@ def apply_policy(stream, sc: dict, cfg: AlarmConfig):
             f"no finite calibrated threshold for an enabled alarm channel (alpha={cfg.alpha})")
     active, opened = pol.run(stream.end[test], nov[test], health[test],
                              [ACTIONS[a] for a in act[test]], stream.state[test],
-                             valid, stream.features[test])
+                             valid, stream.features[test], evidence)
     metric_valid = valid if stream.metric_mask is None else valid & stream.metric_mask[test]
     m, d = evaluate_alarms(stream.start[test], stream.end[test], stream.event_id()[test],
                            stream.clean_negative()[test], metric_valid, stream.events, active,

@@ -1,5 +1,9 @@
 # Error-gated alarm: the AlarmPolicy alarm AND at least m threshold-crossing errors
 
+> The calibrated-gate result below (4/4 at 1.06%) relies on treating unjudged windows as
+> normal. [research-alarm-definition.md](research-alarm-definition.md) (v7) corrects that with
+> three-valued evidence, and the result does not survive.
+
 This study keeps the existing alarm measure unchanged and adds one requirement: at least `m`
 error conditions, each a threshold crossing, must be present before the alarm stands.
 The earlier [two-condition study](research-two-condition-alarm.md) replaced the alarm measure

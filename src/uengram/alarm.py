@@ -8,8 +8,14 @@ when the state has enough calibration windows, otherwise on all states.
 
 - Persistence: an exceedance raises its counter by 1 (capped at its k), a
   normal window lowers it by 1 (not below 0). An alarm opens when a counter
-  reaches its k and closes when both counters are back at 0, so clearing takes
-  k normal windows however long the deviation lasted (a fixed off-delay).
+  reaches its k and closes when both counters are back at 0. Clearing takes as
+  many normal windows as the counters then hold: k after a deviation that
+  saturated the counter, however long it lasted (a fixed off-delay).
+- Corroboration (optional, `evidence`): an exceedance counts only when
+  external evidence is true for that window. False evidence makes the window
+  count as normal; unknown evidence (None) holds both counters, so a window
+  that cannot be corroborated neither raises nor clears the alarm. The default
+  (always true) is the uncorroborated alarm.
 - State gating: windows the caller marks unmonitorable (logging restarts,
   maintenance, stopped machine) neither raise nor lower the counters.
 - Alerts, not alarms: entering a state without its own baseline raises an
@@ -62,6 +68,8 @@ class StepResult:
     active: bool  # alarm open after this window
     opened: bool  # this window opened an alarm episode
     alert: str | None  # alert kind raised by this window
+    # an enabled channel's exceedance this window would count, before corroboration
+    exceeded: bool = False
 
 
 def _conformal_at(sorted_scores: np.ndarray, level: float) -> float:
@@ -130,7 +138,7 @@ class AlarmPolicy:
 
     # -- streaming ----------------------------------------------------------
     def step(self, index: int, time, novelty: float, health: float, action: str,
-             state: int, monitorable: bool, features=None) -> StepResult:
+             state: int, monitorable: bool, features=None, *, evidence: bool | None = True) -> StepResult:
         if not monitorable:
             return StepResult(False, False, None)
         own = state in self.baselines
@@ -155,12 +163,14 @@ class AlarmPolicy:
             self.alerts.append({"index": index, "time": str(time), "kind": alert, "state": state})
         if self.cfg.aci_gamma and not self.active and not h_ex and math.isfinite(novelty):
             self.level += self.cfg.aci_gamma * (self.cfg.alpha - n_ex)
-        # Counters are capped at their k, so an alarm clears after k normal
-        # windows however long the deviation lasted (a fixed off-delay).
-        self.c_nov = (min(self.c_nov + 1, self.cfg.k_novelty) if n_count else
-                      max(self.c_nov - 1, 0)) if self.cfg.k_novelty > 0 else 0
-        self.c_health = (min(self.c_health + 1, self.cfg.k_health) if h_count else
-                         max(self.c_health - 1, 0)) if self.cfg.k_health > 0 else 0
+        exceeded = (self.cfg.k_novelty > 0 and n_count) or (self.cfg.k_health > 0 and h_count)
+        if evidence is not None:  # unknown corroboration holds the counters
+            if not evidence:
+                n_count = h_count = False
+            self.c_nov = (min(self.c_nov + 1, self.cfg.k_novelty) if n_count else
+                          max(self.c_nov - 1, 0)) if self.cfg.k_novelty > 0 else 0
+            self.c_health = (min(self.c_health + 1, self.cfg.k_health) if h_count else
+                             max(self.c_health - 1, 0)) if self.cfg.k_health > 0 else 0
         opened = False
         if self.active:
             ep = self.episodes[-1]
@@ -179,18 +189,23 @@ class AlarmPolicy:
                     index, time, novelty, health, action, state, own, n_thr, h_thr,
                     "both" if by_nov and by_health else "novelty" if by_nov else "health",
                     b, features))
-        return StepResult(self.active, opened, alert)
+        return StepResult(self.active, opened, alert, exceeded)
 
-    def run(self, end, novelty, health, actions, state, monitorable, features=None):
-        """Stream whole arrays; returns eligible active/opened bool arrays."""
+    def run(self, end, novelty, health, actions, state, monitorable, features=None, evidence=None):
+        """Stream whole arrays; returns eligible active/opened bool arrays and
+        keeps the per-window counted exceedances in `self.exceeded`.
+
+        `evidence`: None (every window corroborated) or one True/False/None per window."""
         n = len(novelty)
         active, opened = np.zeros(n, bool), np.zeros(n, bool)
+        self.exceeded = np.zeros(n, bool)
         for i in range(n):
             eligible = bool(monitorable[i])
             r = self.step(i, end[i], float(novelty[i]), float(health[i]), actions[i],
                           int(state[i]), eligible,
-                          None if features is None else features[i])
-            active[i], opened[i] = r.active, r.opened
+                          None if features is None else features[i],
+                          evidence=True if evidence is None else evidence[i])
+            active[i], opened[i], self.exceeded[i] = r.active, r.opened, r.exceeded
         return active, opened
 
     def _freeze_frame(self, index, time, novelty, health, action, state, own, n_thr, h_thr,
