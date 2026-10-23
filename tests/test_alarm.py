@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from uengram.alarm import AlarmConfig, AlarmPolicy
+from uengram.alarm import AlarmConfig, AlarmLogic, AlarmPolicy
 
 T = np.arange(10000)
 
@@ -147,3 +147,33 @@ def test_episode_freeze_frame_records_state_and_largest_deviations():
     assert ep["state"] == 0 and ep["trigger"] == "novelty" and ep["action"] == "absorb_episodic"
     assert ep["snapshot"]["load_share"] == pytest.approx(0.9)
     assert [name for name, _ in ep["top_deviations"][:2]] == ["load_share", "oil_c"]
+
+
+def test_or_rule_uses_real_error_vote_without_changing_uncorroborated_mode():
+    cfg = AlarmConfig(k_novelty=0, k_health=0, alpha=0.05)
+    nov = np.zeros(20)
+    health = np.zeros(20)
+    state = np.zeros(20, int)
+    monitorable = np.ones(20, bool)
+    actions = ["absorb_semantic"] * 20
+    p = AlarmPolicy(cfg, logic=AlarmLogic(combine="or", error_k=3)).calibrate(
+        nov, health, state, monitorable
+    )
+    active, opened = p.run(T[:20], nov, health, actions, state, monitorable)
+    assert not active.any() and not opened.any()
+
+    p = AlarmPolicy(cfg, logic=AlarmLogic(combine="or", error_k=3)).calibrate(
+        nov, health, state, monitorable
+    )
+    evidence = np.array([False, True, True, True] + [False] * 16, dtype=object)
+    active, opened = p.run(T[:20], nov, health, actions, state, monitorable, evidence=evidence)
+    assert np.flatnonzero(opened).tolist() == [3]
+    assert p.episodes[0]["trigger"] == "error"
+    assert active[3:6].all() and not active[6]
+
+
+def test_alarm_logic_rejects_unknown_or_parameters():
+    with pytest.raises(ValueError, match="combine"):
+        AlarmLogic(combine="xor")
+    with pytest.raises(ValueError, match="error_k"):
+        AlarmLogic(combine="or", error_k=0)

@@ -71,6 +71,13 @@ class AlarmConfig:
 class AlarmLogic:
     """How conditions combine into an alarm; the defaults are AlarmPolicy v2 exactly.
 
+    ``combine="and"`` gates uEngram channels with external evidence, preserving
+    the original alarm. ``combine="or"`` additionally permits the evidence
+    stream itself to open an independent, persisted error tripwire. The
+    tripwire uses ``error_k`` windows and is active only when ``run`` receives
+    a real evidence array; an uncorroborated run cannot alarm on an implicit
+    all-true placeholder.
+
     persistence  on/off-delay filter per channel (uengram.persistence.MODELS)
     window       m_of_n: the last n known windows (0 -> 2k)
     veto         "normal": a vetoed novelty exceedance counts as a normal window;
@@ -89,12 +96,18 @@ class AlarmLogic:
     unbaselined: str = "global"
     commission_windows: int = 0  # 0: the fewest windows the conformal level supports
     stale_windows: int = 0  # 0: unknown inputs hold a channel indefinitely
+    combine: str = "and"
+    error_k: int = 3
 
     def __post_init__(self):
         if self.persistence not in MODELS:
             raise ValueError(f"persistence must be one of {MODELS}")
         if self.veto not in ("normal", "hold") or self.unbaselined not in ("global", "unknown", "commission"):
             raise ValueError("veto must be normal|hold; unbaselined must be global|unknown|commission")
+        if self.combine not in ("and", "or"):
+            raise ValueError("combine must be and|or")
+        if self.error_k < 1:
+            raise ValueError("error_k must be positive")
 
 
 def _and(a: bool | None, b: bool | None) -> bool | None:
@@ -145,9 +158,16 @@ class AlarmPolicy:
         self.active = False
         self._prev_state: int | None = None
         self._pending: dict[int, list] = {}  # windows collected to commission a new state
+        self._evidence_enabled = False
         lg = self.logic
-        self._filters = {name: make_filter(lg.persistence, k, lg.window, lg.stale_windows) if k > 0 else None
-                         for name, k in (("novelty", self.cfg.k_novelty), ("health", self.cfg.k_health))}
+        self._filters = {
+            name: make_filter(lg.persistence, k, lg.window, lg.stale_windows) if k > 0 else None
+            for name, k in (("novelty", self.cfg.k_novelty), ("health", self.cfg.k_health))
+        }
+        self._filters["error"] = (
+            make_filter(lg.persistence, lg.error_k, lg.window, lg.stale_windows)
+            if lg.combine == "or" else None
+        )
 
     @property
     def c_nov(self) -> int:  # counter state, counter persistence only
@@ -247,6 +267,8 @@ class AlarmPolicy:
         for name, value in (("novelty", n_val), ("health", h_val)):
             if name in filters:
                 filters[name].step(_and(value, evidence))  # corroboration: Kleene AND
+        if "error" in filters and self._evidence_enabled:
+            filters["error"].step(evidence)
         opened = False
         if self.active:
             ep = self.episodes[-1]
@@ -259,22 +281,31 @@ class AlarmPolicy:
         else:
             by_nov = "novelty" in filters and filters["novelty"].trigger
             by_health = "health" in filters and filters["health"].trigger
-            if by_nov or by_health:
+            by_error = "error" in filters and filters["error"].trigger
+            if by_nov or by_health or by_error:
                 self.active = opened = True
+                trigger = (
+                    "both" if by_nov and by_health
+                    else "novelty" if by_nov
+                    else "health" if by_health
+                    else "error"
+                )
                 self.episodes.append(self._freeze_frame(
                     index, time, novelty, health, action, state, own, n_thr, h_thr,
-                    "both" if by_nov and by_health else "novelty" if by_nov else "health",
-                    b, features))
+                    trigger, b, features))
         return StepResult(self.active, opened, alert, exceeded)
 
     def run(self, end, novelty, health, actions, state, monitorable, features=None, evidence=None):
-        """Stream whole arrays; returns eligible active/opened bool arrays and
-        keeps the per-window counted exceedances in `self.exceeded`.
+        """Stream whole arrays; returns eligible active/opened bool arrays.
 
-        `evidence`: None (every window corroborated) or one True/False/None per window."""
+        ``evidence=None`` means every window is corroborated for the existing
+        AND rule. The OR rule's independent error tripwire is enabled only when
+        a real True/False/None evidence array is supplied.
+        """
         n = len(novelty)
         active, opened = np.zeros(n, bool), np.zeros(n, bool)
         self.exceeded = np.zeros(n, bool)
+        self._evidence_enabled = evidence is not None
         for i in range(n):
             eligible = bool(monitorable[i])
             r = self.step(i, end[i], float(novelty[i]), float(health[i]), actions[i],
