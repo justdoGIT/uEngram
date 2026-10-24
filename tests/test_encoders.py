@@ -65,6 +65,19 @@ def test_cnn_shapes_finite():
     assert enc.sigma0.shape == (16,)
 
 
+
+def test_cnn_maxavg_ortho_pool_finite():
+    pytest.importorskip("torch")
+    from uengram.encoder_cnn import CNNEncoder
+
+    s = synth.generate(512, seed=3)
+    enc = CNNEncoder(seed=0, d=8, epochs=2, pool="maxavg", ortho_beta=0.05).fit(s.windows, 1, None)
+    z = enc.encode(s.windows)
+    assert z.shape == (512, 8) and np.isfinite(z).all()
+    assert enc.sigma0.shape == (8,)
+    with pytest.raises(ValueError, match="pool"):
+        CNNEncoder(pool="invalid")
+
 def test_context_encoder_learns_lag_and_explains_transitions():
     from uengram.encoder_ctx import ContextEncoder
 
