@@ -158,7 +158,12 @@ class SpoolSink:
         self._f = None
         self._buf: list[str] = []
         self._hk: threading.Thread | None = None
-        os.makedirs(directory, exist_ok=True)
+        # `directory` may be a symlink to a tmpfs path that a reboot cleared
+        # (msi, hp): plain makedirs(exist_ok=True) raises FileExistsError on a
+        # symlink whose target is missing, because mkdir sees the link itself
+        # "exist" while isdir() follows it to nothing. Resolve first so the
+        # real target gets created and the symlink starts working again.
+        os.makedirs(os.path.realpath(directory), exist_ok=True)
 
     def _path(self, day: str) -> str:
         return os.path.join(self.dir, f"ticks-{self.host}-{day}.jsonl.gz")

@@ -41,6 +41,17 @@ def test_spool_files_prefer_the_finished_day_and_skip_partial_copies(tmp_path):
     assert spool_files(d, "h") == [gz, today]
 
 
+def test_spool_sink_recreates_a_dangling_symlink_target(tmp_path):
+    # tmpfs-backed spool (msi, hp): a reboot clears the target, leaving the
+    # directory symlink dangling; the next daemon start must not crash.
+    real = tmp_path / "tmpfs-target"
+    link = tmp_path / "spool"
+    os.symlink(str(real), str(link))
+    assert not real.exists()
+    SpoolSink(str(link), {"host": "h"})  # must not raise FileExistsError
+    assert real.is_dir()
+
+
 def test_spool_rotates_at_utc_midnight_and_reads_back_in_order(tmp_path):
     d = str(tmp_path / "spool")
     sink = SpoolSink(d, {"host": "h"}, keep_days=2)
