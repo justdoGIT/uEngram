@@ -218,10 +218,12 @@ already-rejected CNN2/CNN3) closes most of its gap to DSP on MetroPT-3 in
 a single-seed test; CNN2 hits its own noise-covariance wall at the same
 widening. See `docs/research-encoder-capacity.md` for all three
 investigations plus the full per-dataset matrix (section 4),
-`docs/research-neural-encoders.md` for the neural latent stabilization
-and multi-scale pooling (`pool="maxavg"`, `ortho_beta=0.05`) that eliminate
-CNN seed variance, and the real infrastructure bugs (two hardcoded `D=16`
-constants) found and fixed while testing them.
+`docs/research-neural-encoders.md` for the neural latent and multi-scale
+pooling study (`pool="maxavg"`, `ortho_beta=0.05`) and its remaining
+variance, and `docs/research-pending-model-improvements.md` for the ten-seed
+SKAB replay, MetroPT-3 transfer failure, rejected stabilizers/fusions, and
+ranked next experiments. The same investigation found and fixed two
+hardcoded `D=16` infrastructure bugs.
 
 This is a research baseline, not a production safety alarm. The next
 evidence-gated improvements are operator-confirmed commissioning for unseen

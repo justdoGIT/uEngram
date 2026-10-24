@@ -108,7 +108,7 @@ rejects almost all sample differences.
 
 ---
 
-## 5. Neural Latent Stabilization: Eliminating Seed Variance
+## 5. Neural Latent Stabilization: Measuring Seed Variance
 
 ### 5.1 Root Cause Diagnosis
 
@@ -134,31 +134,31 @@ across seeds 0, 1, and 2 revealed the exact mechanism behind the 30% false-alarm
 
 ### 5.2 Empirical Evaluation of Stabilization Architectures
 
-We designed and evaluated three stabilization mechanisms on SKAB ($K=10$, seeds 0, 1, 2):
+We initially evaluated three stabilization mechanisms on SKAB ($K=10$, seeds 0, 1, 2):
 
 | Architecture | Mechanism | Detections | Novelty AUROC | FA Episodes | Clean-Time Share | Seed Variance ($\Delta$ clean%) |
 |---|---|---:|---:|---:|---:|---:|
 | **Unregularized CNN** | Global standardisation, raw MSE | 9 – 21 | 0.615 – 0.656 | 4 – 10 | 3.42% – 30.00% | **26.58%** (extreme) |
-| **AC-Coupled CNN** | In-window zero-mean $\tilde{x} = x - \bar{x}$ | 4 | 0.522 – 0.542 | **1 – 1** | **1.20% – 1.28%** | **0.08%** (zero variance) |
+| **AC-Coupled CNN** | In-window zero-mean $\tilde{x} = x - \bar{x}$ | 4 | 0.522 – 0.542 | **1 – 1** | **1.20% – 1.28%** | **0.08%** (narrow; three seeds) |
 | **OrthoCNN ($\beta=0.05$)** | Bottleneck penalty $\|W W^T - I\|_F^2$ | **10 – 22** | **0.614 – 0.669** | 4 – 14 | 2.74% – 22.97% | 20.23% (partial) |
-| **Two-Stream CNN ($d=48$)** | Decoupled AC Conv ($z_{\text{AC}}$) + Robust DC ($z_{\text{DC}}$) | 9 – 12 | 0.570 – 0.577 | 7 – 8 | 12.12% – 14.37% | **2.25%** (stabilized) |
+| **Two-Stream CNN ($d=48$)** | Decoupled AC Conv ($z_{\text{AC}}$) + Robust DC ($z_{\text{DC}}$) | 9 – 12 | 0.570 – 0.577 | 7 – 8 | 12.12% – 14.37% | **2.25%** (narrow; weak operating point) |
 
 ### 5.3 Key Architectural Findings
 
-1. **AC-Coupled CNN eliminates false-alarm seed variance completely**:
-   Subtracting in-window mean removes all DC inter-session level drift, yielding an identical
-   clean-time share of 1.20% to 1.28% across all seeds. However, it blinds the detector
-   to pure DC level faults (valve throttling and fluid leaks), reducing detections to 4/34.
+1. **AC coupling narrows false-alarm spread but is not an acceptable fix**:
+   Subtracting the in-window mean reduces the clean-time spread to 1.20%–1.28%
+   across the three tested seeds, but it also removes the DC level signal used
+   by valve and leak faults. Detection falls to 4/34.
 2. **Orthogonal Latent Regularization reaches highest peak AUROC (0.669)**:
    Penalizing $\|W W^T - I\|_F^2$ prevents latent dimensions from collapsing onto collinear
    drift directions, lifting Seed 0 AUROC to 0.669 and AP to 0.574 with 2.74% clean time,
    and detecting up to 22 of 34 faults.
-3. **Two-Stream Decoupling is the optimal neural architecture**:
-   By separating dynamic waveform convolution from linear robust DC level tracking:
-   $$z = [z_{\text{AC}}, z_{\text{DC}}] \in \mathbb{R}^d$$
-   the network achieves near-zero seed variance on ranking (AUROC $0.570 \dots 0.577$)
-   and false alarms (clean share $12.1\% \dots 14.4\%$), while retaining the ability
-   to detect both dynamic vibration faults and DC flow/valve faults.
+3. **Two-stream decoupling stabilizes ranking but is not optimal**:
+   Separating dynamic waveform convolution from robust DC tracking gives
+   $$z = [z_{\text{AC}}, z_{\text{DC}}] \in \mathbb{R}^d.$$
+   Its AUROC range is narrow (0.570–0.577), but it detects only 9–12 of 34
+   faults while occupying 12.1%–14.4% of clean time. Stability around a weak,
+   high-false-alarm operating point is not a deployment win.
 
 ---
 
@@ -179,17 +179,30 @@ $$h_{\text{pool}} = [\text{mean}_t(h), \max_t(h)] \in \mathbb{R}^{128}$$
 ### 6.2 Combined Multi-Scale Orthogonal Model (`pool="maxavg", ortho_beta=0.05`)
 
 Combining max-average pooling with orthogonal bottleneck regularization ($\beta=0.05$)
-delivers high transient recall while stabilizing inter-session drift:
+was tested as a transient-sensitive candidate rather than assumed to be stable:
 
 | Seed | Events Detected | Novelty AUROC | Novelty AP | FA Episodes | Clean-Time Share |
 |---:|---:|---:|---:|---:|---:|
 | **0** | **14 / 34** | 0.615 | 0.505 | 9 | **8.59%** |
 | **1** | **13 / 34** | 0.643 | 0.544 | 4 | **2.45%** |
 | **2** | **16 / 34** | 0.628 | 0.532 | 9 | **4.69%** |
+| **3** | **10 / 34** | 0.620 | 0.540 | 4 | **2.87%** |
+| **4** | **7 / 34** | 0.619 | 0.499 | 5 | **3.17%** |
+| **5** | **7 / 34** | 0.610 | 0.506 | 4 | **2.49%** |
+| **6** | **9 / 34** | 0.631 | 0.533 | 5 | **3.59%** |
+| **7** | **9 / 34** | 0.663 | 0.568 | 4 | **5.03%** |
+| **8** | **15 / 34** | 0.608 | 0.534 | 7 | **8.82%** |
+| **9** | **10 / 34** | 0.676 | 0.592 | 4 | **2.45%** |
 
-- **Result**: The 30.0% clean false-alarm blowout of unregularized CNN is **completely eliminated**. Clean-time share remains between 2.45% and 8.59% across all seeds.
-- **Detection**: Consistently catches 13 to 16 faults (38% to 47% of all testbed faults, including valve closures and water-level faults).
-- **Synthetic Benchmark**: AUROC reached **0.820 – 0.887** and AP reached **0.475 – 0.680** across seeds.
+- **Result**: The ten-seed follow-up did not reproduce the unregularized CNN's
+  30.0% clean-time blowout, but it disproves the earlier claim that seed
+  variance was eliminated. Detection spans 7–16 faults (median 10) and
+  clean-time share spans 2.45%–8.82% (median 3.38%).
+- **Detection**: The original three seeds caught 13–16 faults; later seeds
+  include two 7-event runs. Three seeds were not enough to establish
+  robustness.
+- **Synthetic Benchmark**: AUROC reached **0.820–0.887** and AP reached
+  **0.475–0.680** across the original three seeds.
 
 ### 6.3 Negative Results and Falsified Approaches
 
@@ -213,4 +226,8 @@ class CNNEncoder:
         ...
 ```
 - **`pool="avg", ortho_beta=0.0` (default)**: Retains 100% byte-identical behavior for all baseline benchmarks and existing tests.
-- **`pool="maxavg", ortho_beta=0.05`**: Activates multi-scale transient pooling and orthogonal bottleneck regularization for high-AP, drift-stabilized neural representations.
+- **`pool="maxavg", ortho_beta=0.05`**: Activates multi-scale transient pooling and orthogonal bottleneck regularization. Ten-seed SKAB variance and 0/4 MetroPT-3 detection prevent treating it as a universal or deployment-default configuration.
+
+The stabilization ablations, cross-dataset replay, fusion results, literature
+review, and ranked follow-up plan are documented in
+[`research-pending-model-improvements.md`](research-pending-model-improvements.md).

@@ -769,3 +769,25 @@ files (tests excluded by scan patterns). The final Jev-runner change also
 passes a separate scan. The actual hp run, artifact-building commands and
 all three baseline notification replays completed successfully. None of
 these checks establish deployment safety or empirical Jev performance.
+
+### CNN latent-stability follow-up: no encoder promotion
+
+The max-average, orthogonally regularized CNN was extended from three to ten
+SKAB seeds. It detects 7--16 of 34 events (median 10), with clean alarm time
+from 2.45% to 8.82%. The earlier claim that this configuration eliminated
+seed variance is withdrawn. An activation-correlation penalty and a
+late-weight-average variant do not produce a consistent operational gain.
+All three variants detect 0 of 4 MetroPT-3 events under both the native and
+score-only policies, so the SKAB-selected configuration does not transfer.
+
+Five-seed score aggregation avoids choosing one favorable seed but costs five
+encoder passes and still fails on MetroPT-3. Naive DSP--CNN maximum and mean
+fusion add no consistent value and are rejected. These are consumed-dataset
+development replays; no production encoder or frozen alarm policy changed.
+
+The complete raw output is
+`results/cnn_stability_ablation.json`. Methods, per-seed results, literature
+review, novelty boundary, negative results, and the ranked research program
+are in `docs/research-pending-model-improvements.md`. Verification for this
+addition includes a permanent benchmark smoke run, exact artifact
+reconstruction, and 275 passing Python tests (2 skipped).
