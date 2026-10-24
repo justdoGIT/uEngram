@@ -68,8 +68,9 @@ python3 -m uengram.host cluster
 python3 -m uengram.host tune --node asus-worker --knob pl1 --values 40 30
 # synthetic validation of the host pipeline
 uv run python -m bench.run_host_synth --seeds 0-19 --jobs 2 --out results/host_synth.jsonl
-# install the runit service on nodes (sudo via kepr); --campaign and --hub add the campaign runner and the hub (msi only)
-deploy/install-node.sh --numpy NODE...
+# install the runit service on nodes (sudo via kepr); --campaign and --hub add the campaign runner and
+# the hub (msi only); --recommission adds uengram-recommission (every node)
+deploy/install-node.sh --numpy --recommission NODE...
 # 14-day live validation campaign: record a clean week, commission on it, fault week, report
 python3 -m uengram.host campaign plan --dir ~/Backup/uengram-host/campaign
 python3 -m uengram.host campaign status --dir ~/Backup/uengram-host/campaign
@@ -79,9 +80,9 @@ python3 -m uengram.host campaign status --dir ~/Backup/uengram-host/campaign
 
 ```
 src/uengram/   library: alarm, baselines, baseline_reference, cmapss, encoders, encoder_{cnn,cnn2,cnn3,ctx,tab}, engine, health, ledger, lifecycle, metrics, metropt, metropt2, persistence, stats, store, stream_baselines, synth
-src/uengram/host/  host telemetry: schema, perf, sources, collector, stream, hub, cluster, psi (stdlib); features, encoder, events, stepcal, node, daemon, synth (numpy); campaign, campaign_exec, tune, knob.sh, validate, validate_criteria, validate_variants, validate_signals
+src/uengram/host/  host telemetry: schema, perf, sources, collector, stream, hub, cluster, psi (stdlib); features, encoder, events, stepcal, node, daemon, synth (numpy); campaign, campaign_exec, tune, knob.sh, validate, validate_criteria, validate_variants, validate_signals, cli, cli_model
 bench/         harness: advisory_{experiment,eval,report}, alarm_{components,definition,definition_sweep,dev,eval,interaction,math,sensitivity}, care_score, colab_train, common, cnn3_experiment, domain_dataset, encoding_cache, encoder_gate, error_gated_{alarm,sweep}, evaluate, followup_{experiment,policy}, freeze_frames, jev_{advisory,experiment}, laya_{advisory,hosts,http}, leak_duty, metropt_{calibration,eval}, modality_{alarm,sweep}, native_snapshots, physical_residuals, provenance, report, report_{followup,v2}, run_{cmapss,metropt,synth,v2}, run_host_synth, stream_care, streams, v2_scoring
-deploy/        runit services (uengram-hostd, uengram-campaign, uengram-hub) and the node installer
+deploy/        runit services (uengram-hostd, uengram-campaign, uengram-hub, uengram-recommission) and the node installer
 tests/         unit and behaviour tests
 results/       committed run outputs (JSONL)
 docs/          plan, explainer, results, improvement analysis, research notes, architecture notes

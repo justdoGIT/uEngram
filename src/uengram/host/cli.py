@@ -3,6 +3,9 @@
   probe                       check every source and print one tick
   record  [--out F | --spool D] [--seconds]   write ticks to a JSONL file or a daily spool (stdlib only)
   commission --ticks F... --model M   fit encoder, seed memory, calibrate alarms and the step test
+  autocommission --model M --spool D  recommission once the running kernel has --min-hours of its
+                                       own spool data; writes --out, a no-op otherwise (used by
+                                       the uengram-recommission service)
   run     --model M [--spool D]  online: tick, window, encode, remember; state file, events, stream socket
   replay  --model M --ticks F  offline: feed recorded ticks through a commissioned model
   status  [--state F]          print a node state file

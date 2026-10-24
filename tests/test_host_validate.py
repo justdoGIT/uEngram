@@ -6,6 +6,7 @@ import time
 import numpy as np
 import pytest
 
+from uengram.host import cli_model
 from uengram.host.collector import SpoolSink, spool_files
 from uengram.host.features import read_columns, select_kernel
 from uengram.host.node import NodeMemory
@@ -139,6 +140,75 @@ def test_cli_replay_rejects_mixed_kernels(tmp_path, monkeypatch):
     args = type("Args", (), {"model": "ignored", "ticks": str(ticks), "events": None, "save": False})()
     with pytest.raises(ValueError, match="does not match replay data kernels"):
         cli_model._replay(args)
+
+
+def _ac_args(**kw):
+    defaults = dict(model="", spool="", kernel=None, min_hours=24.0, out=None,
+                     window=32, alpha=0.01, calib_frac=0.3)
+    defaults.update(kw)
+    return type("Args", (), defaults)()
+
+
+def test_autocommission_is_a_noop_when_already_matched(tmp_path, monkeypatch, capsys):
+    stub = NodeMemory.__new__(NodeMemory)
+    stub.meta = {"kernel": "7.2.11_1"}
+    monkeypatch.setattr(NodeMemory, "load", classmethod(lambda cls, _: stub))
+    model = tmp_path / "model.pkl"
+    model.write_bytes(b"not actually read; load() is stubbed above")
+    args = _ac_args(model=str(model), spool=str(tmp_path / "spool"), kernel="7.2.11_1")
+    assert cli_model._autocommission(args) == 0
+    assert json.loads(capsys.readouterr().out) == {"action": "up_to_date", "kernel": "7.2.11_1"}
+
+
+def test_autocommission_reports_insufficient_data_with_no_spool(tmp_path, capsys):
+    args = _ac_args(model=str(tmp_path / "missing.pkl"), spool=str(tmp_path / "spool"), kernel="7.2.11_1")
+    assert cli_model._autocommission(args) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert out["action"] == "insufficient_data" and out["reason"] == "no spool files"
+
+
+def test_autocommission_reports_insufficient_data_for_an_unseen_kernel(tmp_path, capsys):
+    import socket
+    spool = str(tmp_path / "spool")
+    sink = SpoolSink(spool, {"host": socket.gethostname(), "kernel": "6.18.56_1"})
+    for r in make_ticks(200, seed=0):
+        sink(r["t"], {k: v for k, v in r.items() if k != "t"})
+    sink.close(wait=None)
+    args = _ac_args(model=str(tmp_path / "missing.pkl"), spool=spool, kernel="7.2.11_1")
+    assert cli_model._autocommission(args) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert out["action"] == "insufficient_data" and out["spool_releases"] == ["6.18.56_1"]
+
+
+def test_autocommission_reports_insufficient_data_below_min_hours(tmp_path, capsys):
+    import socket
+    spool = str(tmp_path / "spool")
+    sink = SpoolSink(spool, {"host": socket.gethostname(), "kernel": "7.2.11_1"})
+    for r in make_ticks(3600, seed=0):  # 1 hour, well under the 24 h default
+        sink(r["t"], {k: v for k, v in r.items() if k != "t"})
+    sink.close(wait=None)
+    args = _ac_args(model=str(tmp_path / "missing.pkl"), spool=spool, kernel="7.2.11_1")
+    assert cli_model._autocommission(args) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert out["action"] == "insufficient_data"
+    assert out["hours"] == pytest.approx(1.0, rel=0.05)
+
+
+def test_autocommission_recommissions_once_there_is_enough_data(tmp_path, capsys):
+    import socket
+    spool = str(tmp_path / "spool")
+    sink = SpoolSink(spool, {"host": socket.gethostname(), "kernel": "7.2.11_1"})
+    for r in make_ticks(4 * 3600, seed=1):
+        sink(r["t"], {k: v for k, v in r.items() if k != "t"})
+    sink.close(wait=None)
+    deployed = tmp_path / "missing.pkl"  # none deployed yet: also exercises first commissioning
+    out_path = str(tmp_path / "model-new.pkl")
+    args = _ac_args(model=str(deployed), spool=spool, kernel="7.2.11_1", min_hours=3.9, out=out_path)
+    assert cli_model._autocommission(args) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert out["action"] == "recommissioned"
+    assert not deployed.exists()  # --out, never --model, is written
+    assert NodeMemory.load(out_path).meta["kernel"] == "7.2.11_1"
 
 # -- end to end: a synthetic one-node campaign ----------------------------------
 ONSETS = {"spin": (1000, 1200), "thrash": (2000, 2200), "oom": (3000, 3000)}

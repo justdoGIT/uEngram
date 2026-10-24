@@ -24,6 +24,54 @@ def _commission(args) -> int:
     return 0
 
 
+def _autocommission(args) -> int:
+    """Recommission a deployed model once the running kernel has enough
+    same-kernel spool data; otherwise a no-op. Writes the new model to
+    `--out` rather than `--model`, so a caller (the uengram-recommission
+    service) controls the daemon stop/swap/start and the model file is
+    never replaced while uengram-hostd might still be writing it."""
+    import platform
+    from .collector import spool_files
+    from .features import kernel_releases, read_columns, select_kernel
+    from .node import NodeMemory
+
+    running = args.kernel or platform.release()
+    out = args.out or (args.model + ".staging")
+    deployed_kernel = None
+    if os.path.exists(args.model):
+        try:
+            deployed_kernel = NodeMemory.load(args.model).meta.get("kernel")
+        except Exception as e:  # a corrupt or foreign pickle must not crash the checker
+            print(json.dumps({"action": "error", "detail": f"cannot load {args.model}: {e}"}))
+            return 1
+    if deployed_kernel == running:
+        print(json.dumps({"action": "up_to_date", "kernel": running}))
+        return 0
+
+    files = spool_files(os.path.expanduser(args.spool), socket.gethostname())
+    if not files:
+        print(json.dumps({"action": "insufficient_data", "reason": "no spool files", "kernel": running}))
+        return 0
+    meta, cols = read_columns(files)
+    releases = kernel_releases(cols)
+    if running not in releases:
+        print(json.dumps({"action": "insufficient_data", "reason": "no ticks for the running kernel yet",
+                           "kernel": running, "spool_releases": list(releases)}))
+        return 0
+    sel = select_kernel(cols, running)
+    hours = len(sel["t"]) / 3600.0  # 1 Hz ticks
+    if hours < args.min_hours:
+        print(json.dumps({"action": "insufficient_data", "kernel": running,
+                           "hours": round(hours, 2), "min_hours": args.min_hours}))
+        return 0
+
+    node = NodeMemory.commission(sel, meta, window=args.window, alpha=args.alpha, calib_frac=args.calib_frac)
+    node.save(out)
+    print(json.dumps({"action": "recommissioned", "kernel": running, "hours": round(hours, 2),
+                       "out": out, "report": node.commission_report}))
+    return 0
+
+
 def _replay(args) -> int:
     from .collector import read_ticks
     from .node import NodeMemory
@@ -129,6 +177,17 @@ def add_model_commands(sub) -> dict:
     r.add_argument("--ticks", required=True)
     r.add_argument("--events")
     r.add_argument("--save", action="store_true", help="keep what the memory learned")
+    ac = sub.add_parser("autocommission")
+    ac.add_argument("--model", default=model)
+    ac.add_argument("--spool", default=os.path.join(DEFAULT_DIR, "spool"))
+    ac.add_argument("--kernel", help="running kernel release (default: platform.release())")
+    ac.add_argument("--min-hours", type=float, default=24.0,
+                     help="hours of same-kernel spool data required before recommissioning")
+    ac.add_argument("--out", help="write a ready model here instead of --model (default: MODEL.staging)")
+    ac.add_argument("--window", type=int, default=32, help="ticks per window (K)")
+    ac.add_argument("--alpha", type=float, default=0.01, help="alarm false-positive rate")
+    ac.add_argument("--calib-frac", type=float, default=0.3,
+                     help="tail share of the commissioning run held out for alarm calibration")
     o = sub.add_parser("run")
     o.add_argument("--model", default=model)
     o.add_argument("--state", default=state)
@@ -173,5 +232,6 @@ def add_model_commands(sub) -> dict:
     t.add_argument("--campaign", default="~/Backup/uengram-host/campaign",
                    help="refuse while the campaign in this directory runs")
     t.add_argument("--apply", action="store_true", help="set the recommended pl1/epp until the next reboot")
-    return {"commission": _commission, "replay": _replay, "run": _run, "status": _status, "follow": _follow,
-            "hub": _hub, "cluster": _cluster, "campaign": _campaign, "tune": _tune}
+    return {"commission": _commission, "autocommission": _autocommission, "replay": _replay, "run": _run,
+            "status": _status, "follow": _follow, "hub": _hub, "cluster": _cluster, "campaign": _campaign,
+            "tune": _tune}
