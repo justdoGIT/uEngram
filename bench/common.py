@@ -8,6 +8,7 @@ import numpy as np
 
 from uengram.baseline_reference import ReferenceBaseline
 from uengram.baselines import FIFOStore, NaiveStore, ReservoirStore
+from uengram.encoder_slope import DSPSlopeEncoder
 from uengram.engine import Engram, EngramConfig
 from uengram.stats import conformal_threshold, ewma_inflation
 
@@ -37,6 +38,17 @@ def make_store(method: str, B: int, d: int, sigma0: np.ndarray, raw_bytes: int,
         cfg = EngramConfig(B_sem=B - b_epi, B_epi=b_epi, **{**over, **variant})
         return Engram(cfg, d, sigma0, raw_bytes, name=method, step_inflation=step_inflation)
     raise ValueError(f"unknown method {method}")
+
+
+def encode_windows(enc, windows: np.ndarray, groups=None, sequential: bool = True) -> np.ndarray:
+    """`enc.encode(...)`, passing `groups` through only to encoders that use
+    segment info at encode time (currently `DSPSlopeEncoder`); other
+    encoders' `encode()` does not accept it. `groups` must be the same ids
+    the caller fit with (CMAPSS/MetroPT/SKAB's own segment/unit ids, or
+    `None` for the synthetic benchmark's single implicit segment)."""
+    if isinstance(enc, DSPSlopeEncoder):
+        return enc.encode(windows, sequential=sequential, segment=groups)
+    return enc.encode(windows, sequential=sequential)
 
 
 def measure_step_inflation(Ztrain: np.ndarray, groups: np.ndarray | None = None) -> np.ndarray:
@@ -75,10 +87,21 @@ def run_stream(store, Z: np.ndarray, record, oracle_sev: np.ndarray | None = Non
     return scores, fl, lat
 
 
+def _json_default(value):
+    """Convert NumPy values emitted by benchmark detail records."""
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, np.datetime64):
+        return str(value)
+    if isinstance(value, np.generic):
+        return value.item()
+    raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
+
+
 def dump(path: str, lines: list[dict], mode: str = "a") -> None:
     with open(path, mode) as f:
         for ln in lines:
-            f.write(json.dumps(ln) + "\n")
+            f.write(json.dumps(ln, default=_json_default) + "\n")
 
 
 def parse_seeds(s: str) -> list[int]:

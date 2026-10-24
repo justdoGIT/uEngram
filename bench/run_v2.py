@@ -69,7 +69,12 @@ def _care_events(stream, d) -> dict:
         in_event = np.zeros(len(test), bool)
         stamp = stream.end[test]  # exact supplied SCADA row times
         end_pos = int(np.flatnonzero(stamp <= np.datetime64(stream.extra["care_event_end"]))[-1])
+    if not normal.any():
+        return {"label": label, "status": "not_evaluable", "normal_rows": 0,
+                "reason": "CARE event has no normal-status rows to evaluate"}
     rec = evaluate_event(d["active"], normal, in_event, end_pos, label)
+    rec["status"] = "evaluated"
+    rec["normal_rows"] = int(normal.sum())
     return {k: (v.item() if hasattr(v, "item") else v) for k, v in rec.items()}
 
 
