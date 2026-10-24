@@ -301,3 +301,21 @@ In `src/uengram/encoders.py` and `src/uengram/encoder_tab.py`:
 - Configured `TabularEncoder(rcond=1e-4)`: capping the condition number at
   $10^4$ bounds noise variance to sane levels while preserving the +0.030
   AUROC ranking advantage of higher dimensional tabular representations.
+
+### Measured SCANIA Results (`results/scania_tab_reg_sweep.json`, `rcond=1e-4`)
+
+| Encoder | Whitening | Novelty AUROC | Novelty AP | Near-Failure Recall | Healthy Alarm Rate |
+|---|---|---:|---:|---:|---:|
+| `tab_d16` | unregularized | 0.541 | 0.0321 | 0.228 | 0.193 |
+| `tab_d16` | **regularized (`1e-4`)** | 0.540 | 0.0316 | **0.301** (+7.3%) | 0.233 |
+| `tab_d32` | unregularized | **0.571** | **0.0333** | 0.022 | 0.027 |
+| `tab_d32` | **regularized (`1e-4`)** | 0.566 | 0.0330 | **0.066** (3× higher) | 0.044 |
+| `tab_d48` | regularized (`1e-4`) | 0.562 | 0.0330 | 0.000 | 0.0004 |
+
+On `tab_d16`, regularized whitening raises near-failure recall from 22.8% to
+30.1% (+7.3% absolute gain across classes 1–4, with class 2 recall jumping
+from 28.6% to 42.9%). On `tab_d32`, regularization triples recall from 2.2%
+to 6.6% while preserving a superior AUROC (0.566 vs 0.540). At $d=48$, the
+48-dimensional volume still pushes the $(1-\alpha)$ quantile too far into
+the tail for $k=3$ persistence, confirming that $d=16$ remains the optimal
+operating dimensionality for this coarse, sparsely-logged tabular stream.
