@@ -67,6 +67,24 @@ def band_features(windows: np.ndarray) -> np.ndarray:
     return feats.reshape(N, C * 6)
 
 
+def windowed_slopes(means: np.ndarray, segment, lags: tuple[int, ...]) -> np.ndarray:
+    """For each lag, each column's value minus its value `lag` rows earlier,
+    zero when that earlier row is missing or in a different segment.
+    `segment=None` means a single implicit segment. Shared by
+    `DSPSlopeEncoder` and `CtxDSPEncoder` (encoder_slope.py, encoder_ctx.py)."""
+    n = len(means)
+    segment = np.zeros(n, dtype=np.int64) if segment is None else np.asarray(segment)
+    parts = []
+    for lag in lags:
+        shifted = np.zeros_like(means)
+        same_seg = np.zeros(n, bool)
+        if lag < n:
+            shifted[lag:] = means[:-lag]
+            same_seg[lag:] = segment[lag:] == segment[:-lag]
+        parts.append(np.where(same_seg[:, None], means - shifted, 0.0))
+    return np.column_stack(parts) if parts else np.empty((n, 0))
+
+
 class DSPEncoder:
     """Hand-built spectral features, robust standardisation, PCA + noise whitening."""
 

@@ -7,7 +7,7 @@ import time
 
 import numpy as np
 
-from bench.common import dump, make_store, measure_step_inflation, parse_seeds, run_stream
+from bench.common import dump, encode_windows, make_store, measure_step_inflation, parse_seeds, run_stream
 from bench.evaluate import footprint, latency, mmd_metrics
 from bench.provenance import Provenance
 from bench.run_synth import make_encoder
@@ -45,15 +45,15 @@ def run_one(task):
     rul_true = np.loadtxt("data/cmapss/RUL_FD001.txt")
     Wtr, Utr, _ = cmapss.windows(train[train[:, 0] <= 50], K)
     enc = make_encoder(enc_name, seed).fit(Wtr, K, Utr)
-    Ztr = enc.encode(Wtr)
+    Ztr = encode_windows(enc, Wtr, Utr)
     infl = measure_step_inflation(Ztr, Utr)
     # commissioning stream: the first COMMISSION windows of every training unit,
     # assumed healthy without labels; uEngram freezes its normal states as the
     # healthy reference for the health score
     Zc = Ztr[np.concatenate([np.flatnonzero(Utr == u)[:COMMISSION] for u in np.unique(Utr)])]
     Ws, Us, Rs = cmapss.windows(train[(train[:, 0] > 50) & (train[:, 0] <= units_hi)], K)
-    Wt, _, _ = cmapss.windows(test, K, last_only=True)
-    Z, Zt = enc.encode(Ws), enc.encode(Wt, sequential=False)
+    Wt, Ut, _ = cmapss.windows(test, K, last_only=True)
+    Z, Zt = encode_windows(enc, Ws, Us), encode_windows(enc, Wt, Ut, sequential=False)
     T = len(Z)
     h = median_heuristic(Z[-2000:])
     pos, neg = Rs <= EOL, Rs > HEALTHY

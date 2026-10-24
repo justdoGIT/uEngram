@@ -112,3 +112,28 @@ def test_context_rejected_window_updates_drive_but_propagates_ramp():
     # The rejected ramp at t=1 is not accepted; at t=2 the ramp prediction
     # uses propagated ramp 0 and the immediately previous drive u=1.
     assert residual[2, 0] == pytest.approx(-1.)
+
+
+def test_context_encoder_resets_at_a_segment_boundary():
+    from uengram.encoder_ctx import ContextEncoder
+
+    enc = ContextEncoder(reject_k=1)
+    enc.b = np.array([[0.5, 1., 0.]])
+    enc.rscale = np.array([0.1])
+    drive = np.array([0., 1., 2., 5.])
+    ramps = np.array([[0.], [1.], [0.], [3.]])
+    segment = np.array([0, 0, 0, 1])  # window 3 starts a new file/unit
+    residual = enc._residuals(drive, ramps, sequential=True, segment=segment)
+    # window 3 has no valid same-segment predecessor: residual falls back to
+    # the raw ramp (the sequential=False convention), not a prediction built
+    # from window 2's unrelated drive/ramp.
+    assert residual[3, 0] == pytest.approx(3.0)
+
+
+def test_context_encoder_same_segment_mask():
+    from uengram.encoder_ctx import ContextEncoder
+
+    assert ContextEncoder._same_segment(None, 5).tolist() == [False, True, True, True, True]
+    seg = np.array([0, 0, 1, 1, 1])
+    assert ContextEncoder._same_segment(seg, 5).tolist() == [False, True, False, True, True]
+    assert ContextEncoder._same_segment(seg, 1).tolist() == [False]

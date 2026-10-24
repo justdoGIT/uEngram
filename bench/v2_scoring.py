@@ -26,7 +26,7 @@ from uengram.engine import EngramConfig
 from uengram.stats import conformal_threshold
 from uengram.stream_baselines import HSTDetector, MemStream
 
-B, D = 256, 16
+B = 256
 ALPHA = 0.01  # MemStream memory-update gate, as in v1
 MEMSTREAM_EPOCHS = 5000
 
@@ -35,12 +35,18 @@ def make_v2_encoder(name: str, seed: int):
     if name == "dsp":
         from uengram.encoders import DSPEncoder
         return DSPEncoder()
+    if name.startswith("dsp_d") and name[len("dsp_d"):].isdigit():
+        from uengram.encoders import DSPEncoder
+        return DSPEncoder(d=int(name[len("dsp_d"):]))
     if name in ("cnn2", "cnn2s"):
         from uengram.encoder_cnn2 import CNN2Encoder
         return CNN2Encoder(seed=seed)
     if name == "tab":
         from uengram.encoder_tab import TabularEncoder
         return TabularEncoder()
+    if name.startswith("tab_d") and name[len("tab_d"):].isdigit():
+        from uengram.encoder_tab import TabularEncoder
+        return TabularEncoder(d=int(name[len("tab_d"):]))
     raise ValueError(f"unknown encoder {name}")
 
 
@@ -86,7 +92,8 @@ def score_embeddings(stream, method, enc_name, seed, enc, Z, label="", *, record
     tick = _progress(f"{label} {method}")
     meta = {"method": method, "encoder": enc_name, "seed": seed, "stream": stream.name}
     meta["input_hash"] = input_hash(stream, enc_name)
-    reference_mu, reference_var = np.empty((0, D)), np.empty((0, D))
+    d = Z.shape[1]
+    reference_mu, reference_var = np.empty((0, d)), np.empty((0, d))
     if record_encoding:
         meta["encoding"] = enc.encoding_meta
         meta["encoding_path"] = enc.encoding_path
@@ -95,7 +102,7 @@ def score_embeddings(stream, method, enc_name, seed, enc, Z, label="", *, record
         infl, cal_info = calibrate_steps(Z[stream.fit], stream.segment[stream.fit], cfg,
                                          enc.sigma0, stream.raw_bytes,
                                          progress=_progress(f"{label} commissioning"))
-        model = make_store("uengram", B, D, enc.sigma0, stream.raw_bytes, seed, None, infl)
+        model = make_store("uengram", B, d, enc.sigma0, stream.raw_bytes, seed, None, infl)
         last_fit = int(np.flatnonzero(stream.fit)[-1])
         eid, prov = stream.event_id(), Provenance()
         first_test = int(np.flatnonzero(stream.test)[0])

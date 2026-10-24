@@ -1,0 +1,65 @@
+{
+  "protocol": "docs/validation-scania-protocol.md",
+  "rows": [
+    {
+      "encoder": "tab_d16",
+      "metrics": {
+        "alarm_vehicles": 978,
+        "final_row_novelty_ap": 0.032113761465069716,
+        "final_row_novelty_auroc": 0.5410431891697616,
+        "healthy_alarm_rate": 0.19287169042769858,
+        "near_failure_recall": 0.22794117647058823,
+        "recall_by_class": {
+          "0": 0.19287169042769858,
+          "1": 0.1875,
+          "2": 0.2857142857142857,
+          "3": 0.2,
+          "4": 0.23684210526315788
+        },
+        "vehicles": 5046
+      },
+      "seconds": 459.3,
+      "status": "ok"
+    },
+    {
+      "encoder": "tab_d32",
+      "metrics": {
+        "alarm_vehicles": 138,
+        "final_row_novelty_ap": 0.03325725301815282,
+        "final_row_novelty_auroc": 0.5711842578171799,
+        "healthy_alarm_rate": 0.0274949083503055,
+        "near_failure_recall": 0.022058823529411766,
+        "recall_by_class": {
+          "0": 0.0274949083503055,
+          "1": 0.0,
+          "2": 0.0,
+          "3": 0.0,
+          "4": 0.039473684210526314
+        },
+        "vehicles": 5046
+      },
+      "seconds": 520.5,
+      "status": "ok"
+    },
+    {
+      "encoder": "tab_d48",
+      "metrics": {
+        "alarm_vehicles": 142,
+        "final_row_novelty_ap": 0.032647182195731025,
+        "final_row_novelty_auroc": 0.561159698095124,
+        "healthy_alarm_rate": 0.02810590631364562,
+        "near_failure_recall": 0.029411764705882353,
+        "recall_by_class": {
+          "0": 0.02810590631364562,
+          "1": 0.0625,
+          "2": 0.0,
+          "3": 0.0,
+          "4": 0.039473684210526314
+        },
+        "vehicles": 5046
+      },
+      "seconds": 569.4,
+      "status": "ok"
+    }
+  ]
+}

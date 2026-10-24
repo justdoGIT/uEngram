@@ -135,3 +135,58 @@ timestamp. Its OR result is therefore a data-quality tripwire, not evidence
 that the component-failure label itself independently raised the alarm. Full
 metrics and the independent recomputation are in
 [research-scania-validation.md](research-scania-validation.md).
+
+## 5. SKAB: a fresh cohort with pointwise labels, different physics
+
+SCANIA and CARE both lack what section 2 flagged as missing: exact,
+independently verified pointwise fault timestamps. The Skoltech Anomaly
+Benchmark (SKAB, `https://github.com/waico/SKAB`, GPL-3.0, pinned commit
+`b2c0d46c2971dcbfe71e26087b6d231998bb91c2`) provides them, at the cost of
+being a water-circulation testbed, not a compressor, and not a multi-asset
+cohort (all 35 files are one testbed). The frozen protocol is
+[validation-skab-protocol.md](validation-skab-protocol.md); full results in
+[research-skab-validation.md](research-skab-validation.md).
+
+The byte-identical frozen `uengram/dsp/v2_frozen` detector and alarm policy
+detected 5 of 34 labelled faults (14.7%), all of them vibration-forcing
+faults (4 of 5 rotor-imbalance profiles plus one cavitation case) with
+detection 28-114 seconds **after** onset, never before. Every valve-
+throttling experiment (20/20) and every non-vibration fault (leaks, water
+level, hot supply, two-phase cavitation) went undetected. Row-level novelty
+AUROC was 0.550, barely above chance.
+
+This narrows rather than resolves RC1/RC2: the same frozen math carries
+some real signal onto a system with totally different physics and exact
+ground truth, but transfer is low-recall and confirmation-only, matching
+the compressor-domain finding that no pre-failure signal was observed
+ahead of a labelled event. It does not change MetroPT-3/MetroPT2/CARE's
+development-vs-confirmation status, and SKAB is not itself a candidate for
+further alarm-policy tuning: it was scored once, with the frozen policy,
+specifically to test transfer, not to select a new configuration.
+
+A follow-up RC2 test confirmed the diagnosis: `DSPSlopeEncoder`
+(`src/uengram/encoder_slope.py`, a windowed-mean slope per channel added
+to the unchanged DSP band features, tested in isolation from the frozen
+`DSPEncoder`) rescued exactly the three gradual, non-vibration faults the
+plain encoder structurally cannot see (`other/10,13,14`), 8/34 total, with
+zero regressions, at roughly double the false-alarm episodes (5 -> 10)
+and clean-time share (1.34% -> 5.09%) over the same ~6.2 h clean-exposure
+sample. Valve-throttling (20/20) remains fully undetected: that family's
+root cause is isolated single-window spikes failing the persistence
+filter, not a missing feature, per `research-skab-validation.md`. This is
+a second SKAB-specific ablation (SKAB's own result shaped the lag choice),
+not a project-wide encoder change. The revalidation was run (not left
+undone): `python -m bench.run_synth/run_cmapss/run_metropt --encoders
+dsp_slope`, full seed counts, same alarm policy. Verdict: **reject for
+project-wide adoption.** It is a severe regression on the synthetic
+benchmark (event_recall 1.00 -> 0.23, seizure_recall 1.00 -> 0.00, AP
+0.995 -> 0.068, ~5x writes, all 10 seeds) and a mixed, not clearly
+beneficial result on CMAPSS and MetroPT-3 (some metrics better, others
+worse, no consistent direction). Full tables in
+`research-skab-validation.md`'s "Project-wide revalidation" section. A
+follow-up persistence/alpha sweep (`results/skab_persistence_sweep.json`)
+found no configuration that detects more events without a proportional
+false-alarm cost; `alpha` cannot be tightened to compensate because
+SKAB's 657-window commissioning sample is already near the minimum
+`alpha=0.003` needs. The valve-throttling and isolated-spike families
+remain unfixed by any change tested so far.

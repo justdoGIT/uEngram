@@ -12,7 +12,7 @@ import time
 
 import numpy as np
 
-from bench.common import CAL_WARMUP, dump, make_store, parse_seeds
+from bench.common import CAL_WARMUP, dump, encode_windows, make_store, parse_seeds
 from bench.evaluate import footprint, latency
 from bench.metropt_calibration import calibrate_steps
 from bench.metropt_eval import evaluate
@@ -25,7 +25,7 @@ from uengram.stream_baselines import HSTDetector, MemStream
 
 METHODS = ("naive", "fifo", "reservoir", "reference_labelfree", "uengram",
            "uengram_frozen", "hst", "memstream")
-B, D, K = 256, 16, 60
+B, K = 256, 60
 RAW_BYTES = len(metropt.ANALOG) * K * 4
 ALPHA, MEMSTREAM_EPOCHS = 0.01, 5000
 PROTOCOL = "metropt-v1-commissioning-innovations"
@@ -63,7 +63,8 @@ def run_one(task):
     cal = (S >= np.datetime64(metropt.FIT_END)) & (E < np.datetime64(metropt.TRAIN_END))
     test = S >= np.datetime64(metropt.TRAIN_END)
     enc = make_encoder(enc_name, seed).fit(W[fit], 1, G[fit])
-    Z = enc.encode(W)
+    d = len(enc.sigma0)
+    Z = encode_windows(enc, W, G)
     Zfit, Zcal, Ztest = Z[fit], Z[cal], Z[test]
     tst = np.flatnonzero(test)
     fid = metropt.failure_id(S[test], E[test])
@@ -103,13 +104,13 @@ def run_one(task):
                                    beta_min=0.0 if method == "uengram_frozen" else .01)
                 infl, calibration = calibrate_steps(Zfit, G[fit], cfg, enc.sigma0, RAW_BYTES)
                 print(f"{stage} warmed innovations={calibration['warm_samples']}", flush=True)
-            cal_model = make_store(method, B, D, enc.sigma0, RAW_BYTES, seed, None, infl)
+            cal_model = make_store(method, B, d, enc.sigma0, RAW_BYTES, seed, None, infl)
             cal_scores, _, _, _ = _score(cal_model, Zcal, stage + " calibration")
             thr = conformal_threshold(cal_scores[CAL_WARMUP:], ALPHA)
-            model = make_store(method, B, D, enc.sigma0, RAW_BYTES, seed,
+            model = make_store(method, B, d, enc.sigma0, RAW_BYTES, seed,
                                {"alarm_threshold": thr}, infl)
             if method.startswith("uengram"):
-                reference = make_store(method, B, D, enc.sigma0, RAW_BYTES, seed, None, infl)
+                reference = make_store(method, B, d, enc.sigma0, RAW_BYTES, seed, None, infl)
                 _score(reference, Zfit, stage + " reference")
                 model.set_reference(*reference.reference())
             detector, warmup = False, 0
@@ -160,7 +161,10 @@ def main():
     if a.quick:
         a.seeds, a.encoders = "0", "dsp"
     methods, encoders = tuple(a.methods.split(",")), a.encoders.split(",")
-    if not set(methods) <= set(METHODS) or not set(encoders) <= {"dsp", "cnn", "cnn2"}:
+    known = {"dsp", "dsp_slope", "cnn", "cnn2"}
+    bad_encoders = [e for e in encoders
+                    if e not in known and not (e.startswith("dsp_d") and e[len("dsp_d"):].isdigit())]
+    if not set(methods) <= set(METHODS) or bad_encoders:
         ap.error("unknown method or encoder")
     metropt.fetch()  # fetch once, before workers can race to create the cache
     tasks = [(s, e, methods) for s in parse_seeds(a.seeds) for e in encoders]

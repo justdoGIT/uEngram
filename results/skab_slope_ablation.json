@@ -1,0 +1,666 @@
+{
+  "K": 10,
+  "config": {
+    "aci_gamma": 0.0,
+    "alpha": 0.003,
+    "health_needs_baseline": true,
+    "k_health": 0,
+    "k_novelty": 3,
+    "min_state_windows": 100,
+    "new_state_alert": true,
+    "per_state": true
+  },
+  "details": {
+    "alarm_episodes": 25,
+    "clean_alarm_seconds": 1138.0,
+    "clean_observed_hours": 6.214166666666666,
+    "clean_observed_seconds": 22371.0,
+    "eligible_windows": 3684,
+    "events": [
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 0,
+        "first_alarm": "1970-03-02T02:46:39",
+        "lead_hours": -0.15555555555555556,
+        "windows": 41
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 1,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 41
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 2,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 33
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 3,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 41
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 4,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 36
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 5,
+        "first_alarm": "1970-07-30T04:26:17",
+        "lead_hours": -0.16111111111111112,
+        "windows": 41
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 6,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 42
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 7,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 42
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 8,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 41
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 9,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 41
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 10,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 41
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 11,
+        "first_alarm": "1971-01-26T06:27:25",
+        "lead_hours": -0.14083333333333334,
+        "windows": 41
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 12,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 40
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 13,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 40
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 14,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 41
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 15,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 41
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 16,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 40
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 17,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 32
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 18,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 40
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 19,
+        "first_alarm": "1971-09-23T09:06:29",
+        "lead_hours": -0.15527777777777776,
+        "windows": 40
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 20,
+        "first_alarm": "1971-10-23T09:24:28",
+        "lead_hours": -0.145,
+        "windows": 19
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 21,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 38
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 22,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 41
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 23,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 40
+      },
+      {
+        "alarm_windows": 22,
+        "detected": true,
+        "event": 24,
+        "first_alarm": "1972-02-20T10:35:44",
+        "lead_hours": -0.15527777777777776,
+        "windows": 42
+      },
+      {
+        "alarm_windows": 19,
+        "detected": true,
+        "event": 25,
+        "first_alarm": "1972-03-21T11:05:49",
+        "lead_hours": 0.010555555555555556,
+        "windows": 41
+      },
+      {
+        "alarm_windows": 28,
+        "detected": true,
+        "event": 26,
+        "first_alarm": "1972-04-20T11:25:39",
+        "lead_hours": 0.0077777777777777776,
+        "windows": 35
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 27,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 41
+      },
+      {
+        "alarm_windows": 17,
+        "detected": true,
+        "event": 28,
+        "first_alarm": "1972-06-19T12:04:52",
+        "lead_hours": 0.010833333333333334,
+        "windows": 41
+      },
+      {
+        "alarm_windows": 12,
+        "detected": true,
+        "event": 29,
+        "first_alarm": "1972-07-19T12:25:37",
+        "lead_hours": 0.023333333333333334,
+        "windows": 59
+      },
+      {
+        "alarm_windows": 0,
+        "detected": false,
+        "event": 30,
+        "first_alarm": null,
+        "lead_hours": null,
+        "windows": 46
+      },
+      {
+        "alarm_windows": 22,
+        "detected": true,
+        "event": 31,
+        "first_alarm": "1972-09-17T13:10:19",
+        "lead_hours": 0.03166666666666667,
+        "windows": 32
+      },
+      {
+        "alarm_windows": 3,
+        "detected": true,
+        "event": 32,
+        "first_alarm": "1972-10-17T13:19:39",
+        "lead_hours": -0.1461111111111111,
+        "windows": 27
+      },
+      {
+        "alarm_windows": 13,
+        "detected": true,
+        "event": 33,
+        "first_alarm": "1972-11-16T13:48:12",
+        "lead_hours": 0.013888888888888888,
+        "windows": 31
+      }
+    ],
+    "false_alarm_episodes": 10,
+    "health_auroc_windows": 3684,
+    "novelty_auroc_windows": 3684,
+    "runtime_alarm_episodes": 25,
+    "runtime_observed_hours": 9.758055555555556,
+    "test_windows": 3722,
+    "unscored_windows": 38
+  },
+  "encoder": "dsp_slope",
+  "lags": [
+    3,
+    12
+  ],
+  "method": "uengram",
+  "metrics": {
+    "alarm_time_share_clean": 0.0508694291716955,
+    "alerts_per_week": 351.4550087166421,
+    "ap": 0.47419290392805774,
+    "auroc": 0.6070664235890932,
+    "events_detected": 8.0,
+    "false_alarm_per_week": 270.3500067051093,
+    "health_ap": 0.4977696065174742,
+    "health_auroc": 0.6101171451510626,
+    "lead_hours": -0.07393162393162393,
+    "notifications_per_week_all": 309.8978052321444,
+    "operator_events_per_week": 459.5950113986858
+  },
+  "n_experiments": 34,
+  "note": "SKAB slope-feature ablation: development on SKAB, not a fresh confirmation. Compare against results/skab_validation.json (the frozen dsp encoder).",
+  "per_experiment": [
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/0.csv",
+      "first_alarm": "1970-03-02T02:46:39",
+      "lead_hours": -0.15555555555555556,
+      "offset": "1970-03-02T03:02:58",
+      "onset": "1970-03-02T02:55:59",
+      "windows": 41
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/1.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1970-04-01T03:22:58",
+      "onset": "1970-04-01T03:15:58",
+      "windows": 41
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/2.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1970-05-01T03:42:57",
+      "onset": "1970-05-01T03:37:04",
+      "windows": 33
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/3.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1970-05-31T04:02:58",
+      "onset": "1970-05-31T03:55:57",
+      "windows": 41
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/4.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1970-06-30T04:22:56",
+      "onset": "1970-06-30T04:15:58",
+      "windows": 36
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/5.csv",
+      "first_alarm": "1970-07-30T04:26:17",
+      "lead_hours": -0.16111111111111112,
+      "offset": "1970-07-30T04:42:56",
+      "onset": "1970-07-30T04:35:57",
+      "windows": 41
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/6.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1970-08-29T05:02:56",
+      "onset": "1970-08-29T04:55:56",
+      "windows": 42
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/7.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1970-09-28T05:22:55",
+      "onset": "1970-09-28T05:15:55",
+      "windows": 42
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/8.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1970-10-28T05:42:53",
+      "onset": "1970-10-28T05:35:54",
+      "windows": 41
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/9.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1970-11-27T06:02:53",
+      "onset": "1970-11-27T05:55:53",
+      "windows": 41
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/10.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1970-12-27T06:22:52",
+      "onset": "1970-12-27T06:15:53",
+      "windows": 41
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/11.csv",
+      "first_alarm": "1971-01-26T06:27:25",
+      "lead_hours": -0.14083333333333334,
+      "offset": "1971-01-26T06:42:52",
+      "onset": "1971-01-26T06:35:52",
+      "windows": 41
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/12.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1971-02-25T07:02:52",
+      "onset": "1971-02-25T06:55:52",
+      "windows": 40
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/13.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1971-03-27T07:22:51",
+      "onset": "1971-03-27T07:15:52",
+      "windows": 40
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/14.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1971-04-26T07:42:50",
+      "onset": "1971-04-26T07:35:51",
+      "windows": 41
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve1/15.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1971-05-26T08:02:50",
+      "onset": "1971-05-26T07:55:50",
+      "windows": 41
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve2/0.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1971-06-25T08:22:49",
+      "onset": "1971-06-25T08:15:50",
+      "windows": 40
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve2/1.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1971-07-25T08:42:48",
+      "onset": "1971-07-25T08:35:49",
+      "windows": 32
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve2/2.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1971-08-24T09:02:48",
+      "onset": "1971-08-24T08:55:49",
+      "windows": 40
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "valve2/3.csv",
+      "first_alarm": "1971-09-23T09:06:29",
+      "lead_hours": -0.15527777777777776,
+      "offset": "1971-09-23T09:22:48",
+      "onset": "1971-09-23T09:15:48",
+      "windows": 40
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "other/1.csv",
+      "first_alarm": "1971-10-23T09:24:28",
+      "lead_hours": -0.145,
+      "offset": "1971-10-23T09:36:26",
+      "onset": "1971-10-23T09:33:10",
+      "windows": 19
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "other/2.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1971-11-22T09:49:02",
+      "onset": "1971-11-22T09:42:20",
+      "windows": 38
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "other/3.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1971-12-22T10:11:07",
+      "onset": "1971-12-22T10:04:08",
+      "windows": 41
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "other/4.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1972-01-21T10:35:03",
+      "onset": "1972-01-21T10:28:07",
+      "windows": 40
+    },
+    {
+      "alarm_windows": 22,
+      "detected": true,
+      "experiment": "other/5.csv",
+      "first_alarm": "1972-02-20T10:35:44",
+      "lead_hours": -0.15527777777777776,
+      "offset": "1972-02-20T10:52:11",
+      "onset": "1972-02-20T10:45:03",
+      "windows": 42
+    },
+    {
+      "alarm_windows": 19,
+      "detected": true,
+      "experiment": "other/6.csv",
+      "first_alarm": "1972-03-21T11:05:49",
+      "lead_hours": 0.010555555555555556,
+      "offset": "1972-03-21T11:12:11",
+      "onset": "1972-03-21T11:05:11",
+      "windows": 41
+    },
+    {
+      "alarm_windows": 28,
+      "detected": true,
+      "experiment": "other/7.csv",
+      "first_alarm": "1972-04-20T11:25:39",
+      "lead_hours": 0.0077777777777777776,
+      "offset": "1972-04-20T11:31:13",
+      "onset": "1972-04-20T11:25:11",
+      "windows": 35
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "other/8.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1972-05-20T11:51:14",
+      "onset": "1972-05-20T11:44:13",
+      "windows": 41
+    },
+    {
+      "alarm_windows": 17,
+      "detected": true,
+      "experiment": "other/9.csv",
+      "first_alarm": "1972-06-19T12:04:52",
+      "lead_hours": 0.010833333333333334,
+      "offset": "1972-06-19T12:11:13",
+      "onset": "1972-06-19T12:04:13",
+      "windows": 41
+    },
+    {
+      "alarm_windows": 12,
+      "detected": true,
+      "experiment": "other/10.csv",
+      "first_alarm": "1972-07-19T12:25:37",
+      "lead_hours": 0.023333333333333334,
+      "offset": "1972-07-19T12:34:31",
+      "onset": "1972-07-19T12:24:13",
+      "windows": 59
+    },
+    {
+      "alarm_windows": 0,
+      "detected": false,
+      "experiment": "other/11.csv",
+      "first_alarm": null,
+      "lead_hours": null,
+      "offset": "1972-08-18T12:55:25",
+      "onset": "1972-08-18T12:47:31",
+      "windows": 46
+    },
+    {
+      "alarm_windows": 22,
+      "detected": true,
+      "experiment": "other/12.csv",
+      "first_alarm": "1972-09-17T13:10:19",
+      "lead_hours": 0.03166666666666667,
+      "offset": "1972-09-17T13:15:28",
+      "onset": "1972-09-17T13:08:25",
+      "windows": 32
+    },
+    {
+      "alarm_windows": 3,
+      "detected": true,
+      "experiment": "other/13.csv",
+      "first_alarm": "1972-10-17T13:19:39",
+      "lead_hours": -0.1461111111111111,
+      "offset": "1972-10-17T13:34:16",
+      "onset": "1972-10-17T13:28:25",
+      "windows": 27
+    },
+    {
+      "alarm_windows": 13,
+      "detected": true,
+      "experiment": "other/14.csv",
+      "first_alarm": "1972-11-16T13:48:12",
+      "lead_hours": 0.013888888888888888,
+      "offset": "1972-11-16T13:52:39",
+      "onset": "1972-11-16T13:47:22",
+      "windows": 31
+    }
+  ],
+  "seed": 0,
+  "stream": "skab"
+}

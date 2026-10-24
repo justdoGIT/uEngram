@@ -54,8 +54,8 @@ Use `--jobs 2` as a conservative default. CARE workers materialize full datasets
 ## Layout
 
 ```
-src/uengram/   library: alarm, baselines, baseline_reference, cmapss, encoders, encoder_{cnn,cnn2,cnn3,ctx,tab}, engine, health, ledger, lifecycle, metrics, metropt, metropt2, persistence, stats, store, stream_baselines, synth
-bench/         harness: advisory_{experiment,eval,report}, alarm_{components,definition,definition_sweep,dev,eval,interaction,math,sensitivity}, care_score, colab_train, common, cnn3_experiment, domain_dataset, encoding_cache, encoder_gate, error_gated_{alarm,sweep}, evaluate, followup_{experiment,policy}, freeze_frames, jev_{advisory,experiment}, laya_{advisory,hosts,http}, leak_duty, metropt_{calibration,eval}, modality_{alarm,sweep}, native_snapshots, physical_residuals, provenance, report, report_{followup,v2}, run_{cmapss,metropt,synth,v2}, stream_care, streams, v2_scoring
+src/uengram/   library: alarm, baselines, baseline_reference, cmapss, encoders, encoder_{cnn,cnn2,cnn3,ctx,tab}, engine, health, ledger, lifecycle, metrics, metropt, metropt2, persistence, skab, stats, store, stream_baselines, synth
+bench/         harness: advisory_{experiment,eval,report}, alarm_{components,definition,definition_sweep,dev,eval,interaction,math,sensitivity}, care_score, colab_train, common, cnn3_experiment, domain_dataset, encoding_cache, encoder_gate, error_gated_{alarm,sweep}, evaluate, followup_{experiment,policy}, freeze_frames, jev_{advisory,experiment}, laya_{advisory,hosts,http}, leak_duty, metropt_{calibration,eval}, modality_{alarm,sweep}, native_snapshots, physical_residuals, provenance, report, report_{followup,v2}, run_{cmapss,metropt,synth,v2}, stream_{care,scania,skab}, streams, v2_scoring, validate_{scania,skab}
 tests/         unit and behaviour tests
 results/       committed run outputs (JSONL)
 docs/          plan, explainer, results, improvement analysis, research notes, architecture notes
@@ -155,3 +155,73 @@ future fine-tuning experiments; it explicitly carries
 `independent_evaluation_eligible: false`. See
 [the dataset audit](docs/EXPLAINED.md#domain-dataset-readiness-v4-no-training)
 and `results/v4_dataset_audit.json`.
+
+## Current model decision and validation boundary
+
+The selected compressor fallback remains `uengram/dsp/v2_frozen`: the
+deterministic DSP encoder with the frozen state-aware alarm policy. The v8
+component and interaction sweeps tested 1,728 alarm configurations; none met
+the joint development target of 4/4 events, at most 2% clean alarm time, and
+at most one false-alarm episode per week. The selection therefore falls back
+to the frozen candidate rather than claiming a tuning win. See
+`results/v8_interaction_selection.json` and
+`docs/research-remediation-plan.md`.
+
+The optional `AlarmLogic(combine="or", error_k=3)` path is an evidence
+integration mode, not a new encoder or an autonomous replacement. On
+MetroPT-3 it detected 2/4 events while producing 1.217 false alarms per week
+and 15.15% clean alarm time. The SCANIA run is an independent fleet
+validation of the frozen detector, but its coarse repair classes do not
+support compressor lead-time claims: AND/control reached 22.794% recall for
+classes 1--4 with a 19.287% class-0 alarm rate. The missingness-based OR
+tripwire is data-quality monitoring, not a failure detector.
+
+SKAB (`https://github.com/waico/SKAB`, GPL-3.0) is a different fresh
+validation: a water-circulation testbed, not a compressor and not a
+multi-asset cohort, but one with real, independently verified pointwise
+fault timestamps that MetroPT/SCANIA/CARE cannot provide. The byte-identical
+frozen detector and policy detected 5/34 labelled faults (14.7%), all
+vibration-forcing faults, 28-114 seconds after onset (never before); every
+valve-throttling and non-vibration fault (24/29) went undetected. Row-level
+novelty AUROC was 0.550. A follow-up ablation (`DSPSlopeEncoder`, adding
+each channel's windowed-mean slope) rescued exactly the three gradual
+non-vibration faults it targeted (8/34, zero regressions on SKAB) at
+roughly double the false-alarm episodes; valve-throttling remains fully
+undetected, and no persistence/threshold change tested closes that gap
+without a proportional false-alarm cost. Revalidated project-wide
+(synthetic 10 seeds, CMAPSS 5 seeds, MetroPT-3 5 seeds, same alarm
+policy): **rejected for general adoption.** It is a severe regression on
+the synthetic benchmark (event/seizure recall collapse to 0.23/0.00, AP
+0.995 -> 0.068) and a mixed, not clearly beneficial result on CMAPSS and
+MetroPT-3. No single encoder here is a universal anomaly/wear-and-tear
+standard; the right features are measurably domain- and fault-specific.
+See `docs/research-skab-validation.md`.
+
+A follow-up found a simpler fix for SKAB than any feature engineering:
+plain `DSPEncoder(d=48)` (full raw dimension, no PCA reduction) rescues
+the same four gradual faults `DSPSlopeEncoder`/`CtxDSPEncoder` do, at the
+baseline's exact false-alarm count (5, not 10+). Raising `d` project-wide
+is not adopted either: it's a consistent win on MetroPT-3 (AUROC/AP up,
+false-alarm rate roughly halved, every method) but a regression on the
+synthetic benchmark (event_recall 1.00 -> 0.36) and hits a real numerical
+ceiling on CMAPSS (`d>24` fails: near-duplicate band-energy features make
+the noise-covariance estimate ill-conditioned). The matrix is now complete
+across all seven benchmarks: full dimension is also a strict win on
+MetroPT2 (`d=42`, matching MetroPT-3), a marginal recall-for-precision
+trade on CARE (`tab_d32`), and a recall-collapse trap on SCANIA (higher
+`d` lifts novelty AUROC to 0.571 but the frozen policy re-calibration
+drops near-failure recall from 0.228 to 0.022 — stay `tab_d16`). Separately,
+widening and longer-training the plain `CNNEncoder` (not the
+already-rejected CNN2/CNN3) closes most of its gap to DSP on MetroPT-3 in
+a single-seed test; CNN2 hits its own noise-covariance wall at the same
+widening. See `docs/research-encoder-capacity.md` for all three
+investigations plus the full per-dataset matrix (section 4), and the real
+infrastructure bugs (two hardcoded `D=16` constants) found and fixed while
+testing them.
+
+This is a research baseline, not a production safety alarm. The next
+evidence-gated improvements are operator-confirmed commissioning for unseen
+load states, rate/residual features for pre-failure changes, seasonal
+recalibration, and a fresh asset-disjoint evaluation cohort. The full
+trade-offs and falsifiable tests are in
+`docs/research-remediation-plan.md`.

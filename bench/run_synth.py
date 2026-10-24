@@ -21,6 +21,12 @@ TEMP_CH, RPM_CH = synth.CHANNELS.index("coolant_temp"), synth.CHANNELS.index("rp
 def make_encoder(name: str, seed: int):
     if name == "dsp":
         return DSPEncoder()
+    if name.startswith("dsp_d") and name[len("dsp_d"):].isdigit():
+        return DSPEncoder(d=int(name[len("dsp_d"):]))
+    if name == "dsp_slope":
+        from uengram.encoder_slope import DSPSlopeEncoder
+
+        return DSPSlopeEncoder()
     if name == "ctx":
         from uengram.encoder_ctx import ContextEncoder
 

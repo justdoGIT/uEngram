@@ -1,0 +1,208 @@
+{
+  "encoder": "dsp_slope",
+  "lags": [
+    3,
+    12
+  ],
+  "note": "SKAB persistence/threshold sweep on the dsp_slope-encoded scores (lags 3,12). Searches for an operating point that dominates the baseline (more events_detected AND fewer-or-equal false_alarm_episodes); none found. alpha<0.003 fails calibration outright (657 calibration windows is already near the alpha=0.003 minimum).",
+  "rows": [
+    {
+      "alarm_config": {
+        "aci_gamma": 0.0,
+        "alpha": 0.003,
+        "health_needs_baseline": true,
+        "k_health": 0,
+        "k_novelty": 3,
+        "min_state_windows": 100,
+        "new_state_alert": true,
+        "per_state": true
+      },
+      "alarm_logic": {
+        "combine": "and",
+        "commission_windows": 0,
+        "error_k": 3,
+        "persistence": "counter",
+        "stale_windows": 0,
+        "unbaselined": "global",
+        "veto": "normal",
+        "window": 0
+      },
+      "alarm_time_share_clean": 0.0508694291716955,
+      "ap": 0.47419290392805774,
+      "auroc": 0.6070664235890932,
+      "config": "alpha=0.003_k3_counter_baseline",
+      "events_detected": 8.0,
+      "false_alarm_episodes": 10
+    },
+    {
+      "alarm_config": {
+        "aci_gamma": 0.0,
+        "alpha": 0.003,
+        "health_needs_baseline": true,
+        "k_health": 0,
+        "k_novelty": 1,
+        "min_state_windows": 100,
+        "new_state_alert": true,
+        "per_state": true
+      },
+      "alarm_logic": {
+        "combine": "and",
+        "commission_windows": 0,
+        "error_k": 3,
+        "persistence": "counter",
+        "stale_windows": 0,
+        "unbaselined": "global",
+        "veto": "normal",
+        "window": 0
+      },
+      "alarm_time_share_clean": 0.07397970586920567,
+      "ap": 0.47419290392805774,
+      "auroc": 0.6070664235890932,
+      "config": "alpha=0.003_k1_counter",
+      "events_detected": 23.0,
+      "false_alarm_episodes": 26
+    },
+    {
+      "alarm_config": {
+        "aci_gamma": 0.0,
+        "alpha": 0.003,
+        "health_needs_baseline": true,
+        "k_health": 0,
+        "k_novelty": 2,
+        "min_state_windows": 100,
+        "new_state_alert": true,
+        "per_state": true
+      },
+      "alarm_logic": {
+        "combine": "and",
+        "commission_windows": 0,
+        "error_k": 3,
+        "persistence": "m_of_n",
+        "stale_windows": 0,
+        "unbaselined": "global",
+        "veto": "normal",
+        "window": 5
+      },
+      "alarm_time_share_clean": 0.11081310625363193,
+      "ap": 0.47419290392805774,
+      "auroc": 0.6070664235890932,
+      "config": "alpha=0.003_k2_mofn_n5",
+      "events_detected": 12.0,
+      "false_alarm_episodes": 14
+    },
+    {
+      "alarm_config": {
+        "aci_gamma": 0.0,
+        "alpha": 0.003,
+        "health_needs_baseline": true,
+        "k_health": 0,
+        "k_novelty": 2,
+        "min_state_windows": 100,
+        "new_state_alert": true,
+        "per_state": true
+      },
+      "alarm_logic": {
+        "combine": "and",
+        "commission_windows": 0,
+        "error_k": 3,
+        "persistence": "m_of_n",
+        "stale_windows": 0,
+        "unbaselined": "global",
+        "veto": "normal",
+        "window": 8
+      },
+      "alarm_time_share_clean": 0.16226364489741182,
+      "ap": 0.47419290392805774,
+      "auroc": 0.6070664235890932,
+      "config": "alpha=0.003_k2_mofn_n8",
+      "events_detected": 12.0,
+      "false_alarm_episodes": 14
+    },
+    {
+      "alarm_config": {
+        "aci_gamma": 0.0,
+        "alpha": 0.003,
+        "health_needs_baseline": true,
+        "k_health": 0,
+        "k_novelty": 1,
+        "min_state_windows": 100,
+        "new_state_alert": true,
+        "per_state": true
+      },
+      "alarm_logic": {
+        "combine": "and",
+        "commission_windows": 0,
+        "error_k": 3,
+        "persistence": "m_of_n",
+        "stale_windows": 0,
+        "unbaselined": "global",
+        "veto": "normal",
+        "window": 3
+      },
+      "alarm_time_share_clean": 0.14183541191721424,
+      "ap": 0.47419290392805774,
+      "auroc": 0.6070664235890932,
+      "config": "alpha=0.003_k1_mofn_n3",
+      "events_detected": 25.0,
+      "false_alarm_episodes": 25
+    },
+    {
+      "alarm_config": {
+        "aci_gamma": 0.0,
+        "alpha": 0.003,
+        "health_needs_baseline": true,
+        "k_health": 0,
+        "k_novelty": 2,
+        "min_state_windows": 100,
+        "new_state_alert": true,
+        "per_state": true
+      },
+      "alarm_logic": {
+        "combine": "and",
+        "commission_windows": 0,
+        "error_k": 3,
+        "persistence": "consecutive",
+        "stale_windows": 0,
+        "unbaselined": "global",
+        "veto": "normal",
+        "window": 0
+      },
+      "alarm_time_share_clean": 0.05668052389253945,
+      "ap": 0.47419290392805774,
+      "auroc": 0.6070664235890932,
+      "config": "alpha=0.003_k2_consecutive",
+      "events_detected": 10.0,
+      "false_alarm_episodes": 13
+    },
+    {
+      "alarm_config": {
+        "aci_gamma": 0.0,
+        "alpha": 0.003,
+        "health_needs_baseline": true,
+        "k_health": 0,
+        "k_novelty": 2,
+        "min_state_windows": 100,
+        "new_state_alert": true,
+        "per_state": true
+      },
+      "alarm_logic": {
+        "combine": "and",
+        "commission_windows": 0,
+        "error_k": 3,
+        "persistence": "ewma",
+        "stale_windows": 0,
+        "unbaselined": "global",
+        "veto": "normal",
+        "window": 0
+      },
+      "alarm_time_share_clean": 0.05153994010102365,
+      "ap": 0.47419290392805774,
+      "auroc": 0.6070664235890932,
+      "config": "alpha=0.003_k2_ewma",
+      "events_detected": 11.0,
+      "false_alarm_episodes": 14
+    }
+  ],
+  "seed": 0,
+  "stream": "skab"
+}
