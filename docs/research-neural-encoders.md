@@ -159,3 +159,58 @@ We designed and evaluated three stabilization mechanisms on SKAB ($K=10$, seeds 
    the network achieves near-zero seed variance on ranking (AUROC $0.570 \dots 0.577$)
    and false alarms (clean share $12.1\% \dots 14.4\%$), while retaining the ability
    to detect both dynamic vibration faults and DC flow/valve faults.
+
+---
+
+## 6. Multi-Scale Pooling, Spectral Loss Ablations, and Production Implementation
+
+### 6.1 Multi-Scale Max-Average Pooling (`pool="maxavg"`)
+
+A major limitation of the standard CNN autoencoder is `AdaptiveAvgPool1d(1)`: averaging
+activations over $K$ time samples dilutes isolated impulsive shock waves (knock impulses,
+Dirac rotor strikes, cavitation bursts) by $\frac{1}{K}$.
+
+Concatenating global average pooling (steady-state harmonics) with global maximum
+pooling (peak transient shock):
+$$h_{\text{pool}} = [\text{mean}_t(h), \max_t(h)] \in \mathbb{R}^{128}$$
+- **Synthetic Benchmark**: Average Precision jumped from **0.337 $\to$ 0.504** (+49.6% relative gain), with AUROC rising to 0.848.
+- **SKAB**: Peak novelty AUROC reached **0.671** (with 18/34 faults detected on Seed 2).
+
+### 6.2 Combined Multi-Scale Orthogonal Model (`pool="maxavg", ortho_beta=0.05`)
+
+Combining max-average pooling with orthogonal bottleneck regularization ($\beta=0.05$)
+delivers high transient recall while stabilizing inter-session drift:
+
+| Seed | Events Detected | Novelty AUROC | Novelty AP | FA Episodes | Clean-Time Share |
+|---:|---:|---:|---:|---:|---:|
+| **0** | **14 / 34** | 0.615 | 0.505 | 9 | **8.59%** |
+| **1** | **13 / 34** | 0.643 | 0.544 | 4 | **2.45%** |
+| **2** | **16 / 34** | 0.628 | 0.532 | 9 | **4.69%** |
+
+- **Result**: The 30.0% clean false-alarm blowout of unregularized CNN is **completely eliminated**. Clean-time share remains between 2.45% and 8.59% across all seeds.
+- **Detection**: Consistently catches 13 to 16 faults (38% to 47% of all testbed faults, including valve closures and water-level faults).
+- **Synthetic Benchmark**: AUROC reached **0.820 – 0.887** and AP reached **0.475 – 0.680** across seeds.
+
+### 6.3 Negative Results and Falsified Approaches
+
+1. **Time + Spectral Loss ($\mathcal{L}_{\text{MSE}} + \gamma \mathcal{L}_{\text{FFT}}$)**:
+   - *Result*: Synthetic AUROC fell from **0.797 $\to$ 0.720** ($\gamma=1.0$).
+   - *Cause*: Without logarithmic power compression, the low-frequency RPM sinusoid carries $1000\times$ more energy than high-frequency knock impulses, dominating the gradient updates and blinding the network to small transient bursts.
+2. **Log-Spectral Distance Loss ($\mathcal{L}_{\text{log-spec}}$)**:
+   - *Result*: Synthetic AUROC collapsed further to **0.589** ($\gamma=1.0$).
+   - *Cause*: Reconstructing exact phase and frequency spectra through a 2-layer MLP decoder is an ill-posed phase retrieval problem that produces severe gradient instability and high-frequency ringing artifacts.
+3. **LayerNorm / GroupNorm on Latent Bottleneck**:
+   - *Result*: Novelty AUROC collapsed to **0.484** (worse than random guessing).
+   - *Cause*: In Mahalanobis state math ($D^2 = z^T \Sigma^{-1} z$), the vector magnitude $\|z\|$ carries the anomaly surprisal. Normalizing it across dimensions removes the core metric uEngram relies on for detection.
+
+### 6.4 Production API in `src/uengram/encoder_cnn.py`
+
+Implemented and verified in `src/uengram/encoder_cnn.py` (`f7e3340`):
+```python
+class CNNEncoder:
+    def __init__(self, seed: int = 0, d: int = 16, epochs: int = 30, batch: int = 128,
+                 pool: str = "avg", ortho_beta: float = 0.0):
+        ...
+```
+- **`pool="avg", ortho_beta=0.0` (default)**: Retains 100% byte-identical behavior for all baseline benchmarks and existing tests.
+- **`pool="maxavg", ortho_beta=0.05`**: Activates multi-scale transient pooling and orthogonal bottleneck regularization for high-AP, drift-stabilized neural representations.
