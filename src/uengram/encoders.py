@@ -35,10 +35,12 @@ class NoiseWhitener:
     z -> z N^{-1/2} (symmetric root, minimal rotation) counts each correlated
     fluctuation once and amplifies combinations that are normally consistent.
     """
+    def __init__(self, rcond: float = 1e-12):
+        self.rcond = rcond
 
     def fit(self, z: np.ndarray, noise_lag: int, groups: np.ndarray | None) -> "NoiseWhitener":
         lam, V = np.linalg.eigh(robust_noise_cov(z, noise_lag, groups))
-        lam = np.maximum(lam, 1e-12 * max(float(lam.max()), 1e-12))
+        lam = np.maximum(lam, self.rcond * max(float(lam.max()), 1e-12))
         self.W = (V / np.sqrt(lam)) @ V.T
         return self
 
@@ -46,11 +48,11 @@ class NoiseWhitener:
         return np.asarray(z, dtype=np.float64) @ self.W
 
 
-def fit_projection(X: np.ndarray, d: int, noise_lag: int, groups: np.ndarray | None):
+def fit_projection(X: np.ndarray, d: int, noise_lag: int, groups: np.ndarray | None, rcond: float = 1e-12):
     """PCA-whiten X to d dims, then noise-whiten. Returns (whitener, noise, sigma0)."""
     whitener = Whitener().fit(X, d)
     Zp = whitener.transform(X)
-    noise = NoiseWhitener().fit(Zp, noise_lag, groups)
+    noise = NoiseWhitener(rcond=rcond).fit(Zp, noise_lag, groups)
     return whitener, noise, robust_noise_sigma(noise.transform(Zp), noise_lag, groups)
 
 

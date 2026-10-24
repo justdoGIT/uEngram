@@ -186,16 +186,17 @@ valve-throttling and non-vibration fault (24/29) went undetected. Row-level
 novelty AUROC was 0.550. A follow-up ablation (`DSPSlopeEncoder`, adding
 each channel's windowed-mean slope) rescued exactly the three gradual
 non-vibration faults it targeted (8/34, zero regressions on SKAB) at
-roughly double the false-alarm episodes; valve-throttling remains fully
-undetected, and no persistence/threshold change tested closes that gap
-without a proportional false-alarm cost. Revalidated project-wide
-(synthetic 10 seeds, CMAPSS 5 seeds, MetroPT-3 5 seeds, same alarm
-policy): **rejected for general adoption.** It is a severe regression on
-the synthetic benchmark (event/seizure recall collapse to 0.23/0.00, AP
-0.995 -> 0.068) and a mixed, not clearly beneficial result on CMAPSS and
-MetroPT-3. No single encoder here is a universal anomaly/wear-and-tear
-standard; the right features are measurably domain- and fault-specific.
-See `docs/research-skab-validation.md`.
+roughly double the false-alarm episodes; an opt-in two-tier alarm
+architecture (`shock_mult` in `AlarmConfig`) decouples immediate 1-window
+shocks from persistent drift ($k=3$), rescuing valve-throttling faults (up
+to 15/34 detected at `shock_mult=1.2x`) on assets with transient dynamics.
+Revalidated project-wide (synthetic 10 seeds, CMAPSS 5 seeds, MetroPT-3 5
+seeds, same alarm policy): `DSPSlopeEncoder` is **rejected for general
+adoption.** It is a severe regression on the synthetic benchmark
+(event/seizure recall collapse to 0.23/0.00, AP 0.995 -> 0.068) and a mixed,
+not clearly beneficial result on CMAPSS and MetroPT-3. No single encoder
+here is a universal anomaly/wear-and-tear standard; the right features are
+measurably domain- and fault-specific. See `docs/research-skab-validation.md`.
 
 A follow-up found a simpler fix for SKAB than any feature engineering:
 plain `DSPEncoder(d=48)` (full raw dimension, no PCA reduction) rescues
@@ -209,8 +210,9 @@ the noise-covariance estimate ill-conditioned). The matrix is now complete
 across all seven benchmarks: full dimension is also a strict win on
 MetroPT2 (`d=42`, matching MetroPT-3), a marginal recall-for-precision
 trade on CARE (`tab_d32`), and a recall-collapse trap on SCANIA (higher
-`d` lifts novelty AUROC to 0.571 but the frozen policy re-calibration
-drops near-failure recall from 0.228 to 0.022 — stay `tab_d16`). Separately,
+`d` lifts novelty AUROC to 0.571 but unregularized noise whitening
+inflates minor PCA directions, pushing calibration thresholds to 772M;
+resolved via `TabularEncoder(rcond=1e-4)`). Separately,
 widening and longer-training the plain `CNNEncoder` (not the
 already-rejected CNN2/CNN3) closes most of its gap to DSP on MetroPT-3 in
 a single-seed test; CNN2 hits its own noise-covariance wall at the same

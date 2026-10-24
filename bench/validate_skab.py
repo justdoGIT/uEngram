@@ -37,12 +37,16 @@ def main() -> None:
     parser.add_argument("--root", default=None)
     parser.add_argument("--out", default="results/skab_validation.json")
     parser.add_argument("--K", type=int, default=10)
+    parser.add_argument("--shock-mult", type=float, default=0.0)
     args = parser.parse_args()
 
     stream = skab_stream(args.root, K=args.K)
     sc = score_stream(stream, "uengram", "dsp", 0, "skab")
-    m, d, pol = apply_policy(stream, sc, FROZEN["uengram"])
-
+    cfg = FROZEN["uengram"]
+    if args.shock_mult > 0.0:
+        from uengram.alarm import AlarmConfig
+        cfg = AlarmConfig(**{**cfg.__dict__, "shock_mult": args.shock_mult})
+    m, d, pol = apply_policy(stream, sc, cfg)
     per_experiment = _per_experiment(stream, d)
     out = {
         "protocol": "docs/validation-skab-protocol.md",

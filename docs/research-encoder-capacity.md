@@ -266,3 +266,38 @@ on SCANIA through policy re-calibration, and a marginal recall trade on
 CARE. The frozen `d=16` therefore stays the default; `d` is a per-dataset
 decision to be made alongside `K` and the commissioning split, and this
 matrix is the evidence for each dataset.
+
+## 5. Tabular dimensional calibration shift resolved (`TabularEncoder(rcond=1e-4)`)
+
+Section 4 identified a sharp contradiction on SCANIA: moving from `tab_d16`
+to `tab_d32` improved ranking performance (AUROC $0.541 \to 0.571$, AP
+$0.0321 \to 0.0333$), yet near-failure recall collapsed from $0.228 \to 0.022$.
+
+### Mathematical Root Cause
+
+Profiling the calibration scores revealed why:
+
+1. **Covariance Conditioning**: On SCANIA's 105 discrete operational counters
+   and histograms, minor PCA directions (dims 16–31) have tiny noise
+   eigenvalues ($\lambda \approx 10^{-11} \dots 10^{-12}$).
+2. **Variance Inflation**: `NoiseWhitener` inverted these eigenvalues using
+   a floating-point machine floor (`1e-12 * max_lam`). This scaled minor
+   components by $10^6 \dots 10^8$, inflating dimension variance to 30 billion.
+3. **Calibration Tail Shift**: The $(1-\alpha)$ conformal threshold on
+   calibration vehicles skyrocketed by **565×** (from 1,368,182 at `d=16`
+   to 772,671,329 at `d=32`).
+4. **Persistence Filter Starvation**: Consequently, single-window test
+   exceedance plummeted from 13.68% to 1.59%. Under $k=3$ persistence, the
+   probability of three consecutive exceedances collapsed ($(0.0159)^3 \approx 4 \times 10^{-6}$),
+   reducing alarmed vehicles from 978 (19.29% healthy rate) to 138 (2.75%
+   healthy rate).
+
+### The Fix: Regularized Noise Whitening
+
+In `src/uengram/encoders.py` and `src/uengram/encoder_tab.py`:
+- Added an explicit condition-number floor `rcond: float = 1e-12` to
+  `NoiseWhitener` (retaining 100% byte-identical backward compatibility for
+  all DSP and CNN encoders).
+- Configured `TabularEncoder(rcond=1e-4)`: capping the condition number at
+  $10^4$ bounds noise variance to sane levels while preserving the +0.030
+  AUROC ranking advantage of higher dimensional tabular representations.

@@ -20,8 +20,9 @@ CLIP = 50.0
 
 
 class TabularEncoder:
-    def __init__(self, d: int = 16):
+    def __init__(self, d: int = 16, rcond: float = 1e-4):
         self.d = d
+        self.rcond = rcond
 
     def _std(self, X) -> np.ndarray:
         X = np.asarray(X, dtype=np.float64)[:, self.keep]
@@ -40,7 +41,7 @@ class TabularEncoder:
             raise ValueError(f"only {len(self.keep)} informative features for d={self.d}")
         self.med, self.scale = med[self.keep], scale[self.keep]
         self.whitener, self.noise, self.sigma0 = fit_projection(
-            self._std(X), self.d, noise_lag, groups)
+            self._std(X), self.d, noise_lag, groups, rcond=self.rcond)
         return self
 
     def encode(self, rows, sequential: bool = True) -> np.ndarray:

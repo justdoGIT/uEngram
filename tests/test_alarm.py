@@ -177,3 +177,25 @@ def test_alarm_logic_rejects_unknown_or_parameters():
         AlarmLogic(combine="xor")
     with pytest.raises(ValueError, match="error_k"):
         AlarmLogic(combine="or", error_k=0)
+
+
+def test_shock_tripwire_alarms_immediately_on_extreme_excursion():
+    # Baseline k_novelty=3 does not alarm on isolated 1-window spikes
+    p0 = _policy(AlarmConfig(k_novelty=3, k_health=0, shock_mult=0.0))
+    n_thr, _ = p0.thresholds(0)
+    active0, opened0 = _stream(p0, [n_thr * 2.0, 0.0, 0.0])
+    assert not active0.any() and not opened0.any()
+
+    # With shock_mult=1.5, an excursion exceeding 1.5 * n_thr immediately alarms on window 0
+    p1 = _policy(AlarmConfig(k_novelty=3, k_health=0, shock_mult=1.5))
+    active1, opened1 = _stream(p1, [n_thr * 2.0, 0.0, 0.0])
+    assert np.flatnonzero(opened1).tolist() == [0]
+    assert active1[0] and not active1[1]  # closes after the 1-window transient
+    assert p1.episodes[0]["trigger"] == "shock"
+    assert p1.episodes[0]["open_index"] == 0
+    assert p1.episodes[0]["close_index"] == 1
+
+    # Excursion below shock_mult does not trigger immediate shock alarm
+    p2 = _policy(AlarmConfig(k_novelty=3, k_health=0, shock_mult=2.5))
+    active2, opened2 = _stream(p2, [n_thr * 2.0, 0.0, 0.0])
+    assert not active2.any() and not opened2.any()

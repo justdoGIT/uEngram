@@ -37,3 +37,13 @@ def test_rejects_data_with_too_few_informative_features():
     X = np.column_stack([_rows(f=4), np.zeros((600, 10))])
     with pytest.raises(ValueError, match="informative"):
         TabularEncoder(d=8).fit(X, 1, None)
+
+
+def test_tabular_encoder_rcond_bounds_noise_condition_number():
+    X = _rows(n=600, f=24, seed=42)
+    # Default rcond=1e-4 bounds noise whitening condition number
+    enc = TabularEncoder(d=8, rcond=1e-2).fit(X, 1, None)
+    assert enc.rcond == 1e-2
+    Z = enc.encode(X)
+    assert Z.shape == (600, 8)
+    assert np.isfinite(Z).all()

@@ -65,6 +65,7 @@ class AlarmConfig:
     # States without their own baseline cannot be judged by the frozen health
     # reference: their health exceedances raise alerts instead of counting.
     health_needs_baseline: bool = False
+    shock_mult: float = 0.0  # multiplier of novelty threshold for immediate 1-window alarm (0=disabled)
 
 
 @dataclass(frozen=True)
@@ -262,7 +263,9 @@ class AlarmPolicy:
         n_val = None if unjudged or (strict and not math.isfinite(n_thr)) or (vetoed and lg.veto == "hold") \
             else n_count
         h_val = None if unjudged or (strict and not math.isfinite(h_thr)) else h_count
-        exceeded = (self.cfg.k_novelty > 0 and n_val is True) or (self.cfg.k_health > 0 and h_val is True)
+        shock_mult = getattr(self.cfg, "shock_mult", 0.0)
+        shock_ex = bool(shock_mult > 0.0 and own and math.isfinite(n_thr) and novelty >= shock_mult * n_thr and n_count)
+        exceeded = (self.cfg.k_novelty > 0 and n_val is True) or (self.cfg.k_health > 0 and h_val is True) or shock_ex
         filters = {name: f for name, f in self._filters.items() if f is not None}
         for name, value in (("novelty", n_val), ("health", h_val)):
             if name in filters:
@@ -275,17 +278,19 @@ class AlarmPolicy:
             ep["peak_novelty"] = max(ep["peak_novelty"], novelty) if math.isfinite(novelty) else ep["peak_novelty"]
             ep["peak_health"] = max(ep["peak_health"], health) if math.isfinite(health) else ep["peak_health"]
             ep["windows"] += 1
-            if all(f.clear for f in filters.values()):
+            if all(f.clear for f in filters.values()) and not shock_ex:
                 self.active = False
                 ep["close_index"], ep["close_time"] = index, str(time)
         else:
             by_nov = "novelty" in filters and filters["novelty"].trigger
             by_health = "health" in filters and filters["health"].trigger
             by_error = "error" in filters and filters["error"].trigger
-            if by_nov or by_health or by_error:
+            by_shock = shock_ex
+            if by_nov or by_health or by_error or by_shock:
                 self.active = opened = True
                 trigger = (
-                    "both" if by_nov and by_health
+                    "shock" if by_shock and not (by_nov or by_health or by_error)
+                    else "both" if by_nov and by_health
                     else "novelty" if by_nov
                     else "health" if by_health
                     else "error"

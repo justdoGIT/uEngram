@@ -298,3 +298,47 @@ fixed by any tested persistence or threshold change**; a genuine fix would
 need either more calibration data than this testbed recorded, or a
 different alarm-combination architecture (e.g. requiring two
 independently-thresholded channels to agree), which is not implemented.
+
+## Two-tier alarm policy: immediate shock tripwires for transient faults (`shock_mult`)
+
+The persistence sweep above confirmed that a uniform persistence reduction
+(`k_novelty=1`) triples false alarms (5 -> 21 episodes) because nominal
+sensor noise routinely crosses the conformal threshold for single windows.
+However, the physical faults in the undetected valve-throttling and
+impulse-rotor-imbalance families are not subtle noise: when a valve closes
+or an impulse strikes, the instantaneous novelty score spikes to 1.5x–2.0x
+the conformal threshold, but the excursion decays before the 3-window
+persistence counter can trip.
+
+A two-tier alarm architecture in `AlarmConfig` (`shock_mult: float = 0.0`,
+default 0 = disabled) decouples transient shocks from persistent drift:
+
+1. **Tier 1 (Drift / Subtle Degradation)**: Standard conformal threshold
+   $\tau$ with persistence $k=3$ (or configured $k_{\text{novelty}}$).
+2. **Tier 2 (Extreme Shock Tripwire)**: Immediate 1-window alarm ($k=1$)
+   triggered when `novelty >= shock_mult * n_thr` on a baselined state.
+
+Full sweep on SKAB (`results/skab_shock_sweep.json`, `dsp_d16`, seed 0):
+
+| `shock_mult` | Detected | Newly Detected Experiments | FA Episodes | Clean-Time Share | FA / Week |
+|---|---:|---|---:|---:|---:|
+| **0.0 (baseline)** | 5/34 | baseline: `other/5,6,7,9,12` | 5 | **1.34%** | 135.2 |
+| 1.7x | 6/34 | + `valve1/6` | 7 | **1.73%** | 189.2 |
+| 1.6x | 7/34 | + `valve1/6, other/8` | 11 | 2.40% | 297.4 |
+| 1.5x | 11/34 | + `valve1/6,7,9,10,11,13` | 17 | 3.45% | 459.6 |
+| 1.2x | 15/34 | + 10 valve / transient experiments | 19 | 4.42% | 513.7 |
+
+### Findings and Tradeoff
+
+- At `shock_mult = 1.7x`, the policy catches `valve1/6` and stays strictly
+  within the clean-time budget (1.73% vs $\le 2.0\%$).
+- At `shock_mult = 1.5x`, 6 valve-throttling experiments are caught (11/34
+  total), breaking the valve-throttling blindspot at an increase in clean
+  alarm time (1.34% -> 3.45%).
+- **Why it is an opt-in parameter (`shock_mult=0.0` default)**: on long
+  continuous compressor streams (MetroPT-3, 19 weeks of 1 Hz data), rare
+  1-window electrical/sensor spikes elevate false alarms per week (0.74 ->
+  2.59 at 2.0x, 1.22 at 5.0x). The frozen $k \ge 3$ persistence remains
+  vital for continuous rotary machinery, while `shock_mult` provides an
+  explicit sensitivity knob for assets subject to impulsive or valve-closure
+  transients.
