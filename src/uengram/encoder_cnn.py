@@ -7,12 +7,25 @@ from .encoders import fit_projection
 
 
 class CNNEncoder:
-    def __init__(self, seed: int = 0, d: int = 16, epochs: int = 30, batch: int = 128,
-                 pool: str = "avg", ortho_beta: float = 0.0):
+    def __init__(
+        self,
+        seed: int = 0,
+        d: int = 16,
+        epochs: int = 30,
+        batch: int = 128,
+        pool: str = "avg",
+        ortho_beta: float = 0.0,
+        representation: str = "bottleneck",
+    ):
         if pool not in ("avg", "maxavg"):
             raise ValueError("pool must be 'avg' or 'maxavg'")
+        if representation not in ("bottleneck", "middle", "multiscale"):
+            raise ValueError(
+                "representation must be 'bottleneck', 'middle', or 'multiscale'"
+            )
         self.seed, self.d, self.epochs, self.batch = seed, d, epochs, batch
         self.pool, self.ortho_beta = pool, ortho_beta
+        self.representation = representation
 
     def _build(self, C: int, K: int):
         import torch.nn as nn
@@ -33,8 +46,25 @@ class CNNEncoder:
             return torch.cat([h.mean(dim=-1), h.amax(dim=-1)], dim=-1)
         return h.mean(dim=-1)
 
+    def _feature_maps(self, xb):
+        middle = self.conv[1](self.conv[0](xb))
+        final = self.conv[3](self.conv[2](middle))
+        return middle, final
+
     def _forward_enc(self, xb):
-        return self.fc(self._pool(self.conv(xb)))
+        _, final = self._feature_maps(xb)
+        return self.fc(self._pool(final))
+
+    def _readout(self, xb):
+        import torch
+
+        middle, final = self._feature_maps(xb)
+        if self.representation == "middle":
+            return self._pool(middle)
+        if self.representation == "multiscale":
+            return torch.cat([self._pool(middle), self._pool(final)], dim=-1)
+        return self.fc(self._pool(final))
+
     def _std(self, windows):
         return (np.asarray(windows, dtype=np.float32) - self.ch_mean) / self.ch_std
 
@@ -83,7 +113,7 @@ class CNNEncoder:
         out = []
         with torch.no_grad():
             for i in range(0, xt.shape[0], 1024):
-                out.append(self._forward_enc(xt[i : i + 1024]).numpy())
+                out.append(self._readout(xt[i : i + 1024]).numpy())
         return np.concatenate(out, axis=0).astype(np.float64)
     def encode(self, windows, sequential: bool = True) -> np.ndarray:
         """`sequential` is accepted for protocol compatibility; windows are independent here."""

@@ -78,6 +78,24 @@ def test_cnn_maxavg_ortho_pool_finite():
     with pytest.raises(ValueError, match="pool"):
         CNNEncoder(pool="invalid")
 
+
+def test_cnn_multiscale_readout_is_finite_and_changes_representation():
+    pytest.importorskip("torch")
+    from uengram.encoder_cnn import CNNEncoder
+
+    s = synth.generate(256, seed=23)
+    common = {"seed": 0, "d": 8, "epochs": 2, "batch": 64, "pool": "maxavg"}
+    bottleneck = CNNEncoder(**common).fit(s.windows, 1, None).encode(s.windows)
+    multiscale = CNNEncoder(
+        **common, representation="multiscale"
+    ).fit(s.windows, 1, None).encode(s.windows)
+
+    assert multiscale.shape == (256, 8)
+    assert np.isfinite(multiscale).all()
+    assert not np.allclose(multiscale, bottleneck)
+    with pytest.raises(ValueError, match="representation"):
+        CNNEncoder(representation="invalid")
+
 def test_context_encoder_learns_lag_and_explains_transitions():
     from uengram.encoder_ctx import ContextEncoder
 
