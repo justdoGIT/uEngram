@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 440" role="img" aria-labelledby="title desc" color="var(--fg)">
+<title id="title">EngineAD per-seed AUROC histogram</title>
+<desc id="desc">Histograms of pooled held-out segment AUROC from ten random CNN training seeds for each latent width. Scores cluster around 0.52 to 0.57, near random ranking.</desc>
+<text x="22" y="34" font-size="20" font-weight="700" fill="currentColor">EngineAD: pooled held-out segment AUROC across training seeds</text>
+<text x="22" y="59" font-size="13" fill="var(--muted)">10 seeds per width; bins are AUROC ranges; each bar counts seeds, not test vehicles or independent studies</text>
+<g stroke="var(--border)" stroke-width="1">
+<path d="M102 342H776M102 272H776M102 202H776M102 132H776M102 62H776"/>
+<path d="M102 62V342"/>
+</g>
+<g fill="var(--muted)" font-size="12" text-anchor="end"><text x="92" y="346">0</text><text x="92" y="276">2</text><text x="92" y="206">4</text><text x="92" y="136">6</text><text x="92" y="66">8</text></g>
+<g fill="currentColor" font-size="13" text-anchor="middle"><text x="223" y="370">.50–.52</text><text x="345" y="370">.52–.54</text><text x="467" y="370">.54–.56</text><text x="589" y="370">.56–.58</text><text x="711" y="370">.58–.60</text></g>
+<text x="26" y="208" transform="rotate(-90 26 208)" font-size="13" fill="currentColor">Number of seeds</text>
+<g fill="var(--c1)"><rect x="190" y="272" width="22" height="70"/><rect x="312" y="202" width="22" height="140"/><rect x="434" y="307" width="22" height="35"/><rect x="556" y="307" width="22" height="35"/><rect x="678" y="272" width="22" height="70"/></g>
+<g fill="var(--c2)"><rect x="218" y="342" width="22" height="0"/><rect x="340" y="342" width="22" height="0"/><rect x="462" y="97" width="22" height="245"/><rect x="584" y="237" width="22" height="105"/><rect x="706" y="342" width="22" height="0"/></g>
+<g fill="var(--c3)"><rect x="246" y="342" width="22" height="0"/><rect x="368" y="132" width="22" height="210"/><rect x="490" y="202" width="22" height="140"/><rect x="612" y="342" width="22" height="0"/><rect x="734" y="342" width="22" height="0"/></g>
+<g fill="currentColor" font-size="12"><text x="190" y="400">Bars within each bin: width 8</text><rect x="395" y="389" width="14" height="14" fill="var(--c1)"/><text x="415" y="401">d=8</text><rect x="480" y="389" width="14" height="14" fill="var(--c2)"/><text x="500" y="401">d=16</text><rect x="573" y="389" width="14" height="14" fill="var(--c3)"/><text x="593" y="401">d=32</text></g>
+<text x="22" y="428" font-size="12" fill="var(--muted)">Near 0.50 is chance-like ranking. Segment AUROC is not event recall, warning time, or a calibrated alarm guarantee.</text>
+</svg>

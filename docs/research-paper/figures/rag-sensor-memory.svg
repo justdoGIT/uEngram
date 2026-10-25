@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 430" role="img" aria-labelledby="title desc" color="var(--fg)">
+<title id="title">Text RAG and sensor-state memory comparison</title>
+<desc id="desc">Two pipelines compare text chunks and sensor windows, retrieval, memory lifecycle, and grounded answer or diagnostic output.</desc>
+<text x="26" y="34" font-size="22" font-weight="700" fill="currentColor">Two kinds of memory, one lifecycle idea</text>
+<text x="28" y="74" font-size="16" font-weight="700" fill="currentColor">Text RAG + memory layer</text>
+<g fill="none" stroke="var(--border)" stroke-width="2">
+<rect x="28" y="96" width="160" height="84" rx="10" fill="var(--surface)"/><rect x="225" y="96" width="165" height="84" rx="10" fill="var(--surface)"/><rect x="428" y="96" width="170" height="84" rx="10" fill="var(--surface)"/><rect x="638" y="96" width="280" height="84" rx="10" fill="var(--surface)"/>
+<path d="M188 138h32m170 0h32m170 0h32" stroke="var(--accent)"/><path d="m213 131 8 7-8 7m195-14 8 7-8 7m202-14 8 7-8 7" stroke="var(--accent)"/>
+<rect x="28" y="266" width="160" height="104" rx="10" fill="var(--surface)"/><rect x="225" y="266" width="165" height="104" rx="10" fill="var(--surface)"/><rect x="428" y="266" width="170" height="104" rx="10" fill="var(--surface)"/><rect x="638" y="266" width="280" height="104" rx="10" fill="var(--surface)"/>
+<path d="M188 318h32m170 0h32m170 0h32" stroke="var(--accent)"/><path d="m213 311 8 7-8 7m195-14 8 7-8 7m202-14 8 7-8 7" stroke="var(--accent)"/>
+</g>
+<g fill="currentColor" font-size="15" text-anchor="middle">
+<text x="108" y="122"><tspan x="108">Documents / chat</tspan><tspan x="108" dy="21">split into chunks</tspan></text><text x="307" y="122"><tspan x="307">Embed chunks</tspan><tspan x="307" dy="21">and attach metadata</tspan></text><text x="513" y="122"><tspan x="513">Retrieve related</tspan><tspan x="513" dy="21">episodes / facts</tspan></text><text x="778" y="122"><tspan x="778">LLM answers with retrieved evidence</tspan><tspan x="778" dy="21">memory layer merges, updates, or ages facts</tspan></text>
+<text x="108" y="294"><tspan x="108">Aligned sensor</tspan><tspan x="108" dy="21">windows + codes</tspan><tspan x="108" dy="21">(raw stream)</tspan></text><text x="307" y="294"><tspan x="307">Deterministic features</tspan><tspan x="307" dy="21">+ compact vector</tspan><tspan x="307" dy="21">+ time / asset ID</tspan></text><text x="513" y="294"><tspan x="513">Retrieve similar</tspan><tspan x="513" dy="21">episodes and current</tspan><tspan x="513" dy="21">baseline state</tspan></text><text x="778" y="294"><tspan x="778">Diagnostic view: why now, what changed,</tspan><tspan x="778" dy="21">which raw slice proves it; update baseline</tspan><tspan x="778" dy="21">only under a safe admission rule</tspan></text>
+</g>
+<text x="28" y="224" font-size="16" font-weight="700" fill="currentColor">Sensor-State Memory (proposed DB capability, not implemented here)</text>
+<text x="28" y="410" font-size="13" fill="var(--muted)">Analogy: text chunks are like labeled pages in a notebook; sensor windows are like timestamped machine snapshots with a pointer to the original recording.</text>
+</svg>
