@@ -620,3 +620,138 @@ default model, alarm thresholds, and deployment path remain frozen. The next
 evidence gate is acquisition and preregistration of an untouched field cohort,
 followed by evaluation of false alarms, event recall, seed spread, and latency
 under the same fixed policy.
+
+## EngineAD public segment-level CNN study
+
+### Data access and scope
+
+The EngineAD v2.2 release is now public; the
+[iSMART Lab data page](https://ismart.ece.mcgill.ca/datasets/) says no access
+request is required. The 25-file release (6,069,110,651 bytes) was downloaded
+from [Borealis](https://doi.org/10.5683/SP3/TX13P1); every published MD5
+checksum was verified. The download manifest also records SHA-256. The data
+remain outside this repository and are not redistributed here. The dataset
+carries the [CC BY-NC 4.0 license](https://creativecommons.org/licenses/by-nc/4.0/);
+any reuse must follow its attribution and noncommercial terms. The current lab
+page requires citing both the 2026 dataset paper and its 2023 companion paper.
+
+This is an exploratory **segment-level** benchmark, not the preregistered
+event-level independent-cohort validation. EngineAD supplies 300-timestep
+segments of eight fleet-fitted principal components, not raw sensor traces
+with event-onset/offset timestamps. Accordingly, results can assess the
+segment classifier and seed sensitivity; they cannot establish event recall,
+false alarms per week, or a deployment-ready alarm policy.
+
+The paper's reference benchmark includes classical one-class detectors, a
+fully connected autoencoder, and Deep SVDD; it does not evaluate this
+repository's CNNEncoder. This is an additional encoder study, not a direct
+replication of the paper's reported F1 results.
+
+The paper also reports strong per-vehicle variation and classical methods often
+competitive with or better than deep baselines; this CNN-only run cannot show
+that a CNN is preferable.
+
+A related study by [Cherdo et al. (2023)](https://doi.org/10.3390/s23115013)
+uses a small 1D CNN next-step predictor and scores prediction errors using
+anomaly likelihood. This differs from this repository's convolutional
+reconstruction encoder and latent projection. Their vehicle data are
+proprietary and the labels target oil-pressure behavior. The study supports
+CNNs as a plausible family; it does not validate this encoder on EngineAD.
+
+### Runtime-adjusted evaluation protocol
+
+The initial batch-128 run was stopped during its first fit (`d=8`, seed 0)
+after about two hours without a completed result; its incomplete artifact is
+excluded. The full sweep is rerun with batch size 512. All other settings are
+unchanged. The larger batch yields about one quarter as many optimizer updates
+per epoch, so results are specific to this revised training recipe and are not
+directly comparable with batch-128 results.
+
+- A deterministic filename-hash split was frozen before reading test labels:
+  15 train assets, 5 calibration assets, and 5 test assets. The salt is
+  `uengram-enginead-2.2-asset-split-v1`; exact filenames are preserved in the
+  result artifact.
+- The primary segment label is the first point label, matching the upstream
+  [EngineAD baseline implementation](https://github.com/Armanfard-Lab/EngineAD/blob/main/baseline.py).
+- Sensitivity results use an any-positive label (a segment is anomalous if
+  any of its 300 point labels is positive).
+- Training and calibration use only segments whose 300 point labels are all
+  normal. Mixed and anomalous segments are excluded from fitting and
+  calibration. Temporal groups break at every excluded segment and at asset
+  boundaries.
+- The CNN encoder uses `maxavg` pooling, `ortho_beta=0.05`, and lag 1.
+  It trains for 30 epochs with batch size 512. The compared latent dimensions
+  are 8, 16, and 32, with seeds 0–9. This isolates latent width and
+  initialization under this recipe; it is not a search over all CNN
+  architectures.
+- The anomaly threshold is the 95th-percentile finite-sample order statistic
+  of calibration scores from all-point-normal segments. Segment-level AUROC,
+  average precision, precision, recall, F1, and false-positive rate are
+  reported under both label conventions, pooled and macro-averaged by test
+  asset where defined.
+
+### Observed results
+
+All 30 planned fits completed across dimensions 8, 16, and 32 with 10 random
+seeds each. Evaluation was performed on 5 held-out test vehicles (55,890 total
+segments) using the frozen split and calibration assets.
+
+| Latent Dim ($d$) | Pooled AUROC [min, max] | Pooled AP [min, max] | Macro AUROC [min, max] | Macro AP [min, max] | Test FPR @ 95% Cal [min, max] |
+|---|---|---|---|---|---|
+| 8 | 0.5386 [0.5170, 0.5804] | 0.1765 [0.1696, 0.2210] | 0.5335 [0.5228, 0.5416] | 0.1841 [0.1740, 0.1983] | 0.4190 [0.3444, 0.4944] |
+| 16 | 0.5562 [0.5401, 0.5668] | 0.1998 [0.1838, 0.2125] | 0.5268 [0.5181, 0.5291] | 0.1833 [0.1808, 0.1907] | 0.4667 [0.4068, 0.5215] |
+| 32 | 0.5368 [0.5305, 0.5457] | 0.1786 [0.1761, 0.1834] | 0.5324 [0.5285, 0.5364] | 0.1848 [0.1822, 0.1860] | 0.4061 [0.3793, 0.4696] |
+
+Key observations:
+1. **Near-chance discrimination on unseen assets**: Pooled segment AUROC
+   ranges from 0.517 to 0.580 across all seeds and dimensions (median 0.537 to
+   0.556). Pooled Average Precision is 0.170 to 0.221, against a test-set
+   anomaly prevalence of ~17%.
+2. **Calibration collapse across assets**: The 95th-percentile conformal
+   threshold derived from calibration assets yields a 40.6% to 46.7% median
+   false positive rate on unseen test trucks. The exchangeability assumption
+   fails across physical vehicles.
+3. **Seed spread vs dimension**: Higher latent dimension ($d=32$) exhibits
+   narrower seed variation (AUROC spread 0.015, AP spread 0.007) than $d=8$
+   (AUROC spread 0.063, AP spread 0.051), but does not improve median ranking
+   metrics.
+4. **Label convention robustness**: Results under the any-positive label
+   convention match the primary first-point label convention within 0.001
+   AUROC/AP across all dimensions, confirming that the 135 mixed-label
+   segments are not a primary driver of model behavior.
+
+Result artifact: `~/.local/state/uengram/enginead/cnn_seed_stability.json`.
+
+### Interpretation limits
+
+The holdout is by vehicle filename, but the released principal components were
+fit fleet-wide; this is not a raw-sensor representation fit on training
+vehicles alone. Unlike this asset holdout, the [official
+baseline](https://github.com/Armanfard-Lab/EngineAD/blob/main/baseline.py)
+randomly splits normal segments within each vehicle and tests on that vehicle's
+anomalies, so the scores are not directly comparable. Only five assets are in
+the test set, so seed ranges and per-asset results are descriptive; no
+significance claim is warranted. Within-vehicle segments are serially
+dependent, so the calibration threshold is not a formal false-positive-rate
+guarantee.
+
+Across all 25 assets, the data audit found 135 segments with mixed point
+labels. Under the upstream first-point rule, each segment receives the first
+sample's class; the any-positive sensitivity makes this ambiguity visible but
+does not reconstruct event intervals. The experiment does not change the
+production encoder or threshold.
+
+### References
+
+1. Hojjati, H., Roth, C., Woods, R., Sills, K., & Armanfard, N. (2026).
+   *EngineAD: A Real-World Vehicle Engine Anomaly Detection Dataset*.
+   [arXiv:2603.25955](https://arxiv.org/abs/2603.25955).
+2. Hojjati, H., Sadeghi, M., & Armanfard, N. (2023). *Multivariate
+   Time-Series Anomaly Detection with Temporal Self-supervision and Graphs:
+   Application to Vehicle Failure Prediction*. ECML PKDD.
+   [doi:10.1007/978-3-031-43430-3_15](https://doi.org/10.1007/978-3-031-43430-3_15).
+3. Cherdo, Y., Miramond, B., Pegatoquet, A., & Vallauri, A. (2023).
+   *Unsupervised Anomaly Detection for Cars CAN Sensors Time Series Using
+   Small Recurrent and Convolutional Neural Networks*. Sensors, 23(11), 5013.
+   [doi:10.3390/s23115013](https://doi.org/10.3390/s23115013).
+
