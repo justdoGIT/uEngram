@@ -575,11 +575,11 @@ faults; there were no real test labels in this harness.
 | Kept SSL/DSP hybrid, residual scale 1/16 | 0.283615 | 0.001459 |
 | Zero-neural ablation | 0.280971 | 0 |
 
-The kept hybrid scores 79.8% above DSP on this synthetic ratio and has about
-83% lower relative seed spread than its SSL baseline. The zero-neural ablation
-is within 0.93% of the kept score; therefore the synthetic result does **not**
-establish that the learned CNN contributes materially. It favors the stable
-raw-level/DSP representation. Treat the number as synthetic challenge
+The kept hybrid scores 79.8% above DSP on this synthetic ratio. Its seed
+spread (0.001459) is higher than the SSL baseline's 0.001275. The zero-neural
+ablation is within 0.93% of the kept score; therefore the synthetic result does
+**not** establish that the learned CNN contributes materially. It favors the
+stable raw-level/DSP representation. Treat the number as synthetic challenge
 sensitivity, not accuracy, recall, or field performance.
 
 ### Consumed-stream evaluation
