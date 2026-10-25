@@ -373,7 +373,7 @@ The potentially distinctive research question is the combination and evaluation:
 - Some numbers are from exploratory, single-seed, or per-dimension studies. Between-seed intervals do not represent uncertainty across unseen plants.
 - Feature and threshold choices have been explored on previously consumed datasets; those results cannot be reframed as new confirmation.
 - The Python code and tests do not establish deterministic real-time deadlines, RAM/flash budgets on target hardware, power-loss consistency, NAND endurance, or ANN-index update cost.
-- Several Sensor-State Memory features in this paper are proposals, not code in the current engine.
+- A new Python reference adapter now joins uEngram's bounded state memory with the inspected EdgeMemory Lite API: it writes lifecycle/alarm-edge events, supports keyword history recall, retries persisted events without re-ingesting windows, and manages externally pinned raw-window references. This does not provide DB-backed vectors, binary storage, ANN, relationships, atomic detector checkpoints, or field validation; see `docs/sensor-state-memory-pipeline.md`.
 
 ### Recommended research sequence
 
@@ -394,6 +394,20 @@ A Mem0-like layer in front of sensor vectors is a useful analogy if it is interp
 
 The most important lesson is procedural: ground every claim in the label, denominator, split, and source record that actually support it. In this field, avoiding a false claim of 63.8 hours’ warning is more valuable than reporting a precise number that the data cannot justify.
 
+## 14. Implementation update: the Lite integration boundary
+
+The repository now includes an executable Python adapter in `src/uengram/sensor_memory.py`. Each validated sensor window is fed once to uEngram using a monotonically increasing sample counter. Candidate creation, promotion, step changes, engine lineage events, and alarm open/clear edges are recorded as small, versioned EdgeMemory Lite `EVENT` records. Repeated alarm-positive windows do not create repeated records. Records include source, trust, privacy, retention, timestamp, idempotency, feature-schema, and optional raw-evidence-pointer metadata.
+
+Retrieval deliberately returns two result types rather than pretending they are one index: exact uEngram matches for the current in-memory state, and EdgeMemory keyword matches for historical events. If a raw-window pointer is supplied, the host must provide durable pin/unpin behavior; the adapter marks such events critical and releases the pin after explicit forgetting. On a database write error, it exposes the already-built pending event so the caller can retry without feeding the same sensor sample into uEngram again.
+
+This advances the earlier proposed architecture but does not cross the present EdgeMemory Lite contract. Lite is text/keyword storage; the vendor API inspected here does not offer vector or ANN retrieval, arbitrary binary/time-series payloads, relationships, model plugins, or persistent uEngram checkpoints. The adapter therefore is a reference event-and-state pipeline, not a finished embedded sensor DBMS. Its process-local detector state, external raw-evidence store, clock correctness, crash recovery, quotas, feature-schema migration, and detector safety all remain host/deployment responsibilities. The archived EdgeMemory Python binding's tests also need a working CFFI dependency and matching native library; its optional AutoGen demonstration is not needed by this adapter.
+
+The implementation's behavioral tests cover lifecycle writes, alarm-edge de-duplication, asset/subsystem historical filtering, critical raw-window pin and release, storage retry without duplicate detector ingestion, and rejection of invalid/replayed windows. These tests establish adapter behavior only. They do not establish sensor-detection accuracy or safety on unseen equipment.
+
+Verification for this implementation: the full uEngram suite reported `306 passed, 2 skipped`; the patched EdgeMemory Python binding reported three tests passed and one optional AutoGen module skipped; a real x64 CFFI smoke test stored/recalled `new_candidate` and `promote` events and returned one live pattern. These checks confirm tested software paths and binding interoperability, not anomaly-detection accuracy, production reliability, or an ANN/vector feature.
+
+See [`docs/sensor-state-memory-pipeline.md`](../sensor-state-memory-pipeline.md) for the end-to-end diagram, RAG analogy, plain-language glossary, schema, failure priorities, and pseudocode.
+
 ## References
 
 1. Chhikara, P., Khant, D., Aryan, S., Singh, T., and Yadav, D. (2025). “Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory.” arXiv:2504.19413. [arXiv](https://arxiv.org/abs/2504.19413)
@@ -406,6 +420,6 @@ The most important lesson is procedural: ground every claim in the label, denomi
 
 ## Figure captions
 
-**Figure 1.** Text RAG and proposed Sensor-State Memory side by side. Both retrieve compact representations, but sensor memory must also track operating state and point back to the original time-series evidence. The sensor design is proposed, not implemented as a production database in this repository.
+**Figure 1.** Text RAG and the implemented Lite Sensor-State adapter side by side. The adapter retrieves bounded uEngram state summaries and keyword-indexed event records, with optional pointers to raw time-series evidence. Vector/ANN storage and a production embedded sensor DB are not implemented.
 
 **Figure 2.** Histogram of 30 EngineAD pooled held-out segment AUROC values: ten training seeds for each latent width. Each bin counts training seeds. The five held-out trucks and segment-level labels limit what this distribution can establish. Values are extracted from the local result artifact `~/.local/state/uengram/enginead/cnn_seed_stability.json`; the artifact is not committed to the repository.
