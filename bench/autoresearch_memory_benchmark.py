@@ -34,7 +34,8 @@ def main() -> None:
                     "false_flag_rate_era1", "write_reduction_pct",
                     "items_end", "regime_acc_at1", "lat_p99_us"):
             values = np.asarray([row[key] for row in rows[method]], dtype=np.float64)
-            value = float(np.nanmean(values))
+            finite = values[np.isfinite(values)]
+            value = float(finite.mean()) if finite.size else float("nan")
             print(f"METRIC {method}_{key}={value:.12g}")
             if method == "uengram" and key in ("event_recall", "type_recall"):
                 print(f"ASI {method}_{key}_sd={float(np.nanstd(values, ddof=1)):.12g}")

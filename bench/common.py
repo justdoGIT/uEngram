@@ -16,7 +16,7 @@ ALL_METHODS = ("naive", "fifo", "reservoir", "reference_labelfree", "reference_o
                "uengram", "uengram_fixedvar", "uengram_nopromo", "uengram_frozen",
                "uengram_nostep")
 CAL_WARMUP = 200
-EPISODIC_SLOT_FRACTION = 0.5
+EPISODIC_SLOT_FRACTION = 0.75
 
 
 def make_store(method: str, B: int, d: int, sigma0: np.ndarray, raw_bytes: int,
