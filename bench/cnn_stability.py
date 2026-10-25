@@ -188,8 +188,27 @@ def model_bytes(encoder) -> int:
 
 
 def build_encoder(variant: str, seed: int):
+    common = {"seed": seed, "d": 32}
+    if variant == "plain30":
+        return CNNEncoder(**common, epochs=30)
+    if variant == "middle30":
+        return CNNEncoder(**common, epochs=30, representation="middle")
+    if variant == "multiscale30":
+        return CNNEncoder(**common, epochs=30, representation="multiscale")
+    if variant == "plain":
+        return CNNEncoder(**common, epochs=90)
+    if variant == "plain_multiscale":
+        return CNNEncoder(**common, epochs=90, representation="multiscale")
     if variant == "base":
-        return CNNEncoder(seed=seed, d=32, epochs=90, pool="maxavg", ortho_beta=0.05)
+        return CNNEncoder(**common, epochs=90, pool="maxavg", ortho_beta=0.05)
+    if variant == "multiscale":
+        return CNNEncoder(
+            **common,
+            epochs=90,
+            pool="maxavg",
+            ortho_beta=0.05,
+            representation="multiscale",
+        )
     return ResearchCNN(seed=seed, variant=variant)
 
 
@@ -263,7 +282,10 @@ def run_dataset(name: str, variants: list[str], seeds: list[int]) -> dict:
                 "fit_seconds": fit_seconds,
                 "encode_seconds": encode_seconds,
                 "encoder_bytes": model_bytes(encoder),
-                "latent_dimension": 32,
+                "latent_dimension": encoder.d,
+                "epochs": encoder.epochs,
+                "pool": encoder.pool,
+                "representation": encoder.representation,
             }
             if isinstance(encoder, ResearchCNN):
                 record["training_final"] = encoder.training_trace[-1]
@@ -309,7 +331,13 @@ def run_dataset(name: str, variants: list[str], seeds: list[int]) -> dict:
             "test": int(stream.test.sum()),
         },
         "dsp_dimension": dsp_d,
-        "cnn": {"d": 32, "epochs": 90, "pool": "maxavg", "ortho_beta": 0.05},
+        "cnn": {
+            "d": 32,
+            "epochs": 90,
+            "pool": "maxavg",
+            "ortho_beta": 0.05,
+            "representation": "bottleneck or multiscale, as named",
+        },
         "score_only_config": clean_json(score_cfg.__dict__),
         "components": clean_json(components),
         "fusions": clean_json(fusions),
@@ -326,15 +354,21 @@ def main() -> None:
     variants = [item.strip() for item in args.variants.split(",") if item.strip()]
     seeds = [int(item) for item in args.seeds.split(",") if item.strip()]
     result = {
-        "study": "CNN activation decorrelation, weight averaging, seed ensembling, and DSP late fusion",
+        "study": "CNN internal representations, stability, ensembling, and DSP fusion",
         "protocol": {
             "selection": "exploratory; all reported variants retained",
             "component_p_values": "empirical upper-tail ranks on the existing calibration split",
             "fusion": "combined scores are recalibrated on the same calibration split; no independence guarantee claimed",
             "variants": {
                 "base": "production maxavg plus orthogonal-weight CNN",
+                "plain": "average-pooled bottleneck CNN at d=32 and 90 epochs",
+                "plain_multiscale": "plain CNN using pooled first- and second-convolution activations",
+                "plain30": "average-pooled bottleneck CNN at d=32 and 30 epochs",
+                "middle30": "first-convolution readout at d=32 and 30 epochs",
+                "multiscale30": "first- and second-convolution readout at d=32 and 30 epochs",
                 "actcorr": "base plus off-diagonal activation-correlation penalty",
                 "swa": "base plus arithmetic mean of encoder weights from epochs 60 through 90; SWA-inspired, not a canonical SWA schedule",
+                "multiscale": "pooled first- and second-convolution activations projected without test-label layer selection",
             },
         },
         "datasets": {},
