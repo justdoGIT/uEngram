@@ -58,6 +58,48 @@ def test_retrospective_evaluation_mask_never_suppresses_runtime_persistence():
     assert metrics["events_detected"] == 1
 
 
+def test_discarded_memory_arrival_remains_a_scorable_alarm_window():
+    from bench.alarm_eval import ACTIONS
+
+    n = 23
+    t = (np.arange(n) * 600).astype("datetime64[s]")
+    test = np.arange(n) >= 20
+    stream = Stream(
+        "discard",
+        np.ones((n, 1)),
+        t - np.timedelta64(600, "s"),
+        t,
+        np.zeros(n, int),
+        np.zeros(n, int),
+        np.ones(n, bool),
+        np.ones(n, bool),
+        ~test,
+        test,
+        (),
+        4,
+        np.ones((n, 1)),
+        ("pressure",),
+    )
+    scores = {
+        "novelty": np.r_[np.ones(20), 4.0, 4.0, 0.0],
+        "health": np.full(n, np.nan),
+        "action": np.full(n, ACTIONS.index("discard"), dtype=np.int8),
+    }
+    metrics, details, _ = apply_policy(
+        stream,
+        scores,
+        AlarmConfig(
+            alpha=0.1,
+            k_novelty=2,
+            k_health=0,
+            per_state=False,
+            new_state_alert=False,
+        ),
+    )
+    assert details["active"].tolist() == [False, True, True]
+    assert details["runtime_alarm_episodes"] == 1
+
+
 def test_unavailable_alarm_calibration_is_an_error_not_an_all_quiet_detector():
     import pytest
     from bench.alarm_eval import CalibrationUnavailable

@@ -17,8 +17,10 @@ from uengram.alarm import AlarmConfig, AlarmLogic, AlarmPolicy
 from uengram.metrics import auroc, average_precision
 
 H = np.timedelta64(1, "h")
-ACTIONS = ("none", "score", "absorb_semantic", "step_change", "promote", "absorb_candidate",
-           "absorb_episodic", "new_candidate")
+ACTIONS = (
+    "none", "score", "absorb_semantic", "step_change", "promote",
+    "absorb_candidate", "absorb_episodic", "new_candidate", "discard",
+)
 
 
 class CalibrationUnavailable(ValueError):
