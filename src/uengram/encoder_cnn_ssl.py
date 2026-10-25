@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .encoders import fit_projection
+from .encoders import band_features, fit_projection
 
 
 class SSLTemporalEncoder:
@@ -141,7 +141,9 @@ class SSLTemporalEncoder:
                 outputs.append(self._features(x[start:start + 512]).cpu().numpy())
         if not outputs:
             return np.empty((0, self.d), dtype=np.float64)
-        return np.concatenate(outputs).astype(np.float64)
+        temporal = np.concatenate(outputs).astype(np.float64)
+        spectral = band_features(np.asarray(windows, dtype=np.float64))
+        return np.concatenate((temporal, spectral), axis=1)
 
     def encode(self, windows, sequential: bool = True) -> np.ndarray:
         """Encode windows independently; sequential is accepted for protocol compatibility."""
