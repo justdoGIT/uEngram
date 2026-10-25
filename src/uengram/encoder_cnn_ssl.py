@@ -142,7 +142,7 @@ class SSLTemporalEncoder:
         channels = int(self.level.in_features)
         if not outputs:
             return np.empty((0, self.d + 7 * channels), dtype=np.float64)
-        temporal = np.concatenate(outputs).astype(np.float64) * 0.5
+        temporal = np.concatenate(outputs).astype(np.float64) * 0.25
         spectral = band_features(np.asarray(windows, dtype=np.float64))
         return np.concatenate((temporal, spectral), axis=1)
 
