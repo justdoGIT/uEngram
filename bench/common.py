@@ -16,6 +16,7 @@ ALL_METHODS = ("naive", "fifo", "reservoir", "reference_labelfree", "reference_o
                "uengram", "uengram_fixedvar", "uengram_nopromo", "uengram_frozen",
                "uengram_nostep")
 CAL_WARMUP = 200
+EPISODIC_SLOT_FRACTION = 0.25
 
 
 def make_store(method: str, B: int, d: int, sigma0: np.ndarray, raw_bytes: int,
@@ -34,7 +35,7 @@ def make_store(method: str, B: int, d: int, sigma0: np.ndarray, raw_bytes: int,
                    "uengram_nopromo": {"use_promotion": False},
                    "uengram_frozen": {"beta_min": 0.0},
                    "uengram_nostep": {"use_step_detect": False}}[method]
-        b_epi = B // 4
+        b_epi = max(1, int(round(B * EPISODIC_SLOT_FRACTION)))
         cfg = EngramConfig(B_sem=B - b_epi, B_epi=b_epi, **{**over, **variant})
         return Engram(cfg, d, sigma0, raw_bytes, name=method, step_inflation=step_inflation)
     raise ValueError(f"unknown method {method}")
