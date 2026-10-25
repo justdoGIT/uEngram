@@ -222,13 +222,14 @@ class AdaptiveConformalCalibrator:
                 hash(key)
             except TypeError as error:
                 raise ValueError("season values must be hashable scalars") from error
-            if isinstance(key, float) and np.isnan(key):
-                raise ValueError("season values cannot be NaN")
+            if isinstance(key, float) and not np.isfinite(key):
+                raise ValueError("season values must be finite")
         return np.asarray(
             [value.item() if isinstance(value, np.generic) else value for value in values],
             dtype=object,
         )
 
+    def _append(self, score: float, state: int, season) -> None:
         if len(self._records) == self.window_size:
             _, old_state, old_season = self._records.popleft()
             self._global.popleft()
@@ -264,11 +265,7 @@ class AdaptiveConformalCalibrator:
         if not isinstance(state, (int, np.integer)) or isinstance(state, (bool, np.bool_)):
             raise ValueError("state must be an integer")
         if season is not None:
-            key = season.item() if isinstance(season, np.generic) else season
-            try:
-                hash(key)
-            except TypeError as error:
-                raise ValueError("season must be a hashable scalar") from error
+            key = self._season_values(season, 1)[0]
             own_season = self._by_stratum.get((int(state), key))
             if own_season is not None and len(own_season) >= self.min_support:
                 return conformal_threshold(np.asarray(own_season), self.alpha)

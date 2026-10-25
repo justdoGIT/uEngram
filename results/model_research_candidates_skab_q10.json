@@ -1,0 +1,906 @@
+{
+  "configs": {
+    "alarm": {
+      "aci_gamma": 0.0,
+      "alpha": 0.003,
+      "health_needs_baseline": true,
+      "k_health": 0,
+      "k_novelty": 3,
+      "min_state_windows": 100,
+      "new_state_alert": true,
+      "per_state": true,
+      "shock_mult": 0.0
+    },
+    "cnn_epochs": 10,
+    "cnn_seeds": [
+      0,
+      1,
+      2
+    ]
+  },
+  "dataset": "skab",
+  "dataset_role": "consumed development data; not independent confirmation",
+  "evaluation": {
+    "cnn_seed0": {
+      "latent_dimension": 16,
+      "native_frozen_policy": {
+        "events_detected": [
+          0,
+          1,
+          20,
+          21,
+          24,
+          25,
+          26,
+          28,
+          31,
+          32
+        ],
+        "false_alarm_episodes": 4,
+        "metrics": {
+          "alarm_time_share_clean": 0.026105225515175898,
+          "alerts_per_week": 270.3500067051093,
+          "ap": 0.6273079457213975,
+          "auroc": 0.7065394430012069,
+          "events_detected": 10.0,
+          "false_alarm_per_week": 108.14000268204371,
+          "health_ap": 0.6752357899977041,
+          "health_auroc": 0.7025033495612331,
+          "lead_hours": -0.05375,
+          "notifications_per_week_all": 223.8150815565487,
+          "operator_events_per_week": 324.42000804613116
+        }
+      },
+      "separate_health_only": {
+        "events_detected": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33
+        ],
+        "false_alarm_episodes": 4,
+        "metrics": {
+          "alarm_time_share_clean": 0.7792678020651737,
+          "alerts_per_week": 0.0,
+          "ap": 0.6273079457213975,
+          "auroc": 0.7065394430012069,
+          "events_detected": 34.0,
+          "false_alarm_per_week": 108.14000268204371,
+          "health_ap": 0.6752357899977041,
+          "health_auroc": 0.7025033495612331,
+          "lead_hours": -0.130890522875817,
+          "notifications_per_week_all": 172.16544735119132,
+          "operator_events_per_week": 108.14000268204371
+        }
+      },
+      "sigma0_shape": [
+        16
+      ]
+    },
+    "cnn_seed1": {
+      "latent_dimension": 16,
+      "native_frozen_policy": {
+        "events_detected": [
+          0,
+          1,
+          10,
+          13,
+          15,
+          20,
+          21,
+          24,
+          25,
+          26,
+          28,
+          29,
+          30,
+          31,
+          32
+        ],
+        "false_alarm_episodes": 7,
+        "metrics": {
+          "alarm_time_share_clean": 0.05167404228688928,
+          "alerts_per_week": 162.21000402306558,
+          "ap": 0.5064134619601357,
+          "auroc": 0.6202524444126251,
+          "events_detected": 15.0,
+          "false_alarm_per_week": 189.2450046935765,
+          "health_ap": 0.5609222601755492,
+          "health_auroc": 0.613616925256203,
+          "lead_hours": -0.04583333333333333,
+          "notifications_per_week_all": 292.6812604970252,
+          "operator_events_per_week": 297.3850073756202
+        }
+      },
+      "separate_health_only": {
+        "events_detected": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33
+        ],
+        "false_alarm_episodes": 1,
+        "metrics": {
+          "alarm_time_share_clean": 0.827321085333691,
+          "alerts_per_week": 0.0,
+          "ap": 0.5064134619601357,
+          "auroc": 0.6202524444126251,
+          "events_detected": 33.0,
+          "false_alarm_per_week": 27.03500067051093,
+          "health_ap": 0.5609222601755492,
+          "health_auroc": 0.613616925256203,
+          "lead_hours": -0.14013468013468014,
+          "notifications_per_week_all": 103.29926841071479,
+          "operator_events_per_week": 27.03500067051093
+        }
+      },
+      "sigma0_shape": [
+        16
+      ]
+    },
+    "cnn_seed2": {
+      "latent_dimension": 16,
+      "native_frozen_policy": {
+        "events_detected": [
+          0,
+          13,
+          15,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33
+        ],
+        "false_alarm_episodes": 9,
+        "metrics": {
+          "alarm_time_share_clean": 0.18336238880693756,
+          "alerts_per_week": 135.17500335255465,
+          "ap": 0.47593134405001725,
+          "auroc": 0.6249184982715241,
+          "events_detected": 16.0,
+          "false_alarm_per_week": 243.31500603459838,
+          "health_ap": 0.705597615645241,
+          "health_auroc": 0.7226572887475198,
+          "lead_hours": -0.08472222222222223,
+          "notifications_per_week_all": 309.8978052321444,
+          "operator_events_per_week": 351.4550087166421
+        }
+      },
+      "separate_health_only": {
+        "events_detected": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33
+        ],
+        "false_alarm_episodes": 4,
+        "metrics": {
+          "alarm_time_share_clean": 0.9189575790085378,
+          "alerts_per_week": 0.0,
+          "ap": 0.47593134405001725,
+          "auroc": 0.6249184982715241,
+          "events_detected": 34.0,
+          "false_alarm_per_week": 108.14000268204371,
+          "health_ap": 0.705597615645241,
+          "health_auroc": 0.7226572887475198,
+          "lead_hours": -0.15910130718954252,
+          "notifications_per_week_all": 86.08272367559566,
+          "operator_events_per_week": 108.14000268204371
+        }
+      },
+      "sigma0_shape": [
+        16
+      ]
+    },
+    "cnnssl_seed0": {
+      "latent_dimension": 16,
+      "native_frozen_policy": {
+        "events_detected": [],
+        "false_alarm_episodes": 1,
+        "metrics": {
+          "alarm_time_share_clean": 0.0012516204014125431,
+          "alerts_per_week": 405.52501005766396,
+          "ap": 0.3561739180006469,
+          "auroc": 0.507010427107411,
+          "events_detected": 0.0,
+          "false_alarm_per_week": 27.03500067051093,
+          "health_ap": 0.37335663634213423,
+          "health_auroc": 0.5321244656043529,
+          "lead_hours": -0.15527777777777776,
+          "notifications_per_week_all": 378.7639841726209,
+          "operator_events_per_week": 432.56001072817486
+        }
+      },
+      "separate_health_only": {
+        "events_detected": [],
+        "false_alarm_episodes": 4,
+        "metrics": {
+          "alarm_time_share_clean": 0.005051182334272049,
+          "alerts_per_week": 0.0,
+          "ap": 0.3561739180006469,
+          "auroc": 0.507010427107411,
+          "events_detected": 0.0,
+          "false_alarm_per_week": 108.14000268204371,
+          "health_ap": 0.37335663634213423,
+          "health_auroc": 0.5321244656043529,
+          "lead_hours": -0.14444444444444443,
+          "notifications_per_week_all": 68.86617894047653,
+          "operator_events_per_week": 108.14000268204371
+        }
+      },
+      "sigma0_shape": [
+        16
+      ]
+    },
+    "cnnssl_seed1": {
+      "latent_dimension": 16,
+      "native_frozen_policy": {
+        "events_detected": [],
+        "false_alarm_episodes": 1,
+        "metrics": {
+          "alarm_time_share_clean": 0.0012516204014125431,
+          "alerts_per_week": 405.52501005766396,
+          "ap": 0.356175226972978,
+          "auroc": 0.5070129840243828,
+          "events_detected": 0.0,
+          "false_alarm_per_week": 27.03500067051093,
+          "health_ap": 0.3733356790300179,
+          "health_auroc": 0.5320953806737988,
+          "lead_hours": -0.15527777777777776,
+          "notifications_per_week_all": 378.7639841726209,
+          "operator_events_per_week": 432.56001072817486
+        }
+      },
+      "separate_health_only": {
+        "events_detected": [],
+        "false_alarm_episodes": 4,
+        "metrics": {
+          "alarm_time_share_clean": 0.005051182334272049,
+          "alerts_per_week": 0.0,
+          "ap": 0.356175226972978,
+          "auroc": 0.5070129840243828,
+          "events_detected": 0.0,
+          "false_alarm_per_week": 108.14000268204371,
+          "health_ap": 0.3733356790300179,
+          "health_auroc": 0.5320953806737988,
+          "lead_hours": -0.14444444444444443,
+          "notifications_per_week_all": 68.86617894047653,
+          "operator_events_per_week": 108.14000268204371
+        }
+      },
+      "sigma0_shape": [
+        16
+      ]
+    },
+    "cnnssl_seed2": {
+      "latent_dimension": 16,
+      "native_frozen_policy": {
+        "events_detected": [],
+        "false_alarm_episodes": 1,
+        "metrics": {
+          "alarm_time_share_clean": 0.0012516204014125431,
+          "alerts_per_week": 405.52501005766396,
+          "ap": 0.35617233347774674,
+          "auroc": 0.5070149017121116,
+          "events_detected": 0.0,
+          "false_alarm_per_week": 27.03500067051093,
+          "health_ap": 0.37334687073368916,
+          "health_auroc": 0.5321222283020026,
+          "lead_hours": -0.15527777777777776,
+          "notifications_per_week_all": 378.7639841726209,
+          "operator_events_per_week": 432.56001072817486
+        }
+      },
+      "separate_health_only": {
+        "events_detected": [],
+        "false_alarm_episodes": 4,
+        "metrics": {
+          "alarm_time_share_clean": 0.005051182334272049,
+          "alerts_per_week": 0.0,
+          "ap": 0.35617233347774674,
+          "auroc": 0.5070149017121116,
+          "events_detected": 0.0,
+          "false_alarm_per_week": 108.14000268204371,
+          "health_ap": 0.37334687073368916,
+          "health_auroc": 0.5321222283020026,
+          "lead_hours": -0.14444444444444443,
+          "notifications_per_week_all": 68.86617894047653,
+          "operator_events_per_week": 108.14000268204371
+        }
+      },
+      "sigma0_shape": [
+        16
+      ]
+    },
+    "dsp": {
+      "latent_dimension": 16,
+      "native_frozen_policy": {
+        "events_detected": [
+          24,
+          25,
+          26,
+          28,
+          31
+        ],
+        "false_alarm_episodes": 5,
+        "metrics": {
+          "alarm_time_share_clean": 0.013410218586562961,
+          "alerts_per_week": 351.4550087166421,
+          "ap": 0.40487538368308695,
+          "auroc": 0.5221393852148833,
+          "events_detected": 5.0,
+          "false_alarm_per_week": 135.17500335255465,
+          "health_ap": 0.44662969536217817,
+          "health_auroc": 0.54028326804672,
+          "lead_hours": -0.06805555555555556,
+          "notifications_per_week_all": 309.8978052321444,
+          "operator_events_per_week": 459.5950113986858
+        }
+      },
+      "separate_health_only": {
+        "events_detected": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          24,
+          25,
+          26,
+          28,
+          31
+        ],
+        "false_alarm_episodes": 2,
+        "metrics": {
+          "alarm_time_share_clean": 0.6109695588038085,
+          "alerts_per_week": 0.0,
+          "ap": 0.40487538368308695,
+          "auroc": 0.5221393852148833,
+          "events_detected": 25.0,
+          "false_alarm_per_week": 54.07000134102186,
+          "health_ap": 0.44662969536217817,
+          "health_auroc": 0.54028326804672,
+          "lead_hours": -0.1281172839506173,
+          "notifications_per_week_all": 120.51581314583393,
+          "operator_events_per_week": 54.07000134102186
+        }
+      },
+      "sigma0_shape": [
+        16
+      ]
+    },
+    "multiscale": {
+      "latent_dimension": 16,
+      "native_frozen_policy": {
+        "events_detected": [
+          24,
+          25,
+          26,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33
+        ],
+        "false_alarm_episodes": 7,
+        "metrics": {
+          "alarm_time_share_clean": 0.08837334048544991,
+          "alerts_per_week": 243.31500603459838,
+          "ap": 0.539892353957837,
+          "auroc": 0.6141660231758954,
+          "events_detected": 9.0,
+          "false_alarm_per_week": 189.2450046935765,
+          "health_ap": 0.5532623285012029,
+          "health_auroc": 0.6388335600466382,
+          "lead_hours": -0.09196969696969698,
+          "notifications_per_week_all": 189.38199208631045,
+          "operator_events_per_week": 297.3850073756202
+        }
+      },
+      "separate_health_only": {
+        "events_detected": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33
+        ],
+        "false_alarm_episodes": 3,
+        "metrics": {
+          "alarm_time_share_clean": 0.7815475392248894,
+          "alerts_per_week": 0.0,
+          "ap": 0.539892353957837,
+          "auroc": 0.6141660231758954,
+          "events_detected": 33.0,
+          "false_alarm_per_week": 81.10500201153279,
+          "health_ap": 0.5532623285012029,
+          "health_auroc": 0.6388335600466382,
+          "lead_hours": -0.13502525252525255,
+          "notifications_per_week_all": 154.9489026160722,
+          "operator_events_per_week": 81.10500201153279
+        }
+      },
+      "sigma0_shape": [
+        16
+      ]
+    },
+    "multiscale_dynamics": {
+      "latent_dimension": 8,
+      "native_frozen_policy": {
+        "events_detected": [
+          25,
+          28,
+          29,
+          31,
+          32,
+          33
+        ],
+        "false_alarm_episodes": 1,
+        "metrics": {
+          "alarm_time_share_clean": 0.01278440838585669,
+          "alerts_per_week": 108.14000268204371,
+          "ap": 0.4736597092042389,
+          "auroc": 0.5602387265530714,
+          "events_detected": 6.0,
+          "false_alarm_per_week": 27.03500067051093,
+          "health_ap": 0.4398259696767441,
+          "health_auroc": 0.5238921517990468,
+          "lead_hours": 0.007962962962962965,
+          "notifications_per_week_all": 172.16544735119132,
+          "operator_events_per_week": 135.17500335255465
+        }
+      },
+      "role": "separate evidence branch; not fused",
+      "separate_health_only": {
+        "events_detected": [
+          25,
+          28,
+          29,
+          31,
+          32,
+          33
+        ],
+        "false_alarm_episodes": 1,
+        "metrics": {
+          "alarm_time_share_clean": 0.01278440838585669,
+          "alerts_per_week": 0.0,
+          "ap": 0.4736597092042389,
+          "auroc": 0.5602387265530714,
+          "events_detected": 6.0,
+          "false_alarm_per_week": 27.03500067051093,
+          "health_ap": 0.4398259696767441,
+          "health_auroc": 0.5238921517990468,
+          "lead_hours": 0.0067592592592592635,
+          "notifications_per_week_all": 103.29926841071479,
+          "operator_events_per_week": 27.03500067051093
+        }
+      },
+      "sigma0_shape": [
+        8
+      ]
+    },
+    "multiscale_level": {
+      "latent_dimension": 8,
+      "native_frozen_policy": {
+        "events_detected": [
+          0,
+          1,
+          15,
+          20,
+          21,
+          24,
+          25,
+          26,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33
+        ],
+        "false_alarm_episodes": 13,
+        "metrics": {
+          "alarm_time_share_clean": 0.17308122122390596,
+          "alerts_per_week": 135.17500335255465,
+          "ap": 0.5137497333820256,
+          "auroc": 0.6204058594309325,
+          "events_detected": 14.0,
+          "false_alarm_per_week": 351.4550087166421,
+          "health_ap": 0.5318070641415479,
+          "health_auroc": 0.6221132407388468,
+          "lead_hours": -0.09727430555555557,
+          "notifications_per_week_all": 275.4647157619061,
+          "operator_events_per_week": 378.490009387153
+        }
+      },
+      "role": "separate evidence branch; not fused",
+      "separate_health_only": {
+        "events_detected": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33
+        ],
+        "false_alarm_episodes": 3,
+        "metrics": {
+          "alarm_time_share_clean": 0.9122077689866345,
+          "alerts_per_week": 0.0,
+          "ap": 0.5137497333820256,
+          "auroc": 0.6204058594309325,
+          "events_detected": 34.0,
+          "false_alarm_per_week": 81.10500201153279,
+          "health_ap": 0.5318070641415479,
+          "health_auroc": 0.6221132407388468,
+          "lead_hours": -0.15450163398692812,
+          "notifications_per_week_all": 86.08272367559566,
+          "operator_events_per_week": 81.10500201153279
+        }
+      },
+      "sigma0_shape": [
+        8
+      ]
+    }
+  },
+  "protocol": "candidate-research-v1",
+  "selection": {
+    "selection_window_indices": [
+      225,
+      226,
+      227,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      234,
+      235,
+      236,
+      237,
+      238,
+      239,
+      240,
+      241,
+      242,
+      243,
+      244,
+      245,
+      246,
+      247,
+      248,
+      249,
+      250,
+      251,
+      252,
+      253,
+      254,
+      255,
+      256,
+      257,
+      258,
+      259,
+      260,
+      261,
+      262,
+      263,
+      264,
+      265,
+      266,
+      267,
+      268,
+      269,
+      270,
+      271,
+      272,
+      273,
+      274,
+      275,
+      276,
+      277,
+      278,
+      279,
+      280,
+      281
+    ],
+    "synthetic_challenges": {
+      "per_candidate": {
+        "cnn_seed0": {
+          "fault_metrics": {
+            "drift": 0.19897338824679311,
+            "freeze": 0.0008842391036651294,
+            "impulse": 0.12629969624539067,
+            "level_shift": 0.49968438629513257,
+            "oscillation": 0.16797782113673032
+          },
+          "score": 0.0008842391036651294,
+          "worst_family_score": 0.0008842391036651294
+        },
+        "cnn_seed1": {
+          "fault_metrics": {
+            "drift": 0.26284381099988574,
+            "freeze": 0.00040333388337574584,
+            "impulse": 0.10039745309455286,
+            "level_shift": 0.5258443509935481,
+            "oscillation": 0.16606745898950706
+          },
+          "score": 0.00040333388337574584,
+          "worst_family_score": 0.00040333388337574584
+        },
+        "cnn_seed2": {
+          "fault_metrics": {
+            "drift": 0.2768980839077599,
+            "freeze": 0.0006099849002837249,
+            "impulse": 0.13310542389845859,
+            "level_shift": 0.5531529855169669,
+            "oscillation": 0.1660393314893666
+          },
+          "score": 0.0006099849002837249,
+          "worst_family_score": 0.0006099849002837249
+        },
+        "cnnssl_seed0": {
+          "fault_metrics": {
+            "drift": 0.18213148382096833,
+            "freeze": 0.0025949325619212807,
+            "impulse": 0.14786643620201315,
+            "level_shift": 0.0011455716981054645,
+            "oscillation": 0.20337497425263604
+          },
+          "score": 0.0011455716981054645,
+          "worst_family_score": 0.0011455716981054645
+        },
+        "cnnssl_seed1": {
+          "fault_metrics": {
+            "drift": 0.18213755016548872,
+            "freeze": 0.0025949474306904982,
+            "impulse": 0.14787211844008225,
+            "level_shift": 0.0011431445600247328,
+            "oscillation": 0.20340016897691357
+          },
+          "score": 0.0011431445600247328,
+          "worst_family_score": 0.0011431445600247328
+        },
+        "cnnssl_seed2": {
+          "fault_metrics": {
+            "drift": 0.1821138756047328,
+            "freeze": 0.0025946601997326683,
+            "impulse": 0.14785592419757343,
+            "level_shift": 0.0011441403133300705,
+            "oscillation": 0.20340211900379032
+          },
+          "score": 0.0011441403133300705,
+          "worst_family_score": 0.0011441403133300705
+        },
+        "dsp": {
+          "fault_metrics": {
+            "drift": 0.19760326608232753,
+            "freeze": 0.002057383217166503,
+            "impulse": 0.14576397975908553,
+            "level_shift": 0.1981823874153816,
+            "oscillation": 0.222737035907331
+          },
+          "score": 0.002057383217166503,
+          "worst_family_score": 0.002057383217166503
+        },
+        "multiscale": {
+          "fault_metrics": {
+            "drift": 0.6763323656988293,
+            "freeze": 0.0028217127372563372,
+            "impulse": 0.2007153126255475,
+            "level_shift": 0.9928633273576076,
+            "oscillation": 0.2849265212045879
+          },
+          "score": 0.0028217127372563372,
+          "worst_family_score": 0.0028217127372563372
+        },
+        "multiscale_dynamics": {
+          "fault_metrics": {
+            "drift": 0.4623116612280032,
+            "freeze": 0.0014898183659310955,
+            "impulse": 0.19714150117641596,
+            "level_shift": 0.0,
+            "oscillation": 0.4408830107734166
+          },
+          "score": 0.0,
+          "worst_family_score": 0.0
+        },
+        "multiscale_level": {
+          "fault_metrics": {
+            "drift": 0.7057334382342864,
+            "freeze": 0.0031884122691038836,
+            "impulse": 0.2072514369066305,
+            "level_shift": 1.2435085479940542,
+            "oscillation": 0.0536981772326742
+          },
+          "score": 0.0031884122691038836,
+          "worst_family_score": 0.0031884122691038836
+        }
+      },
+      "ranking": [
+        "multiscale_level",
+        "multiscale",
+        "dsp",
+        "cnnssl_seed0",
+        "cnnssl_seed2",
+        "cnnssl_seed1",
+        "cnn_seed0",
+        "cnn_seed2",
+        "cnn_seed1",
+        "multiscale_dynamics"
+      ],
+      "winner": "multiscale_level"
+    },
+    "synthetic_challenges_quantile": 0.1,
+    "uses_real_test_labels": false
+  }
+}

@@ -116,10 +116,12 @@ def run(stream_name: str, names: list[str], seeds: list[int], epochs: int) -> di
         for block in ("level", "dynamics"):
             selection_candidates[f"multiscale_{block}"] = _ComponentView(encoder, block)
     print("stage=label_free_synthetic_selection", flush=True)
+    selection_quantile = 0.1
     selected = select_by_synthetic_challenges(
-        selection_candidates, selection_windows, alpha=0.01
+        selection_candidates, selection_windows, alpha=selection_quantile
     )
     selection["synthetic_challenges"] = _json_safe(selected)
+    selection["synthetic_challenges_quantile"] = selection_quantile
     selection["uses_real_test_labels"] = False
     selection["selection_window_indices"] = selection_rows.tolist()
 

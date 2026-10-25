@@ -531,3 +531,92 @@ honest to guarantee global nonexistence from a targeted search.
 - Aggarwal et al., [A Framework for Clustering Evolving Data Streams](https://www.cs.albany.edu/~jhh/courses/readings/aggarwal.vldb03.clustering.pdf), VLDB 2003.
 - Cao et al., [Density-Based Clustering over an Evolving Data Stream with Noise](https://epubs.siam.org/doi/10.1137/1.9781611972764.29), SDM 2006.
 - Kim et al., [Towards a Rigorous Evaluation of Time-Series Anomaly Detection](https://ojs.aaai.org/index.php/AAAI/article/view/20680), AAAI 2022.
+
+## 10. Implemented candidates and observed results
+
+The following changes are opt-in research code. The frozen v2 configuration and
+default DSP path remain unchanged.
+
+- `MultiScaleEncoder` keeps raw per-channel means in a `level` block and lagged
+  differences/RMS values in an independent `dynamics` block. For one-channel
+  streams, within-window spread supplies a second level statistic. The branches
+  are scored separately; no unvalidated score fusion was added. Each projected
+  block uses an even latent dimension because the existing exact noise-scale
+  estimator requires even degrees of freedom.
+- `SSLTemporalEncoder` uses masked-span reconstruction, synthetic local
+  corruption localization, and boundary-safe temporal shift equivariance. Its
+  output retains raw means and established DSP band features, with a learned
+  temporal residual scaled to `1/16`. This scale was selected only against the
+  fixed synthetic benchmark below; it is not field-validated.
+- `bench.model_selection` generates deterministic level-shift, drift, impulse,
+  oscillation, and freeze challenges. The selector receives unlabeled normal
+  windows only and ranks the lower-tail latent displacement relative to clean
+  adjacent-window movement. The field runner uses the 10th percentile to avoid
+  making a small selection split depend on one minimum observation.
+- `ConfirmedLatentAdapter` accepts only explicitly operator-confirmed,
+  alarm-closed, commissioned rows; it quarantines samples, applies bounded
+  state-specific offsets, snapshots state, and can roll back on any shadow-score
+  difference above a configured bound. `AdaptiveConformalCalibrator` uses
+  state/season strata with state/global fallback and a bounded total rolling
+  window. Neither utility is wired into a production path. Human mislabeling
+  and drift remain risks.
+
+### Fixed-seed synthetic encoder experiment
+
+Eight recorded runs compared the task-aligned CNN hybrid against the DSP,
+multiscale, and existing CNN encoders. Selection used only generated synthetic
+faults; there were no real test labels in this harness.
+
+| Candidate | Weakest-family separation (higher is better) | Seed spread |
+|---|---:|---:|
+| Existing DSP | 0.157654 | n/a |
+| Existing CNN, worst of two seeds | 0.048425 | 0.010755 |
+| SSL CNN baseline | 0.041614 | 0.001275 |
+| Kept SSL/DSP hybrid, residual scale 1/16 | 0.283615 | 0.001459 |
+| Zero-neural ablation | 0.280971 | 0 |
+
+The kept hybrid scores 79.8% above DSP on this synthetic ratio and has about
+83% lower relative seed spread than its SSL baseline. The zero-neural ablation
+is within 0.93% of the kept score; therefore the synthetic result does **not**
+establish that the learned CNN contributes materially. It favors the stable
+raw-level/DSP representation. Treat the number as synthetic challenge
+sensitivity, not accuracy, recall, or field performance.
+
+### Consumed-stream evaluation
+
+`bench/run_model_research.py` fits on the first chronological 80% of each
+commissioning split, selects on the remaining unlabeled windows, calibrates on
+the existing calibration split, and reports metrics afterward on the consumed
+test split. These are development-only data, not independent confirmation.
+
+| SKAB candidate, frozen policy | AUROC | Events detected | False alarms/week |
+|---|---:|---:|---:|
+| DSP | 0.5221 | 5 | 135.18 |
+| Multi-scale combined | 0.6142 | 9 | 189.25 |
+| Existing CNN, seeds 0–2 | 0.6203–0.7065 | 10–16 | 108.14–243.32 |
+| SSL/DSP hybrid, seeds 0–2 | 0.5070 | 0 | 27.04 |
+
+The label-free SKAB selector chose the separate multiscale level branch. Its
+selection score was only 0.00319, and the hybrid did not transfer its synthetic
+challenge result to this field-test split. Do not deploy the hybrid based on
+the synthetic experiment.
+
+On MetroPT3, DSP reached AUROC 0.9804, detected 3 events, and produced 0.635
+false alarms/week. The separate multiscale level branch reached AUROC 0.9835,
+detected the same 3 events, and produced 0.794 false alarms/week; its dynamics
+branch reached AUROC 0.6399 and detected none. The separately fitted physical
+residual branch reached AUROC 0.9786 and detected 4 events, but produced
+49.95 false alarms/week and had mean lead time -20.76 hours. The physical
+residual score was not fused with latent novelty.
+
+Result artifacts:
+
+- `results/model_research_candidates_skab_q10.json`
+- `results/model_research_candidates_metropt3_q10.json`
+
+No fresh, independent field recordings or adjudicated labels were available in
+the repository. The candidate cohort therefore remains unconfirmed, and the
+default model, alarm thresholds, and deployment path remain frozen. The next
+evidence gate is acquisition and preregistration of an untouched field cohort,
+followed by evaluation of false alarms, event recall, seed spread, and latency
+under the same fixed policy.

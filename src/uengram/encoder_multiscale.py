@@ -26,20 +26,25 @@ class MultiScaleEncoder:
         self.d = int(d)
 
     @staticmethod
-    def _windows(windows) -> np.ndarray:
+    def _windows(windows, min_windows: int = 1) -> np.ndarray:
         x = np.asarray(windows, dtype=np.float64)
         if x.ndim != 3:
             raise ValueError("windows must have shape (n_windows, n_channels, window_length)")
-        if x.shape[0] < 2 or x.shape[1] < 1 or x.shape[2] < 2:
-            raise ValueError("need at least two windows, one channel, and two samples per window")
+        if x.shape[0] < min_windows or x.shape[1] < 1 or x.shape[2] < 2:
+            raise ValueError(
+                f"need at least {min_windows} windows, one channel, and two samples per window"
+            )
         if not np.isfinite(x).all():
             raise ValueError("windows must contain only finite values")
         return x
 
     def _features(self, windows) -> tuple[np.ndarray, np.ndarray]:
         x = self._windows(windows)
-        # The level block is deliberately the unfiltered raw per-channel mean.
+        # Raw per-channel means remain unfiltered. A one-channel stream also
+        # uses its within-window spread to form a non-degenerate even block.
         level = x.mean(axis=2)
+        if x.shape[1] == 1:
+            level = np.column_stack((level, x.std(axis=2)))
         dynamics = []
         length = x.shape[2]
         for lag in self.lags:
@@ -68,11 +73,10 @@ class MultiScaleEncoder:
     def fit(self, train_windows, noise_lag: int, groups: np.ndarray | None) -> "MultiScaleEncoder":
         if not isinstance(noise_lag, (int, np.integer)) or noise_lag < 1:
             raise ValueError("noise_lag must be a positive integer")
-        level, dynamics = self._features(train_windows)
+        train = self._windows(train_windows, min_windows=2)
+        level, dynamics = self._features(train)
         # The exact chi-square noise scale estimator requires an even latent
         # dimension. Keep both semantic branches non-empty and even.
-        if level.shape[1] == 1:
-            level = np.column_stack((level, np.zeros(level.shape[0])))
         self.level_med, self.level_scale, level_std = self._scale(level)
         self.dynamics_med, self.dynamics_scale, dynamics_std = self._scale(dynamics)
         level_capacity = level_std.shape[1] - level_std.shape[1] % 2
@@ -98,16 +102,14 @@ class MultiScaleEncoder:
         self.sigma0_level = level_sigma
         self.sigma0_dynamics = dynamics_sigma
         self.sigma0 = np.concatenate((level_sigma, dynamics_sigma))
-        self.n_channels = int(self._windows(train_windows).shape[1])
-        self.window_length = int(self._windows(train_windows).shape[2])
+        self.n_channels = int(train.shape[1])
+        self.window_length = int(train.shape[2])
         return self
 
     def encode_components(self, windows) -> dict[str, np.ndarray]:
         if not hasattr(self, "level_whitener"):
             raise RuntimeError("encoder must be fitted before encode")
         level, dynamics = self._features(windows)
-        if level.shape[1] == 1:
-            level = np.column_stack((level, np.zeros(level.shape[0])))
         level_std = (level - self.level_med) / self.level_scale
         dynamics_std = (dynamics - self.dynamics_med) / self.dynamics_scale
         level_z = self.level_noise.transform(self.level_whitener.transform(level_std))

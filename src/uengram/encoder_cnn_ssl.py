@@ -5,9 +5,11 @@ import numpy as np
 
 from .encoders import band_features, fit_projection
 
+_TEMPORAL_RESIDUAL_SCALE = 1.0 / 16.0
+
 
 class SSLTemporalEncoder:
-    """Framewise temporal representation with explicit raw-level information path."""
+    """Task-aligned CNN residual with raw-level and DSP-band features."""
 
     def __init__(self, seed: int = 0, d: int = 16, epochs: int = 30, batch: int = 128,
                  width: int = 32, mask_fraction: float = 0.15, corruption_fraction: float = 0.25,
@@ -142,7 +144,7 @@ class SSLTemporalEncoder:
         channels = int(self.level.in_features)
         if not outputs:
             return np.empty((0, self.d + 7 * channels), dtype=np.float64)
-        temporal = np.concatenate(outputs).astype(np.float64) * 0.0625
+        temporal = np.concatenate(outputs).astype(np.float64) * _TEMPORAL_RESIDUAL_SCALE
         spectral = band_features(np.asarray(windows, dtype=np.float64))
         return np.concatenate((temporal, spectral), axis=1)
 

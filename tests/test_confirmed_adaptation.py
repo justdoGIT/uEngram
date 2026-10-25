@@ -135,6 +135,11 @@ def test_adaptive_calibrator_requires_explicit_normal_calibration():
             commissioned=True,
         )
 
+    with pytest.raises(ValueError, match="finite"):
+        AdaptiveConformalCalibrator(
+            [1.0], [0], calibration_seasons=[np.inf]
+        )
+
 
 def test_latent_adapter_vector_commissioning_gates_mixed_states():
     adapter = ConfirmedLatentAdapter(
