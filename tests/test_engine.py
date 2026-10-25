@@ -156,7 +156,7 @@ def test_budget_invariant_with_merge_and_evict_events():
     assert {"merge", "evict"} <= kinds
 
 
-def test_episodic_eviction_prefers_low_surprisal():
+def test_episodic_admission_rejects_weaker_memory_without_eviction():
     eng = make(B_epi=2, B_sem=4)
     for surpr in (300.0, 5.0):
         k = eng._alloc()
@@ -164,7 +164,19 @@ def test_episodic_eviction_prefers_low_surprisal():
         eng.t_last[k] = 0
         eng.item_id[k] = eng._new_id()
         eng.exemplars[int(eng.item_id[k])] = [0, 0]
-    lc.make_episodic_room(eng, 10)
+    assert not lc.make_episodic_room(eng, 10, incoming_surprisal=2.0)
+    assert sorted(eng.surpr[i] for i in np.flatnonzero(eng.kind == lc.EPI)) == [5.0, 300.0]
+
+
+def test_episodic_admission_evicts_weaker_memory_for_stronger_one():
+    eng = make(B_epi=2, B_sem=4)
+    for surpr in (300.0, 5.0):
+        k = eng._alloc()
+        eng.kind[k], eng.n[k], eng.surpr[k] = lc.EPI, 1, surpr
+        eng.t_last[k] = 0
+        eng.item_id[k] = eng._new_id()
+        eng.exemplars[int(eng.item_id[k])] = [0, 0]
+    assert lc.make_episodic_room(eng, 10, incoming_surprisal=10.0)
     assert [eng.surpr[i] for i in np.flatnonzero(eng.kind == lc.EPI)] == [300.0]
 
 

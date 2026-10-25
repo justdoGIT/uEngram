@@ -109,20 +109,37 @@ def make_semantic_room(eng, t: int) -> bool:
     return True
 
 
-def make_episodic_room(eng, t: int) -> None:
-    """Ensure the episodic group {1,2} has a free slot."""
+def _episodic_importance(eng, idx, t: int) -> np.ndarray:
+    age = t - eng.t_last[idx]
+    return (eng.surpr[idx] * (1.0 + np.log(eng.n[idx]))
+            * 2.0 ** (-age / eng.cfg.half_life_epi))
+
+
+def make_episodic_room(eng, t: int, incoming_surprisal: float | None = None) -> bool:
+    """Ensure the episodic group {1,2} has room for a competitive admission.
+
+    When ``incoming_surprisal`` is given, a full bank admits the new memory
+    only if its initial importance exceeds the weakest mature episode. This
+    prevents a low-value arrival from evicting a stronger retained episode.
+    Candidates remain replaceable so a possible new normal state can complete
+    its probation.
+    """
     group = np.flatnonzero((eng.kind == CAND) | (eng.kind == EPI))
     if len(group) < eng.cfg.B_epi:
-        return
+        return True
     epi = np.flatnonzero(eng.kind == EPI)
     if len(epi):
-        age = t - eng.t_last[epi]
-        imp = eng.surpr[epi] * (1.0 + np.log(eng.n[epi])) * 2.0 ** (-age / eng.cfg.half_life_epi)
-        victim = epi[np.argmin(imp)]
+        importance = _episodic_importance(eng, epi, t)
+        victim_pos = int(np.argmin(importance))
+        threshold = eng.cfg.episodic_admission_ratio * importance[victim_pos]
+        if incoming_surprisal <= threshold:
+            return False
+        victim = epi[victim_pos]
     else:
         cand = np.flatnonzero(eng.kind == CAND)
         victim = cand[np.argmin(eng.t_created[cand])]
     evict_slot(eng, int(victim), t, "evict_episodic")
+    return True
 
 
 def consolidate(eng, t: int) -> None:

@@ -360,7 +360,7 @@ On CMAPSS the false steps had been doing useful work for RUL lookup: they cut ea
 ## 11. Eviction: Ward cost and episodic importance
 
 ### Plain words
-When a group is full, something must go. For habits, merge the two that are closest and least different in weight, losing the least detail. For flashbulb memories, drop the least surprising, least repeated, most faded one.
+When a group is full, something must go. For habits, merge the two that are closest and least different in weight, losing the least detail. For flashbulb memories, first compare the arriving episode with the weakest stored episode. Reject a weaker arrival without writing it; otherwise drop the least surprising, least repeated, most faded stored episode.
 
 ### Why it exists
 A hard budget is the point. The policy decides what the budget remembers.
@@ -368,9 +368,11 @@ A hard budget is the point. The policy decides what the budget remembers.
 ### The math
 Semantic group full: evict the oldest superseded slot if any; otherwise Ward-merge the cheapest active pair, with cost
 $$\frac{n_in_j}{n_i+n_j}\sum_k\frac{(\mu_{ik}-\mu_{jk})^2}{\sigma_{0,k}^2}.$$
-This is exactly the increase in total within-cluster variance caused by the merge, so greedy Ward merging keeps the stored mixture closest to the data it summarises. Episodic group full: evict the kind-2 slot with the lowest
+This is exactly the increase in total within-cluster variance caused by the merge, so greedy Ward merging keeps the stored mixture closest to the data it summarises. For a mature episodic slot, compute
 $$\text{importance}=\text{surprisal}\cdot(1+\ln n)\cdot2^{-(t-t_{last})/h_{epi}}$$
-($h_{epi}=20000$); if there is no episodic slot, evict the oldest candidate.
+with $h_{epi}=20000$. If the episodic group is full, the arriving memory is admitted only when its initial importance is greater than the weakest mature episode's current importance. Otherwise the arrival is discarded and does not evict or write anything. When admitted, it evicts that weakest episode. If there is no mature episodic slot, the oldest candidate is evicted so a possible new operating state can complete probation.
+
+The comparison is a small bounded-memory **competitive admission** rule: being new does not automatically make a sample more valuable than retained evidence. At a total 16-slot budget (13 episodic and 3 semantic), five fixed synthetic seeds increased mean event recall from 0.760 to 0.851 and write reduction from 85.78% to 87.56%; type recall remained 1.0 and current-regime retrieval moved from 0.998 to 1.0. Seizure-event recall fell from 0.667 to 0.600, so this is not a universal improvement and must be validated on real, independent streams. Repeating the selected run reproduced all non-timing metrics exactly.
 
 The surprisal used here is the slot's **rarity** at creation: $-\log_{10}$ of the $\chi^2_d$ tail at the distance to the nearest stored slot of *any* kind. It is deliberately not the alarm score, which is measured against normal states only (section 7). A pattern that keeps recurring (a regime transition seen through the CNN encoder) is far from normal but close to its own earlier copies, so it ranks below a unique event such as a seizure. With the alarm score in this role, CNN transition candidates tied seizures at the 300-decade cap, and the older seizures were evicted: seizure recall was 0 versus 1.0 with rarity (seed 0, `docs/IMPROVEMENT-ANALYSIS.md` follow-up; regression test `test_unique_event_outlives_recurring_novelties_when_budget_overflows`).
 

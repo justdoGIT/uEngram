@@ -31,6 +31,7 @@ class EngramConfig:
     theta_drift: float = 3.0
     half_life: float = 2000.0
     half_life_epi: float = 20000.0
+    episodic_admission_ratio: float = 1.0
     flush_every: int = 50
     use_slot_var: bool = True
     use_promotion: bool = True
@@ -232,11 +233,13 @@ class Engram:
 
     def _new_slot(self, z, t: int, raw_idx: int, score: float, alarm: bool,
                   rarity: float) -> IngestResult:
-        lc.make_episodic_room(self, t)
+        incoming_surprisal = 0.0 if np.isnan(rarity) else surprisal(rarity, self.d)
+        if not lc.make_episodic_room(self, t, incoming_surprisal):
+            return IngestResult(-1, score, alarm, "discard")
         k = self._alloc()
         iid = self._new_id()
         lc.init_slot(self, k, iid, z, t, CAND if self.cfg.use_promotion else EPI)
-        self.surpr[k] = 0.0 if np.isnan(rarity) else surprisal(rarity, self.d)
+        self.surpr[k] = incoming_surprisal
         self.exemplars[iid] = [raw_idx, raw_idx]
         self.ledger.write_now(iid, self.slot_bytes + self.raw_window_bytes)
         return IngestResult(iid, score, alarm, "new_candidate")

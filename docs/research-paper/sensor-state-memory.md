@@ -408,6 +408,25 @@ Verification for this implementation: the full uEngram suite reported `306 passe
 
 See [`docs/sensor-state-memory-pipeline.md`](../sensor-state-memory-pipeline.md) for the end-to-end diagram, RAG analogy, plain-language glossary, schema, failure priorities, and pseudocode.
 
+## 15. Targeted literature update and competitive admission experiment
+
+A targeted literature review suggests three useful but distinct lessons. MemStream updates its normal-memory bank only when the incoming anomaly score is below an admission threshold; the purpose is to resist memory poisoning while still following concept drift [8]. Rainbow Memory reports that feature-space diversity improves bounded replay memory under blurry task boundaries [9]. Primal-Dual Continual Learning treats retention as a constrained stability-versus-plasticity problem and allocates more buffer capacity to harder tasks [10]. Label-free prototype replay further supports storing compact prototypes and samples that describe cluster spread rather than keeping arbitrary recent items [11]. These works do not directly validate uEngram's sensor lifecycle, but they agree that a bounded memory needs an admission objective; unconditional replacement is avoidable.
+
+uEngram previously evicted its weakest mature episodic slot whenever any out-of-gate sample arrived. This allowed a weaker new sample to destroy stronger retained evidence. The revised rule compares the incoming rarity-derived importance with the weakest mature episode. It admits and writes the arrival only when the new value is greater; otherwise it returns `discard`. Candidate states remain replaceable so that a genuinely new normal mode can still complete probation. In simple terms, a full display cabinet no longer throws away a valuable item merely because a new package reached the door.
+
+At a fixed total budget of 16 slots, with 13 episodic slots and 3 semantic slots, the five-seed synthetic benchmark changed as follows:
+
+| Metric | Before competitive admission | After competitive admission |
+|---|---:|---:|
+| Event recall | 75.98% | 85.07% |
+| Event-type recall | 100% | 100% |
+| Seizure-event recall | 66.67% | 60.00% |
+| Current-regime retrieval accuracy | 99.78% | 100% |
+| Era-1 false-flag rate | 0.0678% | 0.0466% |
+| Write reduction | 85.78% | 87.56% |
+
+The selected run was repeated and reproduced every non-timing metric exactly on the same seeds. The approximately 9.1 percentage-point gain in overall event recall is encouraging, but the 6.7-point decrease in seizure-event recall is an explicit warning: optimizing aggregate coverage can still discard a critical subtype. A production system should therefore add a separately validated hard protection rule for safety-critical episodes, or a constraint-aware allocation mechanism, rather than hiding the regression inside an average. The experiment remains synthetic development evidence; it does not establish benefit on an unseen machine, renderer, XR workload, or LLM.
+
 ## References
 
 1. Chhikara, P., Khant, D., Aryan, S., Singh, T., and Yadav, D. (2025). “Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory.” arXiv:2504.19413. [arXiv](https://arxiv.org/abs/2504.19413)
@@ -417,6 +436,10 @@ See [`docs/sensor-state-memory-pipeline.md`](../sensor-state-memory-pipeline.md)
 5. Chow, E. Y., and Willsky, A. S. (1984). “Analytical Redundancy and the Design of Robust Failure Detection Systems.” IEEE Transactions on Automatic Control, 29(7), 603–614. [doi](https://doi.org/10.1109/TAC.1984.1103593)
 6. uEngram repository, `docs/RESULTS.md`, `docs/EXPLAINED.md`, `docs/research-encoder-capacity.md`, `docs/research-skab-validation.md`, `docs/research-remediation-plan.md`, `docs/independent-cohort-preregistration.md`, `docs/research-pending-model-improvements.md`, and `docs/EdgeAIMemoryArchitecture.md` (accessed for this report).
 7. NASA IMS Bearings dataset, NASA Open Data Portal. [Dataset page](https://data.nasa.gov/dataset/ims-bearings). The page describes the experimental data; this paper does not treat assumed row indices in an exploratory script as verified physical event labels.
+8. Bhatia, S., Jain, A., Srivastava, S., Kawaguchi, K., and Hooi, B. (2022). “MemStream: Memory-Based Streaming Anomaly Detection.” *Proceedings of the ACM Web Conference 2022*. [doi](https://doi.org/10.1145/3485447.3512221) · [arXiv](https://arxiv.org/abs/2106.03837)
+9. Bang, J., Kim, H., Yoo, Y., Ha, J.-W., and Choi, J. (2021). “Rainbow Memory: Continual Learning With a Memory of Diverse Samples.” *CVPR 2021*, 8218–8227. [CVF](https://openaccess.thecvf.com/content/CVPR2021/html/Bang_Rainbow_Memory_Continual_Learning_With_a_Memory_of_Diverse_Samples_CVPR_2021_paper.html)
+10. Elenter, J., NaderiAlizadeh, N., Javidi, T., and Ribeiro, A. (2024). “Primal Dual Continual Learning: Balancing Stability and Plasticity through Adaptive Memory Allocation.” arXiv:2310.00154v2. [arXiv](https://arxiv.org/abs/2310.00154)
+11. Aghasanli, A., Li, Y., and Angelov, P. (2025). “Prototype-Based Continual Learning with Label-free Replay Buffer and Cluster Preservation Loss.” arXiv:2504.07240. [arXiv](https://arxiv.org/abs/2504.07240)
 
 ## Figure captions
 
