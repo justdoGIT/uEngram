@@ -5,7 +5,7 @@ import numpy as np
 
 from .encoders import band_features, fit_projection
 
-_TEMPORAL_RESIDUAL_SCALE = 1.0 / 16.0
+_TEMPORAL_RESIDUAL_SCALE = 1.0 / 32.0
 
 
 class SSLTemporalEncoder:
