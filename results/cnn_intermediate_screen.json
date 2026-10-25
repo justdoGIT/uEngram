@@ -1,0 +1,1140 @@
+{
+  "aggregates": [
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "maximum": 0.6398896001253562,
+      "median": 0.6096997247500022,
+      "minimum": 0.5771497742194902,
+      "representation": "middle",
+      "spread": 0.06273982590586602
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "maximum": 0.6053837626386962,
+      "median": 0.5714441879571803,
+      "minimum": 0.524579755258281,
+      "representation": "middle",
+      "spread": 0.08080400738041515
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "maximum": 0.5221914323794431,
+      "median": 0.4870184845495623,
+      "minimum": 0.4009536918327139,
+      "representation": "middle",
+      "spread": 0.1212377405467292
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "maximum": 0.38068524578942536,
+      "median": 0.37304463386779074,
+      "minimum": 0.3277778673684756,
+      "representation": "multiscale",
+      "spread": 0.05290737842094978
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "maximum": 0.39026549950545586,
+      "median": 0.356026003208352,
+      "minimum": 0.2932655083266062,
+      "representation": "bottleneck",
+      "spread": 0.09699999117884966
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "maximum": 0.43241179386153555,
+      "median": 0.37493757839843217,
+      "minimum": 0.2928918633920932,
+      "representation": "middle",
+      "spread": 0.13951993046944233
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "maximum": 0.2884316191665652,
+      "median": 0.2651607481587389,
+      "minimum": 0.228441203763021,
+      "representation": "bottleneck",
+      "spread": 0.05999041540354419
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "maximum": 0.25198881264596573,
+      "median": 0.24121240298097035,
+      "minimum": 0.20528601647772302,
+      "representation": "multiscale",
+      "spread": 0.046702796168242716
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "maximum": 0.2475136133270358,
+      "median": 0.23205782734204694,
+      "minimum": 0.19620071326930472,
+      "representation": "bottleneck",
+      "spread": 0.05131290005773109
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "maximum": 0.2262604119143467,
+      "median": 0.2082983490022764,
+      "minimum": 0.16803015009898942,
+      "representation": "multiscale",
+      "spread": 0.05823026181535729
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "maximum": 0.20630198683513373,
+      "median": 0.17954421866677403,
+      "minimum": 0.16360431672519396,
+      "representation": "bottleneck",
+      "spread": 0.04269767010993977
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "maximum": 0.18364548013921697,
+      "median": 0.1540979079244759,
+      "minimum": 0.13341021605287587,
+      "representation": "multiscale",
+      "spread": 0.0502352640863411
+    }
+  ],
+  "data": {
+    "selection_windows": 96,
+    "train_windows": 384
+  },
+  "records": [
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 6.527008895710565,
+        "freeze": 0.6877764689516414,
+        "impulse": 0.6398896001253562,
+        "level_shift": 12.63412530141813,
+        "oscillation": 4.111610464962718
+      },
+      "fit_seconds": 0.6128783589811064,
+      "name": "middle_d32_e30_s0",
+      "representation": "middle",
+      "score": 0.6398896001253562,
+      "seed": 0,
+      "worst_family_score": 0.6398896001253562
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 6.245792180088854,
+        "freeze": 0.6270623152195516,
+        "impulse": 0.688098980410761,
+        "level_shift": 12.78153548487113,
+        "oscillation": 4.379061400602711
+      },
+      "fit_seconds": 0.5898885019996669,
+      "name": "middle_d32_e30_s4",
+      "representation": "middle",
+      "score": 0.6270623152195516,
+      "seed": 4,
+      "worst_family_score": 0.6270623152195516
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 5.9328189471975845,
+        "freeze": 0.6119332562975346,
+        "impulse": 0.6096997247500022,
+        "level_shift": 12.264026565070354,
+        "oscillation": 3.9994631931878235
+      },
+      "fit_seconds": 0.6147202140127774,
+      "name": "middle_d32_e30_s3",
+      "representation": "middle",
+      "score": 0.6096997247500022,
+      "seed": 3,
+      "worst_family_score": 0.6096997247500022
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 6.191615403328028,
+        "freeze": 0.6053837626386962,
+        "impulse": 0.6415020010131504,
+        "level_shift": 12.495911242423682,
+        "oscillation": 3.482176526088693
+      },
+      "fit_seconds": 1.8985077969846316,
+      "name": "middle_d32_e90_s2",
+      "representation": "middle",
+      "score": 0.6053837626386962,
+      "seed": 2,
+      "worst_family_score": 0.6053837626386962
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 6.001297727379794,
+        "freeze": 0.615107749231877,
+        "impulse": 0.6016132259286009,
+        "level_shift": 12.553637276121039,
+        "oscillation": 3.2234476830841814
+      },
+      "fit_seconds": 1.8784305060107727,
+      "name": "middle_d32_e90_s4",
+      "representation": "middle",
+      "score": 0.6016132259286009,
+      "seed": 4,
+      "worst_family_score": 0.6016132259286009
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 5.862168219506043,
+        "freeze": 0.5922635430638397,
+        "impulse": 0.6860779444175464,
+        "level_shift": 11.679708591803431,
+        "oscillation": 3.9540467600822997
+      },
+      "fit_seconds": 0.732976592000341,
+      "name": "middle_d32_e30_s1",
+      "representation": "middle",
+      "score": 0.5922635430638397,
+      "seed": 1,
+      "worst_family_score": 0.5922635430638397
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 5.991235464588264,
+        "freeze": 0.5771497742194902,
+        "impulse": 0.7015536523979096,
+        "level_shift": 12.20327449660567,
+        "oscillation": 5.434367909171635
+      },
+      "fit_seconds": 0.6062505040026736,
+      "name": "middle_d32_e30_s2",
+      "representation": "middle",
+      "score": 0.5771497742194902,
+      "seed": 2,
+      "worst_family_score": 0.5771497742194902
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 6.646800743934593,
+        "freeze": 0.6526879023339952,
+        "impulse": 0.5714441879571803,
+        "level_shift": 13.670371549181452,
+        "oscillation": 3.8359369960083964
+      },
+      "fit_seconds": 1.853195796982618,
+      "name": "middle_d32_e90_s3",
+      "representation": "middle",
+      "score": 0.5714441879571803,
+      "seed": 3,
+      "worst_family_score": 0.5714441879571803
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 5.916571146685076,
+        "freeze": 0.5566281184455192,
+        "impulse": 0.5830485320927173,
+        "level_shift": 11.78594276420613,
+        "oscillation": 3.3080191439604034
+      },
+      "fit_seconds": 2.000875207973877,
+      "name": "middle_d32_e90_s1",
+      "representation": "middle",
+      "score": 0.5566281184455192,
+      "seed": 1,
+      "worst_family_score": 0.5566281184455192
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 6.1180684466858555,
+        "freeze": 0.5675670697599426,
+        "impulse": 0.524579755258281,
+        "level_shift": 11.404082843467403,
+        "oscillation": 3.0494494558142535
+      },
+      "fit_seconds": 1.8337119999923743,
+      "name": "middle_d32_e90_s0",
+      "representation": "middle",
+      "score": 0.524579755258281,
+      "seed": 0,
+      "worst_family_score": 0.524579755258281
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 6.689148295202291,
+        "freeze": 0.5623675781520078,
+        "impulse": 0.5221914323794431,
+        "level_shift": 13.475321324975669,
+        "oscillation": 2.4373503445582796
+      },
+      "fit_seconds": 0.6311150210094638,
+      "name": "middle_d16_e30_s2",
+      "representation": "middle",
+      "score": 0.5221914323794431,
+      "seed": 2,
+      "worst_family_score": 0.5221914323794431
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 7.09666347673288,
+        "freeze": 0.6950793966669807,
+        "impulse": 0.5080914324201278,
+        "level_shift": 14.582544336615198,
+        "oscillation": 2.5303717313001983
+      },
+      "fit_seconds": 0.8151484520058148,
+      "name": "middle_d16_e30_s4",
+      "representation": "middle",
+      "score": 0.5080914324201278,
+      "seed": 4,
+      "worst_family_score": 0.5080914324201278
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 6.395306019837234,
+        "freeze": 0.63749264854051,
+        "impulse": 0.4870184845495623,
+        "level_shift": 12.995682504842286,
+        "oscillation": 2.598734981328313
+      },
+      "fit_seconds": 0.7400283500028308,
+      "name": "middle_d16_e30_s1",
+      "representation": "middle",
+      "score": 0.4870184845495623,
+      "seed": 1,
+      "worst_family_score": 0.4870184845495623
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 6.520683378711097,
+        "freeze": 0.6209196756752089,
+        "impulse": 0.43241179386153555,
+        "level_shift": 12.990795057190077,
+        "oscillation": 2.081623395189504
+      },
+      "fit_seconds": 2.030289237998659,
+      "name": "middle_d16_e90_s2",
+      "representation": "middle",
+      "score": 0.43241179386153555,
+      "seed": 2,
+      "worst_family_score": 0.43241179386153555
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 6.725299716415202,
+        "freeze": 0.6022094949018096,
+        "impulse": 0.41836266706461356,
+        "level_shift": 13.649095585562511,
+        "oscillation": 2.2195950209894777
+      },
+      "fit_seconds": 0.5780410389997996,
+      "name": "middle_d16_e30_s3",
+      "representation": "middle",
+      "score": 0.41836266706461356,
+      "seed": 3,
+      "worst_family_score": 0.41836266706461356
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 5.995273890578715,
+        "freeze": 0.6251757269238438,
+        "impulse": 0.4009536918327139,
+        "level_shift": 11.451088315332012,
+        "oscillation": 2.4612335896855533
+      },
+      "fit_seconds": 0.6221715720021166,
+      "name": "middle_d16_e30_s0",
+      "representation": "middle",
+      "score": 0.4009536918327139,
+      "seed": 0,
+      "worst_family_score": 0.4009536918327139
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 3.9553576015527288,
+        "freeze": 0.40364290981346385,
+        "impulse": 0.39026549950545586,
+        "level_shift": 8.170401582379105,
+        "oscillation": 1.8918228102767989
+      },
+      "fit_seconds": 0.8962184650008567,
+      "name": "bottleneck_d32_e30_s1",
+      "representation": "bottleneck",
+      "score": 0.39026549950545586,
+      "seed": 1,
+      "worst_family_score": 0.39026549950545586
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 5.934542881813107,
+        "freeze": 0.575683572579824,
+        "impulse": 0.3901546075598064,
+        "level_shift": 12.071796611868553,
+        "oscillation": 2.0292046126661285
+      },
+      "fit_seconds": 1.8185003770049661,
+      "name": "middle_d16_e90_s1",
+      "representation": "middle",
+      "score": 0.3901546075598064,
+      "seed": 1,
+      "worst_family_score": 0.3901546075598064
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 3.4737769781832917,
+        "freeze": 0.4142882599945816,
+        "impulse": 0.3886128137779626,
+        "level_shift": 7.101903177794716,
+        "oscillation": 2.347033467775823
+      },
+      "fit_seconds": 0.5460598619829398,
+      "name": "bottleneck_d32_e30_s0",
+      "representation": "bottleneck",
+      "score": 0.3886128137779626,
+      "seed": 0,
+      "worst_family_score": 0.3886128137779626
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 5.325405649121379,
+        "freeze": 0.5188421742879135,
+        "impulse": 0.38068524578942536,
+        "level_shift": 11.39969205508458,
+        "oscillation": 2.0796012014254
+      },
+      "fit_seconds": 1.7526707969955169,
+      "name": "multiscale_d32_e30_s4",
+      "representation": "multiscale",
+      "score": 0.38068524578942536,
+      "seed": 4,
+      "worst_family_score": 0.38068524578942536
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 4.991154644459617,
+        "freeze": 0.40889103535462973,
+        "impulse": 0.3775501064448588,
+        "level_shift": 9.993148418412,
+        "oscillation": 1.9702952760141716
+      },
+      "fit_seconds": 4.519727300998056,
+      "name": "multiscale_d32_e30_s2",
+      "representation": "multiscale",
+      "score": 0.3775501064448588,
+      "seed": 2,
+      "worst_family_score": 0.3775501064448588
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 7.077625378831519,
+        "freeze": 0.6434060179762546,
+        "impulse": 0.37493757839843217,
+        "level_shift": 14.1039895895101,
+        "oscillation": 1.6526281957257356
+      },
+      "fit_seconds": 1.780892502021743,
+      "name": "middle_d16_e90_s3",
+      "representation": "middle",
+      "score": 0.37493757839843217,
+      "seed": 3,
+      "worst_family_score": 0.37493757839843217
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 5.4845645889566335,
+        "freeze": 0.5143204065553422,
+        "impulse": 0.37304463386779074,
+        "level_shift": 11.18322606365201,
+        "oscillation": 2.02258007089599
+      },
+      "fit_seconds": 1.390942042984534,
+      "name": "multiscale_d32_e30_s1",
+      "representation": "multiscale",
+      "score": 0.37304463386779074,
+      "seed": 1,
+      "worst_family_score": 0.37304463386779074
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 3.094824767727033,
+        "freeze": 0.356026003208352,
+        "impulse": 0.3929087382276204,
+        "level_shift": 6.779129078000941,
+        "oscillation": 1.9030463821211598
+      },
+      "fit_seconds": 0.7378182209795341,
+      "name": "bottleneck_d32_e30_s2",
+      "representation": "bottleneck",
+      "score": 0.356026003208352,
+      "seed": 2,
+      "worst_family_score": 0.356026003208352
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 5.958632472704105,
+        "freeze": 0.6175414048933374,
+        "impulse": 0.32979031350621624,
+        "level_shift": 12.038819141989642,
+        "oscillation": 1.8190722713758323
+      },
+      "fit_seconds": 1.7718350780196488,
+      "name": "middle_d16_e90_s4",
+      "representation": "middle",
+      "score": 0.32979031350621624,
+      "seed": 4,
+      "worst_family_score": 0.32979031350621624
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 5.259132389681525,
+        "freeze": 0.4944337593075789,
+        "impulse": 0.3288548700136669,
+        "level_shift": 10.564511197490877,
+        "oscillation": 2.104088240080356
+      },
+      "fit_seconds": 0.6890516449930146,
+      "name": "multiscale_d32_e30_s0",
+      "representation": "multiscale",
+      "score": 0.3288548700136669,
+      "seed": 0,
+      "worst_family_score": 0.3288548700136669
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 5.138515802890082,
+        "freeze": 0.5459909838610884,
+        "impulse": 0.3277778673684756,
+        "level_shift": 10.145444886848749,
+        "oscillation": 2.003752969301762
+      },
+      "fit_seconds": 1.514137121004751,
+      "name": "multiscale_d32_e30_s3",
+      "representation": "multiscale",
+      "score": 0.3277778673684756,
+      "seed": 3,
+      "worst_family_score": 0.3277778673684756
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 3.0416300500931395,
+        "freeze": 0.30306447906208434,
+        "impulse": 0.33151503595105153,
+        "level_shift": 6.720975256566185,
+        "oscillation": 1.9376790606232288
+      },
+      "fit_seconds": 0.6991607079980895,
+      "name": "bottleneck_d32_e30_s4",
+      "representation": "bottleneck",
+      "score": 0.30306447906208434,
+      "seed": 4,
+      "worst_family_score": 0.30306447906208434
+    },
+    {
+      "dimension": 32,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 2.9991313850173946,
+        "freeze": 0.32218612794251306,
+        "impulse": 0.2932655083266062,
+        "level_shift": 6.60621249479461,
+        "oscillation": 2.151022383459883
+      },
+      "fit_seconds": 0.8717875469883438,
+      "name": "bottleneck_d32_e30_s3",
+      "representation": "bottleneck",
+      "score": 0.2932655083266062,
+      "seed": 3,
+      "worst_family_score": 0.2932655083266062
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 6.213180079517813,
+        "freeze": 0.6251790446319418,
+        "impulse": 0.2928918633920932,
+        "level_shift": 11.76627964081618,
+        "oscillation": 1.794511215412626
+      },
+      "fit_seconds": 1.82393765298184,
+      "name": "middle_d16_e90_s0",
+      "representation": "middle",
+      "score": 0.2928918633920932,
+      "seed": 0,
+      "worst_family_score": 0.2928918633920932
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 3.5072851819488196,
+        "freeze": 0.4186071842350243,
+        "impulse": 0.2884316191665652,
+        "level_shift": 7.224456548764263,
+        "oscillation": 1.5399922907629346
+      },
+      "fit_seconds": 1.898153451998951,
+      "name": "bottleneck_d32_e90_s1",
+      "representation": "bottleneck",
+      "score": 0.2884316191665652,
+      "seed": 1,
+      "worst_family_score": 0.2884316191665652
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 3.3295820214304985,
+        "freeze": 0.38277396322674245,
+        "impulse": 0.26674687477896586,
+        "level_shift": 6.987053543592548,
+        "oscillation": 1.7033281070221185
+      },
+      "fit_seconds": 1.90484668200952,
+      "name": "bottleneck_d32_e90_s2",
+      "representation": "bottleneck",
+      "score": 0.26674687477896586,
+      "seed": 2,
+      "worst_family_score": 0.26674687477896586
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 3.1722682769583495,
+        "freeze": 0.3990536069880877,
+        "impulse": 0.2651607481587389,
+        "level_shift": 6.691549248736147,
+        "oscillation": 1.3658040640988875
+      },
+      "fit_seconds": 2.036838297994109,
+      "name": "bottleneck_d32_e90_s4",
+      "representation": "bottleneck",
+      "score": 0.2651607481587389,
+      "seed": 4,
+      "worst_family_score": 0.2651607481587389
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 4.6306448067674415,
+        "freeze": 0.45252056576156313,
+        "impulse": 0.25198881264596573,
+        "level_shift": 9.46866655776698,
+        "oscillation": 1.5987196636166834
+      },
+      "fit_seconds": 4.412130234006327,
+      "name": "multiscale_d32_e90_s3",
+      "representation": "multiscale",
+      "score": 0.25198881264596573,
+      "seed": 3,
+      "worst_family_score": 0.25198881264596573
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 3.4738727197900894,
+        "freeze": 0.37714844401655656,
+        "impulse": 0.24959977135340186,
+        "level_shift": 7.02389322739336,
+        "oscillation": 1.527252137039435
+      },
+      "fit_seconds": 1.7865306549938396,
+      "name": "bottleneck_d32_e90_s3",
+      "representation": "bottleneck",
+      "score": 0.24959977135340186,
+      "seed": 3,
+      "worst_family_score": 0.24959977135340186
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 3.2045372074583995,
+        "freeze": 0.3016203802599399,
+        "impulse": 0.2475136133270358,
+        "level_shift": 6.992868709020673,
+        "oscillation": 1.2156690379100847
+      },
+      "fit_seconds": 0.6010327310068533,
+      "name": "bottleneck_d16_e30_s4",
+      "representation": "bottleneck",
+      "score": 0.2475136133270358,
+      "seed": 4,
+      "worst_family_score": 0.2475136133270358
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 4.340452919433722,
+        "freeze": 0.47784550798886355,
+        "impulse": 0.24570593189269793,
+        "level_shift": 9.327057354745588,
+        "oscillation": 1.174812831126155
+      },
+      "fit_seconds": 3.7329868840170093,
+      "name": "multiscale_d32_e90_s4",
+      "representation": "multiscale",
+      "score": 0.24570593189269793,
+      "seed": 4,
+      "worst_family_score": 0.24570593189269793
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 4.136038594770873,
+        "freeze": 0.41987844334317864,
+        "impulse": 0.24121240298097035,
+        "level_shift": 8.254556179571011,
+        "oscillation": 1.49082023254779
+      },
+      "fit_seconds": 4.6702623199962545,
+      "name": "multiscale_d32_e90_s1",
+      "representation": "multiscale",
+      "score": 0.24121240298097035,
+      "seed": 1,
+      "worst_family_score": 0.24121240298097035
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 4.227978142247848,
+        "freeze": 0.45310218412764924,
+        "impulse": 0.23762618908884514,
+        "level_shift": 8.25892342159482,
+        "oscillation": 1.731163011189654
+      },
+      "fit_seconds": 4.041399923997233,
+      "name": "multiscale_d32_e90_s2",
+      "representation": "multiscale",
+      "score": 0.23762618908884514,
+      "seed": 2,
+      "worst_family_score": 0.23762618908884514
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 2.677672611749399,
+        "freeze": 0.3245388142146656,
+        "impulse": 0.23394262985374586,
+        "level_shift": 5.367288702371863,
+        "oscillation": 1.8191588995932977
+      },
+      "fit_seconds": 0.5767762169998605,
+      "name": "bottleneck_d16_e30_s2",
+      "representation": "bottleneck",
+      "score": 0.23394262985374586,
+      "seed": 2,
+      "worst_family_score": 0.23394262985374586
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 2.360839705139271,
+        "freeze": 0.27735571728603386,
+        "impulse": 0.23205782734204694,
+        "level_shift": 5.677031623784105,
+        "oscillation": 1.5082796138074432
+      },
+      "fit_seconds": 0.6451294319995213,
+      "name": "bottleneck_d16_e30_s1",
+      "representation": "bottleneck",
+      "score": 0.23205782734204694,
+      "seed": 1,
+      "worst_family_score": 0.23205782734204694
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 2.650804727647433,
+        "freeze": 0.3583970641778727,
+        "impulse": 0.228441203763021,
+        "level_shift": 5.172438639134406,
+        "oscillation": 1.4828058854337474
+      },
+      "fit_seconds": 2.3984390199766494,
+      "name": "bottleneck_d32_e90_s0",
+      "representation": "bottleneck",
+      "score": 0.228441203763021,
+      "seed": 0,
+      "worst_family_score": 0.228441203763021
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 4.385603361487431,
+        "freeze": 0.4024270833481638,
+        "impulse": 0.2262604119143467,
+        "level_shift": 8.438993119868828,
+        "oscillation": 1.4854756979508141
+      },
+      "fit_seconds": 0.6623257809842471,
+      "name": "multiscale_d16_e30_s2",
+      "representation": "multiscale",
+      "score": 0.2262604119143467,
+      "seed": 2,
+      "worst_family_score": 0.2262604119143467
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 3.0062524273516362,
+        "freeze": 0.3356601785186968,
+        "impulse": 0.2205248007250489,
+        "level_shift": 5.824045866203685,
+        "oscillation": 1.5969662724995224
+      },
+      "fit_seconds": 0.5882472750090528,
+      "name": "bottleneck_d16_e30_s3",
+      "representation": "bottleneck",
+      "score": 0.2205248007250489,
+      "seed": 3,
+      "worst_family_score": 0.2205248007250489
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 3.904317468982067,
+        "freeze": 0.34773980664893805,
+        "impulse": 0.21450657918328084,
+        "level_shift": 8.420395775020287,
+        "oscillation": 1.5629096241769682
+      },
+      "fit_seconds": 0.7530887780012563,
+      "name": "multiscale_d16_e30_s4",
+      "representation": "multiscale",
+      "score": 0.21450657918328084,
+      "seed": 4,
+      "worst_family_score": 0.21450657918328084
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 4.0344746484554825,
+        "freeze": 0.3992774943465221,
+        "impulse": 0.2082983490022764,
+        "level_shift": 8.564785031290267,
+        "oscillation": 1.8059493716974513
+      },
+      "fit_seconds": 0.6569542340002954,
+      "name": "multiscale_d16_e30_s1",
+      "representation": "multiscale",
+      "score": 0.2082983490022764,
+      "seed": 1,
+      "worst_family_score": 0.2082983490022764
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 3.200297578739239,
+        "freeze": 0.33644507148504943,
+        "impulse": 0.20630198683513373,
+        "level_shift": 6.9959574928443375,
+        "oscillation": 1.0942224604625006
+      },
+      "fit_seconds": 1.7832913120219018,
+      "name": "bottleneck_d16_e90_s1",
+      "representation": "bottleneck",
+      "score": 0.20630198683513373,
+      "seed": 1,
+      "worst_family_score": 0.20630198683513373
+    },
+    {
+      "dimension": 32,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 4.056070359192954,
+        "freeze": 0.43940233029792264,
+        "impulse": 0.20528601647772302,
+        "level_shift": 8.00326148037438,
+        "oscillation": 1.5957467960526552
+      },
+      "fit_seconds": 5.7938873110106215,
+      "name": "multiscale_d32_e90_s0",
+      "representation": "multiscale",
+      "score": 0.20528601647772302,
+      "seed": 0,
+      "worst_family_score": 0.20528601647772302
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 2.66901497619435,
+        "freeze": 0.25599861819253644,
+        "impulse": 0.19620071326930472,
+        "level_shift": 5.341553380911628,
+        "oscillation": 1.6253531159516825
+      },
+      "fit_seconds": 2.762072437995812,
+      "name": "bottleneck_d16_e30_s0",
+      "representation": "bottleneck",
+      "score": 0.19620071326930472,
+      "seed": 0,
+      "worst_family_score": 0.19620071326930472
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 3.528416329032547,
+        "freeze": 0.3715943371264397,
+        "impulse": 0.18364548013921697,
+        "level_shift": 7.21692025781241,
+        "oscillation": 1.241785922361936
+      },
+      "fit_seconds": 1.9970304369926453,
+      "name": "multiscale_d16_e90_s1",
+      "representation": "multiscale",
+      "score": 0.18364548013921697,
+      "seed": 1,
+      "worst_family_score": 0.18364548013921697
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 3.038010789811402,
+        "freeze": 0.3118866297279526,
+        "impulse": 0.18169979260960104,
+        "level_shift": 6.044782399437848,
+        "oscillation": 1.1919283142807617
+      },
+      "fit_seconds": 1.6765413410030305,
+      "name": "bottleneck_d16_e90_s4",
+      "representation": "bottleneck",
+      "score": 0.18169979260960104,
+      "seed": 4,
+      "worst_family_score": 0.18169979260960104
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 3.215034829818599,
+        "freeze": 0.3534434662176461,
+        "impulse": 0.17954421866677403,
+        "level_shift": 6.61676727032226,
+        "oscillation": 1.4949283600988856
+      },
+      "fit_seconds": 1.892424352990929,
+      "name": "bottleneck_d16_e90_s3",
+      "representation": "bottleneck",
+      "score": 0.17954421866677403,
+      "seed": 3,
+      "worst_family_score": 0.17954421866677403
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 4.165293550588896,
+        "freeze": 0.4426331518034772,
+        "impulse": 0.16854271079829045,
+        "level_shift": 8.489842992048468,
+        "oscillation": 1.213952580343823
+      },
+      "fit_seconds": 0.6723838110046927,
+      "name": "multiscale_d16_e30_s3",
+      "representation": "multiscale",
+      "score": 0.16854271079829045,
+      "seed": 3,
+      "worst_family_score": 0.16854271079829045
+    },
+    {
+      "dimension": 16,
+      "epochs": 30,
+      "fault_metrics": {
+        "drift": 4.5461799120398325,
+        "freeze": 0.45090948938424474,
+        "impulse": 0.16803015009898942,
+        "level_shift": 8.498282711857888,
+        "oscillation": 1.7955171989023961
+      },
+      "fit_seconds": 0.6080249310180079,
+      "name": "multiscale_d16_e30_s0",
+      "representation": "multiscale",
+      "score": 0.16803015009898942,
+      "seed": 0,
+      "worst_family_score": 0.16803015009898942
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 2.5904161376638615,
+        "freeze": 0.3169005933243451,
+        "impulse": 0.1673854186007821,
+        "level_shift": 5.464193524225953,
+        "oscillation": 1.3375154886403542
+      },
+      "fit_seconds": 1.657391271990491,
+      "name": "bottleneck_d16_e90_s2",
+      "representation": "bottleneck",
+      "score": 0.1673854186007821,
+      "seed": 2,
+      "worst_family_score": 0.1673854186007821
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 2.4336137620150273,
+        "freeze": 0.2862432707340755,
+        "impulse": 0.16360431672519396,
+        "level_shift": 4.904861473782193,
+        "oscillation": 1.1275364124782274
+      },
+      "fit_seconds": 1.7621121690026484,
+      "name": "bottleneck_d16_e90_s0",
+      "representation": "bottleneck",
+      "score": 0.16360431672519396,
+      "seed": 0,
+      "worst_family_score": 0.16360431672519396
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 3.7270361586627545,
+        "freeze": 0.4049593220353763,
+        "impulse": 0.16259984115794435,
+        "level_shift": 7.574047346489255,
+        "oscillation": 1.2797356340120916
+      },
+      "fit_seconds": 2.15309372000047,
+      "name": "multiscale_d16_e90_s3",
+      "representation": "multiscale",
+      "score": 0.16259984115794435,
+      "seed": 3,
+      "worst_family_score": 0.16259984115794435
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 3.0462833982238555,
+        "freeze": 0.3132932129485817,
+        "impulse": 0.1540979079244759,
+        "level_shift": 6.722570044077143,
+        "oscillation": 1.1199787385814848
+      },
+      "fit_seconds": 2.276209909992758,
+      "name": "multiscale_d16_e90_s4",
+      "representation": "multiscale",
+      "score": 0.1540979079244759,
+      "seed": 4,
+      "worst_family_score": 0.1540979079244759
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 3.3506960307305595,
+        "freeze": 0.3632791694934881,
+        "impulse": 0.1446862145582801,
+        "level_shift": 6.701745132129417,
+        "oscillation": 1.1315146088390282
+      },
+      "fit_seconds": 2.029424866021145,
+      "name": "multiscale_d16_e90_s2",
+      "representation": "multiscale",
+      "score": 0.1446862145582801,
+      "seed": 2,
+      "worst_family_score": 0.1446862145582801
+    },
+    {
+      "dimension": 16,
+      "epochs": 90,
+      "fault_metrics": {
+        "drift": 3.49541890712429,
+        "freeze": 0.33411747716787493,
+        "impulse": 0.13341021605287587,
+        "level_shift": 7.002329753459749,
+        "oscillation": 1.206260315529612
+      },
+      "fit_seconds": 1.8957612059894018,
+      "name": "multiscale_d16_e90_s0",
+      "representation": "multiscale",
+      "score": 0.13341021605287587,
+      "seed": 0,
+      "worst_family_score": 0.13341021605287587
+    }
+  ],
+  "role": "label-free development screen; not field confirmation",
+  "selection": "10th-percentile clean-to-synthetic-fault displacement; worst of five fault families"
+}

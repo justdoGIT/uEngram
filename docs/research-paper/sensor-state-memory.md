@@ -427,6 +427,366 @@ At a fixed total budget of 16 slots, with 13 episodic slots and 3 semantic slots
 
 The selected run was repeated and reproduced every non-timing metric exactly on the same seeds. The approximately 9.1 percentage-point gain in overall event recall is encouraging, but the 6.7-point decrease in seizure-event recall is an explicit warning: optimizing aggregate coverage can still discard a critical subtype. A production system should therefore add a separately validated hard protection rule for safety-critical episodes, or a constraint-aware allocation mechanism, rather than hiding the regression inside an average. The experiment remains synthetic development evidence; it does not establish benefit on an unseen machine, renderer, XR workload, or LLM.
 
+## 16. Edge memory as a layered system
+
+“Edge memory” is not one database table or one neural network. It is a set of
+responsibilities that run close to the machine producing the data. “Edge”
+means that the first decision happens on the device, vehicle, robot, or local
+gateway rather than waiting for a distant cloud service.
+
+The architecture below separates the fast path from the slower evidence and
+explanation paths. Solid arrows describe code that exists in this repository.
+Dashed arrows describe a possible future Standard/Advanced database contract;
+they are not features of the inspected Lite API.
+
+```mermaid
+flowchart LR
+    S[Sensor channels] --> W[Causal time window]
+    W --> E[Versioned encoder]
+    E --> U[uEngram bounded live state]
+    W --> R[Host raw-evidence ring]
+    U -->|lifecycle or alarm edge| L[EdgeMemory Lite event ledger]
+    L -->|stable pointer| R
+    U --> Q[Exact current-state recall]
+    L --> K[Keyword history recall]
+    Q --> X[Evidence bundle]
+    K --> X
+    R -->|authorized slice| X
+    X --> H[Rule, operator, or optional LLM]
+    E -. future stored embedding .-> V[Documented vector/ANN API]
+    V -. future semantic history .-> X
+```
+
+### 16.1 Clear ownership prevents a confused system
+
+| Layer | Owns | Must not silently decide |
+|---|---|---|
+| Application | Sensor selection, operating-mode context, externally supported severity, and what action is allowed | That frequent automatically means healthy |
+| Encoder | A repeatable numerical fingerprint and its version | Fault diagnosis or maintenance priority |
+| uEngram | Bounded live states, candidates, episodes, novelty, and lifecycle events | The validity of a physical label |
+| EdgeMemory Lite | Durable text/event metadata, keywords, retention class, and idempotent event identity | Vector similarity, ANN, or raw-waveform persistence |
+| Raw evidence store | Exact time-series slices and pin lifetime | Whether a slice represents a fault |
+| Optional LLM | Plain-language synthesis from retrieved records | Alarm authority, baseline mutation, or evidence creation |
+
+This separation is the main difference between a safe evidence pipeline and
+“put an LLM in front of a vector database.” An LLM is useful after retrieval,
+like a technical writer given the correct log pages. It is not a reliable
+transaction manager or hard real-time controller.
+
+### 16.2 Three product levels, stated as contracts rather than promises
+
+The colleague-provided direction describes Lite, Standard, and Advanced
+levels. Only Lite was available for inspection. A defensible progression is:
+
+1. **Lite:** text/event records, keywords, retention, and lifecycle metadata.
+   This is useful even with no neural model. The present adapter reaches this
+   level.
+2. **Standard:** stored embeddings plus exact vector search. “Exact” means
+   every eligible vector can be checked, like comparing a query with every
+   card in a small box. This needs a documented API, persistence semantics,
+   schema/version filters, and measured latency.
+3. **Advanced:** an ANN index for a larger collection. ANN is an express lane:
+   it is faster because it may inspect only promising neighborhoods. Its
+   recall—the fraction of true nearest neighbors it actually returns—must be
+   measured under insertions, deletions, power loss, and storage pressure.
+
+Binary payloads, time-series objects, relationships, and preprocessing/model
+plug-ins would be valuable because a memory record could keep the embedding,
+the fault code, the asset relationship, and the source waveform under one
+transactional database boundary. The current repository must not compile
+against guessed versions of those APIs. A versioned adapter should be written
+only after the vendor publishes the real contract and ownership terms permit
+its use.
+
+A 2026 EdgeAI anomaly-detection review examined 4,075 papers and 10 market
+players and emphasized that algorithms, hardware, communication, energy, and
+cost must be evaluated together [16]. This supports the layered architecture:
+an accurate model that exceeds the device’s energy, latency, RAM, or network
+budget is not an edge solution.
+
+### 16.3 Crash consistency is as important as similarity
+
+The hardest database problem is not `save()` or `remember()`. It is preserving
+one honest story after a crash. Suppose uEngram consumes window 900, opens an
+alarm, and then the database write fails. Re-ingesting window 900 changes
+M-of-N counters and can create a different decision. The implemented adapter
+therefore returns the already-built event for storage retry with the same
+idempotency key.
+
+A production design still needs an atomic checkpoint or transactional outbox:
+
+```text
+begin durable transaction
+    append source-window identity and checksum
+    append uEngram decision and next checkpoint version
+    append EdgeMemory event with one idempotency key
+    increment raw-evidence pin reference
+commit
+
+on restart:
+    restore last committed checkpoint
+    replay only source windows after its committed source identity
+    reconcile event records with raw-evidence pin counts
+```
+
+“Atomic” means all related changes become durable together or none of them do,
+similar to a bank transfer that must not debit one account without crediting
+the other. The present two-component Python pipeline does not yet provide this
+cross-store transaction.
+
+## 17. What recent CNN and memory research changes
+
+### 17.1 The “understandable middle layer” claim
+
+Yang and colleagues proposed NeuronIM and LayerIM for an image-classification
+CNN [12]. NeuronIM compares two pictures: a guided-backpropagation picture of
+what activates one neuron and a SHAP contribution picture. A high cosine
+similarity means their highlighted directions are alike. LayerIM averages this
+value across a layer. In their VGG-16/CIFAR-10 study, middle convolution layers
+3–6 had high LayerIM values, and pruning neurons selected by this measure
+damaged accuracy more than pruning low-scoring neurons.
+
+This does **not** prove that every CNN middle layer has a human-readable
+physical meaning. The method was tested on images and class labels, uses
+expensive after-training explanations, and its cosine score can miss spatial
+structure. uEngram has multichannel signals and no image-classification SHAP
+target. Copying LayerIM directly would therefore create a complicated metric
+without a matching scientific question.
+
+The useful lesson is narrower: do not assume the final bottleneck is the only
+representation worth testing. Early convolution layers notice short local
+shapes; later layers combine them into broader patterns; the final bottleneck
+is optimized for reconstruction. A reconstruction model can learn to reproduce
+an anomaly and thereby hide it. An internal feature can remain sensitive to the
+unusual local shape.
+
+### 17.2 Stronger direct evidence from time-series research
+
+TimeRep uses intermediate representations from a 24-layer, 385-million
+parameter time-series foundation model [13]. Its best reported UCR result used
+layer 16, not the final layer. It stores normal intermediate vectors, selects a
+greedy k-center coreset, scores distance to the nearest memory, and admits
+non-redundant test representations. The paper reports 77.6% Top-1 accuracy for
+its center-aligned version and more than 75% after reducing the memory to 1,000
+items. These are the authors’ UCR results, not uEngram results. Center alignment
+also uses future samples and therefore is not suitable for a strictly online
+alarm; uEngram must keep last-aligned causal windows.
+
+PaAno supplies a second important result [14]. It uses a small four-layer 1D
+CNN, local time patches, triplet learning, a temporary “are these patches
+consecutive?” task, and a reduced normal memory bank. The paper reports a
+0.3-million-parameter model and state-of-the-art results on its TSB-AD protocol.
+Its careful warning is equally useful: large Transformers can look impressive
+under weak point-adjusted evaluation yet lose to simpler methods under
+threshold-free, non-adjusted metrics.
+
+MOMEMTO puts patch-shaped normal prototypes inside a time-series foundation
+model [15]. It is intended to stop a powerful decoder from reconstructing
+abnormal inputs too well. Its reported multi-domain model improves AUC-PR from
+29.58 for its MOMENT backbone to 36.35. It is promising evidence for prototype
+memory, but it is a large univariate model whose memory changes during
+training and freezes during inference. It is not an embedded replacement for
+uEngram’s bounded online lifecycle.
+
+MIXAD suggests a different route to explanation [17]. Instead of treating
+reconstruction error as the whole answer, it watches how attention moves among
+learned normal-memory slots. It measures change with Jensen–Shannon divergence,
+a symmetric number describing how different two probability distributions are.
+An everyday analogy is a worker who normally chooses tools from drawer A but
+suddenly chooses mostly from drawer D; the change in drawer preference is
+evidence even if the finished object looks normal. The authors report strong
+feature-attribution gains, but their detection evaluation uses point adjustment
+and threshold tuning, which can inflate apparent success. For uEngram, a
+lightweight version—logging per-state or per-channel activation shifts—deserves
+study as an explanation aid, not as an automatic root-cause claim.
+
+Together, these papers support four testable ideas:
+
+1. inspect internal representations instead of trusting only the final output;
+2. preserve local patches or multiple temporal scales;
+3. keep a diverse, bounded normal reference rather than every vector;
+4. guard online admission so anomalies do not poison “normal” memory.
+
+### 17.3 The uEngram application: a multi-level readout
+
+The new experimental `CNNEncoder` option implements the smallest direct test of
+the first two ideas. Training is unchanged: two convolution stages feed a
+reconstruction bottleneck. At inference, `representation="multiscale"` pools
+both stages and concatenates them before the existing PCA and noise-whitening
+steps:
+
+$$
+r(x)=\left[\operatorname{pool}(h_1(x));
+           \operatorname{pool}(h_2(x))\right],\qquad
+z(x)=N^{-1/2}\Lambda^{-1/2}V^\top(r(x)-\bar r).
+$$
+
+`h₁` and `h₂` are first- and second-stage activation maps. `pool` averages
+across time by default; max-plus-average pooling remains separately available.
+`V` and `Λ` are PCA directions and variances. `N` is the estimated
+within-state noise covariance. In simpler words: keep clues from both the
+close-up and wider views, then compress and balance them using the same
+statistical machinery as the other encoders.
+
+```text
+train reconstruction CNN on commissioning windows
+freeze convolution weights
+
+for each window:
+    local_features = temporal_pool(first_convolution(window))
+    broad_features = temporal_pool(second_convolution(window))
+    joined = concatenate(local_features, broad_features)
+    vector = fitted_PCA_and_noise_whitening(joined)
+    decision = bounded_memory.ingest(vector)
+```
+
+This avoids selecting one hidden layer from test labels. It is not an
+interpretability certificate: the resulting coordinates are still learned
+numbers, not names such as “bearing looseness.” Channel occlusion, local
+perturbations, and expert-labelled fault studies would be needed to attach
+physical meaning.
+
+### 17.4 Controlled label-free screen: `d`, epochs, and readout depth
+
+The first experiment used 384 generated normal training windows and 96 separate
+normal selection windows. Five fixed synthetic fault families—level shift,
+drift, impulse, oscillation, and freeze—were injected only into copies of the
+selection windows. No MetroPT or SKAB labels selected the model. Each cell
+contains five neural seeds.
+
+The score is the weakest fault family’s 10th-percentile displacement divided by
+the median displacement between neighboring clean windows. A larger number is
+better: even the less-responsive corrupted windows moved farther than ordinary
+clean variation. The number is a development ruler, not a fault probability or
+field accuracy.
+
+| Readout | `d` | Epochs | Median worst-family score | Minimum seed | Seed spread |
+|---|---:|---:|---:|---:|---:|
+| Middle layer | 32 | 30 | **0.610** | **0.577** | 0.063 |
+| Middle layer | 32 | 90 | 0.571 | 0.525 | 0.081 |
+| Middle layer | 16 | 30 | 0.487 | 0.401 | 0.121 |
+| Multi-level | 32 | 30 | 0.373 | 0.328 | **0.053** |
+| Final bottleneck | 32 | 30 | 0.356 | 0.293 | 0.097 |
+| Middle layer | 16 | 90 | 0.375 | 0.293 | 0.140 |
+| Final bottleneck | 32 | 90 | 0.265 | 0.228 | 0.060 |
+| Multi-level | 32 | 90 | 0.241 | 0.205 | **0.047** |
+| Final bottleneck | 16 | 30 | 0.232 | 0.196 | **0.051** |
+| Multi-level | 16 | 30 | 0.208 | 0.168 | 0.058 |
+| Final bottleneck | 16 | 90 | 0.180 | 0.164 | **0.043** |
+| Multi-level | 16 | 90 | 0.154 | 0.133 | 0.050 |
+
+The result supports testing the middle representation, but it also corrects two
+tempting stories. First, concatenating every available level was not best; the
+later reconstruction-oriented features weakened the early-layer signal.
+Second, more training was not automatically better. Ninety epochs lowered the
+median score in every matched readout/dimension pair. The likely explanation is
+that longer reconstruction training specializes features toward reproducing
+the normal waveform rather than separating the injected local changes. That is
+a mechanism hypothesis, not yet a causal proof.
+
+The top `middle, d=32, 30 epochs` configuration scored 0.577–0.640 across
+seeds. Freeze and impulse were its limiting families; level shifts were much
+easier. This screen is reproducible through
+`bench/cnn_representation_screen.py`; complete per-seed and per-family values
+are in `results/cnn_intermediate_screen.json`. The next required gate is the
+actual bounded-memory and alarm pipeline. A screen winner is not promoted from
+this table alone.
+
+### 17.5 The full alarm pipeline overturns the screen's own winner
+
+The label-free screen in §17.4 is a development filter, not a verdict. Running
+the same five seeds through the actual bounded-memory encoder → PCA/noise-
+whitening → calibrated alarm-policy pipeline (`bench/cnn_stability.py`,
+`epochs=30`, `d=32`, frozen v2 policy, SKAB and MetroPT-3) gives a different,
+dataset-dependent picture. `events_detected`, AUROC, and AP use the ground-truth
+fault windows for *evaluation only*, exactly as the rest of this repository's
+benchmarks do; no readout was chosen by looking at these numbers before fitting.
+
+| Dataset | Readout | Events detected (med, min–max) | AUROC (med, min–max) | AP (med, min–max) | False alarms/week (med, min–max) | Clean alarm-time share (med, min–max) |
+|---|---|---:|---:|---:|---:|---:|
+| SKAB | DSP baseline | 9 | 0.558 | 0.441 | 108.14 | 0.186 |
+| SKAB | Bottleneck (plain) | **23.0** (18.0–34.0) | **0.623** (0.480–0.675) | **0.511** (0.441–0.585) | **189.25** (54.07–351.46) | 0.480 (0.239–0.895) |
+| SKAB | Middle layer | 20.0 (18.0–29.0) | 0.570 (0.540–0.660) | 0.505 (0.448–0.538) | 243.32 (135.18–351.46) | 0.440 (0.225–0.627) |
+| SKAB | Multi-level | 20.0 (13.0–33.0) | 0.571 (0.553–0.687) | 0.504 (0.467–0.518) | 243.32 (135.18–378.49) | **0.310** (0.175–0.508) |
+| MetroPT-3 | DSP baseline | 1 | 0.986 | 0.537 | 0.16 | 0.001 |
+| MetroPT-3 | Bottleneck (plain) | 4.0 (3.0–4.0) | 0.989 (0.987–0.996) | 0.676 (0.485–0.959) | 0.69 (0.53–1.06) | 0.022 (0.019–0.023) |
+| MetroPT-3 | Middle layer | 3.0 (3.0–4.0) | 0.990 (0.987–0.992) | 0.617 (0.517–0.671) | **0.58** (0.53–0.74) | 0.019 (0.016–0.020) |
+| MetroPT-3 | Multi-level | **4.0** (4.0–4.0) | **0.992** (0.988–0.996) | **0.773** (0.541–0.956) | 0.58 (0.42–0.90) | 0.025 (0.016–0.025) |
+
+Three things contradict the screen's own ranking:
+
+1. **The middle-layer readout, the screen's top candidate, was not the best
+   readout on either dataset in the real pipeline.** On SKAB the plain
+   bottleneck detects more median events (23 vs. 20) with better median AUROC
+   and AP, at the cost of more false alarms. On MetroPT-3 the middle layer is
+   the *worst* of the three on events detected and AP; multi-level is best.
+2. **No readout dominates both datasets.** Plain wins SKAB's detection/AUROC
+   columns; multi-level wins MetroPT-3's detection/AUROC/AP columns and SKAB's
+   clean-time column. This is evidence against a single "better layer"
+   discovery and for asset- and modality-specific validation, consistent with
+   this document's existing stance on `d`, pooling, and other encoder choices
+   (§“Encoder capacity” findings referenced in `docs/research-encoder-capacity.md`).
+3. **Seed spread remains wide relative to the gaps between readouts** (e.g.
+   SKAB events detected ranges 13–34 across seeds within a single readout).
+   Five seeds is enough to see this instability; it is not enough to certify
+   a ranking. A deployment decision needs more seeds, more assets, and the
+   held-out-asset protocol in §19, not a five-seed, two-dataset table.
+
+The corrected reading of §17.2's literature is therefore narrower than "use
+the middle layer": internal representations are *worth measuring*, but which
+one helps is dataset-dependent and must be checked against the full pipeline,
+not assumed from a cheaper label-free proxy. The proxy caught a real, reproducible
+effect (epoch count hurting the screen's own metric) but did not transfer to
+operational ranking. `representation="multiscale"` is retained as a documented,
+tested option precisely because it was the full-pipeline MetroPT-3 winner, not
+because the screen favored it. It is not installed as the new default encoder
+configuration; the existing default (`representation="bottleneck"`) is
+unchanged, and switching it on any real asset needs the asset's own
+held-out validation.
+
+## 18. Where the combined design could matter
+
+| Area | Memory that is worth retaining | Potential benefit | Critical boundary |
+|---|---|---|---|
+| Rotating machinery | Vibration/temperature/load signatures plus waveform pointers | Diagnose recurring wear patterns without uploading all high-rate data | Validate on unseen assets and verified physical onsets |
+| Fleet vehicles and mining trucks | Per-vehicle operating baselines, fault codes, rare episodes | Offline retention and selective synchronization over weak links | Do not merge different vehicle, firmware, or duty-cycle states |
+| Robots | Joint current, torque, contact, pose, and recovery episodes | Retrieve a prior safe recovery for a similar state | Retrieval proposes; a verified safety controller decides |
+| AR/VR | Motion-to-photon timing, tracking confidence, thermal and dropped-frame states | Recognize recurring performance failures and tune quality conservatively | Never retain sensitive surroundings or biometrics without explicit policy |
+| 3D rendering farms | Scene complexity, shader/VRAM/thermal/PMU signatures, failure records | Route jobs by observed hardware state and retain rare crash evidence | Correlation is not proof that a tuning action caused improvement |
+| Digital twins and simulation | Compact boundary-condition states and divergent runs | Reuse comparable runs and preserve unusual trajectories | Store solver/version/mesh provenance; similar vectors can have different physics |
+| Remote grids and renewables | Weather/load/inverter state and outage episodes | Local detection with selective upload during poor connectivity | Regulatory audit and deterministic fail-safe behavior remain mandatory |
+| Personal devices | Battery, thermal, storage, and application workload state | Explain recurring slowdowns and reduce unnecessary telemetry | Local privacy, opt-in, and deletion guarantees |
+
+The most distinctive opportunity is not “an LLM remembers sensor data.” It is
+an **auditable, resource-bounded operational black box**: the device knows its
+current state, retains a few exceptional episodes, can point to exact evidence,
+and can explain what it does not know. A full LLM may summarize retrieved
+episodes or propose a diagnostic checklist. It should run outside the bounded
+admission and safety-control loop.
+
+## 19. Highest-priority research and error paths
+
+1. **Prove admission safety before faster ANN.** A fast search index only finds
+   poisoned memories faster. Replay slow faults, repairs, sensor replacement,
+   and unknown healthy modes against a frozen shadow baseline.
+2. **Measure layer usefulness without label leakage.** Use normal commissioning
+   data plus preregistered synthetic challenge families for development; then
+   freeze the layer/readout and test on untouched assets.
+3. **Report seed and asset variation.** Ten neural seeds on one testbed measure
+   optimizer variation, not fleet generalization. Both axes are needed.
+4. **Use causal evaluation.** Centered windows can improve a paper score by
+   looking into the future. A real-time claim must use only samples available
+   at the decision time and report end-to-end delay.
+5. **Separate novelty, degradation, and severity.** “Different from memory,”
+   “getting worse,” and “dangerous” are three questions. They need separate
+   evidence and policies.
+6. **Benchmark the complete storage lifecycle.** Measure exact/ANN recall,
+   p50/p99 latency, peak RAM, bytes written, energy, power-cut recovery, quota
+   exhaustion, and raw-pointer integrity on target hardware.
+7. **Prefer abstention to forced assimilation.** Unknown operating modes should
+   remain unknown until verified; repetition alone must not convert them into
+   healthy semantics.
+
 ## References
 
 1. Chhikara, P., Khant, D., Aryan, S., Singh, T., and Yadav, D. (2025). “Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory.” arXiv:2504.19413. [arXiv](https://arxiv.org/abs/2504.19413)
@@ -440,6 +800,12 @@ The selected run was repeated and reproduced every non-timing metric exactly on 
 9. Bang, J., Kim, H., Yoo, Y., Ha, J.-W., and Choi, J. (2021). “Rainbow Memory: Continual Learning With a Memory of Diverse Samples.” *CVPR 2021*, 8218–8227. [CVF](https://openaccess.thecvf.com/content/CVPR2021/html/Bang_Rainbow_Memory_Continual_Learning_With_a_Memory_of_Diverse_Samples_CVPR_2021_paper.html)
 10. Elenter, J., NaderiAlizadeh, N., Javidi, T., and Ribeiro, A. (2024). “Primal Dual Continual Learning: Balancing Stability and Plasticity through Adaptive Memory Allocation.” arXiv:2310.00154v2. [arXiv](https://arxiv.org/abs/2310.00154)
 11. Aghasanli, A., Li, Y., and Angelov, P. (2025). “Prototype-Based Continual Learning with Label-free Replay Buffer and Cluster Preservation Loss.” arXiv:2504.07240. [arXiv](https://arxiv.org/abs/2504.07240)
+12. Yang, L., Lu, L., Liu, C., et al. (2025). “Interactive exploration of CNN interpretability via coalitional game theory.” *Scientific Reports*, 15, 9261. [doi](https://doi.org/10.1038/s41598-025-94052-8)
+13. Han, C. S., and Lee, K. M. (2025). “Leveraging Intermediate Representations of Time Series Foundation Models for Anomaly Detection.” arXiv:2509.12650. [arXiv](https://arxiv.org/abs/2509.12650)
+14. Park, J., and Kang, S. (2026). “PaAno: Patch-Based Representation Learning for Time-Series Anomaly Detection.” arXiv:2602.01359v2. [arXiv](https://arxiv.org/abs/2602.01359v2)
+15. Yoon, S., Kim, J., Ha, J., and Ko, Y. M. (2026). “Patch-based Memory Gate Model in Time Series Foundation Model.” arXiv:2509.18751v4. [arXiv](https://arxiv.org/abs/2509.18751v4)
+16. dos Santos Oliveira, A., da Silva, F. S. T., Ferreira, D. L., et al. (2026). “Looking at anomaly detection in EdgeAI through the up-to-date lens of academic and market perspectives.” *Cluster Computing*, 29, 251. [doi](https://doi.org/10.1007/s10586-026-05954-9)
+17. Kim, M., Bhaumik, K. K., Ali, A. A., and Woo, S. S. (2024). “MIXAD: Memory-Induced Explainable Time Series Anomaly Detection.” arXiv:2410.22735. [arXiv](https://arxiv.org/abs/2410.22735)
 
 ## Figure captions
 
