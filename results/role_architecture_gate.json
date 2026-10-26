@@ -1,0 +1,76 @@
+{
+  "protocol": {
+    "dataset": "uEngram synthetic stream",
+    "fit_windows": 1200,
+    "calibration_windows": 1200,
+    "test_windows": 3000,
+    "alpha": 0.01,
+    "persistence": 3,
+    "labels_used_for_selection": false,
+    "note": "bounded development gate; not an independent field validation"
+  },
+  "architecture": {
+    "encoder": "MultiScaleEncoder",
+    "total_dimension": 16,
+    "level_dimension": 6,
+    "dynamic_dimension": 10,
+    "policies": {
+      "any": {
+        "window_auroc": 0.9632676614476412,
+        "window_average_precision": 0.7092548796392207,
+        "event_recall": 0.15789473684210525,
+        "events_detected": 3,
+        "events_total": 19,
+        "persistent_alarm_starts": 10,
+        "normal_alarm_starts_per_1000_windows": 2.3592854735422986,
+        "alarm_window_share": 0.088
+      },
+      "at_least_2": {
+        "window_auroc": 0.9632676614476412,
+        "window_average_precision": 0.7092548796392207,
+        "event_recall": 0.10526315789473684,
+        "events_detected": 2,
+        "events_total": 19,
+        "persistent_alarm_starts": 2,
+        "normal_alarm_starts_per_1000_windows": 0.0,
+        "alarm_window_share": 0.013666666666666667
+      },
+      "dynamic_health": {
+        "window_auroc": 0.9632676614476412,
+        "window_average_precision": 0.7092548796392207,
+        "event_recall": 0.10526315789473684,
+        "events_detected": 2,
+        "events_total": 19,
+        "persistent_alarm_starts": 2,
+        "normal_alarm_starts_per_1000_windows": 0.0,
+        "alarm_window_share": 0.011666666666666667
+      },
+      "all": {
+        "window_auroc": 0.9632676614476412,
+        "window_average_precision": 0.7092548796392207,
+        "event_recall": 0.05263157894736842,
+        "events_detected": 1,
+        "events_total": 19,
+        "persistent_alarm_starts": 1,
+        "normal_alarm_starts_per_1000_windows": 0.0,
+        "alarm_window_share": 0.0016666666666666668
+      }
+    },
+    "memory_routes": {
+      "unconfirmed_normal": "QUARANTINE",
+      "operator_confirmed_normal": "SEMANTIC",
+      "alarm_or_branch_exceedance": "EPISODIC",
+      "bad_data": "QUARANTINE"
+    }
+  },
+  "baseline_dsp_d16": {
+    "window_auroc": 0.9706314918650611,
+    "window_average_precision": 0.7066791826492573,
+    "event_recall": 0.10526315789473684,
+    "events_detected": 2,
+    "events_total": 19,
+    "persistent_alarm_starts": 3,
+    "normal_alarm_starts_per_1000_windows": 0.3370407819346141,
+    "alarm_window_share": 0.025666666666666667
+  }
+}

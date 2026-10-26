@@ -16,6 +16,12 @@ from .sensor_memory_types import (
     SensorRecall,
     SensorWindow,
 )
+from .role_architecture import (
+    EmpiricalCalibrator,
+    RoleBasedArchitecture,
+    RoleScores,
+    persistent_starts,
+)
 
 __all__ = [
     "PatternRecall",
@@ -31,4 +37,8 @@ __all__ = [
     "extract_multi_teacher_features",
     "extract_teacher_features",
     "SensorWindow",
+    "EmpiricalCalibrator",
+    "RoleBasedArchitecture",
+    "RoleScores",
+    "persistent_starts",
 ]

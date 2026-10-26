@@ -1465,6 +1465,67 @@ together. The full rows and resource measurements are in
 `results/skab_teacher_time_gate.json` and
 `results/skab_sensor_fusion_gate.json`.
 
+## 20.12 Validating a role-separated sensor architecture
+
+The experiments do not support one universal encoder. They support a
+role-separated design with four blocks:
+
+- **Mode:** operating context such as idle, startup, load, or transition. It
+  provides context and is not itself an alarm vote.
+- **Level:** absolute channel levels, robust spread, and short trends.
+- **Dynamic:** deterministic multiscale changes, including vibration and
+  transient behaviour.
+- **Health:** distance from a frozen healthy commissioning reference.
+
+The implementation calibrates the level, dynamic, and health branches
+independently on healthy data. It combines their empirical tail probabilities
+only after calibration. This avoids treating incompatible vector dimensions as
+if they had the same meaning. Mode remains a context branch.
+
+The memory rule is deliberately conservative. Bad data and unconfirmed normal
+data go to quarantine. Alarmed data is retained as episodic evidence, not
+allowed to redefine semantic normal memory. Only operator-confirmed normal
+data may enter semantic memory.
+
+The synthetic development gate used separate fit, healthy calibration, and
+test streams:
+
+| Policy | Strict event recall | Normal alarm starts per 1,000 windows |
+|---|---:|---:|
+| DSP `d=16` baseline | 2/19 | 0.34 |
+| Role `any` | 3/19 | 2.36 |
+| Role `at_least_2` | 2/19 | 0.00 |
+| Role `dynamic_health` | 2/19 | 0.00 |
+| Role `all` | 1/19 | 0.00 |
+
+This is a trade-off screen, not a proof of improvement. The permissive
+`any` policy caught one more event but raised false alarms. The stricter
+policies reduced normal alarm starts without improving event recall.
+
+The same-split SKAB role screen used all eight channels:
+
+| Policy | Strict event recall | Healthy false alarms/hour |
+|---|---:|---:|
+| Role `any` | 7/34 | 5.55 |
+| Role `at_least_2` | 10/34 | 6.19 |
+| Role `dynamic_health` | 8/34 | 1.59 |
+| Role `all` | 7/34 | 1.27 |
+
+This result is better than the latest all-channel CNN screen on strict
+detection, whose three representations all scored 0/34. It is not yet a
+deployment result: the role screen is a separate calibrated gate on the same
+SKAB split, SKAB contains one water-loop testbed, and no fresh asset-held-out
+cohort has tested the architecture. The strict result should therefore be
+read as evidence that separating physical roles is promising, not as proof
+of general industrial superiority.
+
+The implementation and exact artifacts are
+[`src/uengram/role_architecture.py`](../../src/uengram/role_architecture.py),
+[`bench/role_architecture_gate.py`](../../bench/role_architecture_gate.py),
+[`bench/role_skab_gate.py`](../../bench/role_skab_gate.py),
+[`results/role_architecture_gate.json`](../../results/role_architecture_gate.json),
+and [`results/role_skab_gate.json`](../../results/role_skab_gate.json).
+
 ## References
 
 1. Chhikara, P., Khant, D., Aryan, S., Singh, T., and Yadav, D. (2025). “Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory.” arXiv:2504.19413. [arXiv](https://arxiv.org/abs/2504.19413)

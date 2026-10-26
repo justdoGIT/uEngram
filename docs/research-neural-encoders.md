@@ -680,3 +680,63 @@ Primary sources: [SKAB](https://github.com/waico/SKAB) at pinned commit
 artifacts [`results/skab_teacher_time_gate.json`](../results/skab_teacher_time_gate.json)
 and [`results/skab_sensor_fusion_gate.json`](../results/skab_sensor_fusion_gate.json),
 and [TimeSeriesBench](https://arxiv.org/abs/2402.10802).
+
+### 7.10 Role-separated architecture gate
+
+The documented model comparisons support a role-based architecture rather
+than a universal encoder. The new bounded implementation keeps four roles
+separate:
+
+1. `mode`: operating context; diagnostic only, never an alarm vote.
+2. `level`: robust absolute channel levels.
+3. `dynamic`: deterministic multiscale temporal changes.
+4. `health`: distance from a frozen commissioning reference.
+
+Each alarmable branch is calibrated independently on a separate healthy
+period. Fusion then operates on comparable empirical tail probabilities rather
+than concatenating incompatible vectors. The memory route is conservative:
+bad data and unconfirmed normal data are quarantined, alarmed data becomes
+episodic evidence, and only operator-confirmed normal data may enter semantic
+normal memory.
+
+The synthetic screen used 1,200 fit windows, 1,200 healthy calibration windows,
+and 3,000 test windows. It was a bounded development gate, not a new
+independent validation cohort:
+
+| Policy | Event recall | Normal alarm starts / 1,000 windows |
+|---|---:|---:|
+| DSP `d=16` baseline | 2/19 (10.5%) | 0.34 |
+| Role `any` | 3/19 (15.8%) | 2.36 |
+| Role `at_least_2` | 2/19 (10.5%) | 0.00 |
+| Role `dynamic_health` | 2/19 (10.5%) | 0.00 |
+| Role `all` | 1/19 (5.3%) | 0.00 |
+
+The synthetic result is a trade-off, not a general improvement: the `any`
+policy catches one additional event but raises false alarms, while stricter
+policies eliminate normal alarm starts but do not improve recall.
+
+The same split screen on all eight SKAB channels gives a more useful result:
+
+| Policy | Strict event recall | Healthy false alarms/hour |
+|---|---:|---:|
+| Role `any` | 7/34 (20.6%) | 5.55 |
+| Role `at_least_2` | 10/34 (29.4%) | 6.19 |
+| Role `dynamic_health` | 8/34 (23.5%) | 1.59 |
+| Role `all` | 7/34 (20.6%) | 1.27 |
+
+The role screen is not the frozen SKAB uEngram protocol and must not replace
+it. It uses the same fit/calibration/test split but a separate calibrated
+branch gate. Relative to the latest all-channel CNN screen, it demonstrates
+that explicit level/dynamic/health separation can obtain non-zero strict
+detection with lower false alarms for the `dynamic_health` and `all` policies.
+This is a promising mechanism result, not an independent claim: SKAB is one
+water-loop testbed, and the role policy has not yet passed a fresh asset-held
+out evaluation.
+
+The implementation is in
+[`src/uengram/role_architecture.py`](../src/uengram/role_architecture.py),
+with gates in
+[`bench/role_architecture_gate.py`](../bench/role_architecture_gate.py) and
+[`bench/role_skab_gate.py`](../bench/role_skab_gate.py). Results are stored in
+[`results/role_architecture_gate.json`](../results/role_architecture_gate.json)
+and [`results/role_skab_gate.json`](../results/role_skab_gate.json).
