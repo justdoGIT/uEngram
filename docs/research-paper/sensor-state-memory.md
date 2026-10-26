@@ -1090,6 +1090,37 @@ combination should be considered novel to this repository only after
 independent reproduction, a held-out-asset study, and comparison with TSB-AD
 [21], CMAPSS, SKAB, and other licensed datasets under a fixed protocol.
 
+### 20.6 What the first new public holdout shows
+
+The first external holdout used six series from TSB-AD-U: web-service
+telemetry, facility telemetry, an environment signal, a satellite-sensor
+signal, a synthetic series, and an industrial facility series. A healthy
+prefix was split before scoring, each series was normalized using only that
+prefix, and the student used 64-sample windows. The large teacher and the
+small student were never allowed to choose a policy from the evaluation labels.
+
+| Model | Pooled AUROC | Pooled AP | Equal-series AUROC | Equal-series AP |
+|---|---:|---:|---:|---:|
+| Ordinary compact CNN | 0.9111 | 0.8397 | **0.6476** | **0.4290** |
+| Teacher, edge completion | 0.9091 | **0.8397** | 0.6336 | **0.4397** |
+| Teacher, resampling plus statistics | **0.9157** | 0.8351 | 0.6316 | 0.4249 |
+
+The two aggregation methods disagree. Pooled metrics weight long series more
+heavily; equal-series metrics give each series one vote. This is a simple
+mathematical reminder that an average can answer different questions depending
+on its weights. The result supports cross-domain evaluation but does not prove
+industrial generalization: two selected series had only two and four positive
+windows, and TSB-AD combines data with different physical meanings and source
+licenses.
+
+The holdout therefore strengthens the paper's main conclusion. A foundation
+teacher can be competitive, but its value depends on context compatibility,
+operating domain, anomaly prevalence, and the metric used. The safest
+architecture keeps a local statistical fallback, reports both pooled and
+equal-series results, and prevents a model from promoting an unfamiliar
+pattern into the normal baseline solely because the teacher produced a
+confident vector.
+
 ## References
 
 1. Chhikara, P., Khant, D., Aryan, S., Singh, T., and Yadav, D. (2025). “Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory.” arXiv:2504.19413. [arXiv](https://arxiv.org/abs/2504.19413)
@@ -1125,3 +1156,8 @@ Detection.” [project page](https://thedatumorg.github.io/TSB-AD/)
 **Figure 1.** Text RAG and the implemented Lite Sensor-State adapter side by side. The adapter retrieves bounded uEngram state summaries and keyword-indexed event records, with optional pointers to raw time-series evidence. Vector/ANN storage and a production embedded sensor DB are not implemented.
 
 **Figure 2.** Histogram of 30 EngineAD pooled held-out segment AUROC values: ten training seeds for each latent width. Each bin counts training seeds. The five held-out trucks and segment-level labels limit what this distribution can establish. Values are extracted from the local result artifact `~/.local/state/uengram/enginead/cnn_seed_stability.json`; the artifact is not committed to the repository.
+
+**Figure 3.** Pooled and equal-series metrics for the six-series TSB-AD-U
+holdout. The separation between the two aggregation methods shows why a long
+series must not dominate a cross-domain claim. The source artifact is
+`results/moment_tsb_ad_holdout.json`.

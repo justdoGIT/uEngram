@@ -328,3 +328,29 @@ refinement stage rather than assuming a frozen vector is complete. The TSB-AD
 benchmark is a suitable source for broader preregistered comparisons, while
 its warning that simple statistical methods can win some series argues
 against replacing uEngram's statistical safeguards with a neural teacher.
+
+### 7.2 New TSB-AD-U public holdout
+
+The first new public holdout used six exact TSB-AD-U series from six
+application/domain labels. Healthy-prefix normalization, a 50% healthy
+training split, 64-sample windows, stride 32, `d=16`, five epochs, and
+teacher weight 0.25 were fixed before evaluation.
+
+| Model | Pooled AUROC | Pooled AP | Macro-series AUROC | Macro-series AP |
+|---|---:|---:|---:|---:|
+| Ordinary CNN | 0.9111 | 0.8397 | **0.6476** | **0.4290** |
+| MOMENT + edge repeat | 0.9091 | **0.8397** | 0.6336 | **0.4397** |
+| MOMENT + linear + mean/std | **0.9157** | 0.8351 | 0.6316 | 0.4249 |
+
+The pooled and macro rankings disagree. Exathlon contains many more
+evaluation windows and dominates the pooled score; the macro score gives each
+series equal weight. This is evidence that one aggregate number is unsafe for
+heterogeneous anomaly benchmarks. Two selected series had only 2 and 4
+positive windows, so their individual estimates are high variance.
+
+The result is a genuine new public holdout for this repository, not a new
+industrial validation cohort. The exact archive hash, members, splits, and
+teacher revision are recorded in
+`results/moment_tsb_ad_holdout.json`. The correct conclusion is that
+MOMENT transfer remained competitive in aggregate but did not produce a
+consistent cross-domain gain over the local CNN.
