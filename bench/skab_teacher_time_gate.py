@@ -41,19 +41,14 @@ def _sustained(flags: np.ndarray, persistence: int = PERSISTENCE) -> np.ndarray:
         return starts
     for i in range(len(flags) - persistence + 1):
         starts[i] = bool(np.all(flags[i : i + persistence]))
+        if i > 0 and flags[i - 1]:
+            starts[i] = False
     return starts
 
 
 def _episodes(flags: np.ndarray, times: np.ndarray) -> list[np.datetime64]:
-    starts = _sustained(flags)
-    positions = np.flatnonzero(starts)
-    if len(positions) == 0:
-        return []
-    keep = [positions[0]]
-    for pos in positions[1:]:
-        if pos > keep[-1] + PERSISTENCE - 1:
-            keep.append(pos)
-    return [times[i] for i in keep]
+    """Return one timestamp for each complete persistent alarm episode."""
+    return [times[i] for i in np.flatnonzero(_sustained(flags))]
 
 
 def _prepare(root: Path, sensor_indices: list[int]):
@@ -153,12 +148,14 @@ def _event_metrics(student: CNNEncoder, train: np.ndarray, calibration: np.ndarr
         first = record["starts"][valid_positions[0]] if len(valid_positions) else None
         lead = ((record["onset"] - first) / np.timedelta64(1, "s")) if first is not None else None
         detected = bool(len(valid_positions) and np.any(
-            (record["starts"][valid_positions] <= record["offset"])
-            & (record["ends"][valid_positions] >= record["onset"])
+            (record["starts"][valid_positions] >= record["onset"])
+            & (record["starts"][valid_positions] <= record["offset"])
         ))
+        warned = bool(len(valid_positions))
         event_rows.append({
             "experiment": record["name"],
             "detected": detected,
+            "warned_before_offset": warned,
             "first_alarm": None if first is None else str(first),
             "lead_seconds": None if lead is None else float(lead),
             "alarm_episodes": len(_episodes(flags, record["starts"])),
@@ -171,8 +168,8 @@ def _event_metrics(student: CNNEncoder, train: np.ndarray, calibration: np.ndarr
         "window_average_precision": float(average_precision(scores, labels)),
         "event_recall": float(np.mean([row["detected"] for row in event_rows])),
         "events_detected": int(sum(row["detected"] for row in event_rows)),
-        "events_total": len(event_rows),
-        "mean_warning_seconds": None if not leads else float(np.mean(leads)),
+        "event_warning_recall": float(np.mean([row["warned_before_offset"] for row in event_rows])),
+        "events_warned_before_offset": int(sum(row["warned_before_offset"] for row in event_rows)),
         "median_warning_seconds": None if not leads else float(np.median(leads)),
         "calibration_false_alarm_episodes": len(cal_episodes),
         "calibration_hours": float(cal_hours),

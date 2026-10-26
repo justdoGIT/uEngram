@@ -22,260 +22,294 @@
     "window_size": 10
   },
   "resources": {
-    "process_peak_rss_mb": 1105.92578125
+    "process_peak_rss_mb": 1106.01953125
   },
   "results": {
     "baseline_cnn": {
-      "calibration_false_alarm_episodes": 78,
+      "calibration_false_alarm_episodes": 10,
       "calibration_hours": 1.8277777777777777,
       "edge_model_bytes": 46144,
-      "encode_test_ms_per_window": 0.0155301625453274,
+      "encode_test_ms_per_window": 0.025048378016999866,
       "event_recall": 0.0,
+      "event_warning_recall": 0.0,
       "events": [
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/0.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/1.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/2.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/3.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/4.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/5.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/6.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/7.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/8.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/9.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/10.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/11.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/12.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/13.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/14.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/15.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/0.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/1.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/2.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/3.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/1.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/2.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/3.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/4.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/5.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/6.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/7.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/8.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/9.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/10.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/11.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/12.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/13.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/14.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         }
       ],
       "events_detected": 0,
-      "events_total": 34,
-      "false_alarms_per_hour": 42.67477203647417,
-      "fit_seconds": 0.1819335040054284,
-      "mean_warning_seconds": null,
+      "events_warned_before_offset": 0,
+      "false_alarms_per_hour": 5.471124620060791,
+      "fit_seconds": 0.33193261100677773,
       "median_warning_seconds": null,
       "threshold_train_p99": 4.951588464578109,
       "training_teacher_head_bytes": 0,
@@ -283,256 +317,290 @@
       "window_average_precision": 0.34118500623714215
     },
     "chronos_student": {
-      "calibration_false_alarm_episodes": 88,
+      "calibration_false_alarm_episodes": 16,
       "calibration_hours": 1.8277777777777777,
       "edge_model_bytes": 46144,
-      "encode_test_ms_per_window": 0.01175729204278263,
+      "encode_test_ms_per_window": 0.027978700431589735,
       "event_recall": 0.0,
+      "event_warning_recall": 0.0,
       "events": [
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/0.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/1.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/2.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/3.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/4.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/5.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/6.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/7.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/8.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/9.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/10.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/11.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/12.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/13.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/14.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/15.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/0.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/1.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/2.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/3.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/1.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/2.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/3.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/4.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/5.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/6.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/7.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/8.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/9.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/10.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/11.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/12.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/13.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/14.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         }
       ],
       "events_detected": 0,
-      "events_total": 34,
-      "false_alarms_per_hour": 48.14589665653496,
-      "fit_seconds": 2.4955364530032966,
-      "mean_warning_seconds": null,
+      "events_warned_before_offset": 0,
+      "false_alarms_per_hour": 8.753799392097264,
+      "fit_seconds": 5.966204205004033,
       "median_warning_seconds": null,
       "threshold_train_p99": 4.325656871911222,
       "training_teacher_head_bytes": 2176,
@@ -540,256 +608,290 @@
       "window_average_precision": 0.34122080052790427
     },
     "moment_student": {
-      "calibration_false_alarm_episodes": 84,
+      "calibration_false_alarm_episodes": 14,
       "calibration_hours": 1.8277777777777777,
       "edge_model_bytes": 46144,
-      "encode_test_ms_per_window": 0.01180487882298623,
+      "encode_test_ms_per_window": 0.015936013435820306,
       "event_recall": 0.0,
+      "event_warning_recall": 0.0,
       "events": [
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/0.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/1.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/2.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/3.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/4.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/5.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/6.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/7.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/8.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/9.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/10.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/11.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/12.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/13.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/14.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/15.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/0.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/1.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/2.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/3.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/1.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/2.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/3.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/4.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/5.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/6.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/7.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/8.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/9.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/10.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/11.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/12.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/13.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/14.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         }
       ],
       "events_detected": 0,
-      "events_total": 34,
-      "false_alarms_per_hour": 45.95744680851064,
-      "fit_seconds": 6.19571263101534,
-      "mean_warning_seconds": null,
+      "events_warned_before_offset": 0,
+      "false_alarms_per_hour": 7.659574468085107,
+      "fit_seconds": 20.134882976999506,
       "median_warning_seconds": null,
       "threshold_train_p99": 4.05480169385624,
       "training_teacher_head_bytes": 34952,
@@ -797,256 +899,290 @@
       "window_average_precision": 0.3347079230472215
     },
     "two_teacher_student": {
-      "calibration_false_alarm_episodes": 85,
+      "calibration_false_alarm_episodes": 12,
       "calibration_hours": 1.8277777777777777,
       "edge_model_bytes": 46144,
-      "encode_test_ms_per_window": 0.011803882051980416,
+      "encode_test_ms_per_window": 0.020616278879310432,
       "event_recall": 0.0,
+      "event_warning_recall": 0.0,
       "events": [
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/0.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/1.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/2.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/3.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/4.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/5.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/6.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/7.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/8.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/9.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/10.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/11.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/12.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/13.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/14.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve1/15.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/0.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/1.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/2.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "valve2/3.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/1.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/2.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/3.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/4.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/5.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/6.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/7.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/8.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/9.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/10.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/11.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/12.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/13.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         },
         {
           "alarm_episodes": 0,
           "detected": false,
           "experiment": "other/14.csv",
           "first_alarm": null,
-          "lead_seconds": null
+          "lead_seconds": null,
+          "warned_before_offset": false
         }
       ],
       "events_detected": 0,
-      "events_total": 34,
-      "false_alarms_per_hour": 46.504559270516715,
-      "fit_seconds": 8.53272837100667,
-      "mean_warning_seconds": null,
+      "events_warned_before_offset": 0,
+      "false_alarms_per_hour": 6.565349544072949,
+      "fit_seconds": 13.744527930975892,
       "median_warning_seconds": null,
       "threshold_train_p99": 4.498450751514275,
       "training_teacher_head_bytes": 37128,
@@ -1065,21 +1201,21 @@
     "chronos": {
       "feature_dim": 32,
       "license": "Apache-2.0",
-      "load_seconds": 0.6500668959924951,
+      "load_seconds": 0.7194837380084209,
       "model_id": "amazon/chronos-2",
       "parameter_bytes": 477910656,
       "parameter_count": 119477664,
-      "probe_ms_per_window": 11.780918124713935,
+      "probe_ms_per_window": 15.68436137313256,
       "revision": "29ec3766d36d6f73f0696f85560a422f50e8498c"
     },
     "moment": {
       "feature_dim": 514,
       "license": "MIT",
-      "load_seconds": 4.176856821024558,
+      "load_seconds": 4.564176649990259,
       "model_id": "AutonLab/MOMENT-1-small",
       "parameter_bytes": 141349632,
       "parameter_count": 35337408,
-      "probe_ms_per_window": 21.969253499264596,
+      "probe_ms_per_window": 30.81647212820826,
       "revision": "411e288267f82cce86296dbe4d6c8bc533cc162f"
     }
   }

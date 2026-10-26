@@ -1420,40 +1420,50 @@ bounded teacher run used only the first accelerometer channel because an
 eight-channel attempt exceeded the 30-minute CPU limit and was stopped before
 producing a result.
 
-| Model | Window AUROC | Window AP | Event recall | False alarms/hour |
+| Model | Window AUROC | Window AP | Strict event recall | False alarms/hour |
 |---|---:|---:|---:|---:|
-| Compact CNN | 0.4709 | 0.3412 | 0/34 | 42.67 |
-| MOMENT student | 0.4657 | 0.3347 | 0/34 | 45.96 |
-| Chronos student | 0.4632 | 0.3412 | 0/34 | 48.15 |
-| Two-teacher student | 0.4700 | 0.3480 | 0/34 | 46.50 |
+| Compact CNN | 0.4709 | 0.3412 | 0/34 | 5.47 |
+| MOMENT student | 0.4657 | 0.3347 | 0/34 | 7.66 |
+| Chronos student | 0.4632 | 0.3412 | 0/34 | 8.75 |
+| Two-teacher student | 0.4700 | 0.3480 | 0/34 | 6.57 |
 
-This is a negative result, but it is useful. None of the models separated the
-fault windows from normal windows on this single channel. The teachers did not
-repair the problem; they produced more healthy-stream alarm episodes than the
-compact CNN. This does not prove that the teachers or SKAB are universally
-poor. It shows that a channel, a short calibration stream, and a fixed
-99th-percentile threshold are not enough for a reliable operational alarm.
+None of the one-channel models produced a strict alarm during a labelled
+fault interval. The corrected values are lower than the first report because
+long continuous alarm runs were previously counted as several overlapping
+persistent episodes. The teachers did not repair the single-channel failure.
 
-The result supports the warning from recent industrial benchmark research:
-ordinary point or window scores can look acceptable while event recall,
-latency, and operator workload remain poor. A real deployment gate must report
-both ranking metrics and time-based alarm metrics. In simple terms, asking
-“did the model rank abnormal rows highly?” is different from asking “did it
-warn the operator early without crying wolf?”
+### 20.11 All-channel CNN fusion: lower false alarms, but no strict detection
 
-Three error paths are now explicit. First, zero event recall on one channel
-must not be presented as a universal teacher failure. Second, a high
-false-alarm rate on a short calibration stream is evidence of instability, not
-an exact long-term field rate. Third, reducing eight channels to one for
-runtime reasons must be recorded rather than silently treated as model
-selection.
+The compact CNN was then run with all eight SKAB channels and no large
+teacher. This kept the experiment within the CPU budget and tested whether
+sensor fusion and intermediate CNN representations helped.
 
-The next experiment should use all eight SKAB channels with a cheaper teacher
-schedule, then repeat the protocol on an asset-disjoint fleet such as
-N-CMAPSS. Threshold selection should use one healthy period and its false
-alarm estimate should be measured on a different healthy period.
-The full event rows and resource measurements are in
-`results/skab_teacher_time_gate.json`.
+| Representation | Window AUROC | Window AP | Strict event recall | Alarms before event end | Median warning seconds | False alarms/hour |
+|---|---:|---:|---:|---:|---:|---:|
+| Bottleneck | 0.5068 | 0.3542 | 0/34 | 34/34 | 600 | 6.57 |
+| Middle layer | 0.5268 | **0.3905** | 0/34 | 34/34 | 600 | 13.68 |
+| Multiscale | **0.5270** | 0.3880 | 0/34 | 34/34 | 600 | **2.74** |
+
+“Alarms before event end” is not the same as event recall. These alarms began
+before the labelled onset and did not persist inside the labelled interval,
+so strict event recall remains zero. The multiscale representation reduced
+healthy false alarms from 6.57 to 2.74 per hour relative to the all-channel
+bottleneck, a 58.3% reduction, while slightly improving AUROC. It is the best
+bounded choice in this ablation, but it is not deployment-ready because it
+still fails strict fault-interval detection.
+
+The episode-counting error and the distinction between warning and detection
+are important safety controls. A model must not receive credit for repeated
+overlapping windows from one alarm run, and a warning before an event must not
+be presented as a confirmed fault detection when it also occurs during
+healthy calibration.
+
+The result supports recent industrial benchmark research: ranking abnormal
+windows is different from operating a useful alarm system. A real deployment
+gate must report event recall, warning time, false alarms, and resource cost
+together. The full rows and resource measurements are in
+`results/skab_teacher_time_gate.json` and
+`results/skab_sensor_fusion_gate.json`.
 
 ## References
 

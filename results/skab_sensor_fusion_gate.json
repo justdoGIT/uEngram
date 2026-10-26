@@ -1,0 +1,915 @@
+{
+  "dataset": {
+    "fault_experiments": 34,
+    "fault_windows": 3722,
+    "healthy_calibration_windows": 658,
+    "healthy_fit_windows": 282
+  },
+  "limitations": [
+    "All files come from one water-loop testbed, not a fleet of assets.",
+    "Faults are injected experiments rather than naturally occurring failures.",
+    "This ablation changes the sensor input and is not a same-input teacher comparison.",
+    "The healthy calibration exposure is short, so hourly rates are noisy."
+  ],
+  "protocol": {
+    "channels": [
+      "Accelerometer1RMS",
+      "Accelerometer2RMS",
+      "Current",
+      "Pressure",
+      "Temperature",
+      "Thermocouple",
+      "Voltage",
+      "Volume Flow RateRMS"
+    ],
+    "false_alarm_unit": "persistent episodes per healthy calibration hour",
+    "persistence_windows": 3,
+    "representations": [
+      "bottleneck",
+      "middle",
+      "multiscale"
+    ],
+    "source": "docs/validation-skab-protocol.md",
+    "threshold": "99th percentile of fit healthy latent score",
+    "warning_unit": "seconds before labelled anomaly onset"
+  },
+  "resources": {
+    "process_peak_rss_mb": 1100.47265625
+  },
+  "results": {
+    "bottleneck": {
+      "calibration_false_alarm_episodes": 12,
+      "calibration_hours": 1.8277777777777777,
+      "edge_model_bytes": 50624,
+      "encode_test_ms_per_window": 0.017998034117554705,
+      "event_recall": 0.0,
+      "event_warning_recall": 1.0,
+      "events": [
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/0.csv",
+          "first_alarm": "1970-03-02T02:45:59",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/1.csv",
+          "first_alarm": "1970-04-01T03:05:58",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/2.csv",
+          "first_alarm": "1970-05-01T03:25:58",
+          "lead_seconds": 666.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/3.csv",
+          "first_alarm": "1970-05-31T03:45:57",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/4.csv",
+          "first_alarm": "1970-06-30T04:05:58",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/5.csv",
+          "first_alarm": "1970-07-30T04:25:57",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/6.csv",
+          "first_alarm": "1970-08-29T04:45:56",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/7.csv",
+          "first_alarm": "1970-09-28T05:05:55",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/8.csv",
+          "first_alarm": "1970-10-28T05:25:55",
+          "lead_seconds": 599.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/9.csv",
+          "first_alarm": "1970-11-27T05:45:53",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/10.csv",
+          "first_alarm": "1970-12-27T06:05:53",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/11.csv",
+          "first_alarm": "1971-01-26T06:25:52",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/12.csv",
+          "first_alarm": "1971-02-25T06:45:52",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/13.csv",
+          "first_alarm": "1971-03-27T07:05:52",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/14.csv",
+          "first_alarm": "1971-04-26T07:25:51",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/15.csv",
+          "first_alarm": "1971-05-26T07:45:50",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve2/0.csv",
+          "first_alarm": "1971-06-25T08:05:50",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve2/1.csv",
+          "first_alarm": "1971-07-25T08:25:49",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve2/2.csv",
+          "first_alarm": "1971-08-24T08:45:49",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve2/3.csv",
+          "first_alarm": "1971-09-23T09:05:48",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/1.csv",
+          "first_alarm": "1971-10-23T09:23:26",
+          "lead_seconds": 584.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/2.csv",
+          "first_alarm": "1971-11-22T09:36:26",
+          "lead_seconds": 354.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/3.csv",
+          "first_alarm": "1971-12-22T09:54:09",
+          "lead_seconds": 599.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/4.csv",
+          "first_alarm": "1972-01-21T10:14:07",
+          "lead_seconds": 840.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/5.csv",
+          "first_alarm": "1972-02-20T10:35:03",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/6.csv",
+          "first_alarm": "1972-03-21T10:55:11",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/7.csv",
+          "first_alarm": "1972-04-20T11:15:11",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/8.csv",
+          "first_alarm": "1972-05-20T11:34:12",
+          "lead_seconds": 601.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/9.csv",
+          "first_alarm": "1972-06-19T11:54:14",
+          "lead_seconds": 599.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/10.csv",
+          "first_alarm": "1972-07-19T12:14:13",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/11.csv",
+          "first_alarm": "1972-08-18T12:37:31",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/12.csv",
+          "first_alarm": "1972-09-17T12:58:25",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/13.csv",
+          "first_alarm": "1972-10-17T13:18:28",
+          "lead_seconds": 597.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/14.csv",
+          "first_alarm": "1972-11-16T13:37:22",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        }
+      ],
+      "events_detected": 0,
+      "events_warned_before_offset": 34,
+      "false_alarms_per_hour": 6.565349544072949,
+      "fit_seconds": 2.3337327469780575,
+      "median_warning_seconds": 600.0,
+      "representation": "bottleneck",
+      "threshold_train_p99": 4.260534438247925,
+      "window_auroc": 0.5068238928790377,
+      "window_average_precision": 0.35416207391256904
+    },
+    "middle": {
+      "calibration_false_alarm_episodes": 25,
+      "calibration_hours": 1.8277777777777777,
+      "edge_model_bytes": 50624,
+      "encode_test_ms_per_window": 0.01526002767210559,
+      "event_recall": 0.0,
+      "event_warning_recall": 1.0,
+      "events": [
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/0.csv",
+          "first_alarm": "1970-03-02T02:45:59",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/1.csv",
+          "first_alarm": "1970-04-01T03:05:58",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/2.csv",
+          "first_alarm": "1970-05-01T03:25:58",
+          "lead_seconds": 666.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/3.csv",
+          "first_alarm": "1970-05-31T03:45:57",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/4.csv",
+          "first_alarm": "1970-06-30T04:05:58",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/5.csv",
+          "first_alarm": "1970-07-30T04:25:57",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/6.csv",
+          "first_alarm": "1970-08-29T04:45:56",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/7.csv",
+          "first_alarm": "1970-09-28T05:05:55",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/8.csv",
+          "first_alarm": "1970-10-28T05:25:55",
+          "lead_seconds": 599.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/9.csv",
+          "first_alarm": "1970-11-27T05:45:53",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/10.csv",
+          "first_alarm": "1970-12-27T06:05:53",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/11.csv",
+          "first_alarm": "1971-01-26T06:25:52",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/12.csv",
+          "first_alarm": "1971-02-25T06:45:52",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/13.csv",
+          "first_alarm": "1971-03-27T07:05:52",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/14.csv",
+          "first_alarm": "1971-04-26T07:25:51",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/15.csv",
+          "first_alarm": "1971-05-26T07:45:50",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve2/0.csv",
+          "first_alarm": "1971-06-25T08:05:50",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve2/1.csv",
+          "first_alarm": "1971-07-25T08:25:49",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve2/2.csv",
+          "first_alarm": "1971-08-24T08:45:49",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve2/3.csv",
+          "first_alarm": "1971-09-23T09:05:48",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/1.csv",
+          "first_alarm": "1971-10-23T09:23:26",
+          "lead_seconds": 584.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/2.csv",
+          "first_alarm": "1971-11-22T09:36:26",
+          "lead_seconds": 354.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/3.csv",
+          "first_alarm": "1971-12-22T09:54:09",
+          "lead_seconds": 599.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/4.csv",
+          "first_alarm": "1972-01-21T10:14:07",
+          "lead_seconds": 840.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/5.csv",
+          "first_alarm": "1972-02-20T10:35:03",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/6.csv",
+          "first_alarm": "1972-03-21T10:55:11",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/7.csv",
+          "first_alarm": "1972-04-20T11:15:11",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/8.csv",
+          "first_alarm": "1972-05-20T11:34:12",
+          "lead_seconds": 601.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/9.csv",
+          "first_alarm": "1972-06-19T11:54:14",
+          "lead_seconds": 599.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/10.csv",
+          "first_alarm": "1972-07-19T12:14:13",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/11.csv",
+          "first_alarm": "1972-08-18T12:37:31",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/12.csv",
+          "first_alarm": "1972-09-17T12:58:25",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/13.csv",
+          "first_alarm": "1972-10-17T13:18:28",
+          "lead_seconds": 597.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/14.csv",
+          "first_alarm": "1972-11-16T13:37:22",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        }
+      ],
+      "events_detected": 0,
+      "events_warned_before_offset": 34,
+      "false_alarms_per_hour": 13.677811550151976,
+      "fit_seconds": 0.2017263930174522,
+      "median_warning_seconds": 600.0,
+      "representation": "middle",
+      "threshold_train_p99": 3.647757138333262,
+      "window_auroc": 0.5268306738800429,
+      "window_average_precision": 0.3904931642677698
+    },
+    "multiscale": {
+      "calibration_false_alarm_episodes": 5,
+      "calibration_hours": 1.8277777777777777,
+      "edge_model_bytes": 50624,
+      "encode_test_ms_per_window": 0.026393746642217195,
+      "event_recall": 0.0,
+      "event_warning_recall": 1.0,
+      "events": [
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/0.csv",
+          "first_alarm": "1970-03-02T02:45:59",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/1.csv",
+          "first_alarm": "1970-04-01T03:05:58",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/2.csv",
+          "first_alarm": "1970-05-01T03:25:58",
+          "lead_seconds": 666.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/3.csv",
+          "first_alarm": "1970-05-31T03:45:57",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/4.csv",
+          "first_alarm": "1970-06-30T04:05:58",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/5.csv",
+          "first_alarm": "1970-07-30T04:25:57",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/6.csv",
+          "first_alarm": "1970-08-29T04:45:56",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/7.csv",
+          "first_alarm": "1970-09-28T05:05:55",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/8.csv",
+          "first_alarm": "1970-10-28T05:25:55",
+          "lead_seconds": 599.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/9.csv",
+          "first_alarm": "1970-11-27T05:45:53",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/10.csv",
+          "first_alarm": "1970-12-27T06:05:53",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/11.csv",
+          "first_alarm": "1971-01-26T06:25:52",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/12.csv",
+          "first_alarm": "1971-02-25T06:45:52",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/13.csv",
+          "first_alarm": "1971-03-27T07:05:52",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/14.csv",
+          "first_alarm": "1971-04-26T07:25:51",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve1/15.csv",
+          "first_alarm": "1971-05-26T07:45:50",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve2/0.csv",
+          "first_alarm": "1971-06-25T08:05:50",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve2/1.csv",
+          "first_alarm": "1971-07-25T08:25:49",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve2/2.csv",
+          "first_alarm": "1971-08-24T08:45:49",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "valve2/3.csv",
+          "first_alarm": "1971-09-23T09:05:48",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/1.csv",
+          "first_alarm": "1971-10-23T09:23:26",
+          "lead_seconds": 584.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/2.csv",
+          "first_alarm": "1971-11-22T09:36:26",
+          "lead_seconds": 354.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/3.csv",
+          "first_alarm": "1971-12-22T09:54:09",
+          "lead_seconds": 599.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/4.csv",
+          "first_alarm": "1972-01-21T10:14:07",
+          "lead_seconds": 840.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/5.csv",
+          "first_alarm": "1972-02-20T10:35:03",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/6.csv",
+          "first_alarm": "1972-03-21T10:55:11",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/7.csv",
+          "first_alarm": "1972-04-20T11:15:11",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/8.csv",
+          "first_alarm": "1972-05-20T11:34:12",
+          "lead_seconds": 601.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/9.csv",
+          "first_alarm": "1972-06-19T11:54:14",
+          "lead_seconds": 599.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/10.csv",
+          "first_alarm": "1972-07-19T12:14:13",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/11.csv",
+          "first_alarm": "1972-08-18T12:37:31",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/12.csv",
+          "first_alarm": "1972-09-17T12:58:25",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/13.csv",
+          "first_alarm": "1972-10-17T13:18:28",
+          "lead_seconds": 597.0,
+          "warned_before_offset": true
+        },
+        {
+          "alarm_episodes": 1,
+          "detected": false,
+          "experiment": "other/14.csv",
+          "first_alarm": "1972-11-16T13:37:22",
+          "lead_seconds": 600.0,
+          "warned_before_offset": true
+        }
+      ],
+      "events_detected": 0,
+      "events_warned_before_offset": 34,
+      "false_alarms_per_hour": 2.7355623100303954,
+      "fit_seconds": 0.21677890300634317,
+      "median_warning_seconds": 600.0,
+      "representation": "multiscale",
+      "threshold_train_p99": 4.737288108502513,
+      "window_auroc": 0.5269912434589893,
+      "window_average_precision": 0.38801919945464713
+    }
+  },
+  "role": "SKAB all-channel CNN sensor-fusion ablation"
+}

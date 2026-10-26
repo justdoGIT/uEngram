@@ -607,54 +607,76 @@ fault experiments with labelled start and end times. This permits warning
 time in seconds and false alarms per healthy hour. It is still not a fleet
 study: all files come from one physical testbed.
 
-The gate used 282 healthy windows for fitting, 658 healthy windows for
-calibration, 3-window persistence, and 3,722 labelled fault windows. To keep
-the large-teacher run within a bounded CPU budget, the first SKAB channel
-(`Accelerometer1RMS`) was used. The attempted eight-channel run exceeded the
-30-minute bound and was stopped before producing a result. The one-channel
-restriction is therefore an explicit resource limitation, not a hidden
-accuracy optimization.
+The gate used 282 healthy windows for fitting, 658 windows for calibration,
+3-window persistence, and 3,722 labelled fault windows. The large-teacher
+eight-channel attempt exceeded the 30-minute CPU bound and was stopped before
+producing a result. The corrected teacher comparison therefore remains the
+one-channel run below; the compact CNN sensor-fusion ablation is reported in
+the next subsection.
 
-| Model | Window AUROC | Window AP | Event recall | Healthy false alarms/hour |
+| Model | Window AUROC | Window AP | Strict event recall | Healthy false alarms/hour |
 |---|---:|---:|---:|---:|
-| Ordinary CNN | 0.4709 | 0.3412 | 0/34 | 42.67 |
-| MOMENT student | 0.4657 | 0.3347 | 0/34 | 45.96 |
-| Chronos student | 0.4632 | 0.3412 | 0/34 | 48.15 |
-| Two-teacher student | 0.4700 | 0.3480 | 0/34 | 46.50 |
+| Ordinary CNN | 0.4709 | 0.3412 | 0/34 | 5.47 |
+| MOMENT student | 0.4657 | 0.3347 | 0/34 | 7.66 |
+| Chronos student | 0.4632 | 0.3412 | 0/34 | 8.75 |
+| Two-teacher student | 0.4700 | 0.3480 | 0/34 | 6.57 |
 
-This is a negative but useful result. On this single sensor, none of the
-models separated the labelled faults from normal windows, and none produced
-a usable alarm policy. The foundation teachers did not repair the failure;
-they slightly increased false alarms relative to the compact CNN. The result
-does not prove that SKAB is impossible or that the teachers are generally
-bad. It proves that this input channel, this small healthy calibration set,
-and this frozen 99th-percentile latent threshold are insufficient.
+On the single `Accelerometer1RMS` channel, none of the models produced a
+strict alarm during a labelled fault interval. The foundation teachers did
+not repair this failure. The corrected run also shows why the original
+uncorrected false-alarm values must not be reused: long continuous alarm runs
+were previously counted as many episodes.
+
+The result does not prove that SKAB is impossible or that the teachers are
+generally bad. It proves that this input channel, this short healthy
+calibration set, and this fixed 99th-percentile latent threshold are
+insufficient.
+
+### 7.9 All-channel CNN sensor fusion and corrected event semantics
+
+The compact student can use all eight SKAB channels without loading either
+large teacher. Under the same split, threshold, persistence, and timing
+rules, the three CNN representations produced:
+
+| Representation | Window AUROC | Window AP | Strict event recall | Alarms before event end | Median warning seconds | Healthy false alarms/hour |
+|---|---:|---:|---:|---:|---:|---:|
+| Bottleneck | 0.5068 | 0.3542 | 0/34 | 34/34 | 600 | 6.57 |
+| Middle | 0.5268 | **0.3905** | 0/34 | 34/34 | 600 | 13.68 |
+| Multiscale | **0.5270** | 0.3880 | 0/34 | 34/34 | 600 | **2.74** |
+
+“Alarms before event end” is deliberately not called event recall. These
+alarms began before the labelled onset and did not persist inside the labelled
+fault interval, so strict event recall remains zero. They are warnings in a
+mechanical sense, but they are not reliable early warnings because the same
+policy also alarms on healthy calibration data.
+
+The multiscale representation is the best bounded choice in this ablation:
+it reduces healthy false alarms from 6.57 to 2.74 per hour relative to the
+all-channel bottleneck, a 58.3% reduction, while slightly improving AUROC.
+It still fails the operational detection requirement because strict event
+recall is zero. This is a useful direction, not a deployment-ready result.
+
+During this gate, the first sensor-fusion result incorrectly reported 34/34
+event detections. The cause was a persistence accounting bug: a long run of
+true flags produced several overlapping three-window starts. The corrected
+implementation emits one episode at the beginning of each persistent run and
+reports strict event recall separately from alarms before event end. This
+error path is now covered by regression tests.
 
 The failure also illustrates a point from *TimeSeriesBench*: a model must be
 tested under the learning and evaluation setting it will face in production,
 not only under a convenient window-ranking score. That work recommends
 event-oriented metrics, latency limits, and explicit zero-shot or unified
 model settings because ordinary point metrics can reward impractical alarms.
-This gate follows the same principle by reporting event recall and
-false-alarms-per-hour in addition to AUROC and average precision.
 
-The main error paths to avoid are now clearer:
-
-1. Do not call a ranking score a deployment result.
-2. Do not estimate hourly false alarms from CMAPSS cycles.
-3. Do not interpret zero detection on one sensor as a universal teacher
-   failure.
-4. Do not hide a resource-driven channel reduction.
-5. Do not use the same short healthy stream both to tune a threshold and to
-   claim an independent false-alarm estimate.
-
-The next gate should use all eight channels with a cheaper teacher schedule,
-or use a genuinely multi-asset dataset such as the N-CMAPSS aircraft fleet.
-It needs repeated healthy exposure, asset-disjoint splits, and a threshold
-selected on one healthy period and evaluated on another.
+The next gate needs repeated healthy exposure, asset-disjoint splits, and a
+threshold selected on one healthy period and evaluated on another. A
+genuinely multi-asset dataset such as N-CMAPSS remains the appropriate next
+fleet-scale study.
 
 Primary sources: [SKAB](https://github.com/waico/SKAB) at pinned commit
 `b2c0d46c2971dcbfe71e26087b6d231998bb91c2`, the local frozen protocol
 [`docs/validation-skab-protocol.md`](validation-skab-protocol.md), the local
-artifact [`results/skab_teacher_time_gate.json`](../results/skab_teacher_time_gate.json),
+artifacts [`results/skab_teacher_time_gate.json`](../results/skab_teacher_time_gate.json)
+and [`results/skab_sensor_fusion_gate.json`](../results/skab_sensor_fusion_gate.json),
 and [TimeSeriesBench](https://arxiv.org/abs/2402.10802).

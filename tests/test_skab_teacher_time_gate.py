@@ -11,10 +11,10 @@ def test_sustained_requires_complete_persistence_window():
 
 
 def test_episode_count_does_not_repeat_one_alarm_run():
-    flags = np.array([True, True, True, True, False, True, True, True])
+    flags = np.array([True] * 10 + [False, True, True, True])
     times = np.datetime64("1970-01-01T00:00:00", "s") + np.arange(len(flags), dtype="timedelta64[s]")
     assert _episodes(flags, times) == [
-        np.datetime64(0, "s"), np.datetime64(5, "s")
+        np.datetime64(0, "s"), np.datetime64(11, "s")
     ]
 
 
