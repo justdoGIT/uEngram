@@ -4,6 +4,7 @@ from .teacher_transfer import (
     TeacherFeatures,
     TeacherSpec,
     WindowSchema,
+    extract_multi_teacher_features,
     extract_teacher_features,
 )
 from .moment_teacher import MOMENTTeacherAdapter
@@ -25,6 +26,7 @@ __all__ = [
     "TeacherFeatures",
     "TeacherSpec",
     "WindowSchema",
+    "extract_multi_teacher_features",
     "extract_teacher_features",
     "SensorWindow",
 ]

@@ -1,10 +1,17 @@
 """1D-CNN autoencoder encoder (torch imported lazily)."""
 from __future__ import annotations
 
+from typing import Sequence
+
 import numpy as np
 
 from .encoders import fit_projection
-from .teacher_transfer import TeacherFeatures, TeacherSpec, extract_teacher_features
+from .teacher_transfer import (
+    TeacherFeatures,
+    TeacherSpec,
+    extract_multi_teacher_features,
+    extract_teacher_features,
+)
 
 
 class CNNEncoder:
@@ -113,6 +120,23 @@ class CNNEncoder:
         )
         return self._fit(train_windows, noise_lag, groups, features, teacher_weight)
 
+    def fit_distilled_multi(
+        self,
+        train_windows,
+        teachers: Sequence[tuple[object, TeacherSpec]],
+        noise_lag: int,
+        groups: np.ndarray | None,
+        teacher_weight: float = 0.25,
+        teacher_batch: int = 1024,
+    ) -> "CNNEncoder":
+        """Distill equal-weight teacher feature blocks into one student head."""
+        if teacher_weight < 0 or not np.isfinite(teacher_weight):
+            raise ValueError("teacher_weight must be finite and non-negative")
+        features = extract_multi_teacher_features(
+            teachers, np.asarray(train_windows, dtype=np.float32), batch=teacher_batch
+        )
+        return self._fit(train_windows, noise_lag, groups, features, teacher_weight)
+
     def _fit(
         self,
         train_windows,
@@ -186,9 +210,20 @@ class CNNEncoder:
                         )
                     if target is not None:
                         student = self.teacher_head(self._readout(xb))
-                        loss = loss + teacher_weight * torch.mean(
-                            (student - target[indices]) ** 2
-                        )
+                        if teacher_features is not None and teacher_features.block_slices:
+                            teacher_loss = torch.stack(
+                                [
+                                    torch.mean(
+                                        (student[:, start:end] - target[indices, start:end]) ** 2
+                                    )
+                                    for start, end in teacher_features.block_slices
+                                ]
+                            ).mean()
+                        else:
+                            teacher_loss = torch.mean(
+                                (student - target[indices]) ** 2
+                            )
+                        loss = loss + teacher_weight * teacher_loss
                     opt.zero_grad()
                     loss.backward()
                     opt.step()

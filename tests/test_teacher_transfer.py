@@ -6,6 +6,7 @@ from uengram.encoder_cnn import CNNEncoder
 from uengram.teacher_transfer import (
     TeacherSpec,
     WindowSchema,
+    extract_multi_teacher_features,
     extract_teacher_features,
 )
 
@@ -57,6 +58,73 @@ def test_teacher_features_preserve_order_and_validate_contract():
         )
         extract_teacher_features(_teacher, windows, wrong)
 
+
+
+def test_multi_teacher_features_concatenate_equal_blocks_and_reject_schema():
+    windows = synth.generate(24, seed=34).windows
+    first = _spec(windows)
+    second = TeacherSpec(
+        model_name="second-teacher",
+        model_version="0.2",
+        layer="summary",
+        feature_dim=1,
+        input_schema=first.input_schema,
+    )
+
+    def second_teacher(batch):
+        return batch.mean(axis=(1, 2), keepdims=True).reshape(-1, 1)
+
+    result = extract_multi_teacher_features(
+        [(_teacher, first), (second_teacher, second)], windows, batch=5
+    )
+    assert result.values.shape == (24, 3)
+    assert result.block_slices == ((0, 2), (2, 3))
+    assert result.block_names == ("test-teacher:middle", "second-teacher:summary")
+    np.testing.assert_allclose(result.values[:, :2], _teacher(windows))
+    np.testing.assert_allclose(result.values[:, 2:], second_teacher(windows))
+
+    wrong_schema = TeacherSpec(
+        model_name="wrong",
+        model_version="0.1",
+        layer="summary",
+        feature_dim=1,
+        input_schema=WindowSchema(
+            first.input_schema.channel_names,
+            first.input_schema.sample_rate_hz,
+            first.input_schema.window_size + 1,
+        ),
+    )
+    with pytest.raises(ValueError, match="same input schema"):
+        extract_multi_teacher_features(
+            [(_teacher, first), (second_teacher, wrong_schema)], windows
+        )
+
+
+def test_multi_teacher_distillation_records_combined_contract():
+    pytest.importorskip("torch")
+    windows = synth.generate(64, seed=35).windows
+    first = _spec(windows)
+    second = TeacherSpec(
+        model_name="second-teacher",
+        model_version="0.2",
+        layer="summary",
+        feature_dim=1,
+        input_schema=first.input_schema,
+    )
+
+    def second_teacher(batch):
+        return batch.mean(axis=(1, 2), keepdims=True).reshape(-1, 1)
+
+    model = CNNEncoder(seed=5, d=8, epochs=1, batch=16).fit_distilled_multi(
+        windows,
+        [(_teacher, first), (second_teacher, second)],
+        noise_lag=1,
+        groups=None,
+    )
+    assert model.teacher_spec.model_name == "multi-teacher"
+    assert model.teacher_spec.feature_dim == 3
+    assert model.teacher_head.out_features == 3
+    assert np.isfinite(model.encode(windows)).all()
 
 def test_distilled_cnn_is_deterministic_and_records_teacher_identity():
     pytest.importorskip("torch")

@@ -32,9 +32,9 @@ The strongest positive results are on controlled, generated data. They show that
 | CMAPSS FD001, DSP | uEngram health AUROC 0.999 and health AP 0.995; the separate RUL RMSE was 42.1 for uEngram versus 25.8 for naive storage | Health ranking and remaining-life error are different tasks. Better on one metric does not mean better overall. |
 | MetroPT-3, frozen CNN uEngram | Mean 3.6/4 reported events detected; about 10.2 false-alarm episodes per week; mean lead relative to report start was negative | Not a practical low-alarm early-warning result. The evaluation’s event times are report associations, not adjudicated physical failure onsets. |
 | MetroPT-2, frozen v2 policy | No published events detected in either the two-event April subset or the three-event January subset | Low false alarms alone is not success when all target events are missed. |
-| SKAB, frozen DSP detector | 5/34 events detected; AUROC 0.550; mean detection 40.4 s after onset; 20/20 valve-throttling tests missed | Partial, confirmation-only transfer on one water-loop testbed; no demonstrated early warning or fleet generalization. |
+| SKAB, frozen DSP detector | 5/34 events detected; AUROC 0.546; AP 0.419; mean detection 57.6 s after onset; 20/20 valve-throttling tests missed | Partial, confirmation-only transfer on one water-loop testbed; no demonstrated early warning or fleet generalization. |
 | EngineAD CNN study | Across 30 seed runs and five held-out trucks, pooled segment AUROC stayed near chance; d=16 median 0.556 | Exploratory segment-level study. The representation used fleet-wide fitted PCA; segment labels are not precise fault intervals. Not independent event-level validation. |
-| Full repository test suite | 313 passed, 1 skipped | Software tests passed in the current branch; this does not validate field performance or the proposed database design. |
+| Full repository test suite | 319 passed, 1 skipped | Software tests passed in the current branch; this does not validate field performance or the proposed database design. |
 
 The data above are not a single contest with one winner. Datasets, labels, metrics, and experiment stages differ. The detailed qualification is in Section 6.
 
@@ -145,6 +145,65 @@ When RAM or flash reaches a configured limit, the system must choose what to rem
 
 A large language model can turn retrieved records into a readable explanation, such as “the pump is operating hotter than its prior loaded baseline; similar episodes occurred after filter blockage.” It should not be the authoritative sensor scorer, sole memory writer, or safety controller. The system should provide the model with structured records and raw-evidence pointers, require it to cite retrieved records, and separately preserve the measured signals and confidence. A bounded edge write path should be deterministic; a cloud model or idle-time worker may suggest summaries for human review.
 
+### 4.5 A generic Sensor-State Memory architecture
+
+The proposed architecture has two paths. The **fast edge path** receives
+sensor windows, checks the schema and timestamp, creates a compact
+representation, searches the bounded memory, and applies deterministic
+retention rules. It keeps the raw slice or a protected pointer when an
+episode needs later inspection. The **slow learning path** runs during
+commissioning or offline maintenance. It can use one or more large teacher
+models to train a small student encoder, but the teachers do not need to run
+inside the deployed edge process.
+
+```mermaid
+flowchart LR
+    A[Sensor window] --> B[Schema and time checks]
+    B --> C[Small causal encoder]
+    C --> D[Temporal and vector retrieval]
+    D --> E{Known healthy state?}
+    E -->|yes| F[Update baseline summary]
+    E -->|no or severe| G[Keep episode and evidence pointer]
+    F --> H[Bounded memory and audit log]
+    G --> H
+    I[Large teacher models] --> J[Offline feature fusion]
+    J --> K[Train small student]
+    K --> C
+    H --> L[Structured context for optional LLM]
+    L --> M[Human-readable explanation]
+```
+
+The multi-teacher idea is similar to asking several specialists to describe
+the same machine window. Their feature descriptions can be joined during
+training, and a smaller student learns to imitate the useful parts. This is
+different from placing every large network inside the machine: that would
+increase memory, computation, power use, and software failure surface. It is
+also different from blindly copying weights. Two networks may have
+incompatible internal shapes even when both process time series.
+
+If teacher $m$ produces a feature vector $h_m(X)$ and the student produces
+$\hat h_m(X)$ for the same window $X$, a simple training objective is
+
+$$
+\mathcal{L}=\mathcal{L}_{\mathrm{reconstruction}}+
+\lambda\frac{1}{M}\sum_{m=1}^{M}
+\frac{1}{d_m}\left\|h_m(X)-\hat h_m(X)\right\|_2^2.
+$$
+
+The first term asks the student not to forget the sensor window. The second
+term asks it to preserve the teachers' descriptions. $M$ is the number of
+teachers and $d_m$ is the number of values in teacher $m$'s description.
+Dividing by $d_m$ stops a teacher with more output numbers from winning merely
+because it is wider. This is only a starting point: correlated teachers may
+repeat the same blind spot, and a teacher trained on a different sensor
+schema may teach an invalid relationship.
+
+The LLM belongs after retrieval, not in the safety-critical scoring loop. It
+may explain a structured result and cite evidence, while the edge rules keep
+the measured score, timestamp, uncertainty, baseline version, and raw-data
+pointer authoritative. This separation is the main architectural safeguard
+against a fluent explanation being mistaken for a verified diagnosis.
+
 ## 5. Repository evidence and experiments
 
 ### 5.1 Synthetic data: useful proof of mechanism, not proof of field performance
@@ -206,10 +265,28 @@ The current full Python test run was:
 
 ```text
 PYTHONPATH=src:. .venv/bin/pytest tests/
-313 passed, 1 skipped
+319 passed, 1 skipped
 ```
 
 This shows that the tested code contracts and regression checks passed in that run. It does **not** show the model detects industrial faults, prove statistical claims, validate power-failure durability, exercise the proposed five database primitives, or certify safety. A good software test suite and a good field-validation study answer different questions.
+
+### 5.9 Stronger cross-dataset gate
+
+The repository now records a stronger gate in `results/stronger_gate.json`.
+It keeps three kinds of evidence separate instead of mixing their scores:
+
+1. the new public TSB-AD-U holdout for MOMENT teacher transfer;
+2. the five-seed CMAPSS FD001 lifecycle and health/RUL results; and
+3. a fresh replay of the frozen SKAB event protocol.
+
+The fresh SKAB replay detected 5 of 34 events, with AUROC 0.5458 and AP
+0.4192. The detections were post-onset, and the short clean exposure makes a
+weekly false-alarm extrapolation unstable. CMAPSS continues to show the
+important split between a strong health-ranking result and a separate RUL
+error. The gate therefore confirms reproducibility and exposes missing
+coverage; it does not prove that MOMENT transfer improves CMAPSS or SKAB.
+Those two teacher-transfer experiments remain future work because the current
+public transfer holdout used one teacher and different window contracts.
 
 ## 6. Key findings, with appropriate weight
 

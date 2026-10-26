@@ -354,3 +354,54 @@ teacher revision are recorded in
 `results/moment_tsb_ad_holdout.json`. The correct conclusion is that
 MOMENT transfer remained competitive in aggregate but did not produce a
 consistent cross-domain gain over the local CNN.
+
+### 7.3 Multi-teacher transfer: the CNN idea, adapted safely
+
+The image-CNN technique remembered from transfer learning has two meanings.
+One is literal feature stacking: keep several large networks in the inference
+graph and concatenate their hidden outputs. The other is multi-teacher
+distillation: run frozen teachers offline, concatenate their declared
+representations, and train one small student to reproduce them. The second
+meaning is now implemented in `CNNEncoder.fit_distilled_multi` and
+`extract_multi_teacher_features`.
+
+The edge device receives only the student CNN and its compact latent. Large
+teacher weights are never loaded into the edge process. Each teacher must use
+the same causal window schema. Its feature block is standardized on the
+commissioning set, and the training loss averages the mean-squared error of
+the blocks so a wide teacher cannot automatically dominate a narrow one:
+
+$$
+\mathcal{L}=\mathcal{L}_{\mathrm{reconstruction}}+
+\lambda\frac{1}{M}\sum_{m=1}^{M}
+\frac{1}{d_m}\lVert h_m(X)-\hat h_m(X)\rVert_2^2.
+$$
+
+Here $M$ is the number of teachers, $d_m$ is teacher $m$'s feature width,
+$h_m$ is its frozen output, and $\hat h_m$ is the corresponding student
+block. In simple words, several specialists teach during training, but the
+small student does the work after deployment.
+
+This is not automatically better. Correlated teachers can repeat the same
+mistake, mismatched preprocessing can create a false training target, and
+feature concatenation can increase fitting cost. The contract tests now cover
+block order, schema mismatch rejection, equal block weighting, and the
+combined student head. A real multi-model accuracy claim still requires two
+independent, licensed teachers and an untouched asset-disjoint test set; the
+current public holdout used one MOMENT teacher.
+
+### 7.4 Stronger frozen gate
+
+`bench/stronger_gate.py` writes `results/stronger_gate.json`. It combines the
+new TSB-AD-U teacher-transfer holdout with the five-seed CMAPSS lifecycle/RUL
+results and a fresh replay of the frozen SKAB event protocol. This separation
+matters: CMAPSS and SKAB are not silently presented as MOMENT-transfer
+results.
+
+The fresh SKAB replay detected 5 of 34 events, with AUROC 0.5458 and AP
+0.4192. All five detections were post-onset under the frozen policy, and the
+observed clean exposure remains too short for a stable weekly false-alarm
+estimate. The CMAPSS report retains five-seed health AUROC, RUL RMSE, and
+end-of-life retention together. The gate therefore passes protocol coverage,
+not universal performance: MOMENT transfer remains an explicit CMAPSS/SKAB
+follow-up rather than an implied success.

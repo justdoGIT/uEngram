@@ -8,7 +8,8 @@
     "k_novelty": 3,
     "min_state_windows": 100,
     "new_state_alert": true,
-    "per_state": true
+    "per_state": true,
+    "shock_mult": 0.0
   },
   "details": {
     "alarm_episodes": 14,
@@ -242,11 +243,11 @@
         "windows": 41
       },
       {
-        "alarm_windows": 7,
+        "alarm_windows": 6,
         "detected": true,
         "event": 28,
-        "first_alarm": "1972-06-19T12:04:52",
-        "lead_hours": 0.010833333333333334,
+        "first_alarm": "1972-06-19T12:05:02",
+        "lead_hours": 0.01361111111111111,
         "windows": 41
       },
       {
@@ -302,16 +303,16 @@
   "method": "uengram",
   "metrics": {
     "alarm_time_share_clean": 0.013410218586562961,
-    "alerts_per_week": 351.4550087166421,
-    "ap": 0.42311790855103154,
-    "auroc": 0.550362315134903,
+    "alerts_per_week": 324.42000804613116,
+    "ap": 0.4192044063879338,
+    "auroc": 0.5458055694765479,
     "events_detected": 5.0,
     "false_alarm_per_week": 135.17500335255465,
     "health_ap": 0.45368352980624926,
     "health_auroc": 0.538536254525743,
-    "lead_hours": -0.06805555555555556,
+    "lead_hours": -0.06777777777777778,
     "notifications_per_week_all": 309.8978052321444,
-    "operator_events_per_week": 459.5950113986858
+    "operator_events_per_week": 432.56001072817486
   },
   "n_experiments": 34,
   "per_experiment": [
@@ -624,12 +625,12 @@
       "windows": 41
     },
     {
-      "alarm_windows": 7,
+      "alarm_windows": 6,
       "detected": true,
       "experiment": "other/9.csv",
-      "first_alarm": "1972-06-19T12:04:52",
-      "lead_hours": 0.010833333333333334,
-      "lead_seconds": 39.0,
+      "first_alarm": "1972-06-19T12:05:02",
+      "lead_hours": 0.01361111111111111,
+      "lead_seconds": 49.0,
       "offset": "1972-06-19T12:11:13",
       "onset": "1972-06-19T12:04:13",
       "windows": 41
@@ -692,7 +693,7 @@
   ],
   "protocol": "docs/validation-skab-protocol.md",
   "run_meta": {
-    "bytes_written": 491424,
+    "bytes_written": 491520,
     "commissioning_calibration_writes": 291,
     "encoder": "dsp",
     "events_retained": [
@@ -731,13 +732,13 @@
       32,
       33
     ],
-    "index_bytes": 12448,
+    "index_bytes": 31968,
     "input_hash": "099689a1ce3a289de69101671509aed2b44a2a1851041006d1d04495963b2ccf",
-    "items_end": 77,
-    "lat_p50_us": 157.1725,
-    "lat_p99_us": 454.99572999999987,
+    "items_end": 199,
+    "lat_p50_us": 158.959,
+    "lat_p99_us": 305.60612,
     "method": "uengram",
-    "pinned_raw_bytes": 31360,
+    "pinned_raw_bytes": 89600,
     "seed": 0,
     "step_calibration": {
       "estimator": "commissioning_slot_innovations",
@@ -764,9 +765,9 @@
     },
     "steps_in_test": 0,
     "stream": "skab",
-    "total_writes": 2168,
-    "write_reduction_pct": 49.57012358946803,
-    "writes": 1877
+    "total_writes": 2060,
+    "write_reduction_pct": 52.47178936055884,
+    "writes": 1769
   },
   "seed": 0,
   "stream": "skab"

@@ -7,7 +7,7 @@ schema, feature layer, and causal alignment before features can be distilled.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import Any, Protocol, Sequence
 
 import numpy as np
 
@@ -75,9 +75,10 @@ class TeacherSpec:
 @dataclass(frozen=True)
 class TeacherFeatures:
     """Validated feature matrix and the contract that produced it."""
-
     values: np.ndarray
     spec: TeacherSpec
+    block_slices: tuple[tuple[int, int], ...] = ()
+    block_names: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         self.spec.validate()
@@ -88,6 +89,20 @@ class TeacherFeatures:
             )
         if not np.isfinite(values).all():
             raise ValueError("teacher features must be finite")
+        if bool(self.block_slices) != bool(self.block_names):
+            raise ValueError("teacher block names and slices must be both empty or set")
+        if self.block_slices:
+            if len(self.block_slices) != len(self.block_names):
+                raise ValueError("teacher block names and slices must have equal length")
+            if self.block_slices[0][0] != 0 or self.block_slices[-1][1] != values.shape[1]:
+                raise ValueError("teacher blocks must cover the full feature width")
+            if any(
+                start < 0 or end <= start or start != previous
+                for (start, end), previous in zip(
+                    self.block_slices, (0, *[end for _, end in self.block_slices[:-1]])
+                )
+            ):
+                raise ValueError("teacher blocks must be contiguous and non-empty")
         object.__setattr__(self, "values", values)
 
 
@@ -128,3 +143,43 @@ def extract_teacher_features(
         chunks.append(chunk)
     matrix = np.concatenate(chunks, axis=0) if chunks else np.empty((0, spec.feature_dim))
     return TeacherFeatures(matrix, spec)
+
+
+def extract_multi_teacher_features(
+    teachers: Sequence[tuple[TeacherAdapter | Any, TeacherSpec]],
+    windows: np.ndarray,
+    batch: int = 1024,
+) -> TeacherFeatures:
+    """Concatenate equal-contract teacher features for multi-teacher training."""
+
+    if not teachers:
+        raise ValueError("at least one teacher is required")
+    first_spec = teachers[0][1]
+    matrices = []
+    slices = []
+    names = []
+    offset = 0
+    for teacher, spec in teachers:
+        if spec.input_schema != first_spec.input_schema:
+            raise ValueError("all teachers must use the same input schema")
+        features = extract_teacher_features(teacher, windows, spec, batch=batch)
+        matrices.append(features.values)
+        end = offset + spec.feature_dim
+        slices.append((offset, end))
+        names.append(f"{spec.model_name}:{spec.layer}")
+        offset = end
+    combined = TeacherSpec(
+        model_name="multi-teacher",
+        model_version="|".join(spec.model_version for _, spec in teachers),
+        layer="concat(" + ",".join(spec.layer for _, spec in teachers) + ")",
+        feature_dim=offset,
+        input_schema=first_spec.input_schema,
+        causal=all(spec.causal for _, spec in teachers),
+        alignment="right",
+    )
+    return TeacherFeatures(
+        np.concatenate(matrices, axis=1),
+        combined,
+        block_slices=tuple(slices),
+        block_names=tuple(names),
+    )
