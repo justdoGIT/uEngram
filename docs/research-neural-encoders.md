@@ -597,3 +597,64 @@ without ambiguity.
 
 Primary source: NASA CMAPSS FD001 dataset and protocol notes in
 [`docs/research-cmapss.md`](research-cmapss.md).
+
+### 7.8 Wall-clock SKAB gate: timing exposes a transfer failure
+
+To test the operational question that CMAPSS cannot answer, the next gate
+used the Skoltech Anomaly Benchmark (SKAB). SKAB records a real water-loop
+testbed at 1 Hz. It contains a healthy commissioning stream and 34 separate
+fault experiments with labelled start and end times. This permits warning
+time in seconds and false alarms per healthy hour. It is still not a fleet
+study: all files come from one physical testbed.
+
+The gate used 282 healthy windows for fitting, 658 healthy windows for
+calibration, 3-window persistence, and 3,722 labelled fault windows. To keep
+the large-teacher run within a bounded CPU budget, the first SKAB channel
+(`Accelerometer1RMS`) was used. The attempted eight-channel run exceeded the
+30-minute bound and was stopped before producing a result. The one-channel
+restriction is therefore an explicit resource limitation, not a hidden
+accuracy optimization.
+
+| Model | Window AUROC | Window AP | Event recall | Healthy false alarms/hour |
+|---|---:|---:|---:|---:|
+| Ordinary CNN | 0.4709 | 0.3412 | 0/34 | 42.67 |
+| MOMENT student | 0.4657 | 0.3347 | 0/34 | 45.96 |
+| Chronos student | 0.4632 | 0.3412 | 0/34 | 48.15 |
+| Two-teacher student | 0.4700 | 0.3480 | 0/34 | 46.50 |
+
+This is a negative but useful result. On this single sensor, none of the
+models separated the labelled faults from normal windows, and none produced
+a usable alarm policy. The foundation teachers did not repair the failure;
+they slightly increased false alarms relative to the compact CNN. The result
+does not prove that SKAB is impossible or that the teachers are generally
+bad. It proves that this input channel, this small healthy calibration set,
+and this frozen 99th-percentile latent threshold are insufficient.
+
+The failure also illustrates a point from *TimeSeriesBench*: a model must be
+tested under the learning and evaluation setting it will face in production,
+not only under a convenient window-ranking score. That work recommends
+event-oriented metrics, latency limits, and explicit zero-shot or unified
+model settings because ordinary point metrics can reward impractical alarms.
+This gate follows the same principle by reporting event recall and
+false-alarms-per-hour in addition to AUROC and average precision.
+
+The main error paths to avoid are now clearer:
+
+1. Do not call a ranking score a deployment result.
+2. Do not estimate hourly false alarms from CMAPSS cycles.
+3. Do not interpret zero detection on one sensor as a universal teacher
+   failure.
+4. Do not hide a resource-driven channel reduction.
+5. Do not use the same short healthy stream both to tune a threshold and to
+   claim an independent false-alarm estimate.
+
+The next gate should use all eight channels with a cheaper teacher schedule,
+or use a genuinely multi-asset dataset such as the N-CMAPSS aircraft fleet.
+It needs repeated healthy exposure, asset-disjoint splits, and a threshold
+selected on one healthy period and evaluated on another.
+
+Primary sources: [SKAB](https://github.com/waico/SKAB) at pinned commit
+`b2c0d46c2971dcbfe71e26087b6d231998bb91c2`, the local frozen protocol
+[`docs/validation-skab-protocol.md`](validation-skab-protocol.md), the local
+artifact [`results/skab_teacher_time_gate.json`](../results/skab_teacher_time_gate.json),
+and [TimeSeriesBench](https://arxiv.org/abs/2402.10802).

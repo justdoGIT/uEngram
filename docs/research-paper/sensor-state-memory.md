@@ -1406,6 +1406,55 @@ The decisive next study needs complete wall-clock run-to-failure data with
 healthy assets that do not all fail, so false alarms per operating hour can be
 measured honestly.
 
+### 20.10 Wall-clock SKAB gate: a deliberately negative transfer result
+
+CMAPSS measures engine cycles, not ordinary clock time. To test the timing
+question directly, the next gate used the Skoltech Anomaly Benchmark (SKAB).
+SKAB records a real water-circulation testbed once per second. It contains a
+healthy stream for calibration and 34 separate fault experiments with labelled
+start and end times. The experiment therefore measures warning time in
+seconds and false-alarm episodes per healthy hour.
+
+This is not a fleet result. All files come from one physical testbed. The
+bounded teacher run used only the first accelerometer channel because an
+eight-channel attempt exceeded the 30-minute CPU limit and was stopped before
+producing a result.
+
+| Model | Window AUROC | Window AP | Event recall | False alarms/hour |
+|---|---:|---:|---:|---:|
+| Compact CNN | 0.4709 | 0.3412 | 0/34 | 42.67 |
+| MOMENT student | 0.4657 | 0.3347 | 0/34 | 45.96 |
+| Chronos student | 0.4632 | 0.3412 | 0/34 | 48.15 |
+| Two-teacher student | 0.4700 | 0.3480 | 0/34 | 46.50 |
+
+This is a negative result, but it is useful. None of the models separated the
+fault windows from normal windows on this single channel. The teachers did not
+repair the problem; they produced more healthy-stream alarm episodes than the
+compact CNN. This does not prove that the teachers or SKAB are universally
+poor. It shows that a channel, a short calibration stream, and a fixed
+99th-percentile threshold are not enough for a reliable operational alarm.
+
+The result supports the warning from recent industrial benchmark research:
+ordinary point or window scores can look acceptable while event recall,
+latency, and operator workload remain poor. A real deployment gate must report
+both ranking metrics and time-based alarm metrics. In simple terms, asking
+“did the model rank abnormal rows highly?” is different from asking “did it
+warn the operator early without crying wolf?”
+
+Three error paths are now explicit. First, zero event recall on one channel
+must not be presented as a universal teacher failure. Second, a high
+false-alarm rate on a short calibration stream is evidence of instability, not
+an exact long-term field rate. Third, reducing eight channels to one for
+runtime reasons must be recorded rather than silently treated as model
+selection.
+
+The next experiment should use all eight SKAB channels with a cheaper teacher
+schedule, then repeat the protocol on an asset-disjoint fleet such as
+N-CMAPSS. Threshold selection should use one healthy period and its false
+alarm estimate should be measured on a different healthy period.
+The full event rows and resource measurements are in
+`results/skab_teacher_time_gate.json`.
+
 ## References
 
 1. Chhikara, P., Khant, D., Aryan, S., Singh, T., and Yadav, D. (2025). “Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory.” arXiv:2504.19413. [arXiv](https://arxiv.org/abs/2504.19413)
@@ -1447,6 +1496,9 @@ and [metadata manifest](https://github.com/VictorBauler/BearingDatasets/blob/mai
 25. NASA. “Turbofan Engine Degradation Simulation Data Set (CMAPSS FD001).”
 [Open Data](https://data.nasa.gov/dataset/cmapss-jet-engine-simulated-data) ·
 [dataset archive](https://phm-datasets.s3.amazonaws.com/NASA/6.+Turbofan+Engine+Degradation+Simulation+Data+Set.zip).
+26. Si, H., Li, J., Pei, C., et al. (2024). “TimeSeriesBench: An
+Industrial-Grade Benchmark for Time Series Anomaly Detection Models.”
+arXiv:2402.10802v3. [paper](https://arxiv.org/abs/2402.10802).
 
 ## Figure captions
 
