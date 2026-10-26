@@ -1,0 +1,311 @@
+{
+  "dataset": {
+    "license_note": "MFPT manifest says unspecified; distributed free for research. Verify before commercial use.",
+    "recordings": [
+      {
+        "fault_type": "normal",
+        "field_data": false,
+        "name": "baseline_1",
+        "source_file": "1 - Three Baseline Conditions/baseline_1.mat",
+        "windows": 48
+      },
+      {
+        "fault_type": "normal",
+        "field_data": false,
+        "name": "baseline_2",
+        "source_file": "1 - Three Baseline Conditions/baseline_2.mat",
+        "windows": 48
+      },
+      {
+        "fault_type": "normal",
+        "field_data": false,
+        "name": "baseline_3",
+        "source_file": "1 - Three Baseline Conditions/baseline_3.mat",
+        "windows": 48
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "OuterRaceFault_1",
+        "source_file": "2 - Three Outer Race Fault Conditions/OuterRaceFault_1.mat",
+        "windows": 48
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "OuterRaceFault_2",
+        "source_file": "2 - Three Outer Race Fault Conditions/OuterRaceFault_2.mat",
+        "windows": 48
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "OuterRaceFault_3",
+        "source_file": "2 - Three Outer Race Fault Conditions/OuterRaceFault_3.mat",
+        "windows": 48
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "OuterRaceFault_vload_1",
+        "source_file": "3 - Seven More Outer Race Fault Conditions/OuterRaceFault_vload_1.mat",
+        "windows": 45
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "OuterRaceFault_vload_2",
+        "source_file": "3 - Seven More Outer Race Fault Conditions/OuterRaceFault_vload_2.mat",
+        "windows": 45
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "OuterRaceFault_vload_3",
+        "source_file": "3 - Seven More Outer Race Fault Conditions/OuterRaceFault_vload_3.mat",
+        "windows": 45
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "OuterRaceFault_vload_4",
+        "source_file": "3 - Seven More Outer Race Fault Conditions/OuterRaceFault_vload_4.mat",
+        "windows": 45
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "OuterRaceFault_vload_5",
+        "source_file": "3 - Seven More Outer Race Fault Conditions/OuterRaceFault_vload_5.mat",
+        "windows": 45
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "OuterRaceFault_vload_6",
+        "source_file": "3 - Seven More Outer Race Fault Conditions/OuterRaceFault_vload_6.mat",
+        "windows": 45
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "OuterRaceFault_vload_7",
+        "source_file": "3 - Seven More Outer Race Fault Conditions/OuterRaceFault_vload_7.mat",
+        "windows": 45
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "InnerRaceFault_vload_1",
+        "source_file": "4 - Seven Inner Race Fault Conditions/InnerRaceFault_vload_1.mat",
+        "windows": 45
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "InnerRaceFault_vload_2",
+        "source_file": "4 - Seven Inner Race Fault Conditions/InnerRaceFault_vload_2.mat",
+        "windows": 45
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "InnerRaceFault_vload_3",
+        "source_file": "4 - Seven Inner Race Fault Conditions/InnerRaceFault_vload_3.mat",
+        "windows": 45
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "InnerRaceFault_vload_4",
+        "source_file": "4 - Seven Inner Race Fault Conditions/InnerRaceFault_vload_4.mat",
+        "windows": 45
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "InnerRaceFault_vload_5",
+        "source_file": "4 - Seven Inner Race Fault Conditions/InnerRaceFault_vload_5.mat",
+        "windows": 45
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "InnerRaceFault_vload_6",
+        "source_file": "4 - Seven Inner Race Fault Conditions/InnerRaceFault_vload_6.mat",
+        "windows": 45
+      },
+      {
+        "fault_type": "fault",
+        "field_data": false,
+        "name": "InnerRaceFault_vload_7",
+        "source_file": "4 - Seven Inner Race Fault Conditions/InnerRaceFault_vload_7.mat",
+        "windows": 45
+      },
+      {
+        "fault_type": "fault",
+        "field_data": true,
+        "name": "IntermediateSpeedBearing",
+        "source_file": "6 - Real World Examples/IntermediateSpeedBearing.mat",
+        "windows": 48
+      },
+      {
+        "fault_type": "fault",
+        "field_data": true,
+        "name": "OilPumpBearing",
+        "source_file": "6 - Real World Examples/OilPumpBearing.mat",
+        "windows": 48
+      },
+      {
+        "fault_type": "fault",
+        "field_data": true,
+        "name": "PlanetBearing",
+        "source_file": "6 - Real World Examples/PlanetBearing.mat",
+        "windows": 48
+      }
+    ]
+  },
+  "limitations": [
+    "MFPT has 23 recordings but only three real-world recordings; this is not fleet-scale evidence.",
+    "The holdout is recording- and domain-disjoint; physical bearing identity is not fully documented for every test-rig recording.",
+    "There are no independently adjudicated fault-onset timestamps, so warning time is not claimed.",
+    "Teacher runtime is offline cost; only the student CNN is intended for edge deployment."
+  ],
+  "protocol": {
+    "epochs": 5,
+    "normalization": "training-baseline mean and standard deviation only",
+    "sample_rate_hz": 2048.0,
+    "stride": 128,
+    "test_recordings": [
+      "baseline_3",
+      "OuterRaceFault_1",
+      "OuterRaceFault_2",
+      "OuterRaceFault_3",
+      "OuterRaceFault_vload_1",
+      "OuterRaceFault_vload_2",
+      "OuterRaceFault_vload_3",
+      "OuterRaceFault_vload_4",
+      "OuterRaceFault_vload_5",
+      "OuterRaceFault_vload_6",
+      "OuterRaceFault_vload_7",
+      "InnerRaceFault_vload_1",
+      "InnerRaceFault_vload_2",
+      "InnerRaceFault_vload_3",
+      "InnerRaceFault_vload_4",
+      "InnerRaceFault_vload_5",
+      "InnerRaceFault_vload_6",
+      "InnerRaceFault_vload_7",
+      "IntermediateSpeedBearing",
+      "OilPumpBearing",
+      "PlanetBearing"
+    ],
+    "threshold": "99th percentile of training-normal latent distance",
+    "train_recordings": [
+      "baseline_1",
+      "baseline_2"
+    ],
+    "warning_time": "not applicable: MFPT recordings are static fault experiments, not onset-labelled run-to-failure streams",
+    "window_size": 512,
+    "windows_per_recording_cap": 48
+  },
+  "resources": {
+    "process_peak_rss_mb": 1246.0546875
+  },
+  "results": {
+    "baseline_cnn": {
+      "edge_model_bytes": 46144,
+      "encode_test_ms_per_window": 0.07802052173896559,
+      "field_file_recall": 1.0,
+      "file_auroc": 0.85,
+      "file_average_precision": 0.9924874686716791,
+      "fit_seconds": 0.27968545199837536,
+      "normal_file_false_alarm_rate": 1.0,
+      "normal_files": 1,
+      "normal_files_flagged": 1,
+      "positive_file_recall": 1.0,
+      "test_rig_fault_file_recall": 1.0,
+      "test_windows": 966,
+      "threshold_train_p99": 2.774863611751985,
+      "training_teacher_head_bytes": 0,
+      "window_auroc": 0.7947984749455338,
+      "window_average_precision": 0.9885690543096883
+    },
+    "chronos_student": {
+      "edge_model_bytes": 46144,
+      "encode_test_ms_per_window": 0.0672873799092817,
+      "field_file_recall": 1.0,
+      "file_auroc": 0.8,
+      "file_average_precision": 0.9897096908939013,
+      "fit_seconds": 5.473424349998822,
+      "normal_file_false_alarm_rate": 1.0,
+      "normal_files": 1,
+      "normal_files_flagged": 1,
+      "positive_file_recall": 1.0,
+      "test_rig_fault_file_recall": 1.0,
+      "test_windows": 966,
+      "threshold_train_p99": 2.356562503540467,
+      "training_teacher_head_bytes": 2176,
+      "window_auroc": 0.8143382352941176,
+      "window_average_precision": 0.9898038876698791
+    },
+    "moment_student": {
+      "edge_model_bytes": 46144,
+      "encode_test_ms_per_window": 0.06633272257032871,
+      "field_file_recall": 1.0,
+      "file_auroc": 0.8,
+      "file_average_precision": 0.9897096908939013,
+      "fit_seconds": 2.2928018390084617,
+      "normal_file_false_alarm_rate": 1.0,
+      "normal_files": 1,
+      "normal_files_flagged": 1,
+      "positive_file_recall": 1.0,
+      "test_rig_fault_file_recall": 1.0,
+      "test_windows": 966,
+      "threshold_train_p99": 2.46300445508878,
+      "training_teacher_head_bytes": 34952,
+      "window_auroc": 0.7925744371822803,
+      "window_average_precision": 0.9884524646544993
+    },
+    "two_teacher_student": {
+      "edge_model_bytes": 46144,
+      "encode_test_ms_per_window": 0.06055927331179504,
+      "field_file_recall": 1.0,
+      "file_auroc": 0.9,
+      "file_average_precision": 0.9951190476190476,
+      "fit_seconds": 7.223535111988895,
+      "normal_file_false_alarm_rate": 1.0,
+      "normal_files": 1,
+      "normal_files_flagged": 1,
+      "positive_file_recall": 1.0,
+      "test_rig_fault_file_recall": 1.0,
+      "test_windows": 966,
+      "threshold_train_p99": 2.1417917635132997,
+      "training_teacher_head_bytes": 37128,
+      "window_auroc": 0.8252768700072621,
+      "window_average_precision": 0.9904818620538788
+    }
+  },
+  "role": "untouched MFPT asset/domain holdout; recording-level research gate",
+  "teachers": {
+    "chronos": {
+      "feature_dim": 32,
+      "license": "Apache-2.0",
+      "load_seconds": 55.43914869200671,
+      "model_id": "amazon/chronos-2",
+      "parameter_bytes": 477910656,
+      "parameter_count": 119477664,
+      "probe_ms_per_window": 58.90114475005248,
+      "revision": "29ec3766d36d6f73f0696f85560a422f50e8498c"
+    },
+    "moment": {
+      "feature_dim": 514,
+      "license": "MIT",
+      "load_seconds": 23.01552553899819,
+      "model_id": "AutonLab/MOMENT-1-small",
+      "parameter_bytes": 141349632,
+      "parameter_count": 35337408,
+      "probe_ms_per_window": 20.973196187696885,
+      "revision": "411e288267f82cce86296dbe4d6c8bc533cc162f"
+    }
+  }
+}

@@ -1,5 +1,6 @@
 
 from .sensor_memory import SensorMemoryPersistenceError, SensorStateMemory
+from .chronos_teacher import Chronos2TeacherAdapter
 from .teacher_transfer import (
     TeacherFeatures,
     TeacherSpec,
@@ -22,7 +23,8 @@ __all__ = [
     "SensorIngestReceipt",
     "SensorMemoryPersistenceError",
     "SensorRecall",
-    "MOMENTTeacherAdapter",
+    "SensorStateMemory",
+    "Chronos2TeacherAdapter",
     "TeacherFeatures",
     "TeacherSpec",
     "WindowSchema",

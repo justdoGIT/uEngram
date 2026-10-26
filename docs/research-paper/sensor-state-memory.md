@@ -1198,6 +1198,146 @@ equal-series results, and prevents a model from promoting an unfamiliar
 pattern into the normal baseline solely because the teacher produced a
 confident vector.
 
+### 20.7 Two independent teachers: a stronger but still failing gate
+
+The next experiment asked a careful question: if two large models look at the
+same sensor window in different ways, can a small uEngram remember the useful
+parts without carrying the large models to the edge?
+
+Imagine two doctors examining the same patient. One doctor is good at spotting
+the shape of the heartbeat; the other is good at predicting what the heartbeat
+will look like a moment later. A small trainee writes down both opinions. At
+deployment time, only the trainee travels with the ambulance. This is
+**distillation**: a large teacher gives training targets to a smaller student.
+It is different from placing the two large models inside the deployed
+application.
+
+The teachers were MOMENT-1-small (MIT license) and Chronos-2 (Apache-2.0
+license), each pinned to a recorded model revision. MOMENT supplied 514
+representation values per sensor window. Chronos supplied 32 values made from
+forecast quantiles and the median forecast. A quantile is a boundary that says
+“the future is likely to be below this value with this probability.” The
+student learned each teacher block with equal average error, preventing a
+teacher with more output values from automatically receiving more influence.
+
+```mermaid
+flowchart LR
+    A[Sensor window] --> M[MOMENT teacher]
+    A --> C[Chronos teacher]
+    M --> FM[514-value teacher sketch]
+    C --> FC[32-value forecast sketch]
+    FM --> S[Small causal CNN student]
+    FC --> S
+    S --> L[Compact latent state]
+    L --> D[Distance and statistical safeguards]
+    D --> R[Memory lifecycle]
+    R --> E[Baseline update or protected episode]
+```
+
+The untouched MFPT evaluation used two baseline recordings for training.
+Baseline recording 3, the test-rig fault recordings, and the three field
+recordings were held out. The signal was changed to a common 2,048-Hz sample
+rate, divided into overlapping 512-sample windows, normalized with training
+data only, and scored with a threshold set from training-normal distances.
+The archive hash was
+`cd46b9d95545c095899b2b9f6462ce60cdbfeae87a743625dd312e6a4df6e6fa`.
+The exact report is in `results/mfpt_two_teacher_gate.json`.
+
+| Model | Window AUROC | File AUROC | Positive-file recall | Normal-file false-alarm rate |
+|---|---:|---:|---:|---:|
+| Ordinary compact CNN | 0.7948 | 0.8500 | 1.0000 | 1.0000 |
+| MOMENT student | 0.7926 | 0.8000 | 1.0000 | 1.0000 |
+| Chronos student | 0.8143 | 0.8000 | 1.0000 | 1.0000 |
+| **Two-teacher student** | **0.8253** | **0.9000** | 1.0000 | **1.0000** |
+
+The result has two sides. The two-teacher student ranked faulty windows better:
+its window AUROC improved by 0.0305 and its file AUROC improved by 0.0500 over
+the ordinary CNN. But every model flagged the only held-out normal recording.
+In plain English, the models learned “fault-like versus the training
+baseline,” not “fault versus every healthy condition.” A factory alarm that
+does this would create alarm fatigue, so this false-alarm result outweighs the
+ranking improvement. This gate is therefore a research result, not evidence
+that the model is ready for safety-critical use.
+
+AUROC means that a randomly chosen faulty window is usually ranked above a
+randomly chosen normal window. It does **not** choose a safe alarm threshold.
+The normal-file false-alarm rate asks a more practical question: how many
+healthy recordings receive at least one alarm under the selected threshold?
+When there is only one held-out normal recording, the estimate is unstable,
+but a 1.000 result still exposes a concrete failure that must not be hidden by
+the higher AUROC.
+
+No warning time is reported. MFPT provides static fault experiments rather
+than independently labelled moments when a fault begins. Claiming early
+warning from these files would confuse a fault class with a fault timeline.
+Future run-to-failure evaluation must report warning time, missed events,
+false alarms per operating hour, and the delay between a real onset and the
+first sustained alarm.
+
+The first small run failed because the covariance estimator had too few
+difference pairs. More overlapping windows fixed the sample-size problem.
+The correct lesson is not to remove covariance or silently weaken the
+statistical safeguard. The pipeline should stop and explain when the
+calibration set is too small. This error path is especially important in
+edge memory: a confident vector made from inadequate calibration can poison
+the evolving baseline.
+
+The two large teachers were used offline. Their parameter storage in the
+experiment was approximately 141 MB for MOMENT and 478 MB for Chronos, and
+the process peak was approximately 1.21 GB. The compact student remained
+46,144 bytes and encoded a test window in approximately 0.066 ms in the
+benchmark environment. This separation is the practical value of transfer:
+the expensive models can teach during commissioning, while the small model
+and its bounded memory lifecycle operate on the device.
+
+The MFPT holdout is recording- and domain-disjoint, but its metadata does not
+fully identify the physical bearing behind every test-rig recording. Its
+license is also marked unspecified for commercial use. Thus the experiment is
+stronger than a random-window split but weaker than a verified
+physical-asset-disjoint industrial trial. A decisive next study needs
+explicit asset identifiers, several healthy loads, onset labels, repeated
+seeds, and a license suitable for the intended product.
+
+### 20.8 CWRU asset-group holdout: perfect ranking is not safe calibration
+
+The same two-teacher pipeline was tried on a small, untouched subset of the
+Case Western Reserve University bearing data. Healthy recordings 97, 98, and
+99 trained the model. Healthy recording 100 was held out as a new operating
+load. Three damaged-bearing groups—inner-race `IR007`, rolling-element
+`B007`, and outer-race `OR007_6`—were held out by asset group. In other words,
+the student did not see those damaged bearing groups during training.
+
+| Model | Window AUROC | File AUROC | Positive-file recall | Normal-file false-alarm rate |
+|---|---:|---:|---:|---:|
+| Ordinary compact CNN | 1.0000 | 1.0000 | 1.0000 | **1.0000** |
+| MOMENT student | 1.0000 | 1.0000 | 1.0000 | **1.0000** |
+| Chronos student | 1.0000 | 1.0000 | 1.0000 | **1.0000** |
+| Two-teacher student | 1.0000 | 1.0000 | 1.0000 | **1.0000** |
+
+This perfect-looking table is a failure for an alarm system. Every model
+flagged the only held-out healthy recording. The files make faulty and
+training-healthy signals easy to separate, but the threshold does not know
+that a healthy machine at another load can look different. This is why a
+research paper must show false alarms, not only AUROC. The result is not
+evidence that the two teachers improved the detector; it is evidence that the
+gate exposed a calibration problem.
+
+The subset used 624 test windows, 512 samples per window, a 12-kHz common
+sample rate, and a threshold from the 99th percentile of training-normal
+latent distances. The compact student was 46,144 bytes and encoded a window
+in about 0.063 ms in the benchmark environment. The two large teachers were
+used only offline. Exact per-file hashes, the split, model revisions, and
+resource measurements are in `results/cwru_two_teacher_gate.json`.
+
+The CWRU result also has limits. The source metadata identifies damaged
+groups, but the healthy files do not expose physical bearing identifiers.
+Only one fault size and one drive-end channel were used, the recordings are
+static rather than onset-labelled, and the source manifest does not state a
+commercial license. Thus this is a useful error-finding experiment, not a
+product validation study. A real deployment study needs many healthy assets
+and loads, an independent calibration fleet, repeated seeds, onset labels,
+and false alarms per operating hour.
+
 ## References
 
 1. Chhikara, P., Khant, D., Aryan, S., Singh, T., and Yadav, D. (2025). “Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory.” arXiv:2504.19413. [arXiv](https://arxiv.org/abs/2504.19413)
@@ -1227,6 +1367,15 @@ Foundation Models.” *International Conference on Learning Representations
 Detection.” arXiv:2606.01300. [arXiv](https://arxiv.org/abs/2606.01300)
 21. TSB-AD project. “A Comprehensive Benchmark for Time-Series Anomaly
 Detection.” [project page](https://thedatumorg.github.io/TSB-AD/)
+22. Ansari, A. F., et al. (2025). “Chronos-2: From univariate to
+multivariate probabilistic time series forecasting.” arXiv:2510.15821.
+[arXiv](https://arxiv.org/abs/2510.15821) · [model card](https://huggingface.co/amazon/chronos-2)
+23. Bechhoefer, E. (2013). “A Data-Driven Approach to Predictive
+Maintenance of Industrial Equipment.” MFPT fault-data source and archive:
+[MFPT](https://www.mfpt.org/fault-data-sets/).
+24. Case Western Reserve University Bearing Data Center. “Bearing Data
+Center.” [source file](https://engineering.case.edu/sites/default/files/97.mat)
+and [metadata manifest](https://github.com/VictorBauler/BearingDatasets/blob/main/src/bearing_datasets/datasets/cwru/files.csv).
 
 ## Figure captions
 

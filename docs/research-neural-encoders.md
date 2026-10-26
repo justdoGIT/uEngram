@@ -405,3 +405,129 @@ estimate. The CMAPSS report retains five-seed health AUROC, RUL RMSE, and
 end-of-life retention together. The gate therefore passes protocol coverage,
 not universal performance: MOMENT transfer remains an explicit CMAPSS/SKAB
 follow-up rather than an implied success.
+
+### 7.5 Two independent teachers on an untouched MFPT gate
+
+The next gate used two different, openly licensed time-series teachers:
+
+- **MOMENT-1-small**, fixed to revision
+  `411e288267f82cce86296dbe4d6c8bc533cc162f`, with an MIT license.
+- **Chronos-2**, fixed to revision
+  `29ec3766d36d6f73f0696f85560a422f50e8498c`, with an Apache-2.0 license.
+
+They were used only during training and measurement. The edge model still
+contains the compact CNN; it does not carry either teacher's large weights.
+MOMENT produced 514 features for each window and Chronos produced 32
+quantile-and-median forecast features. A feature is simply a number describing
+what the teacher noticed. The student learned both blocks with equal
+per-teacher loss, so the wider MOMENT block could not win merely by having
+more numbers.
+
+The new dataset was the MFPT Fault Data Sets archive. The archive was
+downloaded from the archived MFPT source, checked with SHA-256
+`cd46b9d95545c095899b2b9f6462ce60cdbfeae87a743625dd312e6a4df6e6fa`, and
+never added to git. Baseline recordings 1 and 2 trained the models. Baseline
+recording 3, all test-rig fault recordings, and all three field recordings
+were held out. Windows were resampled to 2,048 Hz, used 512 samples, and
+overlapped by 75%. Normalization and the 99th-percentile decision threshold
+used training-normal data only.
+
+| Model | Window AUROC | File AUROC | Positive-file recall | Normal-file false alarms | Edge model bytes |
+|---|---:|---:|---:|---:|---:|
+| Ordinary CNN | 0.7948 | 0.8500 | 1.0000 | 1.0000 | 46,144 |
+| MOMENT student | 0.7926 | 0.8000 | 1.0000 | 1.0000 | 46,144 |
+| Chronos student | 0.8143 | 0.8000 | 1.0000 | 1.0000 | 46,144 |
+| **Two-teacher student** | **0.8253** | **0.9000** | 1.0000 | **1.0000** | 46,144 |
+
+The two teachers improved ranking: window AUROC rose by 0.0305 and file
+AUROC rose by 0.0500 against the ordinary CNN. That is useful evidence for
+distillation, but it is **not a deployment pass**. Every model incorrectly
+flagged the only held-out normal recording. In everyday language, the models
+recognized faults but did not recognize a new healthy operating condition.
+The false-alarm result has more operational meaning than the AUROC gain.
+Because MFPT contains static fault experiments rather than labelled
+run-to-failure streams, warning time is not measured.
+
+The first short run also failed before producing a result: the covariance
+estimator saw too few difference pairs. The safe repair was to use more
+overlapping windows, not to suppress the covariance estimate or silently
+lower the latent dimension. This is a reusable error path: a model can fail
+because the statistical calibration sample is too small even when the neural
+network itself is valid.
+
+The teachers cost roughly 141 MB (MOMENT) and 478 MB (Chronos) of parameter
+storage in this run and took about 21.0 ms and 58.9 ms per probe window,
+respectively. Those costs are acceptable for offline training on a gateway,
+not for an always-on microcontroller. The measured process peak was about
+1.21 GB. The compact student remained 46,144 bytes, and its measured test
+encoding time was about 0.066 ms per window in this benchmark environment.
+
+This is a stronger gate than a random window split, but it is still not a
+fully verified physical-asset split: the MFPT metadata does not document the
+identity of every test-rig bearing. The result therefore supports the
+engineering direction, not a universal industrial claim. The next gate
+should use a dataset with explicit bearing IDs, multiple healthy operating
+loads, onset timestamps, and repeated seeds. The source license is also
+marked unspecified for commercial use, so commercial deployment requires a
+separate permission review.
+
+The implementation and exact report are `bench/mfpt_two_teacher_gate.py`
+and `results/mfpt_two_teacher_gate.json`. The independent teacher adapters
+are optional; installing their packages is not required for the base
+uEngram package.
+
+Useful primary sources:
+
+1. Chronos-2 model card: <https://huggingface.co/amazon/chronos-2>.
+2. Chronos-2 technical report: <https://arxiv.org/abs/2510.15821>.
+3. MFPT fault-data source: <https://www.mfpt.org/fault-data-sets/>.
+4. The pinned archive used by this gate:
+   <https://web.archive.org/web/20250505045128id_/https://www.mfpt.org/wp-content/uploads/2020/02/MFPT-Fault-Data-Sets-20200227T131140Z-001.zip>.
+
+### 7.6 CWRU asset-group holdout: perfect ranking, unusable calibration
+
+To make the holdout stricter, a second public subset came from the Case
+Western Reserve University (CWRU) bearing data. The source manifest records
+fault groups by damaged-bearing identifier. Healthy recordings 97--99 trained
+the model; healthy recording 100 was held out as a new operating load; three
+fault asset groups (`IR007`, `B007`, and `OR007_6`) were held out entirely.
+The downloaded files were hashed individually and kept outside git. The
+manifest does not specify a commercial license, so this is a research-only
+result until permission is verified.
+
+| Model | Window AUROC | File AUROC | Positive-file recall | Normal-file false alarms | Edge model bytes |
+|---|---:|---:|---:|---:|---:|
+| Ordinary CNN | 1.0000 | 1.0000 | 1.0000 | **1.0000** | 46,144 |
+| MOMENT student | 1.0000 | 1.0000 | 1.0000 | **1.0000** | 46,144 |
+| Chronos student | 1.0000 | 1.0000 | 1.0000 | **1.0000** | 46,144 |
+| Two-teacher student | 1.0000 | 1.0000 | 1.0000 | **1.0000** | 46,144 |
+
+This apparently perfect result is a warning, not a breakthrough. The only
+held-out normal recording was flagged by every model, so the threshold did
+not recognize healthy variation at a new load. The fault recordings are
+static and strongly separated from the healthy training recordings; AUROC
+therefore answers an easier question than an operating alarm system needs.
+The CWRU gate confirms the MFPT finding: high ranking scores can coexist with
+zero useful calibration.
+
+The run used 624 test windows, a 99th-percentile training-normal threshold,
+and a 512-sample window at 12 kHz. The two-teacher student still measured
+46,144 bytes and about 0.063 ms per test window. Offline teacher costs were
+about 141 MB for MOMENT and 478 MB for Chronos, with a process peak near
+1.22 GB. The exact hashes, split, and resource measurements are recorded in
+`results/cwru_two_teacher_gate.json`; the raw files are intentionally not
+committed.
+
+The CWRU experiment is useful because it catches a tempting but dangerous
+interpretation: “perfect AUROC” does not mean “safe anomaly detector.” The
+next experiment must include healthy recordings from many loads and assets,
+calibrate on a development fleet rather than only three healthy files, and
+report false alarms per operating hour. Until then, the two-teacher gain is
+supported on MFPT ranking but not on CWRU operational calibration.
+
+Primary sources:
+
+1. CWRU public file source: <https://engineering.case.edu/sites/default/files/97.mat>
+   (the same path pattern was used for the pinned subset).
+2. CWRU metadata manifest:
+   <https://github.com/VictorBauler/BearingDatasets/blob/main/src/bearing_datasets/datasets/cwru/files.csv>.
