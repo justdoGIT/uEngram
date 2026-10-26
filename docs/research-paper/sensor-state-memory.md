@@ -862,12 +862,21 @@ terms.
 
 ### 20.2 Real-data smoke result and its limits
 
-The new smoke harness uses MetroPT-3 commissioning data and a local small CNN
-with a multiscale readout as a **teacher stand-in**, because this repository
-does not contain a permitted high-capacity foundation-model checkpoint. It
-compares an ordinary student and a distilled student with the same `d=16`,
-five training epochs, and a teacher weight of 0.25. Test labels are used only
-for evaluation; MetroPT-3 is already a consumed development dataset.
+The first smoke harness uses MetroPT-3 commissioning data and a local small CNN
+with a multiscale readout as a **teacher stand-in**. It compares an ordinary
+student and a distilled student with the same `d=16`, five training epochs, and
+a teacher weight of 0.25. Test labels are used only for evaluation; MetroPT-3
+is already a consumed development dataset.
+
+A second engineering check used the public MIT-licensed MOMENT-1-small
+time-series foundation model. On 2,422 MetroPT-3 test windows, the ordinary
+student reached AUROC 0.9756 and average precision 0.6225; the distilled
+student reached AUROC 0.9775 and average precision 0.7942, with all four
+reported events retained. On the four-family synthetic challenge, however,
+distillation reduced AUROC from 0.6872 to 0.5035. This opposing result is
+important: a broad teacher is a useful experiment, not proof of a universal
+best encoder. Full provenance and limitations are in
+[`docs/research-teacher-distillation.md`](../research-teacher-distillation.md).
 
 | Student | AUROC | Average precision | Test windows | Positive windows |
 |---|---:|---:|---:|---:|
@@ -902,6 +911,89 @@ energy, power-loss recovery, and evidence-pointer integrity. The exact API,
 failure paths, and checklist are in
 [`docs/research-teacher-distillation.md`](../research-teacher-distillation.md).
 
+### 20.4 Generic architecture for a foundation-model teacher
+
+The practical architecture is a **two-stage memory system** rather than one
+giant model running forever on the device. During preparation, a broad
+time-series foundation model studies permitted historical windows. During
+operation, a small student model produces a similar fingerprint quickly and
+the bounded memory decides what is normal, novel, changing, or worth retaining.
+
+```mermaid
+flowchart TB
+    A[Raw sensors] --> B[Unit and time alignment]
+    B --> C[Past-only window]
+    C --> D[Foundation teacher]
+    D --> E[Patch-level internal features]
+    E --> F[Fixed-size teacher fingerprint]
+    C --> G[Small CNN student]
+    F --> H[Distillation during offline training]
+    G --> I[Student fingerprint at the edge]
+    I --> J[PCA and noise balancing]
+    J --> K[State memory]
+    K --> L{Lifecycle decision}
+    L -->|stable normal| M[Merge into current baseline]
+    L -->|new but uncertain| N[Quarantine or shadow state]
+    L -->|rare and severe| O[Permanent episode plus raw pointer]
+```
+
+The teacher is like a specialist who has read many machine histories. The
+student is like a short checklist trained to imitate the specialist's useful
+judgement. The memory is not just a filing cabinet: it decides whether a new
+observation should update the current baseline, remain an unknown candidate, or
+be protected as an exceptional episode.
+
+Let a sensor window be $X_t$ and let the teacher produce a vector
+$T(X_t)$. The student produces $S_\theta(X_t)$, where $\theta$ represents
+its learned numbers. Training balances two goals:
+
+$$
+\mathcal{L}(\theta)
+= \underbrace{\|D(S_\theta(X_t))-X_t\|_2^2}_{\text{rebuild the signal}}
++ \lambda\underbrace{\|H(S_\theta(X_t))-T(X_t)\|_2^2}_{\text{match the teacher}}.
+$$
+
+Here $\|\cdot\|_2^2$ is the sum of squared differences, the same idea as
+measuring how far two points are on a map. $D$ is a decoder that rebuilds the
+window, $H$ is a small translator from the student's fingerprint to the
+teacher's size, and $\lambda$ controls how strongly imitation matters. A low
+$\lambda$ keeps the student focused on reconstructing its own sensor family; a
+high $\lambda$ risks copying teacher mistakes.
+
+MOMENT is a useful teacher candidate because it turns a time series into
+patch-level representations before its Transformer encoder processes them
+[18]. A patch is simply a short consecutive slice, like reading a long
+paragraph one group of words at a time. The student need not copy the
+Transformer's weights. It learns a compact approximation of the teacher's
+window-level fingerprint, after which uEngram's statistical whitening and
+memory lifecycle remain responsible for state drift, anomaly quarantine, and
+retention.
+
+This design makes the division of responsibility explicit:
+
+| Layer | Main question | Failure to avoid |
+|---|---|---|
+| Sensor/window preparation | What was available at decision time? | Future leakage, unit mismatch, bad timestamps |
+| Foundation teacher | What broad patterns are present? | Training-data contamination and teacher bias |
+| Small student | Can the pattern be computed cheaply? | Over-compression and unstable latent geometry |
+| Statistical projection | Which differences are ordinary noise? | Singular covariance and inflated thresholds |
+| Memory lifecycle | What should be retained or forgotten? | Poisoning the normal baseline with a fault |
+| Retrieval/explanation | What evidence supports the decision? | A plausible text explanation without raw evidence |
+
+The architecture is therefore a candidate general pattern for industrial
+monitoring, robotics, vehicle fleets, rendering farms, augmented reality,
+virtual reality, and simulation. It is not a claim that one teacher or one
+embedding works for every field. The correct teacher, window length, latent
+dimension, and retention policy still require held-out assets and a measured
+false-alarm budget.
+
+The design is based on the MOMENT model and its published time-series
+foundation-model study [18]. The repository's implementation notes and
+engineering evidence remain in
+[`docs/research-teacher-distillation.md`](../research-teacher-distillation.md);
+this section intentionally gives the architecture rather than a vendor API or
+an application-specific data interface.
+
 ## References
 
 1. Chhikara, P., Khant, D., Aryan, S., Singh, T., and Yadav, D. (2025). “Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory.” arXiv:2504.19413. [arXiv](https://arxiv.org/abs/2504.19413)
@@ -921,6 +1013,7 @@ failure paths, and checklist are in
 15. Yoon, S., Kim, J., Ha, J., and Ko, Y. M. (2026). “Patch-based Memory Gate Model in Time Series Foundation Model.” arXiv:2509.18751v4. [arXiv](https://arxiv.org/abs/2509.18751v4)
 16. dos Santos Oliveira, A., da Silva, F. S. T., Ferreira, D. L., et al. (2026). “Looking at anomaly detection in EdgeAI through the up-to-date lens of academic and market perspectives.” *Cluster Computing*, 29, 251. [doi](https://doi.org/10.1007/s10586-026-05954-9)
 17. Kim, M., Bhaumik, K. K., Ali, A. A., and Woo, S. S. (2024). “MIXAD: Memory-Induced Explainable Time Series Anomaly Detection.” arXiv:2410.22735. [arXiv](https://arxiv.org/abs/2410.22735)
+18. Goswami, M., et al. (2024). “MOMENT: A Family of Open Time-series Foundation Models.” *Proceedings of ICML 2024*. [arXiv](https://arxiv.org/abs/2402.03885) · [official model](https://huggingface.co/AutonLab/MOMENT-1-large) · [code](https://github.com/moment-timeseries-foundation-model/moment)
 
 ## Figure captions
 

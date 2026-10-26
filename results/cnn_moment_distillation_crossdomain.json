@@ -1,0 +1,107 @@
+{
+  "contract": {
+    "channels": 7,
+    "epochs": 5,
+    "student_dimension": 16,
+    "teacher_weight": 0.25,
+    "window_size": 512
+  },
+  "role": "development transfer check; MetroPT-3 was previously consumed",
+  "student": {
+    "baseline": {
+      "auroc": 0.975578605701383,
+      "average_precision": 0.6224804221511903,
+      "events_retained": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "fit_seconds": 5.892369698005496,
+      "positive_windows": 60,
+      "test_windows": 2422,
+      "writes": 2007
+    },
+    "distilled": {
+      "auroc": 0.9774590742308777,
+      "average_precision": 0.7941812915253551,
+      "events_retained": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "fit_seconds": 50.56602895600372,
+      "positive_windows": 60,
+      "test_windows": 2422,
+      "writes": 2616
+    }
+  },
+  "synthetic": {
+    "positive_windows": 120,
+    "probe_windows": 210,
+    "role": "controlled synthetic probe; four injected fault families",
+    "student": {
+      "baseline": {
+        "auroc": 0.6872222222222222,
+        "average_precision": 0.800713864265146,
+        "fault_families": {
+          "1": {
+            "auroc": 0.6377777777777778,
+            "average_precision": 0.33094022014547725
+          },
+          "2": {
+            "auroc": 0.5555555555555556,
+            "average_precision": 0.5005323095791125
+          },
+          "3": {
+            "auroc": 0.5555555555555556,
+            "average_precision": 0.5005323095791125
+          },
+          "4": {
+            "auroc": 1.0,
+            "average_precision": 1.0
+          }
+        }
+      },
+      "distilled": {
+        "auroc": 0.5035185185185185,
+        "average_precision": 0.6601596963029276,
+        "fault_families": {
+          "1": {
+            "auroc": 0.4148148148148148,
+            "average_precision": 0.40005198529495384
+          },
+          "2": {
+            "auroc": 0.5555555555555556,
+            "average_precision": 0.5005323095791125
+          },
+          "3": {
+            "auroc": 0.4444444444444444,
+            "average_precision": 0.47481389005685853
+          },
+          "4": {
+            "auroc": 0.5992592592592593,
+            "average_precision": 0.27928833306817075
+          }
+        }
+      }
+    },
+    "teacher_schema": {
+      "channels": 6,
+      "context_length": 512,
+      "window_size": 64
+    },
+    "train_windows": 384
+  },
+  "teacher": {
+    "alignment": "right",
+    "causal": true,
+    "context_length": 512,
+    "feature_dim": 512,
+    "layer": "embedding-mean-patches",
+    "license": "MIT (verify upstream revision before deployment)",
+    "model_id": "AutonLab/MOMENT-1-small",
+    "model_version": "411e288267f82cce86296dbe4d6c8bc533cc162f"
+  }
+}

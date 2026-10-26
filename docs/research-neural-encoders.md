@@ -287,3 +287,13 @@ it is an API/integration demonstration, not evidence that a large LLM or
 foundation model improves field accuracy. Full guidance, pseudocode, licensing
 warnings, and the acceptance gate are in
 [`research-teacher-distillation.md`](research-teacher-distillation.md).
+
+The first public foundation-model run uses the MIT-licensed MOMENT-1-small
+checkpoint at revision
+`411e288267f82cce86296dbe4d6c8bc533cc162f`. With native 512-sample MetroPT-3
+windows, the full bounded-memory pipeline changed AUROC/AP from
+`0.9756/0.6225` for the ordinary CNN to `0.9775/0.7942` after distillation,
+while retaining all four reported events. The same teacher reduced the
+four-family synthetic probe from `0.6872/0.8007` to `0.5035/0.6602`. The
+negative cross-domain result is the stronger engineering lesson: teacher
+transfer must be gated by window compatibility and held-out fault families.

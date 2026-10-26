@@ -12,9 +12,13 @@ The implementation is in:
 - `src/uengram/teacher_transfer.py`: versioned input/teacher contracts and
   batched feature extraction;
 - `src/uengram/encoder_cnn.py`: `CNNEncoder.fit_distilled()`;
-- `bench/cnn_distillation_smoke.py`: a MetroPT-3 development smoke path;
-- `tests/test_teacher_transfer.py`: schema, causal, shape, deterministic, and
-  bad-input tests.
+- `src/uengram/moment_teacher.py`: optional MOMENT checkpoint adapter with
+  right-aligned 512-sample context handling;
+- `bench/cnn_moment_distillation.py`: real-checkpoint transfer benchmark;
+  its default large model can be replaced by a smaller checkpoint when local
+  storage is constrained;
+- `tests/test_teacher_transfer.py`: schema, causal, shape, deterministic,
+  adapter, and bad-input tests.
 
 MetroPT-3 is already a consumed development dataset in this repository. Its
 smoke result is not independent confirmation.
@@ -39,6 +43,66 @@ teacher for raw telemetry. An LLM can still help with maintenance notes, manuals
 fault-code descriptions, and post-retrieval explanations. For multimodal work,
 keep the sensor and language teachers separate and join their outputs through
 versioned metadata.
+
+## Selected public teacher: MOMENT
+
+The first real foundation-model adapter targets **MOMENT-1-large**, a
+time-series model released by AutonLab under the MIT license. MOMENT is not a
+language model. It was trained on many kinds of time-series data and can
+produce an embedding, which means a compact numerical fingerprint of a
+window. Its official model card documents an embedding task, a native
+512-sample context, patch-based processing, and an embedding width of 1024 for
+the large checkpoint. The official loading path is
+`MOMENTPipeline.from_pretrained(..., model_kwargs={"task_name": "embedding"})`
+followed by `init()`.
+
+The repository contains an optional adapter in
+`src/uengram/moment_teacher.py`. It keeps the large model out of the edge
+runtime: the model is used offline to label windows with feature vectors, and
+the small CNN learns to approximate those vectors. The adapter also supports
+smaller MOMENT checkpoints. A smaller checkpoint is the practical test choice
+on this workstation because the large safetensors file is about 1.39 GB while
+the host currently has about 1.5 GB free. That storage limit is a deployment
+constraint, not evidence that the small checkpoint is better.
+
+The published `momentfm==0.1.4` package pins NumPy 1.25.2, while this
+repository's core package requires NumPy 2.x. Installing it into the main
+uEngram environment would silently replace a core dependency. The tested
+solution is an isolated teacher environment that reuses the already installed
+PyTorch runtime; the edge package itself remains dependency-light. This
+separation is intentional and avoids “fixing” one model by breaking the
+default Python package.
+
+### MOMENT window alignment
+
+MOMENT expects 512 samples. If an application window is shorter, the adapter
+repeats its first sample on the **left** until the context is full. If it is
+longer, it keeps the newest 512 samples. This is like filling the empty left
+side of a photograph with a copy of its first border pixel; it preserves the
+right edge, which is the current time. The adapter never supplies samples after
+the window's right edge. Its attention is not internally causal, so the precise
+claim is “online-causal window alignment,” not “causal Transformer.”
+
+```mermaid
+flowchart LR
+    A[Sensor window ending at now] --> B{Length 512?}
+    B -->|short| C[Repeat first sample on left]
+    B -->|long| D[Keep newest 512 samples]
+    B -->|yes| E[Use unchanged]
+    C --> F[MOMENT embedding]
+    D --> F
+    E --> F
+    F --> G[Mean patch vectors]
+    G --> H[Teacher feature target]
+    H --> I[Small CNN feature head]
+    I --> J[uEngram PCA and noise whitening]
+```
+
+The model's intermediate patch vectors are averaged to obtain one fixed-size
+vector per window. Averaging is deliberately boring and reproducible: it
+avoids selecting a test-tuned patch or a future-looking center position. A
+later study can compare patch selection, attention pooling, and multiple
+temporal scales, but each choice must be frozen before held-out evaluation.
 
 ## Implemented architecture
 
@@ -169,6 +233,84 @@ The exact output is committed in `results/cnn_distillation_smoke.json` after the
 smoke run. Interpret it as an API/integration check, not evidence that transfer
 improves industrial accuracy. A local CNN teacher is not equivalent to a large
 pretrained time-series or language model.
+
+## Real checkpoint transfer result
+
+The repository now has a real public teacher run, not only the local-CNN
+stand-in. The teacher was **MOMENT-1-small**, model card revision
+`411e288267f82cce86296dbe4d6c8bc533cc162f`, released under MIT terms. The
+large sibling remains the intended high-capacity option, but its approximately
+1.39 GB weight file did not fit safely in the roughly 1.5 GB free storage
+available on this host. The small run is therefore a feasibility result, not a
+claim that small is optimal.
+
+The experiment used a 512-sample MetroPT-3 window so the teacher operated at
+its native context length. The student stayed at 16 dimensions and five
+training epochs. The complete bounded-memory scoring path was used on the
+previously consumed MetroPT-3 development split:
+
+| Student | AUROC | Average precision | Test windows | Positive windows | All four events retained |
+|---|---:|---:|---:|---:|---|
+| Ordinary CNN | 0.9756 | 0.6225 | 2,422 | 60 | yes |
+| MOMENT-distilled CNN | **0.9775** | **0.7942** | 2,422 | 60 | yes |
+
+The result is encouraging but not a deployment claim. It is one seed, one
+previously consumed asset, one teacher weight, and one teacher-loss setting.
+Distillation also increased test writes from 2,007 to 2,616 in this run. A
+better ranking score can therefore coexist with a more expensive or noisier
+memory lifecycle.
+
+The same teacher was checked on the included synthetic challenge containing
+four named fault families: knock, cavitation, thermal, and seizure. Here the
+ordinary CNN scored AUROC 0.6872 and AP 0.8007, while the distilled CNN scored
+AUROC 0.5035 and AP 0.6602. The ordinary model detected seizure perfectly in
+this small probe; the distilled model did not. This is a valuable negative
+finding: copying a broad teacher representation can hurt a small domain when
+the teacher's 512-sample context is filled by repeated samples for a 64-sample
+window. It is exactly the kind of error that a universal-best claim would hide.
+
+The reproducible artifact is
+`results/cnn_moment_distillation_crossdomain.json`. The run used:
+
+```text
+PYTHONPATH=src:. HF_HOME=~/.cache/huggingface \
+  /home/kk/.local/state/uengram/moment-teacher-venv/bin/python \
+  bench/cnn_moment_distillation.py \
+  --model-id AutonLab/MOMENT-1-small \
+  --revision 411e288267f82cce86296dbe4d6c8bc533cc162f \
+  --local-files-only --include-synthetic --epochs 5 \
+  --teacher-weight 0.25 \
+  --out results/cnn_moment_distillation_crossdomain.json
+```
+
+The official model page and paper are the provenance sources:
+[MOMENT model card](https://huggingface.co/AutonLab/MOMENT-1-small),
+[MOMENT paper](https://arxiv.org/abs/2402.03885), and
+[official source](https://github.com/moment-timeseries-foundation-model/moment).
+Before commercial release, verify the checkpoint's license, revision, source
+data terms, and whether the derived student may be redistributed.
+
+## Why “all faults” is not a valid teacher claim
+
+MOMENT is broad, but it is not a catalogue containing every machine error.
+Faults depend on the asset, sensor placement, operating regime, maintenance
+history, and definition of failure. A foundation model can provide reusable
+shape and trend features; it cannot guarantee recognition of a fault it never
+saw or a sensor signal that was never measured.
+
+The safer research question is whether transfer remains useful across several
+families and untouched assets. TSB-AD is a useful public benchmark source
+because it gathers many anomaly-detection datasets and distinguishes
+univariate from multivariate series, but its datasets still have different
+licenses, labels, and physical meanings. A good evaluation matrix should
+include synthetic local faults, run-to-failure degradation such as CMAPSS,
+real machinery such as MetroPT-3/SKAB, and a held-out asset family. The
+teacher, student, projection, and memory policy must be frozen before each
+held-out test.
+
+[TSB-AD benchmark](https://thedatumorg.github.io/TSB-AD/) is therefore a
+dataset source and comparison framework, not proof that one model is
+universal.
 
 ## Error paths and safeguards
 

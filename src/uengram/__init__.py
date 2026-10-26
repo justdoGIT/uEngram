@@ -6,6 +6,7 @@ from .teacher_transfer import (
     WindowSchema,
     extract_teacher_features,
 )
+from .moment_teacher import MOMENTTeacherAdapter
 from .sensor_memory_types import (
     PatternRecall,
     RawEvidencePins,
@@ -20,6 +21,7 @@ __all__ = [
     "SensorIngestReceipt",
     "SensorMemoryPersistenceError",
     "SensorRecall",
+    "MOMENTTeacherAdapter",
     "TeacherFeatures",
     "TeacherSpec",
     "WindowSchema",

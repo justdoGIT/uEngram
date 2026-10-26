@@ -88,3 +88,34 @@ def test_distillation_rejects_bad_teacher_output_and_weight():
         CNNEncoder().fit_distilled(
             windows, _teacher, spec, noise_lag=1, groups=None, teacher_weight=-1
         )
+
+
+def test_moment_adapter_right_aligns_and_reduces_patch_embeddings():
+    torch = pytest.importorskip("torch")
+    from types import SimpleNamespace
+
+    from uengram.moment_teacher import MOMENTTeacherAdapter
+
+    class FakeMoment:
+        def __call__(self, *, x_enc, input_mask):
+            assert tuple(x_enc.shape) == (2, 2, 8)
+            assert tuple(input_mask.shape) == (2, 8)
+            patches = x_enc.reshape(2, 2, 4, 2).mean(dim=-1)
+            return SimpleNamespace(
+                embeddings=patches.mean(dim=1).unsqueeze(-1).repeat(1, 1, 3)
+            )
+
+    windows = np.arange(16, dtype=np.float32).reshape(2, 2, 4)
+    spec = TeacherSpec(
+        model_name="fake-moment",
+        model_version="test",
+        layer="embedding-mean-patches",
+        feature_dim=3,
+        input_schema=WindowSchema(("a", "b"), 1.0, 4),
+    )
+    adapter = MOMENTTeacherAdapter(FakeMoment(), spec, context_length=8)
+    result = adapter.encode(windows)
+
+    assert result.shape == (2, 3)
+    assert np.isfinite(result).all()
+    assert torch is not None
