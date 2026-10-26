@@ -34,7 +34,7 @@ The strongest positive results are on controlled, generated data. They show that
 | MetroPT-2, frozen v2 policy | No published events detected in either the two-event April subset or the three-event January subset | Low false alarms alone is not success when all target events are missed. |
 | SKAB, frozen DSP detector | 5/34 events detected; AUROC 0.550; mean detection 40.4 s after onset; 20/20 valve-throttling tests missed | Partial, confirmation-only transfer on one water-loop testbed; no demonstrated early warning or fleet generalization. |
 | EngineAD CNN study | Across 30 seed runs and five held-out trucks, pooled segment AUROC stayed near chance; d=16 median 0.556 | Exploratory segment-level study. The representation used fleet-wide fitted PCA; segment labels are not precise fault intervals. Not independent event-level validation. |
-| Full repository test suite | 302 passed, 2 skipped | Software tests passed in the recorded run; this does not validate field performance or the proposed database design. |
+| Full repository test suite | 313 passed, 1 skipped | Software tests passed in the current branch; this does not validate field performance or the proposed database design. |
 
 The data above are not a single contest with one winner. Datasets, labels, metrics, and experiment stages differ. The detailed qualification is in Section 6.
 
@@ -202,11 +202,11 @@ The capacity sweep illustrates why results are split across dimensions and datas
 
 ### 5.8 Software tests
 
-The recorded full Python test run was:
+The current full Python test run was:
 
 ```text
-PYTHONPATH=src .venv/bin/pytest tests/
-302 passed, 2 skipped
+PYTHONPATH=src:. .venv/bin/pytest tests/
+313 passed, 1 skipped
 ```
 
 This shows that the tested code contracts and regression checks passed in that run. It does **not** show the model detects industrial faults, prove statistical claims, validate power-failure durability, exercise the proposed five database primitives, or certify safety. A good software test suite and a good field-validation study answer different questions.
@@ -404,7 +404,7 @@ This advances the earlier proposed architecture but does not cross the present E
 
 The implementation's behavioral tests cover lifecycle writes, alarm-edge de-duplication, asset/subsystem historical filtering, critical raw-window pin and release, storage retry without duplicate detector ingestion, and rejection of invalid/replayed windows. These tests establish adapter behavior only. They do not establish sensor-detection accuracy or safety on unseen equipment.
 
-Verification for this implementation: the full uEngram suite reported `306 passed, 2 skipped`; the patched EdgeMemory Python binding reported three tests passed and one optional AutoGen module skipped; a real x64 CFFI smoke test stored/recalled `new_candidate` and `promote` events and returned one live pattern. These checks confirm tested software paths and binding interoperability, not anomaly-detection accuracy, production reliability, or an ANN/vector feature.
+Verification for the earlier Lite integration reported `306 passed, 2 skipped`; the current teacher-transfer branch reports `313 passed, 1 skipped`. The patched EdgeMemory Python binding reported three tests passed and one optional AutoGen module skipped; a real x64 CFFI smoke test stored/recalled `new_candidate` and `promote` events and returned one live pattern. These checks confirm tested software paths and binding interoperability, not anomaly-detection accuracy, production reliability, or an ANN/vector feature.
 
 See [`docs/sensor-state-memory-pipeline.md`](../sensor-state-memory-pipeline.md) for the end-to-end diagram, RAG analogy, plain-language glossary, schema, failure priorities, and pseudocode.
 
@@ -786,6 +786,121 @@ admission and safety-control loop.
 7. **Prefer abstention to forced assimilation.** Unknown operating modes should
    remain unknown until verified; repetition alone must not convert them into
    healthy semantics.
+
+## 20. Transfer learning: using a large teacher without copying incompatible weights
+
+Transfer learning can help a small edge model, but “copy the weights from a
+large dense model” is usually the wrong operation. Neural-network weights are
+shaped for a particular architecture. A Transformer block does not fit directly
+into this repository’s two-stage 1D CNN, just as a truck engine does not fit
+into a bicycle.
+
+The implemented route is **offline teacher-to-student distillation**:
+
+```mermaid
+flowchart LR
+    W[Causal sensor windows] --> T[Offline teacher adapter]
+    T --> F[Declared intermediate features]
+    W --> S[Small CNN student]
+    F --> L[Feature-match loss]
+    W --> R[Reconstruction loss]
+    L --> O[Student training]
+    R --> O
+    O --> Z[Student embedding + projection]
+    Z --> U[uEngram memory]
+```
+
+The teacher may be a large time-series foundation model, an audio/signal model,
+or a permitted model checkpoint. A text LLM is normally a poor direct teacher
+for vibration and pressure waveforms; it is better used for maintenance text,
+manuals, fault-code descriptions, or explanations after retrieval. The edge
+device deploys the student, not the large teacher.
+
+### 20.1 What the repository now implements
+
+`src/uengram/teacher_transfer.py` defines a versioned `WindowSchema` and
+`TeacherSpec`. The schema records channel order, sample rate, window length,
+and version. The teacher specification records model identity, the exact
+intermediate layer, feature dimension, causal flag, alignment, and contract
+version. `extract_teacher_features()` runs the adapter in batches and rejects
+wrong row counts, wrong feature dimensions, non-finite values, and schema
+mismatches.
+
+`CNNEncoder.fit_distilled()` keeps the existing reconstruction objective and
+adds a linear head that maps the selected student readout to standardized
+teacher features:
+
+$$
+L = L_{\mathrm{reconstruction}}+
+    \lambda_{\mathrm{teacher}}L_{\mathrm{feature\ match}}+
+    \lambda_{\mathrm{orthogonal}}L_{\mathrm{orthogonal}}.
+$$
+
+The teacher target mean and spread are computed from commissioning windows
+only. The existing `fit()` path and default `representation="bottleneck"`
+remain unchanged. The teacher contract must be causal and right-aligned; a
+centered teacher that uses future samples is rejected before training.
+
+```text
+spec = declare_teacher(model, version, layer, causal=True,
+                       alignment="right", input_schema, feature_dim)
+teacher_features = run_teacher_in_batches(teacher, commissioning_windows)
+validate_order_shape_finiteness_and_schema(teacher_features, spec)
+
+student.fit_distilled(
+    commissioning_windows, teacher, spec,
+    noise_lag=1, groups=segments, teacher_weight=0.25
+)
+freeze(student)
+deploy(student, projection_statistics, bounded_uengram_memory)
+```
+
+This is feature transfer, not direct weight copying. A model-specific adapter
+still has to load the permitted checkpoint and select the declared layer. The
+core package deliberately does not guess a vendor’s tensor layout or licensing
+terms.
+
+### 20.2 Real-data smoke result and its limits
+
+The new smoke harness uses MetroPT-3 commissioning data and a local small CNN
+with a multiscale readout as a **teacher stand-in**, because this repository
+does not contain a permitted high-capacity foundation-model checkpoint. It
+compares an ordinary student and a distilled student with the same `d=16`,
+five training epochs, and a teacher weight of 0.25. Test labels are used only
+for evaluation; MetroPT-3 is already a consumed development dataset.
+
+| Student | AUROC | Average precision | Test windows | Positive windows |
+|---|---:|---:|---:|---:|
+| Ordinary CNN | 0.9879 | 0.4781 | 21,556 | 499 |
+| Distilled CNN | **0.9909** | **0.5633** | 21,556 | 499 |
+
+The distilled smoke run improved the ranking metrics in this one development
+execution. It does **not** establish that a large teacher improves industrial
+accuracy: the teacher was another local CNN, the data split was previously
+consumed, and the score was a norm rather than the complete bounded alarm
+pipeline. The raw output is `results/cnn_distillation_smoke.json`, and the
+reproducible command is:
+
+```text
+PYTHONPATH=src:. .venv/bin/python -m bench.cnn_distillation_smoke \
+  --epochs 5 --out results/cnn_distillation_smoke.json
+```
+
+### 20.3 Error paths and acceptance gate
+
+Distillation can transfer teacher bias, data leakage, and future context. It
+does not solve baseline poisoning: a persistent fault can still be absorbed as
+healthy unless uEngram’s quarantine, candidate, episodic, and shadow-baseline
+rules remain active. Weight files also have separate use, modification, and
+redistribution licenses; a downloadable checkpoint is not automatically
+commercially deployable.
+
+Before changing the default encoder, a new asset cohort must show no schema or
+causal violations, no protected-event recall regression, no false-alarm-budget
+regression, and acceptable warning time, seed spread, RAM, flash, latency,
+energy, power-loss recovery, and evidence-pointer integrity. The exact API,
+failure paths, and checklist are in
+[`docs/research-teacher-distillation.md`](../research-teacher-distillation.md).
 
 ## References
 

@@ -218,16 +218,72 @@ was tested as a transient-sensitive candidate rather than assumed to be stable:
 
 ### 6.4 Production API in `src/uengram/encoder_cnn.py`
 
-Implemented and verified in `src/uengram/encoder_cnn.py` (`f7e3340`):
+The production encoder supports the original reconstruction path plus the
+intermediate-readout options:
 ```python
 class CNNEncoder:
-    def __init__(self, seed: int = 0, d: int = 16, epochs: int = 30, batch: int = 128,
-                 pool: str = "avg", ortho_beta: float = 0.0):
+    def __init__(self, seed=0, d=16, epochs=30, batch=128,
+                 pool="avg", ortho_beta=0.0,
+                 representation="bottleneck"):
         ...
 ```
-- **`pool="avg", ortho_beta=0.0` (default)**: Retains 100% byte-identical behavior for all baseline benchmarks and existing tests.
+- **`pool="avg", ortho_beta=0.0` (default)**: Keeps the ordinary bottleneck path and existing behavior.
+- **`representation="middle"` or `"multiscale"`**: Reads first-stage or multi-stage convolution features before PCA/noise whitening; these are experimental options, not universal defaults.
 - **`pool="maxavg", ortho_beta=0.05`**: Activates multi-scale transient pooling and orthogonal bottleneck regularization. Ten-seed SKAB variance and 0/4 MetroPT-3 detection prevent treating it as a universal or deployment-default configuration.
 
 The stabilization ablations, cross-dataset replay, fusion results, literature
 review, and ranked follow-up plan are documented in
 [`research-pending-model-improvements.md`](research-pending-model-improvements.md).
+
+## 7. Teacher-to-student transfer
+
+Large-model transfer is now implemented as an offline feature-distillation
+option, not direct weight copying. Transformer weights cannot be inserted into
+the two-stage CNN because their tensor shapes and learned operations differ.
+Instead, a permitted teacher adapter emits an intermediate representation, and
+the student learns both reconstruction and teacher-feature similarity.
+
+```python
+from uengram import TeacherSpec, WindowSchema
+
+spec = TeacherSpec(
+    model_name="vendor-time-series-model",
+    model_version="1.0",
+    layer="encoder.layer.16",
+    feature_dim=256,
+    input_schema=WindowSchema(
+        ("vibration_x", "vibration_y", "temperature"),
+        sample_rate_hz=100.0,
+        window_size=256,
+    ),
+    causal=True,
+    alignment="right",
+)
+student.fit_distilled(
+    commissioning_windows,
+    teacher_adapter,
+    spec,
+    noise_lag=1,
+    groups=commissioning_segments,
+    teacher_weight=0.25,
+)
+```
+
+The adapter must expose `encode(windows)` and return one finite feature row per
+input window. The contract rejects non-causal or centered teachers, wrong
+channel order/count, wrong window length, wrong feature dimension, and missing
+model/layer/schema versions. Teacher target scaling is fitted on commissioning
+windows only. The ordinary `fit()` path and `bottleneck` default are unchanged.
+
+The MetroPT-3 smoke harness uses a local multiscale CNN as a teacher stand-in:
+
+| Student | AUROC | AP |
+|---|---:|---:|
+| Ordinary CNN | 0.9879 | 0.4781 |
+| Distilled CNN | **0.9909** | **0.5633** |
+
+This is one consumed development split, five epochs, and a local CNN teacher;
+it is an API/integration demonstration, not evidence that a large LLM or
+foundation model improves field accuracy. Full guidance, pseudocode, licensing
+warnings, and the acceptance gate are in
+[`research-teacher-distillation.md`](research-teacher-distillation.md).
