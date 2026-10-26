@@ -374,6 +374,64 @@ recoverable instance statistics, and uEngram's bounded memory lifecycle. The
 combination and negative transfer measurements are useful engineering evidence;
 they are not a claim of a new universal anomaly-detection algorithm.
 
+## New public holdout: TSB-AD-U
+
+To move beyond the consumed synthetic and MetroPT-3 checks, the experiment
+downloaded the public TSB-AD-U archive from
+`https://www.thedatum.org/datasets/TSB-AD-U.zip`. The downloaded archive was
+72,900,868 bytes with SHA-256
+`0c47020d3423723c70773736dbd800369f2b487328becbf339450d1ae5020961`.
+The raw archive is not committed to this repository.
+
+Six exact series were frozen before scoring: NAB WebService, SMD Facility, UCR
+Environment, SMAP Sensor, Yahoo Synthetic, and Exathlon Facility. Each series
+was normalized using only its healthy prefix. The first half of that prefix
+trained the student; later normal windows and all subsequent windows formed
+the evaluation portion. Windows were 64 samples with stride 32. The student
+was 16-dimensional, trained for five epochs, and used teacher weight 0.25.
+The MOMENT teacher was the same pinned MIT-licensed MOMENT-1-small revision
+used by the earlier experiments.
+
+The policy was frozen before reading the test metrics. Two teacher variants
+were measured: the original edge-repeat policy, and linear resampling with
+mean/std recovery.
+
+| Model | Overall AUROC | Overall AP | Macro-series AUROC | Macro-series AP |
+|---|---:|---:|---:|---:|
+| Ordinary CNN | 0.9111 | 0.8397 | **0.6476** | **0.4290** |
+| MOMENT, edge repeat | 0.9091 | **0.8397** | 0.6336 | **0.4397** |
+| MOMENT, linear + mean/std | **0.9157** | 0.8351 | 0.6316 | 0.4249 |
+
+The pooled AUROC slightly favored linear-plus-statistics distillation, but
+both macro metrics favored the ordinary CNN. This difference matters because
+the large Exathlon series contributes many more windows than the small Yahoo
+series. A pooled score can therefore hide poor performance on a smaller
+domain. The Yahoo and UCR series had only 4 and 2 positive evaluation windows,
+so their per-series estimates are unstable and must not be treated as
+deployment evidence.
+
+The per-series pattern was mixed:
+
+- Exathlon was nearly perfect for every model;
+- NAB, SMD, and the smaller UCR/SMAP series generally favored the ordinary
+  CNN;
+- edge distillation slightly improved SMD AP and Exathlon AUROC;
+- statistics recovery did not produce a consistent cross-domain gain.
+
+This is the first new public holdout in this research path, but it is not an
+industrial asset-disjoint field study. TSB-AD-U is a curated benchmark
+collection, and the selected files have different physical meanings,
+sampling behavior, and original licenses. The artifact is
+`results/moment_tsb_ad_holdout.json`; it records the exact members, archive
+hash, split rules, teacher revision, and source-license warning.
+
+The first implementation attempt also exposed two reproducibility errors:
+stride 64 left the short Yahoo training prefix with fewer than eight training
+windows, and the initial dataset assembly accidentally added an extra channel
+axis. Both failures were fixed before the recorded run. These are important
+error paths: a benchmark must reject inadequate class coverage and validate
+the final tensor shape before training.
+
 ## Why “all faults” is not a valid teacher claim
 
 MOMENT is broad, but it is not a catalogue containing every machine error.
