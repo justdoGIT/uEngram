@@ -1338,6 +1338,74 @@ product validation study. A real deployment study needs many healthy assets
 and loads, an independent calibration fleet, repeated seeds, onset labels,
 and false alarms per operating hour.
 
+### 20.9 Complete run-to-failure lifecycle gate
+
+The next experiment used NASA CMAPSS FD001, a simulated turbofan dataset
+where each engine runs until failure. Engines 1--40 supplied 30 early
+commissioning windows each. Engines 41--50 were kept completely separate and
+were evaluated through their full failures. The alarm needed three
+consecutive unusual windows. “By the maintenance horizon” means the model
+had raised a sustained alarm by the time the remaining useful life (RUL) was
+20 cycles or less.
+
+```mermaid
+flowchart LR
+    A[Early healthy windows from engines 1-40] --> B[Train and calibrate]
+    B --> C[Compact CNN student]
+    C --> D[Score engines 41-50]
+    D --> E{Three consecutive unusual windows?}
+    E -->|before RUL 20| F[Timely warning]
+    E -->|after RUL 20 but before failure| G[Late warning]
+    E -->|never| H[Missed failure]
+```
+
+The two large teachers were used offline. For this bounded run, one retained
+sensor channel was used because the full 14-channel teacher experiment did
+not finish within the host's 15-minute execution limit. This is recorded as a
+limitation rather than hidden as a preprocessing choice.
+
+| Model | Window AUROC | Window AP | Detection before failure | Detection by RUL 20 | Early-warning episodes |
+|---|---:|---:|---:|---:|---:|
+| Ordinary compact CNN | 0.9823 | 0.9052 | 1.0000 | **0.7000** | 7 |
+| MOMENT student | **0.9902** | 0.9453 | 1.0000 | 0.2000 | 19 |
+| Chronos student | 0.9896 | **0.9491** | 1.0000 | 0.3000 | 13 |
+| Two-teacher student | 0.9890 | 0.9397 | 1.0000 | 0.2000 | 15 |
+
+This result is more informative than the earlier static fault tables. The
+teachers slightly improve window ranking, but the ordinary CNN gives the best
+timely recall by the maintenance horizon. The two-teacher student eventually
+raises an alarm for all ten failing engines, yet only two of ten receive that
+alarm by RUL 20. A high AUROC therefore does not guarantee a useful
+maintenance lead time.
+
+The word “early-warning episode” is used instead of “false alarm.” Every
+held-out CMAPSS engine eventually fails, so an alarm before RUL 20 may be a
+valid early warning. Calling it false would be like calling a fire alarm
+false merely because it rang before the flames became visible. The
+calibration portion is the only healthy-only check in this gate: all four
+models produced zero sustained alarms over 1,200 commissioning windows.
+That is not enough to estimate false alarms per operating hour because CMAPSS
+has cycles, not wall-clock time, and every test engine is a failing engine.
+
+During implementation, the first persistence metric contained two important
+mistakes. It accepted a two-window suffix as a three-window alarm, and it
+classified every alarm before RUL 20 as a false alarm. The corrected pipeline
+requires the complete persistence window and reports four separate quantities:
+
+1. detection before eventual failure;
+2. detection by the chosen RUL horizon;
+3. early-warning episodes before that horizon; and
+4. false alarms on healthy calibration windows.
+
+The compact student remained 46,144 bytes and encoded a test window in about
+0.0031 ms. The two-teacher process used about 1.35 GB at peak. Exact
+revisions, splits, sensor choice, thresholds, and measurements are in
+`results/cmapss_two_teacher_gate.json`. CMAPSS is simulated, has one
+operating condition and one fault mode, and is not industrial field evidence.
+The decisive next study needs complete wall-clock run-to-failure data with
+healthy assets that do not all fail, so false alarms per operating hour can be
+measured honestly.
+
 ## References
 
 1. Chhikara, P., Khant, D., Aryan, S., Singh, T., and Yadav, D. (2025). “Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory.” arXiv:2504.19413. [arXiv](https://arxiv.org/abs/2504.19413)
@@ -1376,6 +1444,9 @@ Maintenance of Industrial Equipment.” MFPT fault-data source and archive:
 24. Case Western Reserve University Bearing Data Center. “Bearing Data
 Center.” [source file](https://engineering.case.edu/sites/default/files/97.mat)
 and [metadata manifest](https://github.com/VictorBauler/BearingDatasets/blob/main/src/bearing_datasets/datasets/cwru/files.csv).
+25. NASA. “Turbofan Engine Degradation Simulation Data Set (CMAPSS FD001).”
+[Open Data](https://data.nasa.gov/dataset/cmapss-jet-engine-simulated-data) ·
+[dataset archive](https://phm-datasets.s3.amazonaws.com/NASA/6.+Turbofan+Engine+Degradation+Simulation+Data+Set.zip).
 
 ## Figure captions
 

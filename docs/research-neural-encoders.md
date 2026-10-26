@@ -531,3 +531,69 @@ Primary sources:
    (the same path pattern was used for the pinned subset).
 2. CWRU metadata manifest:
    <https://github.com/VictorBauler/BearingDatasets/blob/main/src/bearing_datasets/datasets/cwru/files.csv>.
+
+### 7.7 Complete run-to-failure CMAPSS gate
+
+The next step used the existing NASA CMAPSS FD001 data, which has complete
+run-to-failure trajectories. Units 1--40 supplied 30 early commissioning
+windows each. Units 41--50 were never shown during training and were scored
+through their complete failures. The alarm required three consecutive flagged
+windows. The “end-of-life horizon” was defined as RUL (remaining useful life)
+of 20 cycles or less.
+
+This gate uses one retained sensor (`sensor_indices=[0]`) because the
+14-channel teacher run exceeded the bounded 15-minute execution limit on this
+host. That reduction is an explicit limitation, not a hidden optimization.
+It provides a reproducible latency/cost gate for the teacher pipeline, not the
+best possible CMAPSS accuracy.
+
+| Model | Window AUROC | Window AP | Recall before failure | Recall by RUL 20 | Pre-EOL alarms | Pre-EOL alarms / 100 healthy cycles |
+|---|---:|---:|---:|---:|---:|---:|
+| Ordinary CNN | 0.9823 | 0.9052 | 1.0000 | **0.7000** | 7 | **0.406** |
+| MOMENT student | **0.9902** | 0.9453 | 1.0000 | 0.2000 | 19 | 1.103 |
+| Chronos student | 0.9896 | **0.9491** | 1.0000 | 0.3000 | 13 | 0.754 |
+| Two-teacher student | 0.9890 | 0.9397 | 1.0000 | 0.2000 | 15 | 0.871 |
+
+The result reverses the ranking-only story. The foundation teachers slightly
+improved AUROC and AP, but the ordinary CNN gave the best timely event recall
+by the RUL-20 horizon and produced fewer early alarm episodes. The
+two-teacher student detected every eventual failure before the end of the
+trajectory, but only 2 of 10 units had a sustained alarm by RUL 20. In other
+words, it often detected degradation too late for the chosen maintenance
+horizon.
+
+“Pre-EOL alarms” are intentionally not called false alarms. Every held-out
+CMAPSS unit eventually fails, so an alarm before RUL 20 may be a valid early
+warning rather than a false alarm. The true false-alarm measurement available
+here is the healthy commissioning portion: all four models produced zero
+sustained calibration alarms over 1,200 healthy windows. This is not enough
+to estimate field false alarms per hour. CMAPSS has cycles, not wall-clock
+sampling intervals, so the report uses alarms per 100 healthy cycles.
+
+The compact student remained 46,144 bytes. Two-teacher student encoding was
+about 0.0031 ms per window, while the process peak was about 1.35 GB.
+Teacher parameter storage remained approximately 141 MB for MOMENT and 478 MB
+for Chronos. The exact split, threshold, sensor choice, revisions, resource
+measurements, and all metrics are in
+`results/cmapss_two_teacher_gate.json`.
+
+The most important methodological correction came during this gate. An early
+metric implementation treated a sustained alarm before RUL 20 as a false
+alarm and also accepted a shortened two-window suffix as a three-window
+persistent alarm. Both errors could make the result look worse or better for
+the wrong reason. The final implementation requires the full persistence
+window and separates:
+
+1. detection before eventual failure;
+2. detection by the chosen maintenance horizon;
+3. early-warning episodes before that horizon; and
+4. false alarms measured only on healthy calibration windows.
+
+This CMAPSS study therefore gives a stronger lifecycle diagnosis but does not
+establish industrial superiority. The next meaningful gate is a multi-asset,
+wall-clock run-to-failure dataset with healthy machines that do not all fail,
+so false alarms per operating hour and maintenance lead time can be measured
+without ambiguity.
+
+Primary source: NASA CMAPSS FD001 dataset and protocol notes in
+[`docs/research-cmapss.md`](research-cmapss.md).

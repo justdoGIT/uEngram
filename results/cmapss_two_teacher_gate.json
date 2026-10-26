@@ -1,0 +1,158 @@
+{
+  "dataset": "NASA CMAPSS FD001; simulated turbofan degradation, not field evidence",
+  "limitations": [
+    "CMAPSS is simulated and contains one operating condition and one fault mode.",
+    "The fixed fold has 40 training and 10 test engine units; repeated folds are future work.",
+    "The reported false-alarm rate uses cycles rather than hours because CMAPSS has no wall-clock sampling interval.",
+    "The large teachers are training-only; only the compact CNN is intended for edge deployment."
+  ],
+  "protocol": {
+    "calibration_windows_per_unit": 30,
+    "eol_horizon_cycles": 20,
+    "false_alarm_unit": "episodes per 100 healthy cycles; CMAPSS has no wall-clock hour",
+    "normalization": "training commissioning mean and standard deviation only",
+    "persistence_windows": 3,
+    "sensor_indices": [
+      0
+    ],
+    "test_units": [
+      41,
+      50
+    ],
+    "train_units": [
+      1,
+      40
+    ],
+    "train_windows_per_unit": 30,
+    "warning_time": "cycles before RUL <= 20; complete run-to-failure labels available for held-out units",
+    "window_size": 16
+  },
+  "resources": {
+    "process_peak_rss_mb": 1354.39453125
+  },
+  "results": {
+    "baseline_cnn": {
+      "calibration_false_alarm_episodes": 0,
+      "calibration_false_alarms_per_100_healthy_windows": 0.0,
+      "calibration_healthy_windows": 1200,
+      "edge_model_bytes": 46144,
+      "encode_test_ms_per_window": 0.0037508116928071356,
+      "event_recall_at_eol_horizon": 0.7,
+      "event_recall_before_failure": 1.0,
+      "events_detected_before_failure": 10,
+      "events_detected_by_horizon": 7,
+      "events_total": 10,
+      "fit_seconds": 0.36613561198464595,
+      "healthy_cycles": 1723,
+      "missed_events": 0,
+      "pre_eol_alarm_episodes": 7,
+      "pre_eol_alarms_per_100_healthy_cycles": 0.4062681369704005,
+      "test_units": 10,
+      "test_windows": 1933,
+      "threshold_train_calibration_p99": 5.079603561440015,
+      "training_teacher_head_bytes": 0,
+      "warning_cycles_before_eol_horizon_mean": 26.0,
+      "warning_cycles_before_eol_horizon_median": 9.0,
+      "window_auroc": 0.9822734433297405,
+      "window_average_precision": 0.9051818039401736
+    },
+    "chronos_student": {
+      "calibration_false_alarm_episodes": 0,
+      "calibration_false_alarms_per_100_healthy_windows": 0.0,
+      "calibration_healthy_windows": 1200,
+      "edge_model_bytes": 46144,
+      "encode_test_ms_per_window": 0.0021903259141020865,
+      "event_recall_at_eol_horizon": 0.3,
+      "event_recall_before_failure": 1.0,
+      "events_detected_before_failure": 10,
+      "events_detected_by_horizon": 3,
+      "events_total": 10,
+      "fit_seconds": 7.034042202983983,
+      "healthy_cycles": 1723,
+      "missed_events": 0,
+      "pre_eol_alarm_episodes": 13,
+      "pre_eol_alarms_per_100_healthy_cycles": 0.7544979686593152,
+      "test_units": 10,
+      "test_windows": 1933,
+      "threshold_train_calibration_p99": 3.457237230138346,
+      "training_teacher_head_bytes": 1088,
+      "warning_cycles_before_eol_horizon_mean": 47.625,
+      "warning_cycles_before_eol_horizon_median": 23.5,
+      "window_auroc": 0.9895779786087389,
+      "window_average_precision": 0.9490642450472557
+    },
+    "moment_student": {
+      "calibration_false_alarm_episodes": 0,
+      "calibration_false_alarms_per_100_healthy_windows": 0.0,
+      "calibration_healthy_windows": 1200,
+      "edge_model_bytes": 46144,
+      "encode_test_ms_per_window": 0.0034209203166069065,
+      "event_recall_at_eol_horizon": 0.2,
+      "event_recall_before_failure": 1.0,
+      "events_detected_before_failure": 10,
+      "events_detected_by_horizon": 2,
+      "events_total": 10,
+      "fit_seconds": 28.431495311990147,
+      "healthy_cycles": 1723,
+      "missed_events": 0,
+      "pre_eol_alarm_episodes": 19,
+      "pre_eol_alarms_per_100_healthy_cycles": 1.10272780034823,
+      "test_units": 10,
+      "test_windows": 1933,
+      "threshold_train_calibration_p99": 3.2123289757865,
+      "training_teacher_head_bytes": 34952,
+      "warning_cycles_before_eol_horizon_mean": 24.666666666666668,
+      "warning_cycles_before_eol_horizon_median": 9.0,
+      "window_auroc": 0.9902440372550645,
+      "window_average_precision": 0.9452520299076275
+    },
+    "two_teacher_student": {
+      "calibration_false_alarm_episodes": 0,
+      "calibration_false_alarms_per_100_healthy_windows": 0.0,
+      "calibration_healthy_windows": 1200,
+      "edge_model_bytes": 46144,
+      "encode_test_ms_per_window": 0.003128354369594768,
+      "event_recall_at_eol_horizon": 0.2,
+      "event_recall_before_failure": 1.0,
+      "events_detected_before_failure": 10,
+      "events_detected_by_horizon": 2,
+      "events_total": 10,
+      "fit_seconds": 34.86163029400632,
+      "healthy_cycles": 1723,
+      "missed_events": 0,
+      "pre_eol_alarm_episodes": 15,
+      "pre_eol_alarms_per_100_healthy_cycles": 0.8705745792222868,
+      "test_units": 10,
+      "test_windows": 1933,
+      "threshold_train_calibration_p99": 3.2752208239526253,
+      "training_teacher_head_bytes": 36040,
+      "warning_cycles_before_eol_horizon_mean": 40.5,
+      "warning_cycles_before_eol_horizon_median": 23.0,
+      "window_auroc": 0.98900312301357,
+      "window_average_precision": 0.9396978488587721
+    }
+  },
+  "role": "CMAPSS FD001 unit-disjoint complete run-to-failure lifecycle gate",
+  "teachers": {
+    "chronos": {
+      "feature_dim": 16,
+      "license": "Apache-2.0",
+      "load_seconds": 0.5743746689986438,
+      "model_id": "amazon/chronos-2",
+      "parameter_bytes": 477910656,
+      "parameter_count": 119477664,
+      "probe_ms_per_window": 8.121693688735832,
+      "revision": "29ec3766d36d6f73f0696f85560a422f50e8498c"
+    },
+    "moment": {
+      "feature_dim": 514,
+      "license": "MIT",
+      "load_seconds": 4.294604687980609,
+      "model_id": "AutonLab/MOMENT-1-small",
+      "parameter_bytes": 141349632,
+      "parameter_count": 35337408,
+      "probe_ms_per_window": 20.242937875082134,
+      "revision": "411e288267f82cce86296dbe4d6c8bc533cc162f"
+    }
+  }
+}
