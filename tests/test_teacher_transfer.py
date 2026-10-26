@@ -119,3 +119,50 @@ def test_moment_adapter_right_aligns_and_reduces_patch_embeddings():
     assert result.shape == (2, 3)
     assert np.isfinite(result).all()
     assert torch is not None
+
+
+def test_moment_adapter_linear_resampling_can_restore_instance_statistics():
+    torch = pytest.importorskip("torch")
+    from types import SimpleNamespace
+
+    from uengram.moment_teacher import MOMENTTeacherAdapter
+
+    class FakeMoment:
+        def __call__(self, *, x_enc, input_mask):
+            assert tuple(x_enc.shape) == (2, 2, 8)
+            assert tuple(input_mask.shape) == (2, 8)
+            return SimpleNamespace(
+                embeddings=torch.zeros((2, 1, 3), dtype=torch.float32)
+            )
+
+    windows = np.array(
+        [
+            [[0, 1, 2, 3], [4, 4, 4, 4]],
+            [[2, 2, 2, 2], [0, 2, 4, 6]],
+        ],
+        dtype=np.float32,
+    )
+    spec = TeacherSpec(
+        model_name="fake-moment",
+        model_version="test",
+        layer="embedding-mean-patches+instance-stats",
+        feature_dim=7,
+        input_schema=WindowSchema(("a", "b"), 1.0, 4),
+    )
+    adapter = MOMENTTeacherAdapter(
+        FakeMoment(),
+        spec,
+        context_length=8,
+        context_policy="linear",
+        include_instance_stats=True,
+        base_feature_dim=3,
+    )
+
+    result = adapter.encode(windows)
+
+    assert result.shape == (2, 7)
+    np.testing.assert_allclose(result[:, 3:5], [[1.5, 4.0], [2.0, 3.0]])
+    np.testing.assert_allclose(
+        result[:, 5:],
+        [[np.sqrt(1.25), 0.0], [0.0, np.sqrt(5.0)]],
+    )

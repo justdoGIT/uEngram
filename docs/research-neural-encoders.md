@@ -297,3 +297,34 @@ while retaining all four reported events. The same teacher reduced the
 four-family synthetic probe from `0.6872/0.8007` to `0.5035/0.6602`. The
 negative cross-domain result is the stronger engineering lesson: teacher
 transfer must be gated by window compatibility and held-out fault families.
+
+### 7.1 Context repair and instance-statistics ablation
+
+The adapter now makes the 512-sample context mismatch explicit. `edge` repeats
+the first sample on the left; `linear` resamples the known short window across
+the full teacher context. A second option appends each channel's original mean
+and standard deviation, because instance normalization in a foundation model
+can hide absolute level and volatility.
+
+| Variant on the fixed synthetic probe | AUROC | AP |
+|---|---:|---:|
+| Ordinary CNN baseline | 0.6872 | 0.8007 |
+| MOMENT + edge repeat | 0.5035 | 0.6602 |
+| MOMENT + linear resampling | 0.5250 | 0.6956 |
+| MOMENT + linear + mean/std | **0.5362** | **0.7136** |
+
+The repair helps relative to edge padding but does not beat the ordinary
+domain-specific CNN. On MetroPT-3's native 512 context, mean/std augmentation
+gave AUROC/AP `0.9751/0.5846`; the prior no-statistics transfer gave
+`0.9775/0.7942`. It is therefore an optional research branch, not a new
+default.
+
+This matches two external findings. Kim et al. (ICLR 2026) report
+overgeneralization and overstationarization in time-series foundation-model
+anomaly detection and recover useful statistics without retraining the
+foundation model. Khan et al.'s ChronosAD (2026) adds temporal refinement
+after foundation-model features. Both support testing a small, causal
+refinement stage rather than assuming a frozen vector is complete. The TSB-AD
+benchmark is a suitable source for broader preregistered comparisons, while
+its warning that simple statistical methods can win some series argues
+against replacing uEngram's statistical safeguards with a neural teacher.

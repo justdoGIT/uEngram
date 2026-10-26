@@ -19,18 +19,21 @@ from .teacher_transfer import TeacherSpec, WindowSchema
 class MOMENTTeacherAdapter:
     """Run a frozen MOMENT embedding model on causal sensor windows.
 
-    MOMENT was pretrained for 512-sample contexts. Shorter uEngram windows are
-    left-padded by repeating their first sample; longer windows retain the most
-    recent 512 samples. The model therefore sees only the current window and
-    never receives samples after its right edge. This is online-causal
-    alignment, not a claim that the transformer's attention is causal inside a
-    window.
+    MOMENT was pretrained for 512-sample contexts. The ``edge`` policy
+    left-pads short uEngram windows by repeating their first sample and keeps
+    the newest samples when a window is longer. The ``linear`` policy resamples
+    the full window to the native context, preserving its endpoints. Both are
+    online-causal: the model never receives samples after the input window's
+    right edge.
     """
 
     model: Any
     spec: TeacherSpec
     context_length: int
     device: str = "cpu"
+    context_policy: str = "edge"
+    include_instance_stats: bool = False
+    base_feature_dim: int = 0
 
     @classmethod
     def from_pretrained(
@@ -43,8 +46,12 @@ class MOMENTTeacherAdapter:
         device: str = "cpu",
         local_files_only: bool = False,
         revision: str | None = None,
+        context_policy: str = "edge",
+        include_instance_stats: bool = False,
     ) -> "MOMENTTeacherAdapter":
         """Load a public MOMENT checkpoint and declare its feature contract."""
+        if context_policy not in ("edge", "linear"):
+            raise ValueError("context_policy must be 'edge' or 'linear'")
         try:
             import torch
             from momentfm import MOMENTPipeline
@@ -66,32 +73,53 @@ class MOMENTTeacherAdapter:
         model.to(device)
         model.eval()
         context_length = int(model.seq_len)
-        feature_dim = int(model.config.d_model)
+        base_feature_dim = int(model.config.d_model)
         schema = WindowSchema(
             channel_names=tuple(channel_names),
             sample_rate_hz=sample_rate_hz,
             window_size=window_size,
         )
+        layer = "embedding-mean-patches"
+        feature_dim = base_feature_dim
+        if include_instance_stats:
+            layer += "+instance-stats"
+            feature_dim += 2 * len(channel_names)
         spec = TeacherSpec(
             model_name=model_id,
             model_version=revision or str(
                 getattr(model.config, "_name_or_path", model_id)
             ),
-            layer="embedding-mean-patches",
+            layer=layer,
             feature_dim=feature_dim,
             input_schema=schema,
             causal=True,
             alignment="right",
         )
-        return cls(model=model, spec=spec, context_length=context_length, device=device)
+        return cls(
+            model=model,
+            spec=spec,
+            context_length=context_length,
+            device=device,
+            context_policy=context_policy,
+            include_instance_stats=include_instance_stats,
+            base_feature_dim=base_feature_dim,
+        )
 
     def _prepare(self, windows: np.ndarray):
         import torch
 
         values = np.asarray(windows, dtype=np.float32)
-        self.spec.input_schema.validate(values)
+        if self.context_policy not in ("edge", "linear"):
+            raise ValueError("context_policy must be 'edge' or 'linear'")
         _, _, samples = values.shape
-        if samples < self.context_length:
+        if self.context_policy == "linear":
+            source = np.linspace(0.0, 1.0, samples)
+            target = np.linspace(0.0, 1.0, self.context_length)
+            values = np.stack([
+                np.stack([np.interp(target, source, row) for row in batch])
+                for batch in values
+            ]).astype(np.float32)
+        elif samples < self.context_length:
             pad = np.repeat(values[:, :, :1], self.context_length - samples, axis=2)
             values = np.concatenate((pad, values), axis=2)
         elif samples > self.context_length:
@@ -102,7 +130,9 @@ class MOMENTTeacherAdapter:
         """Return one dense embedding per input window, preserving row order."""
         import torch
 
-        x = self._prepare(windows)
+        values = np.asarray(windows, dtype=np.float32)
+        self.spec.input_schema.validate(values)
+        x = self._prepare(values)
         mask = torch.ones((x.shape[0], self.context_length), device=x.device)
         with torch.inference_mode():
             output = self.model(x_enc=x, input_mask=mask)
@@ -114,4 +144,19 @@ class MOMENTTeacherAdapter:
                     "MOMENT embedding output must be (batch, features) or "
                     "(batch, patches, features)"
                 )
-        return embeddings.detach().cpu().numpy()
+        result = embeddings.detach().cpu().numpy()
+        expected_base = self.base_feature_dim or result.shape[1]
+        if result.shape[1] != expected_base:
+            raise ValueError(
+                "MOMENT embedding width does not match the declared feature contract"
+            )
+        if self.include_instance_stats:
+            stats = np.concatenate(
+                (values.mean(axis=2), values.std(axis=2)), axis=1
+            )
+            if result.shape[1] + stats.shape[1] != self.spec.feature_dim:
+                raise ValueError(
+                    "instance-statistics width does not match the declared feature contract"
+                )
+            result = np.concatenate((result, stats), axis=1)
+        return result

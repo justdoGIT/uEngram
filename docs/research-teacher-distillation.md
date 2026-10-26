@@ -290,6 +290,90 @@ The official model page and paper are the provenance sources:
 Before commercial release, verify the checkpoint's license, revision, source
 data terms, and whether the derived student may be redistributed.
 
+## Follow-up research: context compatibility and missing statistics
+
+The first run exposed a specific failure path: MOMENT expects 512 samples, while
+the synthetic challenge uses 64. Repeating the first sample on the left preserves
+the current-time boundary, but it also gives the teacher a long artificial
+plateau. The adapter now has two explicit policies:
+
+- `edge`: repeat the first sample for a short window and keep the newest samples
+  for a long window;
+- `linear`: resample the complete window onto the teacher's context grid.
+
+Both policies are online-causal. Interpolation changes the spacing of samples
+inside the known window; it does not invent a sample after the right edge.
+The choice is recorded in the experiment provenance and is not silently
+selected from test labels.
+
+Recent time-series-foundation-model research gives a second warning. Kim et al.
+(ICLR 2026) describe **overstationarization**: instance normalization can remove
+the mean and spread of a signal, even though a machine's absolute level or
+volatility may be the fault. The adapter can therefore append the original
+per-channel mean and standard deviation to the pooled MOMENT vector. In simple
+terms, the model keeps both its learned “shape fingerprint” and a ruler showing
+the signal's height and wiggle. This is a representation safeguard, not a
+claim that the statistics are always useful.
+
+The controlled study used the same four-family synthetic probe, seed, student,
+teacher weight, and five-epoch budget for every variant:
+
+| Teacher target | AUROC | Average precision | Important observation |
+|---|---:|---:|---|
+| Ordinary CNN baseline | 0.6872 | 0.8007 | Best overall synthetic result |
+| MOMENT, edge repeat | 0.5035 | 0.6602 | Negative transfer |
+| MOMENT, linear resampling | 0.5250 | 0.6956 | Small recovery, still below baseline |
+| MOMENT, linear + mean/std | **0.5362** | **0.7136** | Best teacher variant, still below baseline |
+
+The linear-plus-statistics variant improved the seizure-family AUROC from
+0.5993 to 0.7004 relative to edge repeat, but it did not recover the ordinary
+CNN's overall score. That is a useful result: context repair reduces one
+source of teacher mismatch, but it does not turn a broad teacher into a
+specialist for every local fault.
+
+On the already-consumed MetroPT-3 development split, the native context is
+512, so linear resampling is mathematically a no-op. Adding mean/std features
+produced AUROC 0.9751 and AP 0.5846, compared with the ordinary CNN's 0.9756
+and 0.6225 and the earlier no-statistics MOMENT run's 0.9775 and 0.7942.
+This is a negative result for using statistics augmentation as a default on
+this asset. It also shows why AP, event retention, writes, and false alarms
+must be reported with AUROC rather than hidden behind a single score.
+
+The reproducible artifacts are:
+
+- `results/cnn_moment_context_study.json`;
+- `results/cnn_moment_distillation_metropt_stats.json`.
+
+The study is not a held-out benchmark. MetroPT-3 was consumed earlier, and the
+synthetic generator is a development instrument. The correct next gate is
+unseen assets and fault families with the teacher policy frozen in advance.
+
+### New findings from the external literature
+
+Three recent directions are especially relevant:
+
+1. **Intermediate features are useful but not automatically sufficient.**
+   ChronosAD (Khan et al., 2026) combines foundation-model representations
+   with a temporal refinement block rather than trusting a frozen embedding
+   alone. For uEngram, the safe analogue is a small temporal student or
+   multi-scale readout trained offline; the memory and alarm loop should not
+   become dependent on a remote LLM.
+2. **A statistical fallback can correct foundation-model blind spots.**
+   Kim et al. propose a complexity-aware ensemble because foundation models can
+   overgeneralize smooth, low-frequency signals. A future uEngram gate could
+   blend teacher-derived novelty with a robust statistical score when the
+   window's complexity differs sharply from the teacher's learned regime.
+3. **Large teachers do not replace evaluation discipline.** TSB-AD reports
+   broad anomaly-detection coverage and emphasizes that simple statistical
+   methods can beat advanced neural methods on some series. It is a useful
+   source for preregistered comparisons, not evidence for a universal winner.
+
+The repository contribution is therefore an auditable combination of a frozen
+time-series teacher, a small deployable student, explicit context policies,
+recoverable instance statistics, and uEngram's bounded memory lifecycle. The
+combination and negative transfer measurements are useful engineering evidence;
+they are not a claim of a new universal anomaly-detection algorithm.
+
 ## Why “all faults” is not a valid teacher claim
 
 MOMENT is broad, but it is not a catalogue containing every machine error.

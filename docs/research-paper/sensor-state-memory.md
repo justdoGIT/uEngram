@@ -994,6 +994,102 @@ engineering evidence remain in
 this section intentionally gives the architecture rather than a vendor API or
 an application-specific data interface.
 
+### 20.5 Context compatibility, statistics, and a safer research extension
+
+The teacher architecture has one more important design choice: the teacher's
+native window may be longer than the edge window. If the edge window contains
+$K$ samples and the teacher expects $L$ samples, two causal transformations are
+possible:
+
+1. **Edge completion:** repeat the first known sample on the left until the
+   window has length $L$. The newest sample remains at the right edge, but the
+   teacher sees an artificial flat history.
+2. **Time resampling:** place the $K$ known samples on a normalized time axis
+   and interpolate them onto $L$ positions. This uses the whole known window
+   without looking beyond its right edge, but it changes the time spacing.
+
+Neither operation is automatically correct. The first can create a false
+stationary history; the second can smooth a short impulse. The policy must
+therefore be versioned and selected before held-out evaluation.
+
+Foundation models may also normalize every window internally:
+
+$$
+\widetilde{X}_{c,t} =
+\frac{X_{c,t}-\mu_c}{\sigma_c+\epsilon},
+\qquad
+\mu_c=\frac{1}{K}\sum_t X_{c,t},
+\qquad
+\sigma_c=\sqrt{\frac{1}{K}\sum_t(X_{c,t}-\mu_c)^2}.
+$$
+
+This is helpful for comparing shapes, but it can hide the fact that a pump is
+running at an unusually high pressure or that vibration has become much more
+variable. A generic safeguard is to retain both the learned shape vector and
+the original statistics:
+
+$$
+T^+(X)=\big[T(\widetilde{X}),\ \mu_1,\ldots,\mu_C,\
+\sigma_1,\ldots,\sigma_C\big].
+$$
+
+In plain language, the memory keeps the specialist's sketch and the ruler
+used to measure the sketch. This is the theoretical form of the instance
+statistics branch; it is not a guarantee that the extra numbers improve every
+asset.
+
+```mermaid
+flowchart LR
+    X[Known sensor window] --> P{Context policy}
+    P -->|edge completion| E[Right-aligned padded window]
+    P -->|time resampling| R[Full-window resampled view]
+    E --> T[Foundation representation]
+    R --> T
+    X --> S[Original per-channel mean and spread]
+    T --> F[Shape fingerprint]
+    S --> F2[Level and volatility fingerprint]
+    F --> J[Combined teacher target]
+    F2 --> J
+    J --> C[Causal compact student]
+    C --> M[Statistical projection and bounded memory]
+```
+
+The repository's controlled study gives a useful warning rather than a
+universal improvement. On the fixed four-family synthetic probe, the ordinary
+CNN scored AUROC/AP `0.6872/0.8007`; edge-completed MOMENT scored
+`0.5035/0.6602`; time-resampled MOMENT scored `0.5250/0.6956`; and
+time-resampled MOMENT with original mean/spread scored `0.5362/0.7136`.
+The last variant was the best teacher branch but still lost to the
+domain-specific baseline. On the already-consumed MetroPT-3 development
+split, native-context mean/spread augmentation scored `0.9751/0.5846`,
+below the ordinary CNN's `0.9756/0.6225` and below the earlier
+no-statistics transfer result `0.9775/0.7942`.
+
+These results support three conclusions:
+
+1. context compatibility is a real failure boundary, not a preprocessing
+   detail;
+2. recovering statistics can help one family while hurting another;
+3. a teacher target must be compared with an unchanged local baseline and
+   judged by event recall, false alarms, storage writes, and latency—not only
+   AUROC.
+
+Recent work points to a broader architecture. ChronosAD [20] adds a temporal
+refinement block after foundation-model representations, while Kim et al. [19]
+(ICLR 2026) combine a foundation-model score with a statistical score when
+signal complexity suggests that reconstruction is overgeneralizing. A
+resource-bounded uEngram design can apply the same idea conceptually: use a
+small causal refinement and a robust statistical fallback, then let the
+memory lifecycle decide whether the result is baseline drift, an uncertain
+candidate, or a protected episode. This keeps the LLM or large teacher out of
+the safety-critical admission loop.
+
+The research contribution here is an auditable integration pattern and a
+measured negative result, not a claim of a new universal detector. The
+combination should be considered novel to this repository only after
+independent reproduction, a held-out-asset study, and comparison with TSB-AD
+[21], CMAPSS, SKAB, and other licensed datasets under a fixed protocol.
+
 ## References
 
 1. Chhikara, P., Khant, D., Aryan, S., Singh, T., and Yadav, D. (2025). “Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory.” arXiv:2504.19413. [arXiv](https://arxiv.org/abs/2504.19413)
@@ -1014,6 +1110,15 @@ an application-specific data interface.
 16. dos Santos Oliveira, A., da Silva, F. S. T., Ferreira, D. L., et al. (2026). “Looking at anomaly detection in EdgeAI through the up-to-date lens of academic and market perspectives.” *Cluster Computing*, 29, 251. [doi](https://doi.org/10.1007/s10586-026-05954-9)
 17. Kim, M., Bhaumik, K. K., Ali, A. A., and Woo, S. S. (2024). “MIXAD: Memory-Induced Explainable Time Series Anomaly Detection.” arXiv:2410.22735. [arXiv](https://arxiv.org/abs/2410.22735)
 18. Goswami, M., et al. (2024). “MOMENT: A Family of Open Time-series Foundation Models.” *Proceedings of ICML 2024*. [arXiv](https://arxiv.org/abs/2402.03885) · [official model](https://huggingface.co/AutonLab/MOMENT-1-large) · [code](https://github.com/moment-timeseries-foundation-model/moment)
+19. Kim, J., Yoon, S., Ko, Y. M., Kim, Y., Kim, S. I., and Tae, J. (2026).
+“Complexity- and Statistics-Guided Anomaly Detection in Time Series
+Foundation Models.” *International Conference on Learning Representations
+(ICLR) 2026*. [paper](https://proceedings.iclr.cc/paper_files/paper/2026/file/d06768735ce7d11ade5baef7099b4e05-Paper-Conference.pdf)
+20. Khan, U., Capogrosso, L., Biondani, F., Magno, M., and Fummi, F. (2026).
+“ChronosAD: Leveraging Time Series Foundation Models for Accurate Anomaly
+Detection.” arXiv:2606.01300. [arXiv](https://arxiv.org/abs/2606.01300)
+21. TSB-AD project. “A Comprehensive Benchmark for Time-Series Anomaly
+Detection.” [project page](https://thedatumorg.github.io/TSB-AD/)
 
 ## Figure captions
 

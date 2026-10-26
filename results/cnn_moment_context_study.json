@@ -1,0 +1,140 @@
+{
+  "baseline": {
+    "auroc": 0.6872222222222222,
+    "average_precision": 0.800713864265146,
+    "fault_families": {
+      "1": {
+        "auroc": 0.6377777777777778,
+        "average_precision": 0.33094022014547725
+      },
+      "2": {
+        "auroc": 0.5555555555555556,
+        "average_precision": 0.5005323095791125
+      },
+      "3": {
+        "auroc": 0.5555555555555556,
+        "average_precision": 0.5005323095791125
+      },
+      "4": {
+        "auroc": 1.0,
+        "average_precision": 1.0
+      }
+    }
+  },
+  "data": {
+    "channels": [
+      "rpm",
+      "oil_psi",
+      "coolant_temp",
+      "vib_x",
+      "vib_y",
+      "vib_z"
+    ],
+    "generator": "uengram.synth",
+    "positive_windows": 120,
+    "probe_seed": 902,
+    "probe_windows": 210,
+    "train_seed": 901,
+    "train_windows": 384,
+    "window_size": 64
+  },
+  "interpretation": "Use this matrix to select a context policy; it does not establish generalization to unseen machines or fault families.",
+  "role": "controlled synthetic context-policy study; not a held-out benchmark",
+  "student_contract": {
+    "dimension": 16,
+    "epochs": 5,
+    "teacher_weight": 0.25
+  },
+  "teacher": {
+    "license": "MIT (verify upstream revision before deployment)",
+    "model_id": "AutonLab/MOMENT-1-small",
+    "native_context": 512,
+    "revision": "411e288267f82cce86296dbe4d6c8bc533cc162f"
+  },
+  "variants": [
+    {
+      "context_policy": "edge",
+      "fit_seconds": 50.6991967689828,
+      "include_instance_stats": false,
+      "student": {
+        "auroc": 0.5035185185185185,
+        "average_precision": 0.6601596963029276,
+        "fault_families": {
+          "1": {
+            "auroc": 0.4148148148148148,
+            "average_precision": 0.40005198529495384
+          },
+          "2": {
+            "auroc": 0.5555555555555556,
+            "average_precision": 0.5005323095791125
+          },
+          "3": {
+            "auroc": 0.4444444444444444,
+            "average_precision": 0.47481389005685853
+          },
+          "4": {
+            "auroc": 0.5992592592592593,
+            "average_precision": 0.27928833306817075
+          }
+        }
+      },
+      "teacher_feature_dim": 512
+    },
+    {
+      "context_policy": "linear",
+      "fit_seconds": 52.77642734599067,
+      "include_instance_stats": false,
+      "student": {
+        "auroc": 0.525,
+        "average_precision": 0.6956376501068376,
+        "fault_families": {
+          "1": {
+            "auroc": 0.4444444444444444,
+            "average_precision": 0.47481389005685853
+          },
+          "2": {
+            "auroc": 0.5555555555555556,
+            "average_precision": 0.5005323095791125
+          },
+          "3": {
+            "auroc": 0.5555555555555556,
+            "average_precision": 0.5005323095791125
+          },
+          "4": {
+            "auroc": 0.5444444444444444,
+            "average_precision": 0.4755323095791125
+          }
+        }
+      },
+      "teacher_feature_dim": 512
+    },
+    {
+      "context_policy": "linear",
+      "fit_seconds": 56.72191199098597,
+      "include_instance_stats": true,
+      "student": {
+        "auroc": 0.5362037037037037,
+        "average_precision": 0.7136292903363294,
+        "fault_families": {
+          "1": {
+            "auroc": 0.4444444444444444,
+            "average_precision": 0.47481389005685853
+          },
+          "2": {
+            "auroc": 0.5555555555555556,
+            "average_precision": 0.5005323095791125
+          },
+          "3": {
+            "auroc": 0.4444444444444444,
+            "average_precision": 0.47481389005685853
+          },
+          "4": {
+            "auroc": 0.7003703703703704,
+            "average_precision": 0.5809370434541515
+          }
+        }
+      },
+      "teacher_feature_dim": 524
+    }
+  ]
+}

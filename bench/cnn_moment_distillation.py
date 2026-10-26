@@ -57,6 +57,9 @@ def _evaluate_synthetic(teacher, epochs: int, teacher_weight: float):
         spec=spec,
         context_length=teacher.context_length,
         device=teacher.device,
+        context_policy=teacher.context_policy,
+        include_instance_stats=teacher.include_instance_stats,
+        base_feature_dim=teacher.base_feature_dim,
     )
     baseline = CNNEncoder(seed=12, d=16, epochs=epochs, batch=64)
     baseline.fit(train, noise_lag=1, groups=None)
@@ -103,6 +106,8 @@ def main() -> None:
     parser.add_argument("--epochs", type=int, default=5)
     parser.add_argument("--teacher-weight", type=float, default=0.25)
     parser.add_argument("--local-files-only", action="store_true")
+    parser.add_argument("--context-policy", choices=("edge", "linear"), default="edge")
+    parser.add_argument("--include-instance-stats", action="store_true")
     parser.add_argument("--include-synthetic", action="store_true")
     args = parser.parse_args()
     if args.epochs <= 0 or args.teacher_weight < 0:
@@ -120,6 +125,8 @@ def main() -> None:
         device=args.device,
         local_files_only=args.local_files_only,
         revision=args.revision,
+        context_policy=args.context_policy,
+        include_instance_stats=args.include_instance_stats,
     )
     started = time.perf_counter()
     baseline = CNNEncoder(seed=12, d=16, epochs=args.epochs, batch=64)
@@ -148,6 +155,8 @@ def main() -> None:
             "layer": teacher.spec.layer,
             "feature_dim": teacher.spec.feature_dim,
             "context_length": teacher.context_length,
+            "context_policy": teacher.context_policy,
+            "include_instance_stats": teacher.include_instance_stats,
             "causal": teacher.spec.causal,
             "alignment": teacher.spec.alignment,
         },
