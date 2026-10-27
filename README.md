@@ -74,6 +74,16 @@ deploy/install-node.sh --numpy --recommission NODE...
 # 14-day live validation campaign: record a clean week, commission on it, fault week, report
 python3 -m uengram.host campaign plan --dir ~/Backup/uengram-host/campaign
 python3 -m uengram.host campaign status --dir ~/Backup/uengram-host/campaign
+
+# create a replayable single-host dataset; predictions stay separate from labels
+python3 -m uengram.host dataset export \
+  --ticks ~/.local/state/uengram-host/spool/ticks-$(hostname)-*.jsonl* \
+  --model ~/.local/state/uengram-host/model-$(hostname).pkl \
+  --out ~/datasets/host-$(hostname)
+
+# create one dataset from all collected campaign nodes
+python3 -m uengram.host dataset export \
+  --campaign ~/Backup/uengram-host/campaign --out ~/datasets/cluster-campaign
 ```
 
 ## Layout

@@ -14,6 +14,7 @@
   cluster                     print the hub's cluster view and placement order
   tune    --node N --knob K --values ...   measure a power/scheduler knob on a fixed build (uengram.host.tune)
   campaign plan|tick|status|report --dir D   validation campaign (uengram.host.campaign)
+  dataset export             export raw ticks, replayed windows, and explicit label provenance
 """
 from __future__ import annotations
 

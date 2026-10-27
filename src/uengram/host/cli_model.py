@@ -156,6 +156,28 @@ def _tune(args) -> int:
     return 0
 
 
+def _dataset(args) -> int:
+    from .dataset import DatasetError, export_campaign, export_single, load_incidents
+
+    if bool(args.campaign) == bool(args.ticks):
+        raise DatasetError("choose exactly one of --campaign or --ticks")
+    if args.campaign:
+        manifest = export_campaign(args.campaign, args.out, args.incidents, not args.no_ticks)
+    else:
+        if not args.model:
+            raise DatasetError("--model is required with --ticks")
+        labels = load_incidents(args.incidents)
+        manifest = export_single(args.out, args.node, args.ticks, args.model, labels, not args.no_ticks)
+    print(json.dumps({
+        "out": os.path.abspath(os.path.expanduser(args.out)),
+        "kind": manifest["dataset_kind"],
+        "nodes": len(manifest["nodes"]),
+        "windows": sum(node["windows"] for node in manifest["nodes"]),
+        "labels": manifest["labels"]["records"],
+    }, indent=1))
+    return 0
+
+
 def add_model_commands(sub) -> dict:
     host = socket.gethostname()
     model = os.path.join(DEFAULT_DIR, f"model-{host}.pkl")
@@ -216,6 +238,16 @@ def add_model_commands(sub) -> dict:
     g.add_argument("--seed", type=int, default=0)
     g.add_argument("--alpha", type=float, default=0.01)
     g.add_argument("--variants", nargs="*", help="report: subset of uengram.host.validate_variants.ALL")
+    d = sub.add_parser("dataset", help="export replayable host or cluster telemetry")
+    ds = d.add_subparsers(dest="dataset_action", required=True)
+    e = ds.add_parser("export", help="write ticks, uEngram windows, and label provenance")
+    e.add_argument("--out", required=True, help="new or existing dataset directory")
+    e.add_argument("--campaign", help="completed campaign directory for a cluster export")
+    e.add_argument("--ticks", nargs="+", help="single-host tick files (.jsonl or .jsonl.gz)")
+    e.add_argument("--model", help="single-host commissioned model")
+    e.add_argument("--node", default=host, help="single-host node name")
+    e.add_argument("--incidents", help="external incident labels in JSONL format")
+    e.add_argument("--no-ticks", action="store_true", help="write derived windows only")
     t = sub.add_parser("tune")
     t.add_argument("--node", required=True, help="ssh name of the node")
     t.add_argument("--name", help="Slurm node name (default: the ssh name without -worker)")
@@ -234,4 +266,4 @@ def add_model_commands(sub) -> dict:
     t.add_argument("--apply", action="store_true", help="set the recommended pl1/epp until the next reboot")
     return {"commission": _commission, "autocommission": _autocommission, "replay": _replay, "run": _run,
             "status": _status, "follow": _follow, "hub": _hub, "cluster": _cluster, "campaign": _campaign,
-            "tune": _tune}
+            "dataset": _dataset, "tune": _tune}

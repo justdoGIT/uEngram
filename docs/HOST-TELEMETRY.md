@@ -239,3 +239,49 @@ First runs (2 reps each, 32 files of 150 functions; PL1 and timers verified rest
 | gigabyte | 84, 35, 25 W | 70.5–70.8 s | 480 J | 6.8 W |
 
 On asus, 20 W saved 14 % of the energy and cost 10 % of the time, so at a 5 % tolerance the current setting stays. Not done: per-state online control. A knob moves the features a state is recognised by (clock, power, IPC), instructions per joule rewards spin loops, and swappiness or dirty ratios act over seconds to minutes, not 0.1 s.
+
+## 10. Dataset export and label safety
+
+The collector and model already contain the two parts needed for a useful
+dataset: the original one-second measurements and the replayed uEngram
+window decisions. The `dataset export` command packages them without
+pretending that a detector's opinion is a fact:
+
+```bash
+# One node
+python3 -m uengram.host dataset export \
+  --ticks ~/.local/state/uengram-host/spool/ticks-$(hostname)-*.jsonl* \
+  --model ~/.local/state/uengram-host/model-$(hostname).pkl \
+  --out ~/datasets/host-$(hostname)
+
+# A collected cluster campaign
+python3 -m uengram.host dataset export \
+  --campaign ~/Backup/uengram-host/campaign \
+  --out ~/datasets/cluster-campaign
+```
+
+Each export has `manifest.json`, compressed `nodes/<name>/ticks.jsonl.gz`
+when raw ticks were requested, compressed `windows.jsonl.gz`, and
+`incidents.jsonl`. A window contains its time interval, source node, original
+uEngram output, and a label block. Labels can be `unlabeled`, `weak`,
+`controlled`, or `confirmed`. Campaign fault records are marked
+`controlled_campaign` and are useful for measuring detection of an injected
+condition, but are not independent evidence of a real equipment failure.
+Operator or maintenance records may be supplied with `--incidents`; they must
+contain a node, numeric `start` and `end` (end later than start), and may state
+whether the event is confirmed and eligible as ground truth.
+
+This distinction prevents a serious circular error: exporting
+`alarm=true` as a fault label would train and test the model against its own
+answer. uEngram creates derived features, memory states, health scores, and
+predictions. It cannot create trustworthy physical ground truth by itself.
+Missing values, gaps, mixed kernel releases, model hashes, source file names,
+and the observed kernel are retained in the manifest so a later analysis can
+exclude or stratify questionable windows rather than silently calling them
+healthy.
+
+The export is replayable: the model is loaded, the source columns are read,
+and the same non-overlapping windows are passed through the offline replay
+path. A kernel mismatch is rejected. The raw source is never deleted and the
+export records the current 14-day spool policy as deployment metadata, not as
+proof that older data still exists.
