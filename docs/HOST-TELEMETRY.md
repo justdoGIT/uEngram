@@ -285,3 +285,43 @@ and the same non-overlapping windows are passed through the offline replay
 path. A kernel mismatch is rejected. The raw source is never deleted and the
 export records the current 14-day spool policy as deployment metadata, not as
 proof that older data still exists.
+
+## 11. Validation and chronological evaluation splits
+
+An exported dataset must be checked before it is used for training or
+benchmarking. Run:
+
+```bash
+python3 -m uengram.host dataset validate \
+  --dataset ~/datasets/host-$(hostname) \
+  --report ~/datasets/host-$(hostname)/validation.json
+python3 -m uengram.host dataset split \
+  --dataset ~/datasets/host-$(hostname)
+```
+
+`validate` checks the manifest, JSONL integrity, required fields, finite
+numbers, non-decreasing tick times, window bounds, declared row counts,
+kernel releases, model-kernel agreement, incident references, and the
+presence of `uengram_prediction`. It does not treat that prediction as a
+label. Every window receives a causal phase: `baseline`, `pre_incident`,
+`incident`, or `recovery`. The phase is descriptive; it is not a substitute
+for an operator-confirmed ground-truth event.
+
+`split` writes `splits.json` without copying telemetry. It finds the time
+range shared by all nodes, divides that range chronologically into
+`commission`, `calibration`, `test`, and `holdout`, and leaves a configurable
+guard interval around each boundary. Windows touching a guard interval or
+the common-range edge are excluded. If one incident is attached to rows in
+more than one usable split, those rows are marked
+`excluded_incident_boundary` rather than allowing the same event to leak
+between training and evaluation.
+
+This native validator is intentionally small and uses the standard library
+plus the repository's existing schema. It is suitable for an embedded or
+restricted host. Offline research can additionally use
+[scikit-learn `TimeSeriesSplit`](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html),
+but its equal-spacing assumption is unsafe for host telemetry with gaps.
+The [scikit-learn leakage guidance](https://scikit-learn.org/stable/common_pitfalls.html)
+supports splitting before fitting transforms; the command follows that rule.
+The validator does not replace external incident records or a physical
+review of labels.

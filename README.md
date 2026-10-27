@@ -81,10 +81,16 @@ python3 -m uengram.host dataset export \
   --model ~/.local/state/uengram-host/model-$(hostname).pkl \
   --out ~/datasets/host-$(hostname)
 
+# validate structure, time ordering, kernels, labels, and prediction separation
+python3 -m uengram.host dataset validate \
+  --dataset ~/datasets/host-$(hostname) --report ~/datasets/host-$(hostname)/validation.json
+# create chronological commission/calibration/test/holdout metadata with boundary gaps
+python3 -m uengram.host dataset split \
+  --dataset ~/datasets/host-$(hostname)
+
 # create one dataset from all collected campaign nodes
 python3 -m uengram.host dataset export \
   --campaign ~/Backup/uengram-host/campaign --out ~/datasets/cluster-campaign
-```
 
 ## Layout
 

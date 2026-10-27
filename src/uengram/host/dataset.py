@@ -157,21 +157,29 @@ def _incident_matches(incident: dict, node: str, t0: float, t1: float) -> tuple[
     return t0 < float(incident["end"]) and t1 > float(incident["start"]), role
 
 
-def _labels(incidents: list[dict], node: str, t0: float, t1: float) -> dict:
+def _labels(incidents: list[dict], node: str, t0: float, t1: float, horizon: float = 64.0) -> dict:
     matched = []
     for incident in incidents:
         overlaps, role = _incident_matches(incident, node, t0, t1)
-        if overlaps:
+        if role is None:
+            continue
+        phase = "incident" if overlaps else (
+            "recovery" if t0 >= float(incident["end"]) and t0 - float(incident["end"]) <= horizon
+            else "pre_incident" if t1 <= float(incident["start"]) and float(incident["start"]) - t1 <= horizon
+            else None)
+        if phase is not None:
             matched.append({"id": incident["id"], "type": incident.get("type"), "role": role,
-                            "source": incident["source"],
+                            "source": incident["source"], "phase": phase,
                             "operator_confirmed": incident["operator_confirmed"],
                             "ground_truth_eligible": incident["ground_truth_eligible"]})
     if not matched:
-        return {"status": "unlabeled", "incidents": []}
+        return {"status": "unlabeled", "phase": "baseline", "incidents": []}
     statuses = {"controlled_campaign" if x["source"] == "controlled_campaign" else
                 "confirmed" if x["operator_confirmed"] else "weak" for x in matched}
     status = "confirmed" if "confirmed" in statuses else "controlled" if "controlled_campaign" in statuses else "weak"
-    return {"status": status, "incidents": matched}
+    phase = "incident" if any(x["phase"] == "incident" for x in matched) else (
+        "recovery" if any(x["phase"] == "recovery" for x in matched) else "pre_incident")
+    return {"status": status, "phase": phase, "incidents": matched}
 
 
 def _tick_rows(cols) -> Iterable[dict]:
@@ -204,7 +212,7 @@ def _prediction(rec: dict) -> dict:
 def _window_rows(node: NodeMemory, cols, incidents: list[dict], name: str) -> Iterable[dict]:
     for rec in replay(node, cols):
         t0 = float(rec["t0"])
-        labels = _labels(incidents, name, t0, t0 + node.K)
+        labels = _labels(incidents, name, t0, t0 + node.K, horizon=2 * node.K)
         row = dict(rec)
         row.update(node=name, window_end=t0 + node.K, labels=labels,
                    uengram_prediction=_prediction(rec))

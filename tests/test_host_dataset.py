@@ -108,3 +108,45 @@ def test_controlled_labels_cannot_become_field_ground_truth(tmp_path):
 def test_json_value_converts_non_finite_values_to_null():
     value = dataset._json_value({"nan": np.nan, "inf": np.inf, "ok": np.float64(3)})
     assert value == {"nan": None, "inf": None, "ok": 3.0}
+def test_validate_and_split_dataset_are_chronological(tmp_path):
+    _, source, model = _model_and_ticks(tmp_path)
+    out = tmp_path / "dataset"
+    dataset.export_single(str(out), "synth", [str(source)], str(model))
+
+    from uengram.host.dataset_validate import split_dataset, validate_dataset
+
+    report = validate_dataset(str(out))
+    assert report["valid"] is True
+    result = split_dataset(str(out), gap_seconds=64.0)
+    assert result["path"].endswith("splits.json")
+    assignments = result["assignments"]["synth"]
+    assert assignments
+    assert all("phase" in row and "incident_ids" in row for row in assignments)
+    assert set(result["counts"]["synth"]) >= {"commission", "calibration", "test", "holdout"}
+
+
+def test_validate_rejects_model_kernel_mismatch(tmp_path):
+    _, source, model = _model_and_ticks(tmp_path)
+    out = tmp_path / "dataset"
+    dataset.export_single(str(out), "synth", [str(source)], str(model))
+    manifest_path = out / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["nodes"][0]["model_kernel"] = "wrong-kernel"
+    manifest_path.write_text(json.dumps(manifest))
+
+    from uengram.host.dataset_validate import validate_dataset
+
+    report = validate_dataset(str(out))
+    assert report["valid"] is False
+    assert any("data kernels" in error for error in report["errors"])
+
+
+def test_label_phases_separate_baseline_warning_and_recovery():
+    incident = dataset._normalise_incident({
+        "id": "i1", "node": "synth", "start": 200, "end": 300,
+        "type": "thermal", "operator_confirmed": True,
+    })
+    assert dataset._labels([incident], "synth", 0, 50)["phase"] == "baseline"
+    assert dataset._labels([incident], "synth", 120, 150)["phase"] == "pre_incident"
+    assert dataset._labels([incident], "synth", 220, 250)["phase"] == "incident"
+    assert dataset._labels([incident], "synth", 320, 350)["phase"] == "recovery"

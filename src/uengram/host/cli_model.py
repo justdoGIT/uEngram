@@ -159,6 +159,24 @@ def _tune(args) -> int:
 def _dataset(args) -> int:
     from .dataset import DatasetError, export_campaign, export_single, load_incidents
 
+    if args.dataset_action == "validate":
+        from .dataset_validate import validate_dataset
+        report = validate_dataset(args.dataset)
+        if args.report:
+            os.makedirs(os.path.dirname(os.path.abspath(args.report)), exist_ok=True)
+            with open(args.report, "w", encoding="utf-8") as f:
+                json.dump(report, f, indent=2)
+                f.write("\n")
+        print(json.dumps(report, indent=1))
+        return 0 if report["valid"] else 2
+    if args.dataset_action == "split":
+        from .dataset_validate import split_dataset
+        result = split_dataset(args.dataset, args.out,
+                               (args.commission_frac, args.calibration_frac,
+                                args.test_frac, args.holdout_frac), args.gap_seconds)
+        print(json.dumps({"path": result["path"], "counts": result["counts"],
+                          "incident_boundary_conflicts": result["incident_boundary_conflicts"]}, indent=1))
+        return 0
     if bool(args.campaign) == bool(args.ticks):
         raise DatasetError("choose exactly one of --campaign or --ticks")
     if args.campaign:
@@ -248,6 +266,18 @@ def add_model_commands(sub) -> dict:
     e.add_argument("--node", default=host, help="single-host node name")
     e.add_argument("--incidents", help="external incident labels in JSONL format")
     e.add_argument("--no-ticks", action="store_true", help="write derived windows only")
+    v = ds.add_parser("validate", help="check dataset integrity and label provenance")
+    v.add_argument("--dataset", required=True)
+    v.add_argument("--report", help="also write the JSON validation report here")
+    s = ds.add_parser("split", help="write chronological, leakage-aware split metadata")
+    s.add_argument("--dataset", required=True)
+    s.add_argument("--out", help="output JSON path (default: DATASET/splits.json)")
+    s.add_argument("--commission-frac", type=float, default=0.50)
+    s.add_argument("--calibration-frac", type=float, default=0.15)
+    s.add_argument("--test-frac", type=float, default=0.20)
+    s.add_argument("--holdout-frac", type=float, default=0.15)
+    s.add_argument("--gap-seconds", type=float, default=64.0,
+                   help="guard interval around split boundaries")
     t = sub.add_parser("tune")
     t.add_argument("--node", required=True, help="ssh name of the node")
     t.add_argument("--name", help="Slurm node name (default: the ssh name without -worker)")
