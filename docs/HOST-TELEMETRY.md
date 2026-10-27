@@ -325,3 +325,35 @@ The [scikit-learn leakage guidance](https://scikit-learn.org/stable/common_pitfa
 supports splitting before fitting transforms; the command follows that rule.
 The validator does not replace external incident records or a physical
 review of labels.
+
+## 12. Cluster baseline replay result
+
+The available fleet telemetry was also replayed as a five-node baseline
+dataset. Each node was commissioned from its own historical telemetry before
+replay; no node used another node's model. This is a pipeline and
+cross-node-consistency check, not a fault-detection accuracy result, because
+the export contains no independent incident labels.
+
+The resulting artifact is kept outside the repository at
+`~/.local/state/uengram-host/dataset-cluster-baseline`. It contains 2,710
+derived windows from five nodes:
+
+| Node | Windows | Kernel | Detected tick gaps |
+|---|---:|---|---:|
+| asus | 553 | `6.18.56_1` | 2 |
+| gigabyte | 553 | `6.18.56_1` | 3 |
+| hp | 497 | `6.18.56_1` | 69 |
+| lenovo | 553 | `6.18.56_1` | 2 |
+| msi | 554 | `6.18.57_1` | 3 |
+
+Validation passed with zero errors and zero warnings. The HP gap count is a
+quality signal, not a label: it should be investigated before using HP for
+fine-grained temporal training. The split generator produced common-range
+commission, calibration, test, and holdout assignments and excluded windows
+near the boundaries. No incident crossed multiple usable splits because no
+incidents were supplied.
+
+The result also confirms that kernel identity is per-node provenance. The
+fleet contains both `6.18.56_1` and `6.18.57_1`; collapsing these into one
+unnamed population could hide a domain shift. Future cluster scoring should
+report per-kernel metrics or commission a deliberately cross-kernel model.
