@@ -117,6 +117,7 @@ def test_validate_and_split_dataset_are_chronological(tmp_path):
 
     report = validate_dataset(str(out))
     assert report["valid"] is True
+    assert any("no external incident labels" in warning for warning in report["warnings"])
     result = split_dataset(str(out), gap_seconds=64.0)
     assert result["path"].endswith("splits.json")
     assignments = result["assignments"]["synth"]

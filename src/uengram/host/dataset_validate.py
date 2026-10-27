@@ -174,6 +174,10 @@ def validate_dataset(directory: str) -> dict:
     if manifest.get("uengram_outputs_are_predictions") is not True:
         errors.append("manifest does not declare predictions as non-labels")
     incidents = _load_incidents(directory, manifest, errors)
+    if not incidents:
+        warnings.append("dataset has no external incident labels; detection metrics are not valid")
+    elif not any(bool(item.get("ground_truth_eligible")) for item in incidents.values()):
+        warnings.append("dataset labels are not ground-truth eligible; use them only for controlled evaluation")
     nodes = manifest.get("nodes")
     if not isinstance(nodes, list) or not nodes:
         errors.append("manifest has no nodes")

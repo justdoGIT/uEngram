@@ -307,6 +307,11 @@ label. Every window receives a causal phase: `baseline`, `pre_incident`,
 `incident`, or `recovery`. The phase is descriptive; it is not a substitute
 for an operator-confirmed ground-truth event.
 
+When no external incidents are present, validation remains structurally valid
+but emits a warning that detection metrics are not valid. Controlled labels
+also produce a warning when they are not ground-truth eligible. This keeps a
+healthy data-integrity result separate from evidence of detector accuracy.
+
 `split` writes `splits.json` without copying telemetry. It finds the time
 range shared by all nodes, divides that range chronologically into
 `commission`, `calibration`, `test`, and `holdout`, and leaves a configurable
