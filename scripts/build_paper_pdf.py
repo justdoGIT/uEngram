@@ -41,7 +41,8 @@ STYLE = PAPER_DIR / "paper.css"
 FIGURES_DIR = PAPER_DIR / "figures"
 HTML_OUT = PAPER_MD.with_suffix(".html")
 PDF_OUT = PAPER_MD.with_suffix(".pdf")
-KICKER = "Original Research Article · Embedded Systems, Signal Processing &amp; Machine Learning"
+KICKER = ("Original Research Article · Embedded Systems, Signal Processing &amp; Machine Learning",
+          "μEngram Reference Implementation")
 MD_EXTENSIONS = ["tables", "fenced_code"]
 ALGO_KEYWORDS = ("for each", "for", "if", "else if", "else", "then", "do", "return", "repeat",
                  "raise")
@@ -169,7 +170,7 @@ def render_front(head: str) -> tuple[str, str]:
         raise ValueError("front matter does not follow the documented layout")
     findings, email = match.group("findings"), match.group("email")
     html = (
-        f'<div class="kicker">{KICKER}</div>'
+        f'<div class="kicker"><span>{KICKER[0]}</span><span>{KICKER[1]}</span></div>'
         f'<h1 class="title">{match.group("title")}</h1>'
         f'<div class="author-box"><span class="name">{escape(match.group("name"))}</span>'
         f'<span class="sep">·</span><a href="mailto:{email}">{email}</a></div>'
@@ -181,7 +182,7 @@ def render_front(head: str) -> tuple[str, str]:
         f'{markdown.markdown(match.group("abstract"), extensions=MD_EXTENSIONS)}</div>'
         + (markdown.markdown(findings, extensions=MD_EXTENSIONS) if findings else "")
     )
-    return polish_text(html), re.sub(r"\s+", " ",
+    return polish_text(link_references(html)), re.sub(r"\s+", " ",
                                      re.sub(r"\$[^$]*\$|MATH\d+END", "", match.group("title")))
 
 

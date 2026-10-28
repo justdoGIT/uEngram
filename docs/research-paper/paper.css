@@ -48,8 +48,14 @@ body {
 
 /* ---------- front matter ---------- */
 .kicker {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8pt;
+    white-space: nowrap;
     font-family: var(--sans);
-    font-size: 7.6pt;
+    font-size: 7.2pt;
+    font-weight: 600;
     line-height: 1.4;
     color: #64748b;
     border-bottom: 0.75pt solid #cbd5e1;
