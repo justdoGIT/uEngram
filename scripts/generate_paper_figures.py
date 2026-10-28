@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Generate the SVG figures for the uEngram research paper.
 
+Needs the "docs" extra (markdown, pygments, pillow): `uv sync --extra docs`.
+Usage: .venv/bin/python scripts/generate_paper_figures.py
+
 Numbers in the data figures come from committed result files (or, for
 EngineAD, the seed-stability JSON cited in the paper):
   Figure 5  ~/.local/state/uengram/enginead/cnn_seed_stability.json

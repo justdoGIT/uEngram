@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 """Build the uEngram research paper PDF from its Markdown source.
 
+Needs the "docs" extra (markdown, pygments, pillow): `uv sync --extra docs`.
+Usage: .venv/bin/python scripts/build_paper_pdf.py
+
 Markdown conventions this builder adds:
   * The text before the first "---" is the front matter:
         # Title
-        **Author** · affiliation · email
+        **Author** · email
+        Affiliation line
         **Keywords:** a · b · c
+        Date line
         ## Abstract
         paragraphs...
         > **Principal findings**   (blockquote box, optional)
@@ -14,6 +19,8 @@ Markdown conventions this builder adds:
   * ```algorithm | Algorithm N. caption``` renders numbered pseudocode; lines
     starting "Input:" / "Output:" are not numbered, text after "▷" is a comment.
   * A paragraph "**Table N.** caption" directly before a table becomes its caption.
+  * "[N]" and "[N-M]" in body text link to reference entries; References list
+    items get anchors "ref-N" in document order.
 """
 from __future__ import annotations
 

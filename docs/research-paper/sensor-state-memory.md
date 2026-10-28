@@ -275,7 +275,7 @@ The repository also contains results that are important even when they do not im
 
 | Study | Result | Interpretation |
 |---|---|---|
-| Encoder-capacity sweep, synthetic | Increasing DSP width from 16 to 36 reduced modeled event recall from 1.00 to 0.358 and AP from 0.996 to 0.562 | A larger vector can make a real regression; the synthetic test caught it. |
+| Encoder-capacity sweep, synthetic | Increasing DSP width from 16 to 36 reduced modeled event recall from 1.00 to 0.358 and AP from 0.996 to 0.565 (10-seed mean; median 0.558) | A larger vector can make a real regression; the synthetic test caught it. |
 | Encoder-capacity sweep, MetroPT-3 | DSP width 42 improved ranking metrics and lowered false alarms compared with width 16, but detection remained 3/4 and false alarms remained above the stated goal | A local improvement is not a successful operational result. |
 | Encoder-capacity sweep, SKAB | A seed-0 exploratory width-48 run detected 9/34 with five false-alarm episodes, versus 5/34 and five episodes for the frozen width-16 run | Promising diagnostic result, not multi-seed or independently confirmed; it did not change the frozen model. |
 | MetroPT-3 alarm-policy sweep | No tested parameter combination met all three goals: detect 4/4 reports, clean alarm time at most 2%, and at most one false alarm per week | The miss is not fixed by simple threshold tuning. Forcing all four detections raised clean alarm time to at least about 4.6% in the tested combinations. |

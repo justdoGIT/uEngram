@@ -1,5 +1,7 @@
 # From Sensor Streams to Bounded Machine Memory: Architecture, Negative Transfer Results, and Domain Specialists in uEngram
 
+Kamal Kishor Pandey · kamal.pandey@kepr.dev
+
 ## Abstract
 
 Industrial and edge equipment generate continuous telemetry across vibration, temperature, pressure, and system load. Retaining every raw window exhausts flash endurance and storage capacity, while naive first-in-first-out (FIFO) buffers overwrite rare fault episodes with routine operational data. This paper evaluates **uEngram**, a bounded stateful memory runtime that compresses short sensor windows into low-dimensional vectors, tracks operating regimes through noise-whitened statistical summaries, quarantines unverified shifts, and pins raw waveform slices for high-rarity episodes.
@@ -46,18 +48,20 @@ On a five-seed synthetic benchmark with a 16-slot budget (13 episodic, 3 semanti
 
 In the implemented `src/uengram/sensor_memory.py` adapter, uEngram manages live in-memory states while recording state promotions, step changes, and de-duplicated alarm open/clear edges into `EdgeMemory Lite` as versioned `EVENT` records.
 
-```
-[Raw Sensor Window] ---> [Schema & Monotonic Clock Check]
-                                  |
-         +------------------------+------------------------+
-         v                                                 v
-[Versioned Encoder + Whitening]                 [Host Raw-Evidence Ring]
-         |                                                 ^
-         v                                                 | (Pin / Unpin Slice)
-[uEngram Bounded Live Memory] ---(Lifecycle/Alarm Edge)---> [EdgeMemory Lite Ledger]
-         |                                                 |
-         +---(Exact State Match)---> [Retrieval Bundle] <--+ (Keyword History Match)
-```
+![Sensor-state persistence pipeline in the implemented adapter. The raw window is pinned before the event write; on failure the pin is released and the error is raised.](figures/sensor-persistence-pipeline.svg)
+
+The table names the owning module for each stage and the behavior when that stage fails.
+
+| Stage | Owner | Interface | Failure behavior |
+|---|---|---|---|
+| Window schema and step order | `sensor_memory.py` (`SensorStateMemory.ingest`) with `validate_sensor_window` in `sensor_memory_records.py` | `SensorWindow` | `ValueError` raised before the engine consumes the window |
+| Encoding and whitening | Host-selected encoder (`encoders.py` and `encoder_*.py` variants) | `encode(windows)` | Outside the adapter; not covered by the adapter's error handling |
+| Live bounded memory and lifecycle events | `engine.py` (`ingest`, `recall`, `drain_events`) | Engine API | Window already consumed; recovery must retry storage, not re-ingest |
+| Persist gate | `SensorStateMemory._should_persist` | Internal to `ingest` | Returns a receipt with `memory_id=None` and `persisted=False`; no storage write |
+| Raw-window pin | Host `RawEvidencePins` implementation (`sensor_memory_types.py`) | `pin(ref, key)`, `unpin(ref, owner)` | Pin released if the event write fails, then the error is raised |
+| Event storage | EdgeMemory Lite via `EdgeMemoryPort` (external) | `remember`, `recall`, `forget` | `SensorMemoryPersistenceError` carries `pending`; retry with `persist_pending` without re-ingesting |
+| Retrieval bundle | Engine `recall` (exact state) and EdgeMemory `recall` (keyword history) combined in `SensorStateMemory.recall` | `recall(query_vector, mode=…)` | `ValueError` for an invalid mode or non-finite or mis-shaped query |
+| Alarm combination policy | `alarm.py` (`AlarmLogic`) | `combine`, `error_k` | Not on the adapter's write path; the adapter persists only `decision.flagged` transitions |
 
 Because re-ingesting a window after a storage failure corrupts $M$-of-$N$ persistence counters, the adapter caches built events with idempotency keys for safe storage retries and pins raw waveform slices *before* committing metadata. While `EdgeMemory Lite` currently provides text/keyword storage rather than native vector indexing, scaling this pipeline into a complete embedded "Sensor-State Memory" DBMS requires five database-native primitives:
 
@@ -68,6 +72,12 @@ Because re-ingesting a window after a storage failure corrupts $M$-of-$N$ persis
 5. **Quota-Bounded Eviction with Protected Quotas:** Enforcing deterministic high-water marks while shielding pinned critical episodes and active investigations from deletion.
 
 An optional LLM belongs strictly downstream of retrieval to summarize structured evidence bundles; it must never sit in the real-time write path or control baseline admission.
+
+Alarm logic in `src/uengram/alarm.py` can OR the gated statistical channel with an evidence-driven tripwire:
+
+$$\text{Alarm} = \text{Novelty}_{\text{gated}} \lor \text{Tripwire}_{\text{evidence}}$$
+
+With `AlarmLogic(combine="or", error_k=3)`, the external evidence stream opens a persisted tripwire over `error_k` windows. The tripwire is active only when a run receives a real evidence array, so an uncorroborated run cannot alarm on an implicit placeholder. The default `combine="and"` keeps the original gated behavior.
 
 ---
 
@@ -165,6 +175,17 @@ Even on the 5 primitive channels, pooling all metrics into one global role encod
 | **Domain Specialists (`or_dynamic_health`)** | **29/42 (69.0%)** | **29/42 (69.0%)** | **19.6** | **0.8919** | **30/30 (100.0%)** | **$6.27\,\mu\text{s}$** |
 
 Domain Specialists achieved the highest strict recall (69.0%), the lowest false-alarm rate (19.6/week), and 100% subsystem attribution accuracy across all detected disturbances while maintaining a $6.27\,\mu\text{s}$ per-window execution time.
+
+Per-subsystem results (from `results/osmetrics_specialist_gate.json`) show where each detection comes from. The per-subsystem event counts sum to the 42 disturbances (13 + 12 + 17):
+
+| Specialist | Assigned channels | Strict event recall | False-alarm episodes | Window AUROC |
+|---|---|---:|---:|---:|
+| CPU | `cpu_usage` | 7/13 (53.8%) | 6 | 0.9589 |
+| Memory | `memory_usage`, `memory_used` | 8/12 (66.7%) | 8 | 0.9641 |
+| Network | `network_response_time_a`, `network_response_time_b` | 14/17 (82.4%) | 12 | 0.8924 |
+| Fused (`or_dynamic_health`) | all 5 primitive channels | 29/42 (69.0%) | 14 (19.6/week) | 0.8919 |
+
+In isolated incidents, such as `mem_1765646427688_2393`, only the memory specialist fired. In cascading disruptions, such as `mem_1765654018485_7936`, all three specialists fired.
 
 ---
 

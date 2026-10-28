@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Regenerate Appendix A of the research paper from the files under results/.
 
-Usage: python3 scripts/build_results_appendix.py [--print]
+Usage: .venv/bin/python scripts/build_results_appendix.py [--print]
+Needs the "docs" extra (markdown, pygments, pillow): `uv sync --extra docs`.
 Replaces the text between the RESULTS-APPENDIX markers in the paper Markdown.
 """
 from __future__ import annotations
