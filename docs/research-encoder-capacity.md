@@ -34,7 +34,7 @@ script.
 
 | Benchmark | `d=16` (frozen) | Full/near-full `d` | Verdict |
 |---|---:|---:|---|
-| Synthetic (`d=36`, 10 seeds) | event_recall 1.00, seizure_recall 1.00, AP 0.996 | event_recall **0.358**, seizure_recall 0.967, AP 0.565 | **Regression** (same PCA-budget mechanism as the slope encoder, milder: seizure_recall survives, event_recall does not) |
+| Synthetic (`d=36`, 10 seeds) | event_recall 1.00, seizure_recall 1.00, AP 0.996 | event_recall **0.3575**, seizure_recall 0.967, AP 0.5646 | **Regression** (same PCA-budget mechanism as the slope encoder, milder: seizure_recall survives, event_recall does not) |
 | CMAPSS (`d=24`, 5 seeds) | AUROC 0.684, RUL-RMSE 42.05 | AUROC **0.520** (worse), RUL-RMSE **21.05** (halved) | Mixed; `d>24` fails outright (next section) |
 | MetroPT-3 (`d=42`, 5 seeds, `uengram`) | AUROC 0.979, AP 0.502, FA/week 14.12 | AUROC **0.988**, AP **0.601**, FA/week **5.70** | **Consistent improvement**, every method (naive/fifo/reservoir too), detection count unchanged (3/4) |
 | SKAB (`d=48`, seed 0) | 5/34 detected, 5 FA episodes | **9/34** detected, **5 FA episodes** (same) | **Clear win, free**: no slope/context feature engineering needed |

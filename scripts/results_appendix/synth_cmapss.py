@@ -68,12 +68,12 @@ def build(repo: Path) -> list[dict]:
         vals = [by_seed[(seed, method)] for seed in seeds if (seed, method) in by_seed]
         er = [v["event_recall"] for v in vals]
         wr = [v["write_reduction_pct"] for v in vals]
-        rows.append([method, str(len(vals)), f"{_fmt(_mean(er))} [{_fmt(min(er))}, {_fmt(max(er))}]",
+        rows.append([method, str(len(vals)), f"{_fmt(_mean(er), 4)} [{_fmt(min(er), 4)}, {_fmt(max(er), 4)}]",
                      f"{_fmt(_mean(wr))} [{_fmt(min(wr))}, {_fmt(max(wr))}]"])
     d16_uengram_recall = stats[("dsp", "uengram")]["event_recall"]
     tables.append(_table("Synthetic d=36 seed spread", "negative", "results/synth_d36_runs.jsonl, results/synth_runs.jsonl",
                          ["method", "seeds", "event recall mean [min, max]", "write reduction % mean [min, max]"], rows,
-                         f"Across {len(seeds)} seeds, d=36 uengram mean event recall is {_fmt(_mean([by_seed[(s, 'uengram')]['event_recall'] for s in seeds if (s, 'uengram') in by_seed]))}, below the d=16 value of {_fmt(d16_uengram_recall)}."))
+                         f"Across {len(seeds)} seeds, d=36 uengram mean event recall is {_fmt(_mean([by_seed[(s, 'uengram')]['event_recall'] for s in seeds if (s, 'uengram') in by_seed]), 4)}, below the d=16 value of {_fmt(d16_uengram_recall, 4)}."))
 
 
     # Slope feature ablation compared with the non-slope synthetic DSP encoder.
