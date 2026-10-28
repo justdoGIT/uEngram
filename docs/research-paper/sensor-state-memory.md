@@ -34,7 +34,8 @@ The strongest positive results are on controlled, generated data. They show that
 | MetroPT-2, frozen v2 policy | No published events detected in either the two-event April subset or the three-event January subset | Low false alarms alone is not success when all target events are missed. |
 | SKAB, frozen DSP detector | 5/34 events detected; AUROC 0.546; AP 0.419; mean detection 57.6 s after onset; 20/20 valve-throttling tests missed | Partial, confirmation-only transfer on one water-loop testbed; no demonstrated early warning or fleet generalization. |
 | EngineAD CNN study | Across 30 seed runs and five held-out trucks, pooled segment AUROC stayed near chance; d=16 median 0.556 | Exploratory segment-level study. The representation used fleet-wide fitted PCA; segment labels are not precise fault intervals. Not independent event-level validation. |
-| Full repository test suite | 319 passed, 1 skipped | Software tests passed in the current branch; this does not validate field performance or the proposed database design. |
+| OS-Metrics operational study | Domain specialists 29/42 strict recall (69.0%), 19.6 false alarms/week, 100% root-cause attribution | Exploratory operational workload comparison; domain partitioning beat DSP (27/42, 26.6 FA/wk) and all-channel role pooling (24/42, 42.0 FA/wk). Not a physical fleet confirmation. |
+| Full repository test suite | 345 passed, 1 skipped | Software tests passed in the current branch; this does not validate field performance or the proposed database design. |
 
 The data above are not a single contest with one winner. Datasets, labels, metrics, and experiment stages differ. The detailed qualification is in Section 6.
 
@@ -1525,6 +1526,70 @@ The implementation and exact artifacts are
 [`bench/role_skab_gate.py`](../../bench/role_skab_gate.py),
 [`results/role_architecture_gate.json`](../../results/role_architecture_gate.json),
 and [`results/role_skab_gate.json`](../../results/role_skab_gate.json).
+
+## 20.13 OS-Metrics exploratory operational gate
+
+The public **OS-Metrics** dataset (Zenodo record 17981352, DOI 10.5281/zenodo.17981352)
+was verified and evaluated to test the role-based architecture on an operational
+telemetry workload. The dataset contains 40,320 15-second samples (seven days) across
+CPU, memory, and network metrics with 42 annotated disturbance intervals.
+
+Feeding all six channels into within-state noise whitening initially triggered
+`numpy.linalg.LinAlgError: Singular matrix`. Mathematical analysis confirmed that the
+published stream `network_response_time_diff.csv` was an exact linear combination of
+streams `a` and `b`. The gate excluded the derived channel and evaluated the five
+primitive channels under a chronological split (one day commissioning, one day
+calibration, five days test):
+
+| Method | Strict event recall | False alarms/week | Window AUROC | Median lead hours |
+|---|---:|---:|---:|---:|
+| DSP d16 baseline | 27/42 = 64.3% | 26.6 | 0.8845 | 1.01 |
+| All-channel Role `any` | 26/42 = 61.9% | 57.4 | 0.8731 | 1.25 |
+| All-channel Role `at_least_2` | 25/42 = 59.5% | 46.2 | 0.8731 | 1.11 |
+| All-channel Role `dynamic_health` | 24/42 = 57.1% | 42.0 | 0.8731 | 0.96 |
+| All-channel Role `all` | 23/42 = 54.8% | 26.6 | 0.8731 | 0.94 |
+
+The role architecture underperformed DSP on this workload. Forcing all channels into
+one global latent space diluted localized subsystem shifts and increased false
+alarms across unrelated metrics. Memory routing safely admitted 3,254 EPISODIC windows
+and quarantined 25,546 unconfirmed normal windows (latency: 6.8 $\mu s$/window).
+The full report is in [`docs/osmetrics-exploratory-gate.md`](../osmetrics-exploratory-gate.md).
+
+## 20.14 Domain specialists and pre-fit numerical diagnostics
+
+To resolve the covariance singularity and channel dilution identified in Section 20.13,
+two structural enhancements were developed and benchmarked:
+
+1. **Pre-fit channel diagnostics (`src/uengram/diagnostics.py`):** Automatically
+   evaluates sample covariance matrix rank, condition number, sentinel rates, and
+   null-space collinearity groups before fitting. On OS-Metrics, it automatically
+   diagnosed the six-channel covariance as `singular` (rank 5/6, condition number
+   $7.15 \times 10^{15}$) with redundant group `['network_response_time_a',
+   'network_response_time_b', 'network_response_time_diff']`, while certifying the
+   five primitive channels as `moderately_conditioned` (rank 5/5, condition number
+   $4.76 \times 10^8$).
+2. **Domain-Specialist Architecture (`src/uengram/domain_specialists.py`):** Telemetry
+   is partitioned into dedicated subsystem specialists (CPU, memory, network). Each
+   specialist fits independent, calibrated level and dynamic branches on its own domain
+   stream. Multi-expert fusion combines specialists via a calibrated decision rule
+   (`or_dynamic_health`) and outputs exact root-cause attribution.
+
+Evaluated on the same chronological OS-Metrics test split:
+
+| Architecture | Strict Event Recall | 2-Hour Recall | False Alarms/Week | Window AUROC | Attribution Accuracy |
+|---|---:|---:|---:|---:|---:|
+| DSP d16 baseline | 27/42 = 64.3% | 30/42 = 71.4% | 26.6 | 0.8845 | N/A |
+| All-channel Role `dynamic_health` | 24/42 = 57.1% | 30/42 = 71.4% | 42.0 | 0.8731 | N/A |
+| **Domain Specialists (`or_dynamic_health`)** | **29/42 = 69.0%** | **29/42 = 69.0%** | **19.6** | **0.8919** | **30/30 = 100.0%** |
+
+Strict recall improved to **29/42 (69.0%)**, exceeding the DSP baseline (27/42) and
+all-channel role pooling (24/42), while false alarms dropped to **19.6 episodes/week**
+(lower than DSP at 26.6 and all-channel role at 42.0). Every detected test event (30/30)
+correctly identified the true disturbed subsystem in its triggered specialists.
+Per-window inference latency remained **6.27 $\mu s$**.
+
+The evaluation artifact is [`results/osmetrics_specialist_gate.json`](../../results/osmetrics_specialist_gate.json);
+full documentation is in [`docs/osmetrics-specialist-gate.md`](../osmetrics-specialist-gate.md).
 
 ## References
 

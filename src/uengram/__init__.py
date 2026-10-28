@@ -22,6 +22,14 @@ from .role_architecture import (
     RoleScores,
     persistent_starts,
 )
+from .diagnostics import (
+    ChannelDiagnosticReport,
+    diagnose_channels,
+)
+from .domain_specialists import (
+    DomainSpecialistArchitecture,
+    SpecialistScores,
+)
 
 __all__ = [
     "PatternRecall",
@@ -41,4 +49,8 @@ __all__ = [
     "RoleBasedArchitecture",
     "RoleScores",
     "persistent_starts",
+    "ChannelDiagnosticReport",
+    "diagnose_channels",
+    "DomainSpecialistArchitecture",
+    "SpecialistScores",
 ]

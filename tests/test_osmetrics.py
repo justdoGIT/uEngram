@@ -49,3 +49,10 @@ def test_event_overlap_mask_marks_only_intersecting_windows():
     mask = event_overlap_mask(starts, ends, data.events)
     assert mask.dtype == bool
     assert mask.any()
+
+def test_osmetrics_specialist_gate_smoke():
+    from bench.osmetrics_specialist_gate import run
+    result = run(ROOT)
+    assert result["protocol"]["rows"] == 40320
+    assert result["domain_specialists"]["policies"]["or_dynamic_health"]["events_detected_strict"] == 29
+    assert result["domain_specialists"]["root_cause_attribution"]["attribution_accuracy"] == 1.0
