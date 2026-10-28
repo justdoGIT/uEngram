@@ -221,3 +221,39 @@ figure.algorithm .io { font-weight: 700; color: #6d28d9; }
 figure.algorithm .cm { font-style: italic; color: #64748b; }
 .katex { font-size: 1.02em; }
 .katex-display { margin: 6pt 0 8pt; }
+
+/* ---------- appendix ledger ---------- */
+.outcome {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 6.6pt;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.6pt 4pt;
+    margin-right: 4pt;
+    border-radius: 2pt;
+    color: #ffffff;
+    vertical-align: 1pt;
+}
+.outcome.positive { background: #15803d; }
+.outcome.mixed { background: #b45309; }
+.outcome.null { background: #64748b; }
+.outcome.negative { background: #b91c1c; }
+p.table-note {
+    font-family: var(--sans);
+    font-size: 7.6pt;
+    line-height: 1.4;
+    color: #475569;
+    margin: -8pt 0 12pt;
+}
+p.table-note b { color: var(--ink); }
+table.tone-positive th { background: #166534; border-color: #166534; }
+table.tone-mixed th { background: #92400e; border-color: #92400e; }
+table.tone-null th { background: #475569; border-color: #475569; }
+table.tone-negative th { background: #991b1b; border-color: #991b1b; }
+table[class^="tone-"] { break-inside: auto; }
+table[class^="tone-"] thead { display: table-header-group; }
+table[class^="tone-"] tr { break-inside: avoid; }
+table[class^="tone-"] caption { break-after: avoid; }
+p.table-note { break-before: avoid; }

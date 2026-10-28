@@ -67,7 +67,7 @@ def inline_markdown(text: str) -> str:
 
 
 def caption_html(caption: str) -> str:
-    match = re.match(r"((?:Figure|Listing|Algorithm|Table) \d+\.)\s*(.*)", caption, re.S)
+    match = re.match(r"((?:Figure|Listing|Algorithm|Table) [A-Z]?\d+\.)\s*(.*)", caption, re.S)
     if not match:
         raise ValueError(f"caption must start with a numbered label: {caption!r}")
     return f"<b>{match.group(1)}</b> {inline_markdown(match.group(2))}"
@@ -132,7 +132,9 @@ def protect_math(content: str, maths: Stash) -> str:
 
 
 def caption_tables(html: str) -> str:
-    return re.sub(r"<p><strong>(Table \d+\.)</strong>\s*(.*?)</p>\s*<table>",
+    html = re.sub(r'<p><strong>(Table [A-Z]?\d+\.)</strong>\s*(<span class="outcome (\w+)">.*?)</p>\s*<table>',
+                  r'<table class="tone-\3"><caption><b>\1</b> \2</caption>', html, flags=re.S)
+    return re.sub(r"<p><strong>(Table [A-Z]?\d+\.)</strong>\s*(.*?)</p>\s*<table>",
                   r"<table><caption><b>\1</b> \2</caption>", html, flags=re.S)
 
 
