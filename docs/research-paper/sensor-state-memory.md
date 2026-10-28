@@ -99,6 +99,31 @@ For machine telemetry, a “document chunk” becomes a time-aligned sensor wind
 
 A vector similarity score by itself does not establish that two windows have the same cause. Two physically different faults can look similar in a compressed space. Likewise, old and new vectors from different operating modes should not be merged just because their distance is small. The system needs asset identity, sensor schema, operating state, units, calibration version, event status, and time as first-class metadata.
 
+### 4.2.1 Three fallacies in the original "Edge Mem0" pitch
+
+The project began from an inquiry by an embedded database vendor seeking to bring cloud
+AI memory architectures (specifically Mem0) into an embedded database with ANN vector search.
+Analyzing this proposal against real physical sensor streams revealed three core fallacies:
+
+1. **The "Chatbots on Microcontrollers" fallacy:** Embedded systems on mining trucks, wind
+   turbines, and industrial compressors do not need conversational memory to remember
+   natural-language user preferences. The true commercial need is **physical state and
+   anomaly lifecycle memory**—remembering wear baselines, acute fault excursions, and
+   operating regimes under strict memory bounds.
+2. **The ingestion-path write bottleneck:** Cloud Mem0 invokes a large language model on
+   every write to extract entities, deduplicate facts, and resolve contradictions. On an
+   embedded gateway or MCU ingesting 100 Hz–1 kHz physical telemetry, invoking an LLM or
+   small language model (SLM) in the ingestion loop destroys real-time guarantees ($4\text{GB}$
+   RAM and several seconds of compute per tick). Ingestion and consolidation **must be
+   deterministic and mathematical** (centroids, distances, running variance), never
+   LLM-dependent.
+3. **Flash wear and RAM starvation:** Standard ANN vector indexes (such as in-memory HNSW
+   graphs) require substantial RAM overhead and generate severe random-write amplification
+   when mutated frequently. On embedded hardware running raw NAND flash or eMMC, frequent
+   graph mutations will rapidly exhaust flash endurance. The memory engine must use
+   tiered, density-aware page compaction rather than continuous graph rebuilding.
+
+
 See [Figure 1](figures/rag-sensor-memory.svg). It is an architecture analogy; the lower pipeline is proposed behavior, not an implemented uEngram product feature.
 ![Figure 1. Text RAG and proposed sensor-state memory pipelines.](figures/rag-sensor-memory.svg)
 
