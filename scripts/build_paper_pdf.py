@@ -1,306 +1,237 @@
 #!/usr/bin/env python3
-"""Build publication-quality PDF of the uEngram sensor-state-memory research paper."""
+"""Build the uEngram research paper PDF from its Markdown source.
+
+Markdown conventions this builder adds:
+  * The text before the first "---" is the front matter:
+        # Title
+        **Author** · affiliation · email
+        **Keywords:** a · b · c
+        ## Abstract
+        paragraphs...
+        > **Principal findings**   (blockquote box, optional)
+  * ![Figure N. caption](figures/name.svg) inlines the SVG as a numbered figure.
+  * ```python | Listing N. caption``` renders a highlighted source listing.
+  * ```algorithm | Algorithm N. caption``` renders numbered pseudocode; lines
+    starting "Input:" / "Output:" are not numbered, text after "▷" is a comment.
+  * A paragraph "**Table N.** caption" directly before a table becomes its caption.
+"""
 from __future__ import annotations
 
 import re
 import subprocess
-from html import escape as html_escape
+from html import escape
 from pathlib import Path
 
 import markdown
+from pygments import highlight
+from pygments.formatters import HtmlFormatter
+from pygments.lexers import get_lexer_by_name
 
 ROOT = Path(__file__).resolve().parents[1]
-PAPER_MD = ROOT / "docs" / "research-paper" / "From_Sensor_Streams_to_Bounded_Machine_Memory.md"
-FIGURES_DIR = ROOT / "docs" / "research-paper" / "figures"
-HTML_OUT = ROOT / "docs" / "research-paper" / "From_Sensor_Streams_to_Bounded_Machine_Memory.html"
-PDF_OUT = ROOT / "docs" / "research-paper" / "From_Sensor_Streams_to_Bounded_Machine_Memory.pdf"
+PAPER_DIR = ROOT / "docs" / "research-paper"
+PAPER_MD = PAPER_DIR / "From_Sensor_Streams_to_Bounded_Machine_Memory.md"
+STYLE = PAPER_DIR / "paper.css"
+FIGURES_DIR = PAPER_DIR / "figures"
+HTML_OUT = PAPER_MD.with_suffix(".html")
+PDF_OUT = PAPER_MD.with_suffix(".pdf")
+KICKER = ("Original Research Article · Embedded Systems, Signal Processing &amp; Machine Learning",
+          "Preprint manuscript · uEngram reference implementation")
+MD_EXTENSIONS = ["tables", "fenced_code"]
+ALGO_KEYWORDS = ("for each", "for", "if", "else if", "else", "then", "do", "return", "repeat",
+                 "raise")
+KATEX = "https://cdn.jsdelivr.net/npm/katex@0.16.8/dist"
 
 
-def inline_svgs(content: str) -> str:
-    """Replace markdown SVG image links with inline SVG markup."""
-    pattern = re.compile(r"!\[(.*?)\]\(figures/([a-zA-Z0-9_-]+\.svg)\)")
+class Stash:
+    """Hold rendered HTML out of the Markdown pass behind unique tokens."""
 
-    def replacer(match):
-        caption = match.group(1)
-        filename = match.group(2)
-        svg_path = FIGURES_DIR / filename
-        if svg_path.exists():
-            svg_text = svg_path.read_text(encoding="utf-8")
-            # Strip XML declaration if present
-            svg_text = re.sub(r"<\?xml.*?\?>", "", svg_text).strip()
-            return f'<figure class="paper-figure"><div class="svg-container">{svg_text}</div><figcaption>{caption}</figcaption></figure>'
-        return match.group(0)
+    def __init__(self, tag: str):
+        self.tag = tag
+        self.items: list[str] = []
 
-    return pattern.sub(replacer, content)
+    def put(self, html: str) -> str:
+        self.items.append(html)
+        return f"{self.tag}{len(self.items) - 1}END"
 
-
-def prepare_mermaid_blocks(content: str) -> str:
-    """Convert mermaid fenced code blocks into mermaid div tags."""
-    pattern = re.compile(r"```mermaid\n(.*?)```", re.DOTALL)
-    return pattern.sub(r'<div class="mermaid">\n\1\n</div>', content)
+    def restore(self, html: str, escape_items: bool = False) -> str:
+        for index, item in enumerate(self.items):
+            value = escape(item, quote=False) if escape_items else item
+            token = f"{self.tag}{index}END"
+            html = html.replace(f"<p>{token}</p>", value).replace(token, value)
+        return html
 
 
-def protect_math(content: str) -> tuple[str, list[str]]:
-    """Swap TeX spans for placeholders so markdown cannot rewrite _ and *."""
-    spans: list[str] = []
-
-    def stash(match):
-        spans.append(match.group(0))
-        return f"MATHSPAN{len(spans) - 1}END"
-
-    content = re.sub(r"\$\$.*?\$\$", stash, content, flags=re.DOTALL)
-    content = re.sub(r"(?<![\\$])\$(?!\s)[^$\n]+?(?<!\s)\$", stash, content)
-    return content, spans
+def inline_markdown(text: str) -> str:
+    html = markdown.markdown(text, extensions=MD_EXTENSIONS).strip()
+    return re.sub(r"^<p>(.*)</p>$", r"\1", html, flags=re.S)
 
 
-def restore_math(html: str, spans: list[str]) -> str:
-    """Put TeX spans back, HTML-escaped so KaTeX reads the literal text."""
-    for index, span in enumerate(spans):
-        html = html.replace(f"MATHSPAN{index}END", html_escape(span, quote=False))
-    return html
+def caption_html(caption: str) -> str:
+    match = re.match(r"((?:Figure|Listing|Algorithm|Table) \d+\.)\s*(.*)", caption, re.S)
+    if not match:
+        raise ValueError(f"caption must start with a numbered label: {caption!r}")
+    return f"<b>{match.group(1)}</b> {inline_markdown(match.group(2))}"
+
+
+def stash_figures(content: str, blocks: Stash) -> str:
+    def replace(match):
+        svg = (FIGURES_DIR / match.group(2)).read_text(encoding="utf-8")
+        svg = re.sub(r"<\?xml.*?\?>", "", svg).strip()
+        return blocks.put(
+            f'<figure class="paper-figure"><div class="frame">{svg}</div>'
+            f"<figcaption>{caption_html(match.group(1))}</figcaption></figure>"
+        )
+
+    return re.sub(r"!\[(.*?)\]\(figures/([\w-]+\.svg)\)", replace, content)
+
+
+def render_algorithm(code: str) -> str:
+    keyword = re.compile(r"\b(" + "|".join(k.replace(" ", r"\s") for k in ALGO_KEYWORDS) + r")\b")
+    lines, number = [], 0
+    for raw in code.rstrip("\n").split("\n"):
+        body, _, comment = raw.partition("▷")
+        io = re.match(r"(\s*)(Input|Output|Procedure)(:?)(.*)", body)
+        if io:
+            text = (f'<span class="ln"></span>{escape(io.group(1))}<span class="io">'
+                    f"{io.group(2)}{io.group(3)}</span>{escape(io.group(4))}")
+        else:
+            number += 1
+            text = f'<span class="ln">{number}</span>' + keyword.sub(
+                r'<span class="kw">\1</span>', escape(body))
+        if comment:
+            text += f'<span class="cm">▷{escape(comment)}</span>'
+        lines.append(text)
+    return "\n".join(lines)
+
+
+def stash_code_blocks(content: str, blocks: Stash) -> str:
+    formatter = HtmlFormatter(nowrap=True)
+
+    def replace(match):
+        language, caption, code = match.group(1), match.group(2).strip(), match.group(3)
+        if language == "algorithm":
+            body, kind = render_algorithm(code), "code algorithm"
+        else:
+            body = highlight(code, get_lexer_by_name(language), formatter).rstrip("\n")
+            kind = "code listing"
+        if code.count("\n") > 18:
+            kind += " breakable"
+        return blocks.put(
+            f'<figure class="{kind}"><figcaption>{caption_html(caption)}</figcaption>'
+            f'<pre class="highlight">{body}</pre></figure>'
+        )
+
+    return re.sub(r"^```(\w+) \| (.+?)\n(.*?)^```[ \t]*$", replace, content, flags=re.M | re.S)
+
+
+def protect_math(content: str, maths: Stash) -> str:
+    """Swap TeX spans for tokens so Markdown cannot rewrite _ and *."""
+    content = re.sub(r"\$\$.*?\$\$", lambda m: maths.put(m.group(0)), content, flags=re.S)
+    return re.sub(r"(?<![\\$])\$(?!\s)[^$\n]+?(?<!\s)\$", lambda m: maths.put(m.group(0)),
+                  content)
+
+
+def caption_tables(html: str) -> str:
+    return re.sub(r"<p><strong>(Table \d+\.)</strong>\s*(.*?)</p>\s*<table>",
+                  r"<table><caption><b>\1</b> \2</caption>", html, flags=re.S)
+
+
+def polish_text(html: str) -> str:
+    """Let long inline code paths wrap after '/' and '_', and keep names such as
+    MetroPT-3 or Chronos-2 from splitting at their hyphen."""
+    out, in_code = [], False
+    for piece in re.split(r"(<[^>]+>)", html):
+        if piece.startswith("<"):
+            in_code = piece.startswith("<code") or (in_code and piece != "</code>")
+            out.append(piece)
+        elif in_code:
+            out.append(re.sub(r"([/_])(?=\w)", r"\1<wbr>", piece))
+        else:
+            out.append(re.sub(r"\b([A-Za-z]+-\d+)\b", r'<span class="nb">\1</span>', piece))
+    return "".join(out)
+
+
+def render_front(head: str) -> tuple[str, str]:
+    match = re.fullmatch(
+        r"# (?P<title>.+?)\n\n\*\*(?P<name>.+?)\*\*(?P<meta>.*?)\n\n"
+        r"\*\*Keywords:\*\* (?P<keywords>.+?)\n\n## Abstract\n\n(?P<abstract>.+?)"
+        r"(?:\n\n(?P<findings>>.+))?",
+        head.strip(), flags=re.S)
+    if not match:
+        raise ValueError("front matter does not follow the documented layout")
+    findings = match.group("findings")
+    html = (
+        f'<div class="kicker">{KICKER[0]}<br>{KICKER[1]}</div>'
+        f'<h1 class="title">{match.group("title")}</h1>'
+        f'<p class="byline"><span class="name">{match.group("name")}</span>'
+        f'<span class="meta">{escape(match.group("meta"))}</span></p>'
+        f'<p class="keywords"><b>Keywords:</b> {match.group("keywords")}</p>'
+        f'<div class="abstract"><div class="label">ABSTRACT</div>'
+        f'{markdown.markdown(match.group("abstract"), extensions=MD_EXTENSIONS)}</div>'
+        + (markdown.markdown(findings, extensions=MD_EXTENSIONS) if findings else "")
+    )
+    return polish_text(html), re.sub(r"\s+", " ",
+                                     re.sub(r"\$[^$]*\$|MATH\d+END", "", match.group("title")))
 
 
 def build_html() -> Path:
-    md_text = PAPER_MD.read_text(encoding="utf-8")
-
-    # 1. Inline SVGs
-    md_text = inline_svgs(md_text)
-
-    # 2. Extract and preserve mermaid blocks before markdown parsing
-    md_text = prepare_mermaid_blocks(md_text)
-    md_text, math_spans = protect_math(md_text)
-
-    # 3. Convert markdown to HTML
-    body_html = markdown.markdown(
-        md_text,
-        extensions=["tables", "fenced_code", "toc"],
-    )
-    body_html = restore_math(body_html, math_spans)
-
-    full_html = f"""<!DOCTYPE html>
+    blocks, maths = Stash("BLOCK"), Stash("MATH")
+    content = PAPER_MD.read_text(encoding="utf-8")
+    content = stash_code_blocks(stash_figures(content, blocks), blocks)
+    content = protect_math(content, maths)
+    head, separator, body = content.partition("\n---\n")
+    if not separator:
+        raise ValueError("paper needs a '---' line after the front matter")
+    front, title = render_front(head)
+    body_html = polish_text(caption_tables(markdown.markdown(body, extensions=MD_EXTENSIONS)))
+    page = blocks.restore(maths.restore(front + body_html, escape_items=True))
+    pygments_css = HtmlFormatter(style="friendly").get_style_defs("figure.listing pre")
+    html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>From Sensor Streams to Bounded Machine Memory: Architecture, Negative Transfer Results, and Domain Specialists in uEngram</title>
-<!-- KaTeX for math rendering -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
-<!-- Mermaid for diagrams -->
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<title>{title}</title>
+<link rel="stylesheet" href="{KATEX}/katex.min.css">
+<script src="{KATEX}/katex.min.js"></script>
+<script src="{KATEX}/contrib/auto-render.min.js"></script>
 <script>
-document.addEventListener("DOMContentLoaded", function() {{
-    renderMathInElement(document.body, {{
-        delimiters: [
-            {{left: "$$", right: "$$", display: true}},
-            {{left: "$", right: "$", display: false}}
-        ],
-        throwOnError: false
-    }});
-    mermaid.initialize({{
-        startOnLoad: true,
-        theme: 'neutral',
-        fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
-    }});
-}});
+document.addEventListener("DOMContentLoaded", () => renderMathInElement(document.body, {{
+    delimiters: [{{left: "$$", right: "$$", display: true}},
+                 {{left: "$", right: "$", display: false}}],
+    throwOnError: false
+}}));
 </script>
 <style>
-:root {{
-    --fg: #0f172a;
-    --muted: #475569;
-    --border: #94a3b8;
-    --surface: #f8fafc;
-    --accent: #2563eb;
-}}
-@page {{
-    size: A4;
-    margin: 20mm 15mm 20mm 15mm;
-    @bottom-right {{
-        content: counter(page);
-        font-family: Inter, system-ui, sans-serif;
-        font-size: 9pt;
-        color: #64748b;
-    }}
-}}
-body {{
-    font-family: 'Liberation Serif', Georgia, Cambria, 'Times New Roman', Times, serif;
-    font-size: 10.5pt;
-    line-height: 1.55;
-    color: #1e293b;
-    margin: 0;
-    padding: 0;
-}}
-h1, h2, h3, h4, h5, h6 {{
-    font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    color: #0f172a;
-    font-weight: 700;
-    page-break-after: avoid;
-}}
-h1 {{
-    font-size: 21pt;
-    line-height: 1.25;
-    margin-bottom: 8pt;
-    border-bottom: 2px solid #0f172a;
-    padding-bottom: 6pt;
-}}
-h2 {{
-    font-size: 14pt;
-    line-height: 1.3;
-    margin-top: 18pt;
-    margin-bottom: 6pt;
-    border-bottom: 1px solid #cbd5e1;
-    padding-bottom: 3pt;
-}}
-h3 {{
-    font-size: 12pt;
-    line-height: 1.35;
-    margin-top: 14pt;
-    margin-bottom: 4pt;
-}}
-h4 {{
-    font-size: 11pt;
-    margin-top: 10pt;
-    margin-bottom: 3pt;
-}}
-p {{
-    margin-top: 0;
-    margin-bottom: 7pt;
-    text-align: justify;
-    text-justify: inter-word;
-}}
-table {{
-    width: 100%;
-    border-collapse: collapse;
-    margin: 12pt 0;
-    font-size: 9pt;
-    line-height: 1.35;
-    page-break-inside: avoid;
-    font-family: Inter, system-ui, sans-serif;
-}}
-th, td {{
-    border: 1px solid #cbd5e1;
-    padding: 4.5pt 6pt;
-    text-align: left;
-}}
-th {{
-    background-color: #f1f5f9;
-    font-weight: 600;
-    color: #0f172a;
-}}
-tr:nth-child(even) {{
-    background-color: #f8fafc;
-}}
-pre, code {{
-    font-family: 'Liberation Mono', 'Fira Code', 'DejaVu Sans Mono', Consolas, monospace;
-    font-size: 8.5pt;
-}}
-pre {{
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 4px;
-    padding: 8pt 10pt;
-    overflow-x: auto;
-    page-break-inside: avoid;
-}}
-code {{
-    background-color: #f1f5f9;
-    padding: 1pt 3pt;
-    border-radius: 3px;
-}}
-pre code {{
-    background: none;
-    padding: 0;
-}}
-blockquote {{
-    border-left: 3px solid #3b82f6;
-    margin: 10pt 0;
-    padding: 4pt 12pt;
-    background-color: #f0f7ff;
-    color: #1e3a8a;
-    font-style: italic;
-    page-break-inside: avoid;
-}}
-figure.paper-figure {{
-    margin: 16pt 0;
-    text-align: center;
-    page-break-inside: avoid;
-}}
-figure.paper-figure .svg-container {{
-    display: block;
-    width: 95%;
-    margin: 0 auto;
-    box-sizing: border-box;
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    padding: 8pt;
-}}
-figure.paper-figure .svg-container svg {{
-    display: block;
-    width: 100%;
-    height: auto;
-}}
-figcaption {{
-    font-size: 9pt;
-    color: #475569;
-    margin-top: 6pt;
-    font-family: Inter, system-ui, sans-serif;
-}}
-.mermaid {{
-    margin: 14pt 0;
-    text-align: center;
-    page-break-inside: avoid;
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    padding: 10pt;
-}}
-hr {{
-    border: none;
-    border-top: 1px solid #e2e8f0;
-    margin: 16pt 0;
-}}
-ul, ol {{
-    margin-top: 0;
-    margin-bottom: 7pt;
-    padding-left: 20pt;
-}}
-li {{
-    margin-bottom: 3pt;
-}}
+{STYLE.read_text(encoding="utf-8")}
+{pygments_css}
+figure.listing pre {{ background: none; }}
 </style>
 </head>
 <body>
-{body_html}
+{page}
 </body>
 </html>
 """
-    HTML_OUT.write_text(full_html, encoding="utf-8")
+    HTML_OUT.write_text(html, encoding="utf-8")
     return HTML_OUT
 
 
 def compile_pdf(html_path: Path) -> Path:
-    cmd = [
-        "chromium",
-        "--headless=new",
-        "--no-sandbox",
-        "--disable-gpu",
-        "--run-all-compositor-stages-before-draw",
-        "--virtual-time-budget=12000",
-        f"--print-to-pdf={PDF_OUT}",
+    subprocess.run([
+        "chromium", "--headless=new", "--no-sandbox", "--disable-gpu",
+        "--no-pdf-header-footer", "--run-all-compositor-stages-before-draw",
+        "--virtual-time-budget=15000", f"--print-to-pdf={PDF_OUT}",
         f"file://{html_path.resolve()}",
-    ]
-    subprocess.run(cmd, check=True)
+    ], check=True, stderr=subprocess.DEVNULL)
     return PDF_OUT
 
 
 def main():
-    print("Building HTML with KaTeX, Mermaid, and inlined figures...")
+    print("Building HTML with KaTeX, listings, and inlined figures...")
     html_path = build_html()
     print(f"HTML generated at: {html_path}")
     print("Compiling PDF with Chromium headless...")
-    pdf_path = compile_pdf(html_path)
-    print(f"PDF successfully compiled at: {pdf_path}")
+    print(f"PDF successfully compiled at: {compile_pdf(html_path)}")
 
 
 if __name__ == "__main__":

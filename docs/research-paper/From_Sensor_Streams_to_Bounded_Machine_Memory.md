@@ -1,12 +1,23 @@
 # From Sensor Streams to Bounded Machine Memory: Architecture, Negative Transfer Results, and Domain Specialists in uEngram
 
-Kamal Kishor Pandey · kamal.pandey@kepr.dev
+**Kamal Kishor Pandey** · Independent Researcher · kamal.pandey@kepr.dev
+
+**Keywords:** Bounded edge memory · Streaming anomaly detection · Noise whitening · Time-series foundation models · Knowledge distillation · Telemetry databases
 
 ## Abstract
 
 Industrial and edge equipment generate continuous telemetry across vibration, temperature, pressure, and system load. Retaining every raw window exhausts flash endurance and storage capacity, while naive first-in-first-out (FIFO) buffers overwrite rare fault episodes with routine operational data. This paper evaluates **uEngram**, a bounded stateful memory runtime that compresses short sensor windows into low-dimensional vectors, tracks operating regimes through noise-whitened statistical summaries, quarantines unverified shifts, and pins raw waveform slices for high-rarity episodes.
 
 While synthetic benchmarks confirm that uEngram cuts storage writes by 86.2% on average over 10 seeds (`results/synth_runs.jsonl`, DSP $d=16$) at 1.00 modeled event recall, evaluations on public datasets and benchmark suites expose a sharp divide between point-wise anomaly ranking (AUROC) and operational early warning. Frozen detectors miss uncommissioned load states on MetroPT-3 (AUROC 0.07 and 0.35 for clean windows against the 24 h before a report, within sustained load), detect 0 of 5 events on MetroPT-2, and catch only 5 of 34 SKAB faults—all after physical onset. Furthermore, distilling foundation models (MOMENT-1-small and Chronos-2) into a 46 KB edge student improves window ranking on MFPT and CMAPSS (CWRU saturates at 1.0000 AUROC for all models), yet flags the one held-out healthy recording per bearing dataset in every model (normal-file false-alarm rate 1.0; `results/cwru_two_teacher_gate.json`, `results/mfpt_two_teacher_gate.json`), and degrades timely maintenance recall at the 20-cycle remaining-useful-life (RUL) horizon. We show that overcoming channel dilution and covariance singularity requires pre-fit numerical diagnostics paired with a **role-separated, domain-specialist architecture**, which improves strict event recall on OS-Metrics to 69.0% (29/42), reduces false alarms to 19.6 per week, achieves 100% subsystem root-cause attribution (30/30 test-split events), and executes in $6.27\,\mu\text{s}$ per window.
+
+> **Principal findings**
+>
+> 1. **Bounded memory works where its assumptions hold:** 86.2% fewer writes at 1.00 modeled event recall over 10 synthetic seeds (`results/synth_runs.jsonl`).
+> 2. **Ranking is not warning:** every CWRU model reaches 1.0000 AUROC, yet every model flags the held-out healthy file (normal-file false-alarm rate 1.0).
+> 3. **Proxy screens mislead:** the label-free screen's winner (middle layer, 0.610) scored a lower event median than the bottleneck in the full pipeline on both SKAB and MetroPT-3.
+> 4. **Distillation can cost lead time:** on CMAPSS FD001 the ordinary CNN caught 7/10 failing engines by RUL 20; MOMENT and two-teacher students caught 2/10.
+> 5. **Partitioning beats pooling:** domain specialists reach 29/42 strict recall at 19.6 false alarms per week on OS-Metrics, against 27/42 at 26.6 for the DSP baseline.
+> 6. **Retraction:** the NASA IMS "63.8-hour early warning" claim is withdrawn (§3.2).
 
 ---
 
@@ -28,7 +39,7 @@ To evaluate what works in practice, we analyze the `uEngram` Python reference im
 
 ## 2. Core Architecture and Memory Lifecycle
 
-![uEngram fast deterministic edge path and offline commissioning path.](figures/system-architecture.svg)
+![Figure 2. uEngram edge path (per window, deterministic) and offline commissioning path.](figures/system-architecture.svg)
 
 ### 2.1 Feature Encoding and Noise-Whitened Projection
 
@@ -40,23 +51,116 @@ $$z(x) = N^{-1/2}\Lambda^{-1/2}V^\top(r(x) - \bar{r})$$
 
 This whitening step suppresses routine co-movement and outlier spikes during commissioning, though setting $d$ too wide introduces collinear frequency bands that make $N$ ill-conditioned or singular.
 
+Algorithm 1 gives the noise estimate. Lag differences inside one state contain only noise, so a trimmed, reweighted covariance of those differences ignores the jumps caused by regime switches and faults. Listing 1 shows the DSP features and the symmetric whitening $N^{-1/2}$ built from it; eigenvalues below `rcond` times the largest are floored before inversion.
+
+```algorithm | Algorithm 1. Robust within-state noise covariance (`robust_noise_cov`, `src/uengram/stats.py:82-89, 128-153`).
+Input: projected training vectors z₁ … zₙ, lag L, trim quantile q_t = 0.975, iterations I = 5
+Output: noise covariance N
+D ← { (z_{t+L} − z_t) / √2 : t and t+L in the same group }
+q ← χ²_d quantile at q_t ;  c ← q_t / P(χ²_{d+2} ≤ q)            ▷ consistency factor for trimming
+N ← diag(σ̂²),  σ̂_j ← 1.4826 · MAD(D_j)                            ▷ robust per-dimension start
+repeat I times
+    keep ← { Δ ∈ D : Δᵀ N⁻¹ Δ ≤ q }                                ▷ drops regime jumps and steps
+    if |keep| < max(10, d + 1) then raise ValueError
+    N ← c · Cov(keep)
+return N
+```
+
+```python | Listing 1. DSP band features and symmetric noise whitening (`src/uengram/encoders.py:41-48, 59-69`; type hints and docstrings trimmed).
+def band_features(windows):
+    x = np.asarray(windows, dtype=np.float64)
+    N, C, K = x.shape
+    mean = x.mean(axis=2)
+    xc = x - mean[:, :, None]
+    log_std = np.log(xc.std(axis=2) + 1e-6)
+    power = np.abs(np.fft.rfft(xc, axis=2)[:, :, 1 : K // 2 + 1]) ** 2 / K
+    bands = [np.log(b.sum(axis=2) + 1e-8) for b in np.array_split(power, 4, axis=2)]
+    feats = np.stack([mean, log_std, *bands], axis=2)  # [N,C,6]
+    return feats.reshape(N, C * 6)
+
+
+class NoiseWhitener:
+    def fit(self, z, noise_lag, groups):
+        lam, V = np.linalg.eigh(robust_noise_cov(z, noise_lag, groups))
+        lam = np.maximum(lam, self.rcond * max(float(lam.max()), 1e-12))
+        self.W = (V / np.sqrt(lam)) @ V.T
+        return self
+
+    def transform(self, z):
+        return np.asarray(z, dtype=np.float64) @ self.W
+```
+
 ### 2.2 Bounded State Slots and Competitive Admission
 
 uEngram divides a fixed memory budget into **semantic slots** (compact summaries of confirmed routine operating modes), **candidate slots** (unfamiliar patterns undergoing persistence probation), and **episodic slots** (rare excursions paired with pointers to raw time-series slices).
 
 Early versions of uEngram evicted the weakest mature episodic slot whenever any out-of-gate sample arrived, allowing mild outliers to overwrite severe historical faults. Informed by thresholded streaming memory in MemStream [8], diversity-aware replay in Rainbow Memory [9], constrained buffer allocation [10], and prototype replay [11], uEngram implements **competitive rarity admission**. An incoming out-of-gate sample is admitted to a full episodic bank only if its rarity-derived importance exceeds the weakest stored episode; otherwise, it is discarded while probation candidates remain replaceable.
 
-![Slot state machine: in-gate and out-of-gate routing across semantic, candidate, and episodic slots.](figures/slot-state-machine.svg)
+![Figure 3. Slot state machine of `Engram.ingest`: gate routing, candidate probation, promotion, step supersession, and competitive episodic admission. A window inside an episodic slot's gate is absorbed by that slot; only the candidate path is drawn.](figures/slot-state-machine.svg)
 
 On a five-seed synthetic benchmark with a configured total budget of 16 slots (13 episodic, 3 semantic; `docs/EXPLAINED.md:375`), competitive admission raised mean event recall from 0.760 to 0.851 and write reduction from 85.78% to 87.56%; type recall stayed at 1.0 and current-regime retrieval rose from 0.998 to 1.0. Seizure-event recall fell from 0.667 to 0.600, so the rule is not a universal improvement and must be validated on independent real streams.
+
+Algorithm 2 is the per-window update in `Engram.ingest`. Novelty is scored against semantic (normal) slots only, so a recurring fault held in an episodic slot cannot mask itself; rarity, the distance to any stored slot, ranks what is worth keeping. When the episodic bank is full, a new window must beat the weakest episode's importance, surprisal × (1 + log n) × $2^{-\text{age}/h}$ with $h$ = `half_life_epi` (default 20,000 steps), or it is discarded (Listing 2).
+
+```algorithm | Algorithm 2. Per-window slot lifecycle (`Engram.ingest`, `_absorb`, `_step_detected`; `src/uengram/engine.py:143-245`).
+Input: whitened vector z, step t, raw-window index r
+G ← active candidate, episodic and semantic slots
+for each k in G: d²_k ← Σ_j (z_j − μ_kj)² / v_kj                  ▷ v: predictive variance
+score ← min over semantic k of d²_k ;  rarity ← min over G of d²_k
+alarm ← score > τ_alarm
+if some d²_k ≤ τ then                                               ▷ window is inside a gate
+    P ← semantic slots inside τ if any, else all slots inside τ
+    k* ← argmin over P of d²_k + Σ_j log v_kj
+    ABSORB(k*, z, t)
+else
+    if not MAKEEPISODICROOM(t, surprisal(rarity)) then return discard
+    open a candidate slot at z with raw pointer r                   ▷ action new_candidate
+candidates older than n_promote steps become episodic
+every consolidate_every steps: merge duplicate semantic slots, checkpoint drift, supersede dormant ones
+Procedure ABSORB(k, z, t)
+α ← max(1/(n_k+1), β_min) if k is semantic, else 1/(n_k+1)
+e ← (z − μ_k) / √v_k ;  update (μ_k, S_k) with rate α ;  n_k ← n_k + 1
+if k is semantic then
+    E_k ← λ·e / s_step + (1 − λ)·E_k                               ▷ MEWMA, λ = 0.1
+    if n_k ≥ n_min and c·‖E_k‖² > h then split k; old slot superseded   ▷ step_change
+    return
+record hit t ;  (m, N) ← (5, 8) for a candidate, (20, 30) for an episodic slot
+if the m-th latest hit is within N steps and semantic room exists then promote k   ▷ promote
+```
+
+```python | Listing 2. Competitive episodic admission (`src/uengram/lifecycle.py:112-142`; docstring trimmed).
+def _episodic_importance(eng, idx, t: int) -> np.ndarray:
+    age = t - eng.t_last[idx]
+    return (eng.surpr[idx] * (1.0 + np.log(eng.n[idx]))
+            * 2.0 ** (-age / eng.cfg.half_life_epi))
+
+
+def make_episodic_room(eng, t: int, incoming_surprisal: float | None = None) -> bool:
+    group = np.flatnonzero((eng.kind == CAND) | (eng.kind == EPI))
+    if len(group) < eng.cfg.B_epi:
+        return True
+    epi = np.flatnonzero(eng.kind == EPI)
+    if len(epi):
+        importance = _episodic_importance(eng, epi, t)
+        victim_pos = int(np.argmin(importance))
+        threshold = eng.cfg.episodic_admission_ratio * importance[victim_pos]
+        if incoming_surprisal <= threshold:
+            return False
+        victim = epi[victim_pos]
+    else:
+        cand = np.flatnonzero(eng.kind == CAND)
+        victim = cand[np.argmin(eng.t_created[cand])]
+    evict_slot(eng, int(victim), t, "evict_episodic")
+    return True
+```
 
 ### 2.3 Layered Persistence and Target Database Primitives
 
 In the implemented `src/uengram/sensor_memory.py` adapter, uEngram manages live in-memory states while recording new candidates, state promotions, step changes, and alarm open/clear transitions into `EdgeMemory Lite` as versioned `EVENT` records. The persisted action set is `_PERSIST_ACTIONS = {new_candidate, promote, step_change}` plus alarm transitions (`src/uengram/sensor_memory.py:33`, `:112-113`).
 
-![Sensor-state persistence pipeline in the implemented adapter. The raw window is pinned before the event write; on failure the pin is released and the error is raised.](figures/sensor-persistence-pipeline.svg)
+![Figure 4. Sensor-state persistence pipeline in the implemented adapter. The raw window is pinned before the event write; on failure the pin is released and the error carries the pending record for retry.](figures/sensor-persistence-pipeline.svg)
 
-The table names the owning module for each stage and the behavior when that stage fails.
+**Table 1.** Implemented adapter stages: owning module, interface, and behavior when the stage fails.
 
 | Stage | Owner | Interface | Failure behavior |
 |---|---|---|---|
@@ -68,6 +172,36 @@ The table names the owning module for each stage and the behavior when that stag
 | Event storage | EdgeMemory Lite via `EdgeMemoryPort` (external) | `remember`, `recall`, `forget` | `SensorMemoryPersistenceError` carries `pending`; retry with `persist_pending` without re-ingesting |
 | Retrieval bundle | Engine `recall` (exact state) and EdgeMemory `recall` (keyword history) combined in `SensorStateMemory.recall` | `recall(query_vector, mode=…)` | `ValueError` for an invalid mode or non-finite or mis-shaped query |
 | Alarm combination policy | `alarm.py` (`AlarmLogic`) | `combine`, `error_k` | Not on the adapter's write path; the adapter persists only `decision.flagged` transitions |
+
+Listing 3 is the write path behind the last two failure columns. The pin is taken before `remember`, released if `remember` raises, and the caller receives the pending record, so a retry never re-feeds the window into the engine.
+
+```python | Listing 3. Pin-before-write persistence (`src/uengram/sensor_memory.py:120-123, 212-239`; asserts and the source, trust, privacy and retention arguments trimmed).
+# in SensorStateMemory.ingest
+try:
+    return self._persist(pending, decision, window.step_index)
+except Exception as exc:
+    raise SensorMemoryPersistenceError(pending, decision, exc) from exc
+
+
+def _persist(self, pending, decision, step_index):
+    pinned = False
+    if pending.raw_window_ref is not None:
+        self.raw_evidence.pin(pending.raw_window_ref, pending.idempotency_key)
+        pinned = True
+    try:
+        result = self.memory.remember(
+            pending.content,
+            kind=_EDGE_EVENT,
+            structured_value=pending.structured_value,
+            observed_at_ms=pending.observed_at_ms,
+            idempotency_key=pending.idempotency_key,
+            keywords=pending.keywords,
+        )
+    except Exception:
+        if pinned:
+            self.raw_evidence.unpin(pending.raw_window_ref, pending.idempotency_key)
+        raise
+```
 
 Re-ingesting a window after a persistence failure is not allowed: the adapter returns the unpersisted records in `SensorMemoryPersistenceError.pending` for retry with `persist_pending` (`src/uengram/sensor_memory.py:37-50`), and pins raw waveform slices before the event write, releasing the pin if that write fails. Scaling this pipeline into a complete embedded "Sensor-State Memory" DBMS would require five **proposed** primitives. Generic slot merge, fixed capacities, and adapter pins are only precursors; none of the five is implemented as specified:
 
@@ -93,6 +227,8 @@ With `AlarmLogic(combine="or", error_k=3)`, the external evidence stream opens a
 
 Across development and holdout studies [6], empirical performance diverges sharply between controlled synthetic streams and physical equipment.
 
+**Table 2.** Core benchmark evidence across synthetic and field datasets.
+
 | Dataset / Study | Configuration | Primary Result | Operational & Methodological Verdict |
 |---|---|---|---|
 | **Synthetic Stream** (10 seeds) | DSP ($d=16$) | 1.00 event recall; AP 0.9955; 86.2% write reduction (2,762 / 20,000 windows) | Validates bounded memory mechanics under known generative assumptions; CNN variant achieved only 0.262 recall despite high AUROC. |
@@ -103,7 +239,7 @@ Across development and holdout studies [6], empirical performance diverges sharp
 | **EngineAD** [2] | CNN ($d \in \{8,16,32\}$, 10 seeds) | Held-out truck pooled 5-minute segment AUROC near chance (d=16 median 0.556; seed-level JSON at `~/.local/state/uengram/enginead/cnn_seed_stability.json`, outside the repo) | Pre-fitted fleet-wide PCA channels leak preprocessing across splits, and 5-minute segment labels mix normal and faulty seconds. |
 | **SCANIA Component X** | Frozen AND policy | 22.8% recall on classes 1–4 at final row; 19.3% alarm rate on class 0; AUROC 0.541 | Coarse repair-proximity classes on 5,046 vehicles cannot measure lead time or early warning. |
 
-![Figure 2. EngineAD pooled held-out segment AUROC across training seeds; each bar counts seeds, not test vehicles.](figures/enginead-seed-histogram.svg)
+![Figure 5. EngineAD pooled held-out segment AUROC for ten training seeds at each latent width; each dot is one seed, not one test vehicle.](figures/enginead-seed-histogram.svg)
 
 ### 3.2 Critical Error Post-Mortems
 
@@ -125,6 +261,8 @@ To test this without test-label leakage, we extended `CNNEncoder` with a `repres
 
 However, running those exact five seeds through the full calibrated alarm pipeline (`bench/cnn_stability.py`, $d=32$, 30 epochs, frozen v2 policy) overturned the proxy screen:
 
+**Table 3.** Intermediate CNN readouts through the full calibrated alarm pipeline (5 seeds, $d=32$, 30 epochs; `results/cnn_intermediate_pipeline.json`).
+
 | Dataset | Readout | Events Detected (med, min–max) | AUROC (med, min–max) | AP (med, min–max) | False Alarms/Wk (med) | Clean Alarm Share (med) |
 |---|---|---:|---:|---:|---:|---:|
 | **SKAB** | Bottleneck (plain) | **23.0** (18–34) | **0.623** (0.480–0.675) | **0.511** (0.441–0.585) | 189.25 | 0.480 |
@@ -144,6 +282,30 @@ $$\mathcal{L}(\theta) = \operatorname{MSE}\big(D(S_\theta(X_t)), X_t\big) + \lam
 
 The loss is implemented in the `CNNEncoder` training loop (`src/uengram/encoder_cnn.py`). $\operatorname{MSE}_b$ averages over the $b$-th teacher feature block, and $B$ is the number of feature blocks.
 
+Listing 4 shows the training step. Teacher targets are standardised per feature before matching (`src/uengram/encoder_cnn.py:162-168`), and when several teachers are stacked each feature block is averaged separately, so a 514-dimensional MOMENT block cannot outweigh a 32-dimensional Chronos-2 block.
+
+```python | Listing 4. Reconstruction, orthogonality and block-averaged teacher loss in one training step (`src/uengram/encoder_cnn.py:201-229`; reflowed).
+z = self._forward_enc(xb)
+recon = torch.mean((dec(z).reshape(-1, C, K) - xb) ** 2)
+loss = recon
+if self.ortho_beta > 0.0:
+    W = self.fc.weight
+    loss = loss + self.ortho_beta * torch.mean((W @ W.T - I) ** 2)
+if target is not None:
+    student = self.teacher_head(self._readout(xb))
+    if teacher_features is not None and teacher_features.block_slices:
+        teacher_loss = torch.stack([
+            torch.mean((student[:, start:end] - target[indices, start:end]) ** 2)
+            for start, end in teacher_features.block_slices
+        ]).mean()
+    else:
+        teacher_loss = torch.mean((student - target[indices]) ** 2)
+    loss = loss + teacher_weight * teacher_loss
+opt.zero_grad()
+loss.backward()
+opt.step()
+```
+
 Because foundation models are often applied after per-window z-normalization, which erases absolute pressure or vibration levels, we instead appended raw per-channel statistics to the teacher embedding: $T^+(X) = [T(X), \mu_1..\mu_C, \sigma_1..\sigma_C]$ (per-window mean and standard deviation; `src/uengram/moment_teacher.py`). The teacher input is not z-normalized. We also tested left-edge padding versus linear time resampling when the edge window $K$ is shorter than the teacher's native context $L$.
 
 ### 4.3 Cross-Dataset Distillation Results
@@ -156,7 +318,7 @@ Evaluating single- and dual-teacher distillation across six benchmark gates reve
 4. **CMAPSS FD001 Run-to-Failure Gate [25] (AUROC vs. Timely Maintenance Lead):** Training on engines 1–40 (first 30 windows) and evaluating through failure on engines 41–50 (requiring 3 consecutive anomalous windows), teacher-distilled students achieved higher window AUROC (0.9890–0.9902 vs. 0.9823 for the ordinary CNN). Yet by the RUL 20 maintenance horizon, the ordinary CNN caught **70% (7/10)** of failing engines on time, whereas MOMENT and Two-Teacher students caught only **20% (2/10)**.
 5. **SKAB Wall-Clock Gate (Single-Channel vs. 8-Channel Fusion):** Under a 30-minute CPU cap, single-channel teacher runs caught **0/34** events strictly within fault intervals (AUROC 0.463–0.471, 5.47–8.75 FA/hr). Removing the teachers to run all 8 channels through the multiscale CNN cut healthy false alarms by 58.3% (from 6.57 to 2.74 FA/hr) and raised AUROC to 0.5270, but strict in-interval event recall remained **0/34**.
 
-![Figure 3. TSB-AD-U pooled versus equal-series metrics for six frozen series.](figures/tsb-holdout-comparison.svg)
+![Figure 6. TSB-AD-U pooled versus equal-series AUROC and average precision for six frozen series (`results/moment_tsb_ad_holdout.json`).](figures/tsb-holdout-comparison.svg)
 
 ---
 
@@ -165,6 +327,7 @@ Evaluating single- and dual-teacher distillation across six benchmark gates reve
 ### 5.1 Role Separation: Mode, Level, Dynamic, and Health
 
 The failure of monolithic encoders on SKAB and multi-channel telemetry stems from mixing incompatible physical variations into a single distance metric. In `src/uengram/role_architecture.py`, we decompose telemetry into four explicit branches:
+
 * **Mode:** Operating context (idle, startup, load, transition), used solely for conditioning rather than voting on alarms.
 * **Level:** Per-channel absolute levels, robust spread, and short-term trends.
 * **Dynamic:** Deterministic multiscale frequency and transient shifts.
@@ -172,13 +335,88 @@ The failure of monolithic encoders on SKAB and multi-channel telemetry stems fro
 
 The Level, Dynamic, and Health branches are calibrated independently on healthy data and fused via empirical tail probabilities. Only operator-confirmed normal windows enter semantic memory; unconfirmed normal windows route to quarantine, and alarmed windows route to episodic memory. On the 8-channel SKAB split, where all three CNN representations scored 0/34 strict recall, the role-separated architecture achieved **10/34 strict recall** at 6.19 FA/hr (`at_least_2` policy) and **8/34 strict recall** at **1.59 FA/hr** (`dynamic_health` policy).
 
+Each branch score $s$ becomes an upper-tail p-value against $n$ scores $c_1 \dots c_n$ from a separate healthy calibration stream (`EmpiricalCalibrator`, `src/uengram/role_architecture.py:47-55`):
+
+$$p(s) = \frac{1 + \#\{\, i : c_i \ge s \,\}}{n + 1}$$
+
+A branch fires when $p \le \alpha$. Listing 5 shows how the fusion policies combine the three alarm branches and how a window is routed; the mode branch never votes.
+
+```python | Listing 5. Branch fusion policies and memory routing (`src/uengram/role_architecture.py:168-188`; signature reflowed).
+flags = np.stack([np.asarray(p_values[name]) <= alpha
+                  for name in cls._ALARM_BRANCHES], axis=1)
+if policy == "any":
+    return flags.any(axis=1)
+if policy == "at_least_2":
+    return flags.sum(axis=1) >= 2
+if policy == "dynamic_health":
+    return flags[:, 1] & flags[:, 2]
+return flags.all(axis=1)
+
+
+def memory_route(p_values, alpha, *, alarm_open, data_quality_ok,
+                 operator_confirmed_normal=False) -> str:
+    """Route evidence without allowing unconfirmed data to poison normal memory."""
+    if not data_quality_ok:
+        return "QUARANTINE"
+    if alarm_open or any(float(p_values.get(name, np.nan)) <= alpha
+                         for name in RoleBasedArchitecture._ALARM_BRANCHES):
+        return "EPISODIC"
+    if operator_confirmed_normal:
+        return "SEMANTIC"
+    return "QUARANTINE"
+```
+
 ### 5.2 Pre-Fit Numerical Diagnostics and Domain Specialists on OS-Metrics
 
 To test role separation on multi-subsystem operational telemetry, we evaluated the **OS-Metrics** dataset (Zenodo 17981352; 40,320 15-second samples over 7 days across CPU, memory, and network channels with 42 annotated disturbances).
 
 Initial 6-channel ingestion crashed with `LinAlgError: Singular matrix` during noise whitening. To prevent silent numerical instability or crashes, we built a pre-fit diagnostic module (`src/uengram/diagnostics.py`) that inspects covariance rank, condition number, sentinel rates, and null-space collinearity before fitting. It automatically flagged the 6-channel matrix as `singular` (rank 5/6, condition number $7.15 \times 10^{15}$) because `network_response_time_diff` was an exact linear combination of streams `a` and `b`, while certifying the 5 primitive channels as `moderately_conditioned` (rank 5/5, condition number $4.76 \times 10^8$).
 
+```python | Listing 6. Rank, conditioning and null-space checks in `diagnose_channels` (`src/uengram/diagnostics.py:118-166`; empty-input guards and the perfect-correlation scan trimmed).
+evals, evecs = np.linalg.eigh(cov)
+evals = np.maximum(evals, 0.0)
+order = np.argsort(evals)[::-1]
+evals, evecs = evals[order], evecs[:, order]
+max_ev, min_ev = float(evals[0]), float(evals[-1])
+rcond_eps = np.finfo(np.float64).eps * max(max_ev, 1e-12) * n_channels
+effective_rank = int(np.sum(evals > rcond_eps))
+cond = float(max_ev / max(min_ev, 1e-18))
+
+redundant_groups = []
+if effective_rank < n_channels:
+    null_vecs = evecs[:, effective_rank:]
+    for j in range(null_vecs.shape[1]):
+        v = null_vecs[:, j]
+        group = tuple(names[i] for i in np.where(np.abs(v) > 0.1)[0])
+        if group and group not in redundant_groups:
+            redundant_groups.append(group)
+
+if effective_rank < n_channels or cond > 1e12:
+    status = "singular" if effective_rank < n_channels else "ill_conditioned"
+elif cond > 1e6:
+    status = "moderately_conditioned"
+else:
+    status = "well_conditioned"
+```
+
 Even on the 5 primitive channels, pooling all metrics into one global role encoder underperformed the DSP baseline (24/42 recall at 42.0 FA/wk vs. DSP's 27/42 at 26.6 FA/wk) because localized subsystem spikes were diluted by quiet channels. Partitioning the telemetry into dedicated **Domain Specialists** (`src/uengram/domain_specialists.py`—independent CPU, Memory, and Network role encoders fused via a calibrated `or_dynamic_health` rule) resolved the dilution:
+
+```algorithm | Algorithm 3. Domain-specialist scoring, fusion and routing (`DomainSpecialistArchitecture.score`, `fuse`, `memory_route`; `src/uengram/domain_specialists.py:128-219`).
+Input: window x; specialists s with channel sets C_s (CPU, Memory, Network); level α (default 0.01)
+Output: alarm, triggering specialists A, memory route
+for each specialist s do
+    p_s,b ← calibrated p-value of branch b ∈ {level, dynamic, health} on x[C_s]
+    flag_s ← (p_s,dynamic ≤ α) and (p_s,health ≤ α)                ▷ dynamic_health branch policy
+alarm ← flag_CPU or flag_Memory or flag_Network                    ▷ or specialist rule
+A ← { s : flag_s }                                                  ▷ root-cause attribution
+score ← Σ_s −log min_b p_s,b                                        ▷ continuous fused score
+if data quality fails then route ← QUARANTINE
+else if alarm is open or A ≠ ∅ then route ← EPISODIC (with A)
+else if operator confirmed normal then route ← SEMANTIC
+else route ← QUARANTINE
+```
+
+**Table 4.** OS-Metrics chronological split: DSP baseline, all-channel role encoder, and domain specialists (`results/osmetrics_specialist_gate.json`; all-channel latency from `results/osmetrics_role_gate.json`).
 
 | Architecture (OS-Metrics Chronological Split) | Strict Event Recall | 2-Hour Recall | False Alarms / Week | Window AUROC | Root-Cause Attribution | Latency / Window |
 |---|---:|---:|---:|---:|---:|---:|
@@ -188,9 +426,11 @@ Even on the 5 primitive channels, pooling all metrics into one global role encod
 
 Domain Specialists achieved the highest strict recall (69.0%), the lowest false-alarm rate (19.6/week), and 100% subsystem attribution accuracy (30/30 test-split events, `results/osmetrics_specialist_gate.json`) while maintaining a $6.27\,\mu\text{s}$ per-window execution time.
 
-![Domain specialists versus the fused global encoder on OS-Metrics and SKAB.](figures/domain-specialist-comparison.svg)
+![Figure 7. Strict event recall of domain specialists and role separation against monolithic encoders on OS-Metrics (A) and SKAB (B).](figures/domain-specialist-comparison.svg)
 
 Per-subsystem results (from `results/osmetrics_specialist_gate.json`) show where each detection comes from. The per-subsystem event counts sum to the 42 disturbances (13 + 12 + 17):
+
+**Table 5.** Per-specialist results on OS-Metrics (`results/osmetrics_specialist_gate.json`).
 
 | Specialist | Assigned channels | Strict event recall | False-alarm episodes | Window AUROC |
 |---|---|---:|---:|---:|
@@ -246,5 +486,3 @@ Before transitioning uEngram from a Python reference design to a safety-relevant
 25. NASA. “Turbofan Engine Degradation Simulation Data Set (CMAPSS FD001).” NASA Open Data Portal.
 26. Si, H., Li, J., Pei, C., et al. (2024). “TimeSeriesBench: An Industrial-Grade Benchmark for Time Series Anomaly Detection Models.” arXiv:2402.10802v3.
 
----
-K.K Pandey · kamal.pandey@kepr.dev

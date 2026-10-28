@@ -1,0 +1,223 @@
+/* Print stylesheet for the uEngram research paper (scripts/build_paper_pdf.py). */
+:root {
+    --ink: #0f172a;
+    --body: #1e293b;
+    --muted: #475569;
+    --rule: #cbd5e1;
+    --tint: #f8fafc;
+    --accent: #1d4ed8;
+    --navy: #1e293b;
+    --serif: Georgia, 'C059', 'Noto Serif', serif;
+    --sans: Arial, 'Nimbus Sans', Helvetica, sans-serif;
+    --mono: 'Roboto Mono', 'DejaVu Sans Mono', monospace;
+    /* theme variables used by the hand-drawn SVG figures */
+    --fg: #0f172a;
+    --border: #94a3b8;
+    --surface: #f8fafc;
+}
+@page {
+    size: A4;
+    margin: 17mm 17mm 19mm 17mm;
+    @bottom-left {
+        content: "uEngram Research Paper · Preprint Manuscript";
+        font-family: var(--sans);
+        font-size: 7.5pt;
+        color: #64748b;
+        border-top: 0.5pt solid #cbd5e1;
+        vertical-align: top;
+        padding-top: 5pt;
+    }
+    @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-family: var(--sans);
+        font-size: 7.5pt;
+        color: #64748b;
+        border-top: 0.5pt solid #cbd5e1;
+        vertical-align: top;
+        padding-top: 5pt;
+    }
+}
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+    font-family: var(--serif);
+    font-size: 9.6pt;
+    line-height: 1.5;
+    color: var(--body);
+    margin: 0;
+}
+
+/* ---------- front matter ---------- */
+.kicker {
+    font-family: var(--mono);
+    font-size: 7.6pt;
+    line-height: 1.55;
+    color: var(--muted);
+    background: var(--tint);
+    border: 0.75pt solid #e2e8f0;
+    border-radius: 3pt;
+    padding: 5pt 8pt;
+    margin-bottom: 12pt;
+}
+h1.title {
+    font-family: var(--sans);
+    font-size: 21pt;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 0 0 9pt;
+}
+.byline { font-family: var(--sans); margin: 0 0 3pt; }
+.byline .name { font-size: 11.5pt; font-weight: 700; color: var(--accent); }
+.byline .meta { font-size: 8.8pt; color: var(--muted); }
+.keywords {
+    font-family: var(--sans);
+    font-size: 8pt;
+    line-height: 1.45;
+    color: var(--muted);
+    margin: 0 0 12pt;
+}
+.keywords b { color: var(--ink); }
+.abstract {
+    background: var(--tint);
+    border: 0.75pt solid #e2e8f0;
+    border-left: 3pt solid var(--accent);
+    padding: 8pt 11pt 6pt;
+    margin-bottom: 10pt;
+    font-size: 9pt;
+    line-height: 1.45;
+}
+.abstract .label {
+    font-family: var(--sans);
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    margin-bottom: 3pt;
+}
+.abstract p { margin: 0 0 5pt; }
+blockquote {
+    background: #f1f5f9;
+    border: 0.75pt solid #e2e8f0;
+    border-radius: 3pt;
+    margin: 0 0 14pt;
+    padding: 7pt 11pt 4pt;
+    font-size: 8.8pt;
+    line-height: 1.45;
+    break-inside: avoid;
+}
+blockquote p:first-child {
+    font-family: var(--sans);
+    font-size: 8.8pt;
+    color: var(--accent);
+    margin-bottom: 3pt;
+}
+blockquote ol { margin: 0 0 4pt; padding-left: 15pt; }
+blockquote li { margin-bottom: 2pt; }
+blockquote li strong { font-family: var(--sans); color: var(--accent); font-size: 8.6pt; }
+
+/* ---------- headings and text ---------- */
+h2, h3, h4 { font-family: var(--sans); color: var(--ink); break-after: avoid; }
+h2 {
+    font-size: 12pt;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 17pt 0 6pt;
+}
+h3 { font-size: 10.4pt; color: var(--accent); margin: 12pt 0 4pt; }
+h4 { font-size: 9.6pt; margin: 10pt 0 3pt; }
+p { margin: 0 0 6.5pt; text-align: justify; hyphens: auto; }
+ul, ol { margin: 0 0 6.5pt; padding-left: 17pt; }
+li { margin-bottom: 2.5pt; text-align: justify; }
+hr { display: none; }
+a { color: var(--accent); text-decoration: none; }
+code {
+    font-family: var(--mono);
+    font-size: 7.9pt;
+    background: #f1f5f9;
+    border-radius: 2pt;
+    padding: 0.5pt 2.5pt;
+    overflow-wrap: anywhere;
+}
+.nb { white-space: nowrap; }
+
+/* ---------- tables ---------- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4pt 0 12pt;
+    font-family: var(--sans);
+    font-size: 7.9pt;
+    line-height: 1.35;
+    break-inside: avoid;
+}
+caption {
+    caption-side: top;
+    text-align: left;
+    font-size: 8.3pt;
+    color: var(--ink);
+    padding-bottom: 4pt;
+}
+th {
+    background: var(--navy);
+    color: #ffffff;
+    font-weight: 700;
+    text-align: left;
+    padding: 4pt 5pt;
+    border: 0.5pt solid var(--navy);
+}
+td { padding: 3.5pt 5pt; border: 0.5pt solid #e2e8f0; vertical-align: top; }
+tbody tr:nth-child(even) td { background: var(--tint); }
+td code, th code { font-size: 7.2pt; background: none; padding: 0; }
+
+/* ---------- figures, listings, algorithms ---------- */
+figure { margin: 8pt 0 13pt; break-inside: avoid; }
+figure.paper-figure .frame {
+    border: 0.75pt solid #e2e8f0;
+    border-radius: 3pt;
+    padding: 6pt;
+    background: #ffffff;
+}
+figure.paper-figure svg { display: block; width: 100%; height: auto; max-height: 92mm; }
+figcaption {
+    font-family: var(--sans);
+    font-size: 8pt;
+    line-height: 1.4;
+    color: var(--muted);
+    margin-top: 5pt;
+    text-align: left;
+}
+figure.code.breakable { break-inside: auto; }
+figure.code figcaption { break-after: avoid; }
+figure.code pre { orphans: 6; widows: 6; }
+figcaption b { color: var(--ink); }
+figure.code {
+    border: 0.75pt solid #e2e8f0;
+    border-left: 3pt solid var(--accent);
+    border-radius: 3pt;
+    background: var(--tint);
+    padding: 6pt 9pt 7pt;
+}
+figure.code.algorithm { border-left-color: #6d28d9; background: #fbfaff; }
+figure.code figcaption { margin: 0 0 5pt; color: var(--ink); font-size: 8.2pt; }
+figure.code pre {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 7.5pt;
+    line-height: 1.5;
+    white-space: pre;
+    color: var(--body);
+}
+figure.code .ln {
+    display: inline-block;
+    width: 14pt;
+    color: #94a3b8;
+    text-align: right;
+    margin-right: 8pt;
+    user-select: none;
+}
+figure.algorithm .kw { font-weight: 700; color: var(--ink); }
+figure.algorithm .io { font-weight: 700; color: #6d28d9; }
+figure.algorithm .cm { font-style: italic; color: #64748b; }
+.katex { font-size: 1.02em; }
+.katex-display { margin: 6pt 0 8pt; }

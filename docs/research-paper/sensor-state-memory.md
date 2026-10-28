@@ -259,7 +259,7 @@ A short clean exposure produced five false-alarm episodes over only 6.21 hours. 
 ### 5.5 EngineAD: held-out trucks, weak segment-level transfer
 
 The EngineAD study trained CNN encoders across ten random seeds for each of three latent dimensions and tested segments from five held-out trucks. The 30 pooled held-out segment AUROC values are shown in Figure 2. The `d=16` values are somewhat higher overall, but all groups remain near the 0.50 chance-ranking reference. Here **seed** means a different random initialization/training run; it does not mean a new independent dataset. The five held-out vehicles are also a small test group.
-![Figure 2. Histogram of pooled held-out EngineAD segment AUROC scores across ten training seeds for each latent dimension.](figures/enginead-seed-histogram.svg)
+![Figure 2. Pooled held-out EngineAD segment AUROC for ten training seeds at each latent dimension; one dot per seed.](figures/enginead-seed-histogram.svg)
 
 The dataset provides five-minute segments with fleet-fitted PCA channels rather than raw high-rate sensor waveforms, and labels are segment-level. The projection was fit across fleet data, so the vehicle-held-out model split does not eliminate all information leakage: the feature transformation already saw fleet-wide data. Some segments contain mixed point labels, so segment classification cannot supply exact physical onset or warning time. The study is exploratory evidence of weak transfer under this setup—not a final test of the frozen sensor-memory engine and not event-level validation.
 
@@ -348,7 +348,7 @@ public transfer holdout used one teacher and different window contracts.
 | EMA | A running average that gives new observations more weight | A rolling average that forgets old readings gradually | It does not know whether new observations are healthy. |
 | High-water mark | A configured point at which storage pressure triggers action | A fuel gauge line that says “start conserving now” | Must be tested at the actual hardware and under power loss. |
 
-**Histogram reading tip:** Figure 2’s bars show how many separate training seeds landed in each score range. A bar is not one fault and not one truck. The chart is about variation across model starts, not independent field evidence.
+**Seed-plot reading tip:** each dot in Figure 2 is one training seed's pooled AUROC, and the vertical tick marks the median. A dot is not one fault and not one truck. The chart is about variation across model starts, not independent field evidence.
 
 ## 8. Pseudocode for the critical paths
 
