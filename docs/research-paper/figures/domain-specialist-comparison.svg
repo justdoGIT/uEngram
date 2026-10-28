@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 280" width="100%" height="100%">
+  <style>
+    .bg-panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1; rx: 6px; }
+    .chart-title { font-family: Inter, system-ui, sans-serif; font-size: 13px; font-weight: 700; fill: #0f172a; }
+    .bar-lbl { font-family: Inter, system-ui, sans-serif; font-size: 11px; fill: #1e293b; font-weight: 500; }
+    .val-lbl { font-family: Inter, system-ui, sans-serif; font-size: 11px; fill: #0f172a; font-weight: 700; }
+    .sub-lbl { font-family: Inter, system-ui, sans-serif; font-size: 10px; fill: #64748b; }
+    .grid { stroke: #e2e8f0; stroke-width: 1; stroke-dasharray: 2,2; }
+  </style>
+
+  <!-- Panel A: OS-Metrics -->
+  <rect x="10" y="10" width="440" height="260" class="bg-panel" />
+  <text x="30" y="38" class="chart-title">(A) OS-Metrics (5-ch): Strict Recall &amp; False Alarms/Wk</text>
+
+  <!-- Bar 1: DSP Baseline -->
+  <text x="30" y="70" class="bar-lbl">Baseline DSP (d=16)</text>
+  <rect x="30" y="78" width="220" height="18" fill="#94a3b8" rx="3" />
+  <text x="260" y="92" class="val-lbl">64.3% (27/42)</text>
+  <text x="30" y="110" class="sub-lbl">False Alarms: 26.6 / week | Fused global vector</text>
+
+  <!-- Bar 2: All-Channel Role -->
+  <text x="30" y="135" class="bar-lbl">All-Channel Role (dynamic_health)</text>
+  <rect x="30" y="143" width="195" height="18" fill="#cbd5e1" rx="3" />
+  <text x="235" y="157" class="val-lbl">57.1% (24/42)</text>
+  <text x="30" y="175" class="sub-lbl">False Alarms: 42.0 / week | Diluted across quiet channels</text>
+
+  <!-- Bar 3: Domain Specialists -->
+  <text x="30" y="200" class="bar-lbl">Domain Specialists (or_dynamic_health)</text>
+  <rect x="30" y="208" width="236" height="18" fill="#2563eb" rx="3" />
+  <text x="276" y="222" class="val-lbl" style="fill: #1d4ed8;">69.0% (29/42)</text>
+  <text x="30" y="240" class="sub-lbl" style="fill: #1d4ed8; font-weight: 600;">False Alarms: 19.6 / week | 100% Attribution | 6.27 μs/win</text>
+
+  <!-- Panel B: SKAB -->
+  <rect x="470" y="10" width="440" height="260" class="bg-panel" />
+  <text x="490" y="38" class="chart-title">(B) SKAB Water Loop (8-ch): Strict In-Interval Recall</text>
+
+  <!-- Bar B1: 8-ch CNN -->
+  <text x="490" y="70" class="bar-lbl">8-ch Monolithic CNN (All Readouts)</text>
+  <rect x="490" y="78" width="20" height="18" fill="#f87171" rx="3" />
+  <text x="520" y="92" class="val-lbl" style="fill: #dc2626;">0 / 34 (0.0% Strict)</text>
+  <text x="490" y="110" class="sub-lbl">All post-onset warnings, 0% strict fault-interval recall</text>
+
+  <!-- Bar B2: Role dynamic_health -->
+  <text x="490" y="135" class="bar-lbl">Role Separation (dynamic_health)</text>
+  <rect x="490" y="143" width="140" height="18" fill="#60a5fa" rx="3" />
+  <text x="640" y="157" class="val-lbl">8 / 34 (23.5%)</text>
+  <text x="490" y="175" class="sub-lbl">False Alarms: 1.59 / hour | Best recall-to-false-alarm trade-off</text>
+
+  <!-- Bar B3: Role at_least_2 -->
+  <text x="490" y="200" class="bar-lbl">Role Separation (at_least_2 policy)</text>
+  <rect x="490" y="208" width="175" height="18" fill="#16a34a" rx="3" />
+  <text x="675" y="222" class="val-lbl" style="fill: #15803d;">10 / 34 (29.4%)</text>
+  <text x="490" y="240" class="sub-lbl" style="fill: #15803d; font-weight: 600;">False Alarms: 6.19 / hour | Highest strict recall on SKAB</text>
+</svg>

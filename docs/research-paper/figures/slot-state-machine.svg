@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 260" width="100%" height="100%">
+  <defs>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#334155"/>
+    </marker>
+    <style>
+      .slot-box { fill: #ffffff; stroke: #64748b; stroke-width: 1.5; rx: 6px; }
+      .slot-semantic { fill: #f0fdf4; stroke: #16a34a; stroke-width: 1.5; rx: 6px; }
+      .slot-candidate { fill: #fefce8; stroke: #ca8a04; stroke-width: 1.5; rx: 6px; }
+      .slot-episodic { fill: #fef2f2; stroke: #dc2626; stroke-width: 1.5; rx: 6px; }
+      .txt-h { font-family: Inter, system-ui, sans-serif; font-size: 13px; font-weight: 700; fill: #0f172a; }
+      .txt-p { font-family: Inter, system-ui, sans-serif; font-size: 11px; fill: #334155; }
+      .lbl { font-family: Inter, system-ui, sans-serif; font-size: 10px; font-weight: 600; fill: #475569; }
+      .flow { stroke: #475569; stroke-width: 1.5; fill: none; marker-end: url(#arrow2); }
+    </style>
+  </defs>
+
+  <!-- Ingestion -->
+  <rect x="20" y="90" width="150" height="70" class="slot-box" />
+  <text x="35" y="118" class="txt-h">Whitened Vector</text>
+  <text x="35" y="138" class="txt-p">z(x) in R^d (MAD whitened)</text>
+
+  <!-- Split paths -->
+  <path d="M 170 115 L 260 60" class="flow" />
+  <text x="180" y="75" class="lbl">In-Gate (Routine)</text>
+
+  <path d="M 170 135 L 260 190" class="flow" />
+  <text x="180" y="180" class="lbl">Out-of-Gate (Novel)</text>
+
+  <!-- Semantic Slots -->
+  <rect x="260" y="25" width="230" height="75" class="slot-semantic" />
+  <text x="275" y="50" class="txt-h" style="fill: #15803d;">SEMANTIC SLOTS (Routine Baselines)</text>
+  <text x="275" y="68" class="txt-p">EMA centroid: μ_t = (1-β)μ_t-1 + βx_t</text>
+  <text x="275" y="86" class="txt-p">Updates ONLY if operator-confirmed</text>
+
+  <!-- Candidate Probation -->
+  <rect x="260" y="150" width="230" height="75" class="slot-candidate" />
+  <text x="275" y="175" class="txt-h" style="fill: #a16207;">CANDIDATE SLOTS (Probation)</text>
+  <text x="275" y="193" class="txt-p">Persistence counter (M-of-N windows)</text>
+  <text x="275" y="211" class="txt-p">Blocks creeping fault assimilation</text>
+
+  <path d="M 490 60 L 580 60" class="flow" />
+  <rect x="580" y="35" width="280" height="55" class="slot-box" />
+  <text x="595" y="58" class="txt-h">MEWMA Step Supersession</text>
+  <text x="595" y="76" class="txt-p">Marks pre-repair baselines SUPERSEDED</text>
+
+  <path d="M 490 190 L 580 190" class="flow" />
+  <text x="500" y="180" class="lbl">Rarity &gt; MinSlot</text>
+
+  <!-- Episodic Slots -->
+  <rect x="580" y="145" width="280" height="90" class="slot-episodic" />
+  <text x="595" y="170" class="txt-h" style="fill: #b91c1c;">EPISODIC SLOTS (Rare Fault Episodes)</text>
+  <text x="595" y="190" class="txt-p">Competitive Rarity Admission vs Weakest Mature</text>
+  <text x="595" y="208" class="txt-p">Pins Raw Waveform Slice BEFORE Commit</text>
+  <text x="595" y="224" class="txt-p">Protected Quota for Critical Seizure Subtypes</text>
+</svg>

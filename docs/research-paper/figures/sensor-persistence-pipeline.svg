@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 260" width="100%" height="100%">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <style>
+      .box { fill: #f8fafc; stroke: #94a3b8; stroke-width: 1.5; }
+      .box-fast { fill: #eff6ff; stroke: #3b82f6; stroke-width: 1.5; }
+      .box-error { fill: #fef2f2; stroke: #dc2626; stroke-width: 1.5; }
+      .box-dashed { fill: none; stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 4,4; }
+      .title { font-family: Inter, system-ui, sans-serif; font-size: 13px; font-weight: 700; fill: #0f172a; }
+      .sub { font-family: Inter, system-ui, sans-serif; font-size: 11px; fill: #475569; }
+      .lbl { font-family: Inter, system-ui, sans-serif; font-size: 11px; font-weight: 600; fill: #2563eb; }
+      .err-lbl { font-family: Inter, system-ui, sans-serif; font-size: 11px; font-weight: 600; fill: #dc2626; }
+      .line { stroke: #64748b; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+      .line-error { stroke: #dc2626; stroke-width: 1.5; stroke-dasharray: 4,4; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <text x="20" y="32" class="lbl">WRITE PATH (one window, strictly increasing step order)</text>
+
+  <!-- Top row: ingest and persist -->
+  <rect x="20" y="50" width="150" height="70" class="box" />
+  <text x="32" y="78" class="title">Sensor window</text>
+  <text x="32" y="100" class="sub">validate, step order</text>
+
+  <rect x="205" y="50" width="150" height="70" class="box-fast" />
+  <text x="217" y="78" class="title">uEngram engine</text>
+  <text x="217" y="100" class="sub">encode + lifecycle</text>
+
+  <rect x="390" y="50" width="150" height="70" class="box-fast" />
+  <text x="402" y="78" class="title">Persist gate</text>
+  <text x="402" y="100" class="sub">alarm/lifecycle edge</text>
+
+  <rect x="575" y="50" width="150" height="70" class="box-fast" />
+  <text x="587" y="78" class="title">Pin raw slice</text>
+  <text x="587" y="100" class="sub">before event write</text>
+
+  <rect x="760" y="50" width="150" height="70" class="box-fast" />
+  <text x="772" y="78" class="title">Remember event</text>
+  <text x="772" y="100" class="sub">EdgeMemory Lite</text>
+
+  <line x1="170" y1="85" x2="205" y2="85" class="line" />
+  <line x1="355" y1="85" x2="390" y2="85" class="line" />
+  <line x1="540" y1="85" x2="575" y2="85" class="line" />
+  <text x="543" y="78" class="sub">yes</text>
+  <line x1="725" y1="85" x2="760" y2="85" class="line" />
+
+  <!-- Bottom row: no-write exit, failure exit, read path -->
+  <line x1="465" y1="120" x2="465" y2="170" class="line" />
+  <text x="472" y="150" class="sub">no</text>
+  <rect x="390" y="170" width="150" height="70" class="box" />
+  <text x="402" y="198" class="title">Receipt only</text>
+  <text x="402" y="220" class="sub">no storage write</text>
+
+  <line x1="835" y1="120" x2="835" y2="170" class="line-error" />
+  <text x="842" y="150" class="err-lbl">fail</text>
+  <rect x="760" y="170" width="150" height="70" class="box-error" />
+  <text x="772" y="198" class="title">Unpin + raise</text>
+  <text x="772" y="220" class="sub">retry, no re-ingest</text>
+
+  <rect x="20" y="170" width="150" height="70" class="box-dashed" />
+  <text x="32" y="198" class="title">Recall</text>
+  <text x="32" y="220" class="sub">read-only, no writes</text>
+</svg>

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 280" width="100%" height="100%">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <style>
+      .box { fill: #f8fafc; stroke: #94a3b8; stroke-width: 1.5; rx: 6px; }
+      .box-fast { fill: #eff6ff; stroke: #3b82f6; stroke-width: 1.5; rx: 6px; }
+      .box-offline { fill: #fdf4ff; stroke: #a855f7; stroke-width: 1.5; rx: 6px; }
+      .title { font-family: Inter, system-ui, sans-serif; font-size: 13px; font-weight: 700; fill: #0f172a; }
+      .sub { font-family: Inter, system-ui, sans-serif; font-size: 11px; fill: #475569; }
+      .path-lbl { font-family: Inter, system-ui, sans-serif; font-size: 11px; font-weight: 600; fill: #2563eb; }
+      .line { stroke: #64748b; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+      .line-dashed { stroke: #a855f7; stroke-width: 1.5; stroke-dasharray: 4,4; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <!-- Section Labels -->
+  <text x="20" y="24" class="path-lbl">FAST DETERMINISTIC EDGE PATH (&lt; 0.1 ms)</text>
+  <text x="20" y="200" class="path-lbl" style="fill: #9333ea;">OFFLINE COMMISSIONING PATH (Server / Host)</text>
+
+  <!-- Fast Path Boxes -->
+  <rect x="20" y="40" width="150" height="90" class="box-fast" />
+  <text x="35" y="68" class="title">Causal Sensor Window</text>
+  <text x="35" y="88" class="sub">15-sec Telemetry X</text>
+  <text x="35" y="106" class="sub">Pre-fit SVD Diagnostics</text>
+
+  <path d="M 170 85 L 210 85" class="line" />
+
+  <rect x="210" y="40" width="160" height="90" class="box-fast" />
+  <text x="225" y="68" class="title">Edge Whitening</text>
+  <text x="225" y="88" class="sub">DSP / 46KB CNN / Roles</text>
+  <text x="225" y="106" class="sub">PCA + MAD Noise Cov N</text>
+
+  <path d="M 370 85 L 410 85" class="line" />
+
+  <rect x="410" y="40" width="170" height="90" class="box-fast" />
+  <text x="425" y="68" class="title">μEngram Bounded Slots</text>
+  <text x="425" y="88" class="sub">Semantic (EMA)</text>
+  <text x="425" y="106" class="sub">Candidate | Episodic (Rarity)</text>
+
+  <path d="M 580 85 L 620 85" class="line" />
+
+  <rect x="620" y="40" width="160" height="90" class="box-fast" />
+  <text x="635" y="68" class="title">EdgeMemory Lite DB</text>
+  <text x="635" y="88" class="sub">Idempotent Event Ledger</text>
+  <text x="635" y="106" class="sub">Pinned Waveform Ring</text>
+
+  <path d="M 780 85 L 810 85" class="line" />
+
+  <rect x="810" y="40" width="95" height="90" class="box" />
+  <text x="822" y="75" class="title">Diagnostics</text>
+  <text x="822" y="98" class="sub">Post-LLM /</text>
+  <text x="822" y="114" class="sub">Operator</text>
+
+  <!-- Offline Distillation Boxes -->
+  <rect x="180" y="215" width="220" height="50" class="box-offline" />
+  <text x="195" y="237" class="title">Foundation Teachers</text>
+  <text x="195" y="253" class="sub">MOMENT-1 (141MB) + Chronos-2 (478MB)</text>
+
+  <path d="M 400 240 L 470 240" class="line-dashed" />
+
+  <rect x="470" y="215" width="230" height="50" class="box-offline" />
+  <text x="485" y="237" class="title">Dimension-Normalized Distillation</text>
+  <text x="485" y="253" class="sub">Trains 46KB Edge Student S_θ</text>
+
+  <path d="M 585 215 L 585 170 L 290 170 L 290 130" class="line-dashed" />
+</svg>

@@ -4,15 +4,16 @@ from __future__ import annotations
 
 import re
 import subprocess
+from html import escape as html_escape
 from pathlib import Path
 
 import markdown
 
 ROOT = Path(__file__).resolve().parents[1]
-PAPER_MD = ROOT / "docs" / "research-paper" / "sensor-state-memory.md"
+PAPER_MD = ROOT / "docs" / "research-paper" / "From_Sensor_Streams_to_Bounded_Machine_Memory.md"
 FIGURES_DIR = ROOT / "docs" / "research-paper" / "figures"
-HTML_OUT = ROOT / "docs" / "research-paper" / "sensor-state-memory.html"
-PDF_OUT = ROOT / "docs" / "research-paper" / "sensor-state-memory.pdf"
+HTML_OUT = ROOT / "docs" / "research-paper" / "From_Sensor_Streams_to_Bounded_Machine_Memory.html"
+PDF_OUT = ROOT / "docs" / "research-paper" / "From_Sensor_Streams_to_Bounded_Machine_Memory.pdf"
 
 
 def inline_svgs(content: str) -> str:
@@ -39,6 +40,26 @@ def prepare_mermaid_blocks(content: str) -> str:
     return pattern.sub(r'<div class="mermaid">\n\1\n</div>', content)
 
 
+def protect_math(content: str) -> tuple[str, list[str]]:
+    """Swap TeX spans for placeholders so markdown cannot rewrite _ and *."""
+    spans: list[str] = []
+
+    def stash(match):
+        spans.append(match.group(0))
+        return f"MATHSPAN{len(spans) - 1}END"
+
+    content = re.sub(r"\$\$.*?\$\$", stash, content, flags=re.DOTALL)
+    content = re.sub(r"(?<![\\$])\$(?!\s)[^$\n]+?(?<!\s)\$", stash, content)
+    return content, spans
+
+
+def restore_math(html: str, spans: list[str]) -> str:
+    """Put TeX spans back, HTML-escaped so KaTeX reads the literal text."""
+    for index, span in enumerate(spans):
+        html = html.replace(f"MATHSPAN{index}END", html_escape(span, quote=False))
+    return html
+
+
 def build_html() -> Path:
     md_text = PAPER_MD.read_text(encoding="utf-8")
 
@@ -47,12 +68,14 @@ def build_html() -> Path:
 
     # 2. Extract and preserve mermaid blocks before markdown parsing
     md_text = prepare_mermaid_blocks(md_text)
+    md_text, math_spans = protect_math(md_text)
 
     # 3. Convert markdown to HTML
     body_html = markdown.markdown(
         md_text,
         extensions=["tables", "fenced_code", "toc"],
     )
+    body_html = restore_math(body_html, math_spans)
 
     full_html = f"""<!DOCTYPE html>
 <html lang="en">
