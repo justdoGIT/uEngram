@@ -34,8 +34,7 @@ STYLE = PAPER_DIR / "paper.css"
 FIGURES_DIR = PAPER_DIR / "figures"
 HTML_OUT = PAPER_MD.with_suffix(".html")
 PDF_OUT = PAPER_MD.with_suffix(".pdf")
-KICKER = ("Original Research Article · Embedded Systems, Signal Processing &amp; Machine Learning",
-          "Preprint manuscript · uEngram reference implementation")
+KICKER = "Original Research Article · Embedded Systems, Signal Processing &amp; Machine Learning"
 MD_EXTENSIONS = ["tables", "fenced_code"]
 ALGO_KEYWORDS = ("for each", "for", "if", "else if", "else", "then", "do", "return", "repeat",
                  "raise")
@@ -155,25 +154,67 @@ def polish_text(html: str) -> str:
 
 def render_front(head: str) -> tuple[str, str]:
     match = re.fullmatch(
-        r"# (?P<title>.+?)\n\n\*\*(?P<name>.+?)\*\*(?P<meta>.*?)\n\n"
-        r"\*\*Keywords:\*\* (?P<keywords>.+?)\n\n## Abstract\n\n(?P<abstract>.+?)"
-        r"(?:\n\n(?P<findings>>.+))?",
+        r"# (?P<title>.+?)\n\n\*\*(?P<name>.+?)\*\* · (?P<email>\S+@\S+)\n\n"
+        r"(?P<affiliation>.+?)\n\n\*\*Keywords:\*\* (?P<keywords>.+?)\n\n(?P<date>.+?)\n\n"
+        r"## Abstract\n\n(?P<abstract>.+?)(?:\n\n(?P<findings>>.+))?",
         head.strip(), flags=re.S)
     if not match:
         raise ValueError("front matter does not follow the documented layout")
-    findings = match.group("findings")
+    findings, email = match.group("findings"), match.group("email")
     html = (
-        f'<div class="kicker">{KICKER[0]}<br>{KICKER[1]}</div>'
+        f'<div class="kicker">{KICKER}</div>'
         f'<h1 class="title">{match.group("title")}</h1>'
-        f'<p class="byline"><span class="name">{match.group("name")}</span>'
-        f'<span class="meta">{escape(match.group("meta"))}</span></p>'
+        f'<div class="author-box"><span class="name">{escape(match.group("name"))}</span>'
+        f'<span class="sep">·</span><a href="mailto:{email}">{email}</a></div>'
+        f'<p class="affiliation">{escape(match.group("affiliation"))}</p>'
         f'<p class="keywords"><b>Keywords:</b> {match.group("keywords")}</p>'
+        f'<p class="date">{escape(match.group("date"))}</p>'
+        '<div class="rule"></div>'
         f'<div class="abstract"><div class="label">ABSTRACT</div>'
         f'{markdown.markdown(match.group("abstract"), extensions=MD_EXTENSIONS)}</div>'
         + (markdown.markdown(findings, extensions=MD_EXTENSIONS) if findings else "")
     )
     return polish_text(html), re.sub(r"\s+", " ",
                                      re.sub(r"\$[^$]*\$|MATH\d+END", "", match.group("title")))
+
+
+CITATION = re.compile(r"\[(\d+(?:\s*[,\u2013-]\s*\d+)*)\]")
+REFERENCE_COUNT = 26
+
+
+def cite_links(match: re.Match) -> str:
+    """[4, 5] becomes [4], [5] and [8-11] becomes [8]-[11], each number a link."""
+    parts = re.split(r"(\s*[,\u2013-]\s*)", match.group(1))
+    numbers = [int(n) for n in parts[::2]]
+    if not all(1 <= n <= REFERENCE_COUNT for n in numbers):
+        return match.group(0)
+    out = []
+    for n, sep in zip(numbers, parts[1::2] + [""]):
+        out.append(f'<a class="cite" href="#ref-{n}">[{n}]</a>')
+        out.append("\u2013" if "\u2013" in sep or "-" in sep else ", " if sep else "")
+    return "".join(out)
+
+
+def link_references(html: str) -> str:
+    """Make in-text citations jump to their entry and give each entry an anchor."""
+    body, marker, appendix = html.partition("<h2>Appendix A")
+    pieces, in_code = [], False
+    for piece in re.split(r"(<[^>]+>)", body):
+        if piece.startswith("<"):
+            in_code = piece.startswith(("<code", "<pre", "<a ")) or (
+                in_code and piece not in ("</code>", "</pre>", "</a>"))
+            pieces.append(piece)
+        elif in_code:
+            pieces.append(piece)
+        else:
+            pieces.append(CITATION.sub(cite_links, piece))
+    body = "".join(pieces)
+    head, ref_marker, refs = body.partition("<h2>References</h2>")
+    if ref_marker:
+        count = iter(range(1, REFERENCE_COUNT + 1))
+        refs = re.sub(r"<li>", lambda _: f'<li id="ref-{next(count)}">', refs)
+        body = head + ref_marker + refs
+    return body + marker + appendix
 
 
 def build_html() -> Path:
@@ -185,7 +226,8 @@ def build_html() -> Path:
     if not separator:
         raise ValueError("paper needs a '---' line after the front matter")
     front, title = render_front(head)
-    body_html = polish_text(caption_tables(markdown.markdown(body, extensions=MD_EXTENSIONS)))
+    body_html = polish_text(link_references(caption_tables(
+        markdown.markdown(body, extensions=MD_EXTENSIONS))))
     page = blocks.restore(maths.restore(front + body_html, escape_items=True))
     pygments_css = HtmlFormatter(style="friendly").get_style_defs("figure.listing pre")
     html = f"""<!DOCTYPE html>

@@ -1,14 +1,18 @@
-# From Sensor Streams to Bounded Machine Memory: Architecture, Negative Transfer Results, and Domain Specialists in uEngram
+# From Sensor Streams to Bounded Machine Memory: Architecture, Negative Transfer Results, and Domain Specialists in μEngram
 
-**Kamal Kishor Pandey** · Independent Researcher · kamal.pandey@kepr.dev
+**Kamal Kishor Pandey** · kamal.pandey@kepr.dev
+
+Independent Researcher · B.E. in Electronics & Telecommunications (2013–2017), Army Institute of Technology (AIT), Pune, India
 
 **Keywords:** Bounded edge memory · Streaming anomaly detection · Noise whitening · Time-series foundation models · Knowledge distillation · Telemetry databases
 
+October 28, 2026
+
 ## Abstract
 
-Industrial and edge equipment generate continuous telemetry across vibration, temperature, pressure, and system load. Retaining every raw window exhausts flash endurance and storage capacity, while naive first-in-first-out (FIFO) buffers overwrite rare fault episodes with routine operational data. This paper evaluates **uEngram**, a bounded stateful memory runtime that compresses short sensor windows into low-dimensional vectors, tracks operating regimes through noise-whitened statistical summaries, quarantines unverified shifts, and pins raw waveform slices for high-rarity episodes.
+Industrial and edge equipment generate continuous telemetry across vibration, temperature, pressure, and system load. Retaining every raw window exhausts flash endurance and storage capacity, while naive first-in-first-out (FIFO) buffers overwrite rare fault episodes with routine operational data. This paper evaluates **μEngram** (read as *MicroEngram*; `uEngram` in code), a bounded stateful memory runtime that compresses short sensor windows into low-dimensional vectors, tracks operating regimes through noise-whitened statistical summaries, quarantines unverified shifts, and pins raw waveform slices for high-rarity episodes.
 
-While synthetic benchmarks confirm that uEngram cuts storage writes by 86.2% on average over 10 seeds (`results/synth_runs.jsonl`, DSP $d=16$) at 1.00 modeled event recall, evaluations on public datasets and benchmark suites expose a sharp divide between point-wise anomaly ranking (AUROC) and operational early warning. Frozen detectors miss uncommissioned load states on MetroPT-3 (AUROC 0.07 and 0.35 for clean windows against the 24 h before a report, within sustained load), detect 0 of 5 events on MetroPT-2, and catch only 5 of 34 SKAB faults—all after physical onset. Furthermore, distilling foundation models (MOMENT-1-small and Chronos-2) into a 46 KB edge student improves window ranking on MFPT and CMAPSS (CWRU saturates at 1.0000 AUROC for all models), yet flags the one held-out healthy recording per bearing dataset in every model (normal-file false-alarm rate 1.0; `results/cwru_two_teacher_gate.json`, `results/mfpt_two_teacher_gate.json`), and degrades timely maintenance recall at the 20-cycle remaining-useful-life (RUL) horizon. We show that overcoming channel dilution and covariance singularity requires pre-fit numerical diagnostics paired with a **role-separated, domain-specialist architecture**, which improves strict event recall on OS-Metrics to 69.0% (29/42), reduces false alarms to 19.6 per week, achieves 100% subsystem root-cause attribution (30/30 test-split events), and executes in $6.27\,\mu\text{s}$ per window.
+While synthetic benchmarks confirm that μEngram cuts storage writes by 86.2% on average over 10 seeds (`results/synth_runs.jsonl`, DSP $d=16$) at 1.00 modeled event recall, evaluations on public datasets and benchmark suites expose a sharp divide between point-wise anomaly ranking (AUROC) and operational early warning. Frozen detectors miss uncommissioned load states on MetroPT-3 (AUROC 0.07 and 0.35 for clean windows against the 24 h before a report, within sustained load), detect 0 of 5 events on MetroPT-2, and catch only 5 of 34 SKAB faults—all after physical onset. Furthermore, distilling foundation models (MOMENT-1-small and Chronos-2) into a 46 KB edge student improves window ranking on MFPT and CMAPSS (CWRU saturates at 1.0000 AUROC for all models), yet flags the one held-out healthy recording per bearing dataset in every model (normal-file false-alarm rate 1.0; `results/cwru_two_teacher_gate.json`, `results/mfpt_two_teacher_gate.json`), and degrades timely maintenance recall at the 20-cycle remaining-useful-life (RUL) horizon. We show that overcoming channel dilution and covariance singularity requires pre-fit numerical diagnostics paired with a **role-separated, domain-specialist architecture**, which improves strict event recall on OS-Metrics to 69.0% (29/42), reduces false alarms to 19.6 per week, achieves 100% subsystem root-cause attribution (30/30 test-split events), and executes in $6.27\,\mu\text{s}$ per window.
 
 > **Principal findings**
 >
@@ -43,9 +47,9 @@ To evaluate what works in practice, we analyze the `uEngram` Python reference im
 
 ### 2.1 Feature Encoding and Noise-Whitened Projection
 
-Rather than storing individual samples, uEngram processes time-aligned causal windows $X \in \mathbb{R}^{C \times K}$ across $C$ channels and $K$ samples. The baseline digital signal processing (DSP) encoder extracts per-channel mean, spread, and energy across four frequency bands. Alternative encoders include a compact two-stage 1D convolutional neural network (`CNNEncoder`) trained via reconstruction and partitioned domain-specialist encoders.
+Rather than storing individual samples, μEngram processes time-aligned causal windows $X \in \mathbb{R}^{C \times K}$ across $C$ channels and $K$ samples. The baseline digital signal processing (DSP) encoder extracts per-channel mean, spread, and energy across four frequency bands. Alternative encoders include a compact two-stage 1D convolutional neural network (`CNNEncoder`) trained via reconstruction and partitioned domain-specialist encoders.
 
-Because raw sensor features covary under load changes, Euclidean distance overweights correlated channels. uEngram projects features via principal component analysis (PCA) to dimension $d$ and applies within-state noise whitening [3] estimated from lagged differences between adjacent windows using the median absolute deviation (MAD). For a representation $r(x)$ with mean $\bar{r}$, PCA eigenvectors $V$, eigenvalues $\Lambda$, and within-state noise covariance $N$, the whitened state vector is:
+Because raw sensor features covary under load changes, Euclidean distance overweights correlated channels. μEngram projects features via principal component analysis (PCA) to dimension $d$ and applies within-state noise whitening [3] estimated from lagged differences between adjacent windows using the median absolute deviation (MAD). For a representation $r(x)$ with mean $\bar{r}$, PCA eigenvectors $V$, eigenvalues $\Lambda$, and within-state noise covariance $N$, the whitened state vector is:
 
 $$z(x) = N^{-1/2}\Lambda^{-1/2}V^\top(r(x) - \bar{r})$$
 
@@ -92,9 +96,9 @@ class NoiseWhitener:
 
 ### 2.2 Bounded State Slots and Competitive Admission
 
-uEngram divides a fixed memory budget into **semantic slots** (compact summaries of confirmed routine operating modes), **candidate slots** (unfamiliar patterns undergoing persistence probation), and **episodic slots** (rare excursions paired with pointers to raw time-series slices).
+μEngram divides a fixed memory budget into **semantic slots** (compact summaries of confirmed routine operating modes), **candidate slots** (unfamiliar patterns undergoing persistence probation), and **episodic slots** (rare excursions paired with pointers to raw time-series slices).
 
-Early versions of uEngram evicted the weakest mature episodic slot whenever any out-of-gate sample arrived, allowing mild outliers to overwrite severe historical faults. Informed by thresholded streaming memory in MemStream [8], diversity-aware replay in Rainbow Memory [9], constrained buffer allocation [10], and prototype replay [11], uEngram implements **competitive rarity admission**. An incoming out-of-gate sample is admitted to a full episodic bank only if its rarity-derived importance exceeds the weakest stored episode; otherwise, it is discarded while probation candidates remain replaceable.
+Early versions of μEngram evicted the weakest mature episodic slot whenever any out-of-gate sample arrived, allowing mild outliers to overwrite severe historical faults. Informed by thresholded streaming memory in MemStream [8], diversity-aware replay in Rainbow Memory [9], constrained buffer allocation [10], and prototype replay [11], μEngram implements **competitive rarity admission**. An incoming out-of-gate sample is admitted to a full episodic bank only if its rarity-derived importance exceeds the weakest stored episode; otherwise, it is discarded while probation candidates remain replaceable.
 
 ![Figure 3. Slot state machine of `Engram.ingest`: gate routing, candidate probation, promotion, step supersession, and competitive episodic admission. A window inside an episodic slot's gate is absorbed by that slot; only the candidate path is drawn.](figures/slot-state-machine.svg)
 
@@ -156,7 +160,7 @@ def make_episodic_room(eng, t: int, incoming_surprisal: float | None = None) -> 
 
 ### 2.3 Layered Persistence and Target Database Primitives
 
-In the implemented `src/uengram/sensor_memory.py` adapter, uEngram manages live in-memory states while recording new candidates, state promotions, step changes, and alarm open/clear transitions into `EdgeMemory Lite` as versioned `EVENT` records. The persisted action set is `_PERSIST_ACTIONS = {new_candidate, promote, step_change}` plus alarm transitions (`src/uengram/sensor_memory.py:33`, `:112-113`).
+In the implemented `src/uengram/sensor_memory.py` adapter, μEngram manages live in-memory states while recording new candidates, state promotions, step changes, and alarm open/clear transitions into `EdgeMemory Lite` as versioned `EVENT` records. The persisted action set is `_PERSIST_ACTIONS = {new_candidate, promote, step_change}` plus alarm transitions (`src/uengram/sensor_memory.py:33`, `:112-113`).
 
 ![Figure 4. Sensor-state persistence pipeline in the implemented adapter. The raw window is pinned before the event write; on failure the pin is released and the error carries the pending record for retry.](figures/sensor-persistence-pipeline.svg)
 
@@ -449,44 +453,44 @@ This study makes no "first-ever" algorithmic claim; it builds on established ana
 
 Appendix A tabulates the repository's current results, each with its source file and an outcome tag. Figure A1 shows the balance: most tables are negative or mixed, and only a few are clean positives, so the positive findings in §2 to §5 should be read against that record.
 
-Before transitioning uEngram from a Python reference design to a safety-relevant embedded C/Rust DBMS deployment, five engineering gates remain mandatory:
+Before transitioning μEngram from a Python reference design to a safety-relevant embedded C/Rust DBMS deployment, five engineering gates remain mandatory:
 
 1. **Preregistered Multi-Asset Field Cohort:** Evaluate on held-out physical assets with independently adjudicated fault-onset timestamps and complete operating-mode coverage (startup, idle, full load, post-repair), preventing preprocessing leakage across vehicles or machines.
 2. **Adversarial Poisoning and Shadow Baselines:** Replay slow degradation ramps against a frozen shadow reference to verify that quarantine gates prevent gradual wear from updating semantic healthy centroids.
 3. **Abstention as a First-Class Output:** Explicitly emit `unknown_operating_mode` or `insufficient_calibration_support` rather than forcing out-of-distribution loads into false alarms or healthy summaries.
-4. **Transactional Cross-Store Crash Recovery:** Implement an atomic write-ahead outbox unifying uEngram checkpoint state, `EdgeMemory` event records, and circular-buffer pin reference counts across power cuts.
+4. **Transactional Cross-Store Crash Recovery:** Implement an atomic write-ahead outbox unifying μEngram checkpoint state, `EdgeMemory` event records, and circular-buffer pin reference counts across power cuts.
 5. **Hardware Storage Profiling:** Measure p99 latency, peak RAM, flash write amplification, and ANN/exact recall under high-water-mark eviction on target embedded flash hardware.
 
 ---
 
 ## References
 
-1. Chhikara, P., Khant, D., Aryan, S., Singh, T., and Yadav, D. (2025). “Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory.” arXiv:2504.19413.
-2. Hojjati, H., Roth, C., Woods, R., Sills, K., and Armanfard, N. (2026). “EngineAD: A Real-World Vehicle Engine Anomaly Detection Dataset.” arXiv:2603.25955.
-3. Green, A. A., Berman, M., Switzer, P., and Craig, M. D. (1988). “A Transformation for Ordering Multispectral Data in Terms of Image Quality with Implications for Noise Removal.” *IEEE Trans. Geosci. Remote Sens.*, 26(1), 65–74.
-4. Willsky, A. S. (1976). “A Survey of Design Methods for Failure Detection in Dynamic Systems.” *Automatica*, 12(6), 601–611.
-5. Chow, E. Y., and Willsky, A. S. (1984). “Analytical Redundancy and the Design of Robust Failure Detection Systems.” *IEEE Trans. Autom. Control*, 29(7), 603–614.
-6. uEngram repository documentation and benchmark artifacts (`docs/RESULTS.md`, `docs/sensor-state-memory-pipeline.md`, `docs/research-teacher-distillation.md`, `docs/osmetrics-specialist-gate.md`).
-7. NASA IMS Bearings Dataset, NASA Open Data Portal.
-8. Bhatia, S., Jain, A., Srivastava, S., Kawaguchi, K., and Hooi, B. (2022). “MemStream: Memory-Based Streaming Anomaly Detection.” *Proc. ACM Web Conf. 2022*.
-9. Bang, J., Kim, H., Yoo, Y., Ha, J.-W., and Choi, J. (2021). “Rainbow Memory: Continual Learning With a Memory of Diverse Samples.” *CVPR 2021*, 8218–8227.
-10. Elenter, J., NaderiAlizadeh, N., Javidi, T., and Ribeiro, A. (2024). “Primal Dual Continual Learning: Balancing Stability and Plasticity through Adaptive Memory Allocation.” arXiv:2310.00154v2.
-11. Aghasanli, A., Li, Y., and Angelov, P. (2025). “Prototype-Based Continual Learning with Label-free Replay Buffer and Cluster Preservation Loss.” arXiv:2504.07240.
-12. Yang, L., Lu, L., Liu, C., et al. (2025). “Interactive exploration of CNN interpretability via coalitional game theory.” *Scientific Reports*, 15, 9261.
-13. Han, C. S., and Lee, K. M. (2025). “Leveraging Intermediate Representations of Time Series Foundation Models for Anomaly Detection.” arXiv:2509.12650.
-14. Park, J., and Kang, S. (2026). “PaAno: Patch-Based Representation Learning for Time-Series Anomaly Detection.” arXiv:2602.01359v2.
-15. Yoon, S., Kim, J., Ha, J., and Ko, Y. M. (2026). “Patch-based Memory Gate Model in Time Series Foundation Model.” arXiv:2509.18751v4.
-16. dos Santos Oliveira, A., da Silva, F. S. T., Ferreira, D. L., et al. (2026). “Looking at anomaly detection in EdgeAI through the up-to-date lens of academic and market perspectives.” *Cluster Computing*, 29, 251.
-17. Kim, M., Bhaumik, K. K., Ali, A. A., and Woo, S. S. (2024). “MIXAD: Memory-Induced Explainable Time Series Anomaly Detection.” arXiv:2410.22735.
-18. Goswami, M., et al. (2024). “MOMENT: A Family of Open Time-series Foundation Models.” *ICML 2024*.
-19. Kim, J., Yoon, S., Ko, Y. M., Kim, Y., Kim, S. I., and Tae, J. (2026). “Complexity- and Statistics-Guided Anomaly Detection in Time Series Foundation Models.” *ICLR 2026*.
-20. Khan, U., Capogrosso, L., Biondani, F., Magno, M., and Fummi, F. (2026). “ChronosAD: Leveraging Time Series Foundation Models for Accurate Anomaly Detection.” arXiv:2606.01300.
+1. Chhikara, P., Khant, D., Aryan, S., Singh, T., and Yadav, D. (2025). “Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory.” [arXiv:2504.19413](https://arxiv.org/abs/2504.19413).
+2. Hojjati, H., Roth, C., Woods, R., Sills, K., and Armanfard, N. (2026). “EngineAD: A Real-World Vehicle Engine Anomaly Detection Dataset.” [arXiv:2603.25955](https://arxiv.org/abs/2603.25955).
+3. Green, A. A., Berman, M., Switzer, P., and Craig, M. D. (1988). “A Transformation for Ordering Multispectral Data in Terms of Image Quality with Implications for Noise Removal.” *IEEE Trans. Geosci. Remote Sens.*, 26(1), 65–74. [doi:10.1109/36.3001](https://doi.org/10.1109/36.3001).
+4. Willsky, A. S. (1976). “A Survey of Design Methods for Failure Detection in Dynamic Systems.” *Automatica*, 12(6), 601–611. [[PDF]](https://willsky.lids.mit.edu/publ_pdfs/15_pub_AUTO.pdf).
+5. Chow, E. Y., and Willsky, A. S. (1984). “Analytical Redundancy and the Design of Robust Failure Detection Systems.” *IEEE Trans. Autom. Control*, 29(7), 603–614. [doi:10.1109/TAC.1984.1103593](https://doi.org/10.1109/TAC.1984.1103593).
+6. μEngram repository documentation and benchmark artifacts (`docs/RESULTS.md`, `docs/sensor-state-memory-pipeline.md`, `docs/research-teacher-distillation.md`, `docs/osmetrics-specialist-gate.md`).
+7. NASA IMS Bearings Dataset, NASA Open Data Portal. [https://data.nasa.gov/dataset/ims-bearings](https://data.nasa.gov/dataset/ims-bearings).
+8. Bhatia, S., Jain, A., Srivastava, S., Kawaguchi, K., and Hooi, B. (2022). “MemStream: Memory-Based Streaming Anomaly Detection.” *Proc. ACM Web Conf. 2022*. [doi:10.1145/3485447.3512221](https://doi.org/10.1145/3485447.3512221) · [arXiv:2106.03837](https://arxiv.org/abs/2106.03837).
+9. Bang, J., Kim, H., Yoo, Y., Ha, J.-W., and Choi, J. (2021). “Rainbow Memory: Continual Learning With a Memory of Diverse Samples.” *CVPR 2021*, 8218–8227. [[CVF]](https://openaccess.thecvf.com/content/CVPR2021/html/Bang_Rainbow_Memory_Continual_Learning_With_a_Memory_of_Diverse_Samples_CVPR_2021_paper.html).
+10. Elenter, J., NaderiAlizadeh, N., Javidi, T., and Ribeiro, A. (2024). “Primal Dual Continual Learning: Balancing Stability and Plasticity through Adaptive Memory Allocation.” [arXiv:2310.00154v2](https://arxiv.org/abs/2310.00154).
+11. Aghasanli, A., Li, Y., and Angelov, P. (2025). “Prototype-Based Continual Learning with Label-free Replay Buffer and Cluster Preservation Loss.” [arXiv:2504.07240](https://arxiv.org/abs/2504.07240).
+12. Yang, L., Lu, L., Liu, C., et al. (2025). “Interactive exploration of CNN interpretability via coalitional game theory.” *Scientific Reports*, 15, 9261. [doi:10.1038/s41598-025-94052-8](https://doi.org/10.1038/s41598-025-94052-8).
+13. Han, C. S., and Lee, K. M. (2025). “Leveraging Intermediate Representations of Time Series Foundation Models for Anomaly Detection.” [arXiv:2509.12650](https://arxiv.org/abs/2509.12650).
+14. Park, J., and Kang, S. (2026). “PaAno: Patch-Based Representation Learning for Time-Series Anomaly Detection.” [arXiv:2602.01359v2](https://arxiv.org/abs/2602.01359v2).
+15. Yoon, S., Kim, J., Ha, J., and Ko, Y. M. (2026). “Patch-based Memory Gate Model in Time Series Foundation Model.” [arXiv:2509.18751v4](https://arxiv.org/abs/2509.18751v4).
+16. dos Santos Oliveira, A., da Silva, F. S. T., Ferreira, D. L., et al. (2026). “Looking at anomaly detection in EdgeAI through the up-to-date lens of academic and market perspectives.” *Cluster Computing*, 29, 251. [doi:10.1007/s10586-026-05954-9](https://doi.org/10.1007/s10586-026-05954-9).
+17. Kim, M., Bhaumik, K. K., Ali, A. A., and Woo, S. S. (2024). “MIXAD: Memory-Induced Explainable Time Series Anomaly Detection.” [arXiv:2410.22735](https://arxiv.org/abs/2410.22735).
+18. Goswami, M., et al. (2024). “MOMENT: A Family of Open Time-series Foundation Models.” *ICML 2024*. [arXiv:2402.03885](https://arxiv.org/abs/2402.03885) · [[Code]](https://github.com/moment-timeseries-foundation-model/moment).
+19. Kim, J., Yoon, S., Ko, Y. M., Kim, Y., Kim, S. I., and Tae, J. (2026). “Complexity- and Statistics-Guided Anomaly Detection in Time Series Foundation Models.” *ICLR 2026*. [[Paper]](https://proceedings.iclr.cc/paper_files/paper/2026/file/d06768735ce7d11ade5baef7099b4e05-Paper-Conference.pdf).
+20. Khan, U., Capogrosso, L., Biondani, F., Magno, M., and Fummi, F. (2026). “ChronosAD: Leveraging Time Series Foundation Models for Accurate Anomaly Detection.” [arXiv:2606.01300](https://arxiv.org/abs/2606.01300).
 21. TSB-AD Project. “A Comprehensive Benchmark for Time-Series Anomaly Detection.” [https://thedatumorg.github.io/TSB-AD/](https://thedatumorg.github.io/TSB-AD/).
-22. Ansari, A. F., et al. (2025). “Chronos-2: From univariate to multivariate probabilistic time series forecasting.” arXiv:2510.15821.
-23. Bechhoefer, E. (2013). “A Data-Driven Approach to Predictive Maintenance of Industrial Equipment.” MFPT Fault Data Sets.
-24. Case Western Reserve University Bearing Data Center.
-25. NASA. “Turbofan Engine Degradation Simulation Data Set (CMAPSS FD001).” NASA Open Data Portal.
-26. Si, H., Li, J., Pei, C., et al. (2024). “TimeSeriesBench: An Industrial-Grade Benchmark for Time Series Anomaly Detection Models.” arXiv:2402.10802v3.
+22. Ansari, A. F., et al. (2025). “Chronos-2: From univariate to multivariate probabilistic time series forecasting.” [arXiv:2510.15821](https://arxiv.org/abs/2510.15821) · [[Model Card]](https://huggingface.co/amazon/chronos-2).
+23. Bechhoefer, E. (2013). “A Data-Driven Approach to Predictive Maintenance of Industrial Equipment.” MFPT Fault Data Sets. [https://www.mfpt.org/fault-data-sets/](https://www.mfpt.org/fault-data-sets/).
+24. Case Western Reserve University Bearing Data Center. [Source 97.mat](https://engineering.case.edu/sites/default/files/97.mat) · [[Metadata Manifest]](https://github.com/VictorBauler/BearingDatasets/blob/main/src/bearing_datasets/datasets/cwru/files.csv).
+25. NASA. “Turbofan Engine Degradation Simulation Data Set (CMAPSS FD001).” NASA Open Data Portal. [https://data.nasa.gov/dataset/cmapss-jet-engine-simulated-data](https://data.nasa.gov/dataset/cmapss-jet-engine-simulated-data).
+26. Si, H., Li, J., Pei, C., et al. (2024). “TimeSeriesBench: An Industrial-Grade Benchmark for Time Series Anomaly Detection Models.” [arXiv:2402.10802v3](https://arxiv.org/abs/2402.10802).
 
 
 
