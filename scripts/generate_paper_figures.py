@@ -25,13 +25,13 @@ def create_figure1_system_architecture():
   </defs>
 
   <!-- Section Labels -->
-  <text x="20" y="24" class="path-lbl">FAST DETERMINISTIC EDGE PATH (&lt; 0.1 ms)</text>
+  <text x="20" y="24" class="path-lbl">FAST DETERMINISTIC EDGE PATH</text>
   <text x="20" y="200" class="path-lbl" style="fill: #9333ea;">OFFLINE COMMISSIONING PATH (Server / Host)</text>
 
   <!-- Fast Path Boxes -->
   <rect x="20" y="40" width="150" height="90" class="box-fast" />
   <text x="35" y="68" class="title">Causal Sensor Window</text>
-  <text x="35" y="88" class="sub">15-sec Telemetry X</text>
+  <text x="35" y="88" class="sub">Sensor Telemetry X</text>
   <text x="35" y="106" class="sub">Pre-fit SVD Diagnostics</text>
 
   <path d="M 170 85 L 210 85" class="line" />
@@ -52,8 +52,8 @@ def create_figure1_system_architecture():
 
   <rect x="620" y="40" width="160" height="90" class="box-fast" />
   <text x="635" y="68" class="title">EdgeMemory Lite DB</text>
-  <text x="635" y="88" class="sub">Idempotent Event Ledger</text>
-  <text x="635" y="106" class="sub">Pinned Waveform Ring</text>
+  <text x="635" y="88" class="sub">Idempotent Event Records</text>
+  <text x="635" y="106" class="sub">Host Raw-Window Pins</text>
 
   <path d="M 780 85 L 810 85" class="line" />
 
@@ -126,14 +126,14 @@ def create_figure2_state_machine():
   <text x="595" y="76" class="txt-p">Marks pre-repair baselines SUPERSEDED</text>
 
   <path d="M 490 190 L 580 190" class="flow" />
-  <text x="500" y="180" class="lbl">Rarity &gt; MinSlot</text>
+  <text x="500" y="180" class="lbl">Rarity &gt; weakest</text>
 
   <!-- Episodic Slots -->
   <rect x="580" y="145" width="280" height="90" class="slot-episodic" />
   <text x="595" y="170" class="txt-h" style="fill: #b91c1c;">EPISODIC SLOTS (Rare Fault Episodes)</text>
   <text x="595" y="190" class="txt-p">Competitive Rarity Admission vs Weakest Mature</text>
   <text x="595" y="208" class="txt-p">Pins Raw Waveform Slice BEFORE Commit</text>
-  <text x="595" y="224" class="txt-p">Protected Quota for Critical Seizure Subtypes</text>
+  <text x="595" y="224" class="txt-p">Pin released if event write fails</text>
 </svg>"""
     (FIGURES_DIR / "slot-state-machine.svg").write_text(svg, encoding="utf-8")
 

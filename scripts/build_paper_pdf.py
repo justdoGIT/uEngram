@@ -81,7 +81,7 @@ def build_html() -> Path:
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>From Sensor Streams to Machine Memory: What uEngram Shows—and What It Does Not</title>
+<title>From Sensor Streams to Bounded Machine Memory: Architecture, Negative Transfer Results, and Domain Specialists in uEngram</title>
 <!-- KaTeX for math rendering -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
@@ -105,6 +105,13 @@ document.addEventListener("DOMContentLoaded", function() {{
 }});
 </script>
 <style>
+:root {{
+    --fg: #0f172a;
+    --muted: #475569;
+    --border: #94a3b8;
+    --surface: #f8fafc;
+    --accent: #2563eb;
+}}
 @page {{
     size: A4;
     margin: 20mm 15mm 20mm 15mm;
@@ -219,15 +226,18 @@ figure.paper-figure {{
     page-break-inside: avoid;
 }}
 figure.paper-figure .svg-container {{
-    display: inline-block;
-    max-width: 95%;
+    display: block;
+    width: 95%;
+    margin: 0 auto;
+    box-sizing: border-box;
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     padding: 8pt;
 }}
 figure.paper-figure .svg-container svg {{
-    max-width: 100%;
+    display: block;
+    width: 100%;
     height: auto;
 }}
 figcaption {{

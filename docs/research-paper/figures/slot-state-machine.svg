@@ -45,12 +45,12 @@
   <text x="595" y="76" class="txt-p">Marks pre-repair baselines SUPERSEDED</text>
 
   <path d="M 490 190 L 580 190" class="flow" />
-  <text x="500" y="180" class="lbl">Rarity &gt; MinSlot</text>
+  <text x="500" y="180" class="lbl">Rarity &gt; weakest</text>
 
   <!-- Episodic Slots -->
   <rect x="580" y="145" width="280" height="90" class="slot-episodic" />
   <text x="595" y="170" class="txt-h" style="fill: #b91c1c;">EPISODIC SLOTS (Rare Fault Episodes)</text>
   <text x="595" y="190" class="txt-p">Competitive Rarity Admission vs Weakest Mature</text>
   <text x="595" y="208" class="txt-p">Pins Raw Waveform Slice BEFORE Commit</text>
-  <text x="595" y="224" class="txt-p">Protected Quota for Critical Seizure Subtypes</text>
+  <text x="595" y="224" class="txt-p">Pin released if event write fails</text>
 </svg>
