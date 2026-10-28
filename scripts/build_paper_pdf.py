@@ -46,7 +46,7 @@ KICKER = ("Original Research Article · Embedded Systems, Signal Processing &amp
 MD_EXTENSIONS = ["tables", "fenced_code"]
 ALGO_KEYWORDS = ("for each", "for", "if", "else if", "else", "then", "do", "return", "repeat",
                  "raise")
-KATEX = "https://cdn.jsdelivr.net/npm/katex@0.16.8/dist"
+KATEX = "vendor/katex"  # relative to the paper directory; vendored from katex@0.16.8 (MIT, see vendor/katex/LICENSE)
 
 
 class Stash:
@@ -176,7 +176,7 @@ def render_front(head: str) -> tuple[str, str]:
         f'<span class="sep">·</span><a href="mailto:{email}">{email}</a></div>'
         f'<p class="affiliation">{escape(match.group("affiliation"))}</p>'
         f'<p class="keywords"><b>Keywords:</b> {match.group("keywords")}</p>'
-        f'<p class="date">{escape(match.group("date"))}</p>'
+        f'<div class="date">{markdown.markdown(match.group("date"), extensions=MD_EXTENSIONS)}</div>'
         '<div class="rule"></div>'
         f'<div class="abstract"><div class="label">ABSTRACT</div>'
         f'{markdown.markdown(match.group("abstract"), extensions=MD_EXTENSIONS)}</div>'

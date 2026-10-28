@@ -6,7 +6,9 @@ Independent Researcher · B.E. in Electronics & Telecommunications (2013–2017)
 
 **Keywords:** Bounded edge memory · Streaming anomaly detection · Noise whitening · Time-series foundation models · Knowledge distillation · Telemetry databases
 
-October 28, 2026
+Version 0.1.0 · October 29, 2026 · repository snapshot (`pyproject.toml`)
+
+**How to cite:** Pandey, K. K. (2026). “From Sensor Streams to Bounded Machine Memory.” μEngram reference implementation, version 0.1.0 (October 29, 2026). Machine-readable metadata: `CITATION.cff`.
 
 ## Abstract
 
@@ -235,13 +237,13 @@ Across development and holdout studies [6], empirical performance diverges sharp
 
 | Dataset / Study | Configuration | Primary Result | Operational & Methodological Verdict |
 |---|---|---|---|
-| **Synthetic Stream** (10 seeds) | DSP ($d=16$) | 1.00 event recall; AP 0.9955; 86.2% write reduction (2,762 / 20,000 windows) | Validates bounded memory mechanics under known generative assumptions; CNN variant achieved only 0.262 recall despite high AUROC. |
-| **CMAPSS FD001** | DSP ($d=16$) | Health AUROC 0.999, AP 0.995; RUL RMSE 42.1 (vs. 25.8 naive storage) | Separating early/late life (AUROC) does not yield accurate remaining-life regression (RMSE); $d=32$ failed due to singular frequency covariance. |
-| **MetroPT-3** | Frozen CNN | Mean 3.6/4 events detected; 10.2 FA/week; negative mean lead time | 492 of 495 event windows fall in sustained load, which commissioning never contained. Clean windows vs. the 24 h before a report, within sustained load, give AUROC 0.07 (health) and 0.35 (novelty); this is a docs analysis (`docs/research-alarm-components.md:54-66`), not a result JSON. |
-| **MetroPT-2** | Frozen v2 policy | 0/5 events detected across April (2) and January (3) subsets | Low false-alarm rate achieved at the cost of missing every target failure. |
-| **SKAB** | Frozen DSP ($d=16$) | 5/34 events detected; AUROC 0.546; AP 0.419; detection delays 28–114 s post-onset | 5 false alarms over 6.21 clean hours makes weekly extrapolation (135 FA/wk) unstable. |
-| **EngineAD** [2] | CNN ($d \in \{8,16,32\}$, 10 seeds) | Held-out truck pooled 5-minute segment AUROC near chance (d=16 median 0.556; seed-level JSON at `~/.local/state/uengram/enginead/cnn_seed_stability.json`, outside the repo) | Pre-fitted fleet-wide PCA channels leak preprocessing across splits, and 5-minute segment labels mix normal and faulty seconds. |
-| **SCANIA Component X** | Frozen AND policy | 22.8% recall on classes 1–4 at final row; 19.3% alarm rate on class 0; AUROC 0.541 | Coarse repair-proximity classes on 5,046 vehicles cannot measure lead time or early warning. |
+| **Synthetic Stream** (10 seeds) | DSP ($d=16$) | 1.00 event recall (every seed); AP 0.9955 (0.9795–1.0000); 86.2% write reduction (85.3–87.2%; mean 2,762 of 20,000 windows) | Validates bounded memory mechanics under known generative assumptions; CNN variant achieved only 0.262 recall despite high AUROC. |
+| **CMAPSS FD001** (5 seeds) | DSP ($d=16$) | Health AUROC 0.999, AP 0.995; RUL RMSE 42.1 (vs. 25.8 naive storage) | Separating early/late life (AUROC) does not yield accurate remaining-life regression (RMSE); $d=32$ failed due to singular frequency covariance. Quality metrics are identical across the five seeds in `results/cmapss_runs.jsonl`; only latency varies, so no seed range is reported. |
+| **MetroPT-3** (5 seeds) | CNN `uengram` | Mean 3.6/4 events detected (seed range 2–4); 10.2 FA/week (6.1–14.2); mean lead time −5.95 h (−16.5 to +11.3). Source: `results/metropt_runs.jsonl`. | 492 of 495 event windows fall in sustained load, which commissioning never contained. Clean windows vs. the 24 h before a report, within sustained load, give AUROC 0.07 (health) and 0.35 (novelty); this is a docs analysis (`docs/research-alarm-components.md:54-66`), not a result JSON. |
+| **MetroPT-2** | Default MetroPT-3 design replayed (Table A42) | 0/5 events detected (January 0/3, April 0/2) | Per-stream counts from Appendix Table A42; no seed flag is recorded for this replay. |
+| **SKAB** (single seed, 0) | DSP, uEngram policy | 5/34 fault experiments detected; AUROC 0.546; AP 0.419; 135 FA/week | Source `results/skab_validation.json`. One seed, so the weekly rate is a single-run estimate. |
+| **EngineAD** [2] | CNN ($d \in \{8,16,32\}$, 10 seeds each) | Held-out truck pooled 5-minute segment AUROC near chance (seed medians 0.538, 0.556, 0.536 for $d$ = 8, 16, 32; $d=16$ range 0.540–0.566; seed-level JSON at `results/enginead/cnn_seed_stability.json`) | Pre-fitted fleet-wide PCA channels leak preprocessing across splits, and 5-minute segment labels mix normal and faulty seconds. |
+| **SCANIA Component X** (single seed, 0) | Frozen AND policy | 22.8% recall on classes 1–4 at final row; 19.3% alarm rate on class 0; AUROC 0.541 | Coarse repair-proximity classes on 5,046 vehicles cannot measure lead time or early warning. One seed in `results/scania_validation.json`. |
 
 ![Figure 5. EngineAD pooled held-out segment AUROC for ten training seeds at each latent width; each dot is one seed, not one test vehicle.](figures/enginead-seed-histogram.svg)
 
@@ -276,7 +278,7 @@ However, running those exact five seeds through the full calibrated alarm pipeli
 | **MetroPT-3** | Middle layer | 3.0 (3–4) | 0.990 (0.987–0.992) | 0.617 (0.517–0.671) | **0.58** | **0.019** |
 | **MetroPT-3** | Multi-level | **4.0** (4–4) | **0.992** (0.988–0.996) | **0.773** (0.541–0.956) | **0.58** | 0.025 |
 
-In the full pipeline the middle layer had the lower event median on both datasets (SKAB 20 vs. 23; MetroPT-3 3 vs. 4), though on MetroPT-3 its median AUROC was marginally higher (0.990 vs. 0.989) and its false-alarm rate lower (0.58 vs. 0.69 per week). Seed spread was wide on SKAB (13–34 events across all readouts; 18–34 for the bottleneck alone), and no readout dominated across modalities. Accordingly, `representation="bottleneck"` remains the default encoder.
+In the full pipeline the middle layer had the lower event median on both datasets (SKAB 20 vs. 23; MetroPT-3 3 vs. 4), though on MetroPT-3 its median AUROC was marginally higher (0.990 vs. 0.989) and its false-alarm rate lower (0.58 vs. 0.69 per week). Seed spread was wide on SKAB (13–34 events across all readouts; 18–34 for the bottleneck alone), and no readout dominated across modalities. Accordingly, `representation="bottleneck"` remains the default encoder (`CNNEncoder.__init__`, `src/uengram/encoder_cnn.py:26`).
 
 ### 4.2 Offline Foundation-Model Distillation
 

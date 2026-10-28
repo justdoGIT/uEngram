@@ -4,9 +4,8 @@
 Needs the "docs" extra (markdown, pygments, pillow): `uv sync --extra docs`.
 Usage: .venv/bin/python scripts/generate_paper_figures.py
 
-Numbers in the data figures come from committed result files (or, for
-EngineAD, the seed-stability JSON cited in the paper):
-  Figure 5  ~/.local/state/uengram/enginead/cnn_seed_stability.json
+Numbers in the data figures come from committed result files:
+  Figure 5  results/enginead/cnn_seed_stability.json
   Figure 6  results/moment_tsb_ad_holdout.json
   Figure 7  results/osmetrics_specialist_gate.json, results/role_skab_gate.json,
             results/skab_sensor_fusion_gate.json
@@ -23,7 +22,7 @@ from paper_figures_lib import (
 
 ROOT = Path(__file__).resolve().parents[1]
 FIGURES = ROOT / "docs" / "research-paper" / "figures"
-ENGINEAD = Path.home() / ".local/state/uengram/enginead/cnn_seed_stability.json"
+ENGINEAD = ROOT / "results" / "enginead" / "cnn_seed_stability.json"
 MARGIN = 16
 
 
