@@ -265,9 +265,9 @@ Recent literature suggests that intermediate network layers and patch prototypes
 
 To test this without test-label leakage, we extended `CNNEncoder` with a `representation="multiscale"` option that pools and concatenates first- and second-stage convolutional feature maps ($r(x) = [\operatorname{pool}(h_1(x)); \operatorname{pool}(h_2(x))]$) before PCA and noise whitening. We first ran a label-free synthetic screen across 5 neural seeds (384 training windows, 96 selection windows injected with 5 fault families: level shift, drift, impulse, oscillation, freeze). On that proxy ruler, the middle-layer readout ($d=32$, 30 epochs) ranked first with a median worst-family displacement score of **0.610** (vs. **0.373** for multi-level and **0.356** for the final bottleneck), while training for 90 epochs degraded every configuration by over-specializing on waveform reconstruction.
 
-However, running those exact five seeds through the full calibrated alarm pipeline (`bench/cnn_stability.py`, $d=32$, 30 epochs, frozen v2 policy) overturned the proxy screen:
+However, running those exact five seeds through the full calibrated alarm pipeline (the pipeline named in `bench/cnn_stability.py`, $d=32$, 30 epochs, frozen v2 policy; the writer of the reported artifact is not in the repository) overturned the proxy screen:
 
-**Table 3.** Intermediate CNN readouts through the full calibrated alarm pipeline (5 seeds, $d=32$, 30 epochs; `results/cnn_intermediate_pipeline.json`).
+**Table 3.** Intermediate CNN readouts through the full calibrated alarm pipeline (5 seeds, $d=32$, 30 epochs; `results/cnn_intermediate_pipeline.json`). The generating script is not in the repository (see §7), and the artifact schema (`datasets`/`protocol`/`study`) differs from `bench/cnn_stability.py` output (`metrics`/`components`/`fusions`), so these values are not reproduced from HEAD code.
 
 | Dataset | Readout | Events Detected (med, min–max) | AUROC (med, min–max) | AP (med, min–max) | False Alarms/Wk (med) | Clean Alarm Share (med) |
 |---|---|---:|---:|---:|---:|---:|
