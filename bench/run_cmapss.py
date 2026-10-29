@@ -1,4 +1,4 @@
-"""CMAPSS FD001 benchmark: python -m bench.run_cmapss [--quick] ..."""
+"""CMAPSS lifecycle benchmark: python -m bench.run_cmapss [--subset FD00x] [--quick] ..."""
 from __future__ import annotations
 
 import argparse
@@ -39,11 +39,16 @@ def rul_predict(store, prov, Zt, T) -> np.ndarray:
 
 
 def run_one(task):
-    seed, enc_name, methods, units_hi = task
-    train = cmapss.load("data/cmapss/train_FD001.txt")
-    test = cmapss.load("data/cmapss/test_FD001.txt")
-    rul_true = np.loadtxt("data/cmapss/RUL_FD001.txt")
-    Wtr, Utr, _ = cmapss.windows(train[train[:, 0] <= 50], K)
+    seed, enc_name, methods, units_hi, subset, cond_norm = task
+    train = cmapss.load(f"data/cmapss/train_{subset}.txt")
+    test = cmapss.load(f"data/cmapss/test_{subset}.txt")
+    rul_true = np.loadtxt(f"data/cmapss/RUL_{subset}.txt")
+    # encoder fit on the lower half of the training units, stream scored on the upper half
+    # (FD001: units <= 50 fit, 51-100 scored, as in the original protocol)
+    split = int(np.unique(train[:, 0]).size // 2)
+    fit_rows = train[train[:, 0] <= split]
+    scaler = cmapss.fit_condition_scaler(fit_rows) if cond_norm else None
+    Wtr, Utr, _ = cmapss.windows(fit_rows, K, scaler=scaler)
     enc = make_encoder(enc_name, seed).fit(Wtr, K, Utr)
     Ztr = encode_windows(enc, Wtr, Utr)
     infl = measure_step_inflation(Ztr, Utr)
@@ -51,8 +56,8 @@ def run_one(task):
     # assumed healthy without labels; uEngram freezes its normal states as the
     # healthy reference for the health score
     Zc = Ztr[np.concatenate([np.flatnonzero(Utr == u)[:COMMISSION] for u in np.unique(Utr)])]
-    Ws, Us, Rs = cmapss.windows(train[(train[:, 0] > 50) & (train[:, 0] <= units_hi)], K)
-    Wt, Ut, _ = cmapss.windows(test, K, last_only=True)
+    Ws, Us, Rs = cmapss.windows(train[(train[:, 0] > split) & (train[:, 0] <= units_hi)], K, scaler=scaler)
+    Wt, Ut, _ = cmapss.windows(test, K, last_only=True, scaler=scaler)
     Z, Zt = encode_windows(enc, Ws, Us), encode_windows(enc, Wt, Ut, sequential=False)
     T = len(Z)
     h = median_heuristic(Z[-2000:])
@@ -104,8 +109,13 @@ def run_one(task):
         m["eol_retention"] = float(np.mean([u in live_eol for u in stream_units]))
         m.update(mmd_metrics(store, Z, h))
         m.update(latency(lat))
-        lines.append({"dataset": "cmapss", "seed": seed, "encoder": enc_name,
-                      "method": method, "budget": 256, "metrics": m})
+        row = {"dataset": "cmapss", "seed": seed, "encoder": enc_name,
+               "method": method, "budget": 256, "metrics": m}
+        if subset != "FD001":
+            row["subset"] = subset
+        if cond_norm:
+            row["condition_norm"] = True
+        lines.append(row)
         print(f"[run_cmapss] seed={seed} enc={enc_name} method={method} "
               f"done in {time.time() - t0:.1f}s", flush=True)
     return lines
@@ -118,14 +128,21 @@ def main():
     ap.add_argument("--methods", default=METHODS)
     ap.add_argument("--jobs", type=int, default=2)
     ap.add_argument("--out", default="results/cmapss_runs.jsonl")
+    ap.add_argument("--subset", default="FD001", choices=cmapss.SUBSETS)
+    ap.add_argument("--condition-norm", action="store_true",
+                    help="standardize sensors per operating condition (scaler fitted on fit units only)")
     ap.add_argument("--quick", action="store_true")
     a = ap.parse_args()
-    units_hi = 100
+    if a.subset != "FD001" and a.out == "results/cmapss_runs.jsonl":
+        ap.error("--out is required for subsets other than FD001 (the default path holds FD001)")
+    cmapss.fetch(subset=a.subset)
+    n_units = int(np.unique(cmapss.load(f"data/cmapss/train_{a.subset}.txt")[:, 0]).size)
+    units_hi = n_units
     if a.quick:
-        a.seeds, a.encoders, units_hi = "0", "dsp", 60
-    cmapss.fetch()
+        a.seeds, a.encoders, units_hi = "0", "dsp", n_units // 2 + 10
     methods = tuple(a.methods.split(","))
-    tasks = [(s, e, methods, units_hi) for s in parse_seeds(a.seeds) for e in a.encoders.split(",")]
+    tasks = [(s, e, methods, units_hi, a.subset, a.condition_norm)
+             for s in parse_seeds(a.seeds) for e in a.encoders.split(",")]
     open(a.out, "w").close()
     with mp.get_context("spawn").Pool(a.jobs) as pool:
         for lines in pool.imap_unordered(run_one, tasks):

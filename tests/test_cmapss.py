@@ -32,3 +32,40 @@ def test_last_only_takes_final_window(tmp_path):
     W, unit, rul = cmapss.windows(data, K=16, last_only=True)
     assert W.shape == (2, 14, 16) and list(unit) == [1, 2]
     assert W[0, 0, 15] == 1000 + 200 + 2
+
+
+def _two_condition_data(rng):
+    # one unit alternating between two operating conditions whose sensor levels differ by 1000
+    rows = []
+    for c in range(1, 61):
+        cond = 0.0 if c % 2 else 25.0
+        level = 1000.0 if cond else 0.0
+        rows.append([1, c, cond, 0.62, 100] + list(level + rng.normal(size=21)))
+    return np.array(rows)
+
+
+def test_condition_scaler_removes_operating_condition_offset():
+    data = _two_condition_data(np.random.default_rng(0))
+    raw, _, _ = cmapss.windows(data, K=16)
+    scaled, _, _ = cmapss.windows(data, K=16, scaler=cmapss.fit_condition_scaler(data))
+    # raw windows swing by ~1000 between consecutive cycles; scaled ones stay O(1)
+    assert np.ptp(raw[0, 0]) > 900 and np.ptp(scaled[0, 0]) < 10
+
+
+def test_condition_scaler_uses_only_fit_rows_for_unseen_data():
+    rng = np.random.default_rng(1)
+    fit, other = _two_condition_data(rng), _two_condition_data(rng)
+    other[:, 5:] += 7.0  # drift present only in the data being scored
+    scaler = cmapss.fit_condition_scaler(fit)
+    scaled, _, _ = cmapss.windows(other, K=16, scaler=scaler)
+    # a scaler refit on `other` would absorb the +7 shift; the fit-only scaler must keep it
+    assert scaled.mean() > 3.0
+
+
+def test_files_rejects_unknown_subset():
+    assert cmapss.files("FD004") == ("train_FD004.txt", "test_FD004.txt", "RUL_FD004.txt")
+    try:
+        cmapss.files("FD005")
+    except ValueError:
+        return
+    raise AssertionError("expected ValueError")

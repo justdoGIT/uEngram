@@ -122,6 +122,24 @@ def build(repo: Path) -> list[dict]:
                          ["dimension", "encoder", "method", "seeds", "health AUROC", "health AP", "RUL RMSE", "RUL MAE", "RUL RMSE health", "RUL MAE health"], rows,
                          "The table reports seed means for health and RUL metrics by dimension and method; em dashes mark unavailable metrics in the source files."))
 
+    # CMAPSS subsets: FD001 as published; FD002 with per-condition normalization; FD003 raw.
+    subset_files = [("FD001", "cmapss_runs.jsonl"), ("FD002 (per-condition norm)", "cmapss_fd002_norm_runs.jsonl"),
+                    ("FD003", "cmapss_fd003_runs.jsonl")]
+    rows = []
+    for label, filename in subset_files:
+        records = [r for r in _load(repo, filename) if r["encoder"] == "dsp"]
+        for method in ("naive", "reservoir", "uengram"):
+            selected = [r for r in records if r["method"] == method]
+            rows.append([label, method, str(len(selected))] + [
+                _fmt(_mean([r["metrics"].get(k) for r in selected]))
+                for k in ("eol_retention", "health_auroc", "rul_rmse", "write_reduction_pct")])
+    tables.append(_table("CMAPSS subsets: end-of-life retention and health score", "mixed",
+                         "results/cmapss_runs.jsonl, results/cmapss_fd002_norm_runs.jsonl, results/cmapss_fd003_runs.jsonl",
+                         ["subset", "method", "seeds", "EOL retention", "health AUROC", "RUL RMSE", "write reduction %"], rows,
+                         "The DSP encoder is deterministic, so seeds vary only the reservoir baseline. FD004 is not reported: the encoder's "
+                         "EWMA-inflation estimate fails on its operating-condition switching. uengram end-of-life retention falls from 1.000 "
+                         "on FD001 to 0.062 on FD002 and 0.120 on FD003 while the health score stays above 0.98 AUROC."))
+
     # CMAPSS slope features versus ordinary DSP: run metrics are identical across seeds per method.
     base = _load(repo, "cmapss_runs.jsonl")
     slope = _load(repo, "cmapss_slope_runs.jsonl")
