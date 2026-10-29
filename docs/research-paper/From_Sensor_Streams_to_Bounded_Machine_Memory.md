@@ -455,6 +455,24 @@ Table 12 shows three results. First, event-level detection is weak for every met
 
 SMD also allows a per-asset test of whether a label-free descriptor predicts which machines depend on a feature group. The hypothesis, fixed before the run, was that dropping a group costs more AUROC on machines where that group has higher signal-to-noise. The descriptor is computed from fit windows only: per channel, the robust variance of the feature across windows divided by the noise variance from successive-window differences, then the median over non-constant channels of the base-10 logarithm. The effect is AUROC with all features minus AUROC with the group dropped. Across the 28 machines the rank correlations are $-0.16$ for the mean (permutation $p = 0.40$), $+0.38$ for log std ($p = 0.047$) and $+0.34$ for band energies ($p = 0.077$; 10,000 permutations). With three tests the threshold is $0.05/3 = 0.017$, so none is significant and the hypothesis is not supported: this descriptor does not tell us which machines need which features.
 
+
+### 5.13 Confirmed Latent Adaptation: Gating Is Not Optional
+
+Section 6 proposes keyed state superseding: an active baseline updates only from windows an operator confirmed normal. We implemented it (`confirmed_adaptation.ConfirmedLatentAdapter`, wired into the live ingest path) and tested whether the gate matters, on a synthetic 8-dimensional latent stream built for this question: 1,500 commissioning windows, 1,000 calibration windows, then a 6,000-window test stream per seed (10 seeds) with a benign linear drift (4σ over the stream, 25% of healthy windows marked confirmed) and five independently-directed wear ramps (reaching 8σ, never confirmed). An *ungated* control marks every window confirmed, ramps included, to show what happens when confirmation is not a real gate.
+
+**Table 13.** Confirmed latent adaptation, 10 seeds, mean over seeds. Health alarms use a conformal threshold at $\alpha = 0.003$ from the calibration split.
+
+| Arm | Scenario | Health false-alarm rate | Health recall on ramps | Health AUROC | Ramps with $\geq$1 alarm (of 5) |
+|---|---|---:|---:|---:|---:|
+| Frozen (no adapter) | drift | 9.7% | 87.2% | 0.959 | 5.0 |
+| Gated | drift | 0.5% | 86.6% | 0.993 | 5.0 |
+| Ungated | drift | 2.9% | 1.7% | 0.546 | 3.4 |
+| Frozen (no adapter) | no drift | 0.3% | 87.4% | 0.994 | 5.0 |
+| Gated | no drift | 0.4% | 87.0% | 0.993 | 5.0 |
+| Ungated | no drift | 3.2% | 1.0% | 0.527 | 3.9 |
+
+With benign drift, the frozen reference pays for never adapting: a 9.7% false-alarm rate on healthy windows, because "healthy but drifted" keeps tripping a threshold calibrated before the drift. Gating removes nearly all of it (0.5%) at no cost to ramp recall (86.6% against 87.2%): the confirmed-normal windows track the drift while the unconfirmed ramps are still flagged. The ungated control is the failure this gate exists to prevent: with every window accepted, the adapter partly absorbs the ramps themselves into the baseline, and recall collapses to 1.7% with AUROC near chance (0.546). Without drift, gating costs nothing (false-alarm rate and recall both match the frozen arm within noise), so the gate is not merely cautious, it is doing real work exactly where drift is present and failing exactly as designed when confirmation is not trustworthy.
+
 ---
 
 ## 6. Discussion and Limitations
@@ -470,15 +488,13 @@ SMD also allows a per-asset test of whether a label-free descriptor predicts whi
 * *Modeled writes.* The write reduction counts operations in a benchmark model. Hardware flash endurance and write amplification were not measured.
 * *Metric sensitivity.* Event-level outcomes depend on the detection criterion (strict against active-in-interval) and on the alarm design, as the MetroPT-2 and CMAPSS results show.
 
-**Toward a sensor-state memory database.** Scaling the reference pipeline into an embedded database would need five primitives that we only propose; none is implemented as specified, and generic slot merge, fixed capacities and adapter pins are only precursors:
+**Toward a sensor-state memory database.** An earlier draft of this section proposed five primitives as unimplemented future work. Since then we implemented four of the five in the reference library and measured one of them; the identity keys default to 0, so none of this changes the public-benchmark results in Sections 5.1–5.12, all of which run a single identity per stream.
 
-1. *Hybrid temporal-vector-severity retrieval:* rank stored memories $m$ for a query $q$ by $S(q,m)=w_s\,\mathrm{sim}(q,v_m)+w_t\,e^{-\lambda\Delta t}+w_r\,g(r_m)$, returning the score components with strict asset and mode filters.
-2. *Verified centroid compaction:* merge confirmed routine windows within identical asset, mode and schema keys using exact pooled counts, means $\mu = (n_1\mu_1 + n_2\mu_2)/(n_1 + n_2)$ and covariances before deleting sources.
-3. *Keyed state superseding:* update active baselines by $\mu_t = (1-\beta)\mu_{t-1} + \beta x_t$, gated by quarantine rules so gradual wear is not absorbed as healthy behavior.
-4. *Pinned cross-modal raw pointers:* link compact episodes to checksummed slices of circular buffers with explicit expiration tracking.
-5. *Quota-bounded eviction with protected quotas:* enforce deterministic high-water marks while shielding pinned critical episodes and active investigations.
-
-An optional language model belongs strictly downstream of retrieval, to summarize structured evidence bundles; it must never sit in the real-time write path or control baseline admission.
+1. *Hybrid temporal-vector-severity retrieval:* implemented as a ranking function, $S(q,m)=w_s\,\mathrm{sim}(q,v_m)+w_t\,2^{-\Delta t/h}+w_r\,\tanh(r_m)$, wired into the retrieval call, with asset, subsystem and mode as strict filters, never score terms. Stored events carry a quantized int8 latent snapshot inside the existing 1,024-byte metadata budget, included only when it still fits. Tested on the scoring math and on end-to-end ranking against a real in-memory backend; not benchmarked for retrieval quality, because no relevance-labeled query set exists for this task.
+2. *Identity-keyed compaction:* slots now carry an asset/subsystem/mode/schema key; absorption, Ward-cost and duplicate merges, and dormant supersession are restricted to slots sharing a key, reusing the existing exact pooled-moment merge ($\mu = (n_1\mu_1 + n_2\mu_2)/(n_1 + n_2)$). This is a narrower claim than first proposed: merges still fire on the existing statistical cost functions, not on an operator-confirmation gate; "verified" compaction, in that stronger sense, is not implemented.
+3. *Keyed state superseding:* implemented as a bounded, state-keyed latent offset, wired into the live ingest path, gated on an operator-confirmed-normal flag, a closed alarm and an already-commissioned key. Measured directly (Section 5.13, Table 13): on a synthetic stream with benign drift, gating cuts the health false-alarm rate from 9.7% to 0.5% at no cost to fault recall; an ungated control collapses recall to 1.7%.
+4. *Pinned cross-modal raw pointers:* implemented. A raw-window pin now carries a required host-supplied checksum and an optional expiration; a pin-expiration query reports ids past deadline for a host janitor to act on. Unit tested; not benchmarked.
+5. *Quota-bounded eviction with protected quotas:* implemented. A reference-counted protect/unprotect call shields a slot from eviction and from losing its item id in a merge; the sensor adapter protects an item for as long as any raw window pins it. Unit tested, including that two protected slots are never merged with each other; not benchmarked.
 
 **Deployment gates.** Before transitioning μEngram from a Python reference design to a safety-relevant embedded deployment, five gates remain:
 

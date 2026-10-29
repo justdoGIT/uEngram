@@ -179,6 +179,21 @@ def build(repo: Path) -> list[dict]:
                          "Hypothesis fixed before the run: removing a group costs more where its label-free signal-to-noise is higher. "
                          "With three tests the threshold is 0.05/3 = 0.017; none is below it."))
 
+    # Confirmed latent adaptation: frozen vs gated vs ungated, drift and no-drift scenarios.
+    caa = json.loads((repo / "results" / "confirmed_adaptation_ablation.json").read_text())["summary"]
+    rows = []
+    for scenario in ("drift", "no_drift"):
+        for arm in ("frozen", "gated", "ungated"):
+            s = caa[scenario][arm]
+            rows.append([scenario, arm, _fmt(100 * s["health_false_alarm_rate"]["mean"], 1),
+                        _fmt(100 * s["health_fault_recall"]["mean"], 1), _fmt(s["health_auroc"]["mean"], 3),
+                        f"{s['ramps_with_health_alarm']['mean']:.1f}/5"])
+    tables.append(_table("Confirmed latent adaptation ablation", "mixed", "results/confirmed_adaptation_ablation.json",
+                         ["scenario", "arm", "health FA %", "health recall %", "health AUROC", "ramps alarmed"], rows,
+                         "10 seeds, synthetic 8-D latent stream; mean over seeds. Gated updates only from "
+                         "operator-confirmed-normal windows with a closed alarm; ungated accepts every window, "
+                         "ramps included, as a poisoning control."))
+
     # CMAPSS slope features versus ordinary DSP: run metrics are identical across seeds per method.
     base = _load(repo, "cmapss_runs.jsonl")
     slope = _load(repo, "cmapss_slope_runs.jsonl")

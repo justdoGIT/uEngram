@@ -41,6 +41,7 @@ Runtime is listed only where repository notes document a bound or measurement; o
 | SMD download (28 machines) | `python -c "from uengram import smd; smd.fetch()"` | `data/smd/` (gitignored, not committed) | About 334 s measured (October 2026), 464 MB | — |
 | SMD confirmation (28 machines) | `python -m bench.smd_confirmation --jobs 4 --out results/smd_confirmation.json` | `smd_confirmation.json` | About 419 s measured with `--jobs 4` on 4 CPU cores (October 2026); `--jobs 1` is deterministic but about 2x slower | Yes (October 2026): new run; BLAS and torch are pinned to one thread so the result is independent of `--jobs` |
 | SMD feature-group relation test | `python -m bench.smd_feature_relations --out results/smd_feature_relations.json` | `smd_feature_relations.json` | About 20 seconds, after `smd_confirmation.json` exists | Yes (October 2026): new run |
+| Confirmed latent adaptation ablation | `python -m bench.confirmed_adaptation_ablation --seeds 10 --out results/confirmed_adaptation_ablation.json` | `confirmed_adaptation_ablation.json` | About 54 s measured (October 2026), 4 CPU cores | Yes (October 2026): new run; BLAS pinned to one thread per worker |
 | MetroPT-3 lifecycle | `python -m bench.run_metropt --seeds 0-4 --encoders dsp,cnn --jobs 2 --out results/metropt_runs.jsonl` | `metropt_runs.jsonl` | Not documented; first data download is about 218 MB | Yes (October 2026 audit): the committed CNN-encoder row was stale relative to the current slot-admission code; regenerated at HEAD |
 | MetroPT-2 confirmation (μEngram, half-space trees, MemStream) | `python -m bench.run_v2 --streams metropt2 --methods uengram:dsp,hst:dsp,memstream:dsp --seeds 0-4 --out results/v2_metropt2.jsonl` | `v2_metropt2.jsonl` | About 1 minute | Yes (October 2026 audit): regenerated at HEAD; event counts unchanged, the April false-alarm rate moved from 14.9 to 17.8 per week |
 | MetroPT-3 confirmation (μEngram, half-space trees, MemStream, DSP encoder) | `python -m bench.run_v2 --streams metropt3 --methods uengram:dsp,hst:dsp,memstream:dsp --seeds 0-4 --out results/v2_development.jsonl` | `v2_development.jsonl` (DSP rows only; the file's CNN-encoder rows were not rechecked and are not cited in the paper) | About 1 minute for the DSP rows | Yes (October 2026 audit): μEngram's DSP row was stale, like the CNN row above; half-space trees and MemStream were unaffected |
@@ -79,6 +80,7 @@ The alarm component and sweep modules do not expose `--out`; their committed fil
 | Table 5, CMAPSS FD002 and FD003 row | CMAPSS FD002 (per-condition normalization); CMAPSS FD003 |
 | Section 5.11 (feature-group ablation) | DSP feature-group ablation |
 | Section 5.12, Table 12 (SMD confirmation) | SMD download; SMD confirmation; SMD feature-group relation test |
+| Section 5.13, Table 13 (confirmed latent adaptation) | Confirmed latent adaptation ablation |
 | Table 5, MetroPT-3 row | MetroPT-3 lifecycle; alarm component profile |
 | Table 5, MetroPT-2 row | MetroPT-2 confirmation |
 | Table 5, SKAB row | SKAB frozen validation |
