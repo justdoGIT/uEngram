@@ -5,6 +5,7 @@ Needs the "docs" extra (markdown, pygments, pillow): `uv sync --extra docs`.
 Usage: .venv/bin/python scripts/generate_paper_figures.py
 
 Numbers in the data figures come from committed result files:
+  EngineAD seed histogram       results/enginead/cnn_seed_stability.json
   TSB-AD-U holdout comparison   results/moment_tsb_ad_holdout.json
   Domain-specialist comparison  results/osmetrics_specialist_gate.json, results/role_skab_gate.json,
                                 results/skab_sensor_fusion_gate.json
@@ -22,6 +23,7 @@ from paper_figures_lib import (
 ROOT = Path(__file__).resolve().parents[1]
 FIGURES = ROOT / "docs" / "research-paper" / "figures"
 MARGIN = 16
+ENGINEAD = ROOT / "results" / "enginead" / "cnn_seed_stability.json"
 
 
 def fig_rag() -> Canvas:
@@ -157,6 +159,39 @@ def fig_persistence() -> Canvas:
     return c
 
 
+def fig_enginead() -> Canvas:
+    data = json.loads(ENGINEAD.read_text())
+    runs: dict[int, list[float]] = {}
+    for row in data["results"]:
+        runs.setdefault(row["d"], []).append(row["pooled_test"]["first_row_label"]["auroc"])
+    lo, hi = 0.49, 0.59
+    c = Canvas(720, 220, "enginead")
+    x0, x1 = 92, 690
+
+    def sx(v):
+        return x0 + (v - lo) / (hi - lo) * (x1 - x0)
+
+    for tick in (0.50, 0.52, 0.54, 0.56, 0.58):
+        c.line(sx(tick), 26, sx(tick), 172, "#e2e8f0")
+        c.text(sx(tick), 188, f"{tick:.2f}", 10, anchor="middle")
+    c.line(sx(0.50), 20, sx(0.50), 172, "#ef4444", 1.2, dash="4 3")
+    c.pill(sx(0.50), 16, "chance", color="#b91c1c")
+    c.text((x0 + x1) / 2, 210, "Pooled held-out segment AUROC (one dot per training seed)", 10.5,
+           anchor="middle")
+    for i, d in enumerate(sorted(runs)):
+        y = 50 + i * 50
+        values = sorted(runs[d])
+        c.text(x0 - 14, y + 4, f"d = {d}", BODY_SIZE + 1, True, INK, anchor="end")
+        c.line(sx(values[0]), y, sx(values[-1]), y, "#cbd5e1", 2)
+        for v in values:
+            c.parts.append(f'<circle cx="{sx(v):.1f}" cy="{y}" r="4.6" fill="{SERIES[2]}" '
+                           'fill-opacity="0.55" stroke="#1e3a8a" stroke-width="0.8"/>')
+        med = statistics.median(values)
+        c.line(sx(med), y - 12, sx(med), y + 12, INK, 2)
+        c.text(sx(med), y - 16, f"median {med:.3f}", 9.5, True, INK, anchor="middle")
+    return c
+
+
 def fig_tsb() -> Canvas:
     data = json.loads((ROOT / "results" / "moment_tsb_ad_holdout.json").read_text())
     models = [("Ordinary CNN", data["baseline"]["overall"], data["baseline"]["per_series"])]
@@ -240,6 +275,7 @@ FIGURES_OUT = {
     "system-architecture.svg": fig_architecture,
     "slot-state-machine.svg": fig_slots,
     "sensor-persistence-pipeline.svg": fig_persistence,
+    "enginead-seed-histogram.svg": fig_enginead,
     "tsb-holdout-comparison.svg": fig_tsb,
     "domain-specialist-comparison.svg": fig_specialists,
 }

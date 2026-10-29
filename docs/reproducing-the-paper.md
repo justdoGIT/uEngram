@@ -67,11 +67,12 @@ The alarm component and sweep modules do not expose `--out`; their committed fil
 | Table 5, MetroPT-2 row | MetroPT-2 alarm-policy replay |
 | Table 5, SKAB row | SKAB frozen validation |
 | Table 5, SCANIA row | SCANIA frozen validation |
+| Table 5, EngineAD row, Figure 5 | EngineAD GPU artifact (Colab) |
 | Table 6 (SKAB width) | SKAB embedding-dimension sweep and d=48 seed check |
 | Section 5.5 (alarm tuning) | Alarm-policy definition and interaction sweeps |
 | Table 7 (CNN readouts) | CNN intermediate readouts |
-| Section 5.7 items 1–5, Figure 5 | Distillation: MOMENT cross-domain and context studies (`bench.cnn_moment_distillation`, `bench.cnn_moment_context_study`), TSB-AD-U holdout, MFPT and CWRU gates, CMAPSS two-teacher gate, SKAB teacher time gate |
-| Section 5.8, Figure 6B | SKAB sensor-fusion gate (`bench.skab_sensor_fusion_gate`) and role gate (`bench.role_skab_gate`) |
-| Tables 8 and 9, Figure 6A | OS-Metrics specialist and role gates |
+| Section 5.7 items 1–5, Figure 6 | Distillation: MOMENT cross-domain and context studies (`bench.cnn_moment_distillation`, `bench.cnn_moment_context_study`), TSB-AD-U holdout, MFPT and CWRU gates, CMAPSS two-teacher gate, SKAB teacher time gate |
+| Section 5.8, Figure 7B | SKAB sensor-fusion gate (`bench.skab_sensor_fusion_gate`) and role gate (`bench.role_skab_gate`) |
+| Tables 8 and 9, Figure 7A | OS-Metrics specialist and role gates |
 
 The competitive-admission figures that earlier drafts cited (a 16-slot budget) are not reported in the paper: a rerun with admission disabled gave identical results on five seeds, so that comparison cannot support a claim.

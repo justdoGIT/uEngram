@@ -175,7 +175,8 @@ table {
     font-size: 7.9pt;
     line-height: 1.34;
 }
-thead { display: table-header-group; }
+thead { display: table-header-group; break-after: avoid; }
+thead tr, tbody tr:first-child { break-after: avoid; }
 tr { break-inside: avoid; }
 caption { break-after: avoid; }
 caption {

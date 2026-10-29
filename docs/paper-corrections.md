@@ -9,7 +9,7 @@
 - Clarified that write reduction counts write operations; total bytes written rise by 37% because raw windows are pinned.
 - Corrected Table A10's averaging: it averaged two alarm policies.
 - Withdrew the retired NASA IMS “63.8-hour early warning” claim. The evaluation was invalid: its script used hardcoded degradation indices and an assumed healthy prefix.
-- Removed the EngineAD result from the paper because the artifact was produced on a Colab GPU and cannot be reproduced locally.
+- EngineAD: reported with a Colab GPU provenance note. The artifact's `script_sha256` field holds the label `colab-gpu-sweep-v1`, not a hash, so the committed writer script is identified by that label only. Medians now use the primary first-point-label convention (0.539, 0.556, 0.537; earlier text used the any-positive variant: 0.538, 0.556, 0.536).
 
 ## October 2026 standalone rewrite
 
@@ -19,4 +19,4 @@
 - Removed the unmeasured "30-minute CPU cap" wording for the SKAB teacher gate: the code enforces no such cap.
 - Table 7 (CNN readouts) was regenerated from the released pipeline: 146 of 150 per-seed values identical, four differ by less than 4e-6.
 - Added the synthetic comparison table (Table 4) from the committed d=16 and d=36 result files, with event retention, write reduction and AP per method.
-- Figure 6 panel B now reads its CNN row from the SKAB sensor-fusion result file instead of hard-coded values. The EngineAD figure was removed with the EngineAD result.
+- Figure 7 panel B (formerly Figure 6) now reads its CNN row from the SKAB sensor-fusion result file instead of hard-coded values. The EngineAD figure is kept as Figure 5.
