@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Python tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: true
+
+      # cnn supplies PyTorch for the CNN/MemStream tests; baselines supplies
+      # River/HST; docs supplies the paper-lint and PDF-build tests (the PDF
+      # build itself skips if a system Chromium binary is not present).
+      - name: Install dependencies
+        run: uv sync --extra cnn --extra baselines --extra docs
+
+      - name: Run tests
+        run: uv run pytest -q
