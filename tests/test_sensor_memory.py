@@ -48,12 +48,15 @@ class MemoryBackend:
 class PinStore:
     def __init__(self):
         self.pins = set()
+        self.details = {}
 
-    def pin(self, reference, owner_key):
+    def pin(self, reference, owner_key, checksum, expires_at_ms):
         self.pins.add((reference, owner_key))
+        self.details[(reference, owner_key)] = (checksum, expires_at_ms)
 
     def unpin(self, reference, owner_key):
         self.pins.discard((reference, owner_key))
+        self.details.pop((reference, owner_key), None)
 
 
 def make_pipeline(store=None, pins=None):
@@ -114,12 +117,47 @@ def test_lifecycle_and_alarm_edges_are_persisted_and_recalled():
 def test_raw_evidence_is_pinned_critical_and_released_on_forget():
     store, pins = MemoryBackend(), PinStore()
     pipeline = make_pipeline(store, pins)
-    receipt = pipeline.ingest(window(0, [0, 0], raw_window_ref="ring://pump-17/0-4"))
+    receipt = pipeline.ingest(window(
+        0, [0, 0], raw_window_ref="ring://pump-17/0-4", raw_window_checksum="sha256:deadbeef",
+    ))
 
     assert (receipt.raw_window_ref, receipt.idempotency_key) in pins.pins
+    assert pins.details[(receipt.raw_window_ref, receipt.idempotency_key)] == ("sha256:deadbeef", None)
     assert store.rows[receipt.memory_id]["retention_class"] == 4
     assert pipeline.forget(receipt) == 1
     assert not pins.pins
+
+
+def test_raw_window_ref_without_a_checksum_is_rejected():
+    pipeline = make_pipeline(None, PinStore())
+    with pytest.raises(ValueError, match="raw_window_checksum is required"):
+        pipeline.ingest(window(0, [0, 0], raw_window_ref="ring://pump-17/0-4"))
+
+
+def test_pin_expiration_is_tracked_and_queryable():
+    store, pins = MemoryBackend(), PinStore()
+    pipeline = make_pipeline(store, pins)
+    base_ms = 1_800_000_000_000
+    receipt = pipeline.ingest(window(
+        0, [0, 0], raw_window_ref="ring://pump-17/0-4", raw_window_checksum="sha256:deadbeef",
+        raw_window_ttl_ms=5_000,
+    ))
+
+    expected_expiry = base_ms + 5_000
+    assert pins.details[(receipt.raw_window_ref, receipt.idempotency_key)] == ("sha256:deadbeef", expected_expiry)
+    assert pipeline.expired_pins(expected_expiry - 1) == ()
+    assert pipeline.expired_pins(expected_expiry) == (receipt.memory_id,)
+    assert pipeline.forget(receipt) == 1
+    assert pipeline.expired_pins(expected_expiry) == ()
+
+
+def test_pin_without_a_ttl_never_expires():
+    store, pins = MemoryBackend(), PinStore()
+    pipeline = make_pipeline(store, pins)
+    receipt = pipeline.ingest(window(
+        0, [0, 0], raw_window_ref="ring://pump-17/0-4", raw_window_checksum="sha256:deadbeef",
+    ))
+    assert pipeline.expired_pins(10 ** 15) == ()
 
 
 def test_persistence_retry_does_not_ingest_the_sensor_window_twice():

@@ -80,7 +80,7 @@ class SensorStateMemory:
             raise ValueError("last_alarm must be bool or None")
         self._last_step = int(last_step)
         self._last_alarm = last_alarm
-        self._known_pins: dict[int, tuple[str, str]] = {}
+        self._known_pins: dict[int, tuple[str, str, int | None]] = {}
 
     def ingest(self, window: SensorWindow) -> SensorIngestReceipt:
         vector = validate_sensor_window(window, self.engine.d)
@@ -141,13 +141,25 @@ class SensorStateMemory:
             if self.raw_evidence is None or owner is None:
                 raise RuntimeError("receipt lacks the raw-evidence pin owner")
             known = self._known_pins.get(receipt.memory_id)
-            if known is not None and known != (reference, owner):
+            if known is not None and known[:2] != (reference, owner):
                 raise ValueError("receipt does not match the pinned memory")
         deleted = self.memory.forget(receipt.memory_id)
         if reference is not None:
             self.raw_evidence.unpin(reference, owner)
             self._known_pins.pop(receipt.memory_id, None)
         return deleted
+
+    def expired_pins(self, now_ms: int) -> tuple[int, ...]:
+        """Memory ids whose raw-window pin has passed its expiration, ascending by id.
+
+        For a host janitor to act on by calling ``forget``; this adapter never unpins
+        on its own initiative. A pin with no ``raw_window_ttl_ms`` never expires."""
+        if isinstance(now_ms, bool) or not isinstance(now_ms, Integral) or now_ms < 0:
+            raise ValueError("now_ms must be a non-negative integer")
+        return tuple(sorted(
+            memory_id for memory_id, (_, _, expires_at) in self._known_pins.items()
+            if expires_at is not None and now_ms >= expires_at
+        ))
 
     def recall(
         self,
@@ -215,7 +227,8 @@ class SensorStateMemory:
         pinned = False
         if pending.raw_window_ref is not None:
             assert self.raw_evidence is not None
-            self.raw_evidence.pin(pending.raw_window_ref, pending.idempotency_key)
+            self.raw_evidence.pin(pending.raw_window_ref, pending.idempotency_key,
+                                  pending.raw_window_checksum, pending.raw_window_expires_at_ms)
             pinned = True
         try:
             result = self.memory.remember(
@@ -239,7 +252,9 @@ class SensorStateMemory:
             raise
         memory_id = int(getattr(result, "memory_id"))
         if pinned:
-            self._known_pins[memory_id] = (pending.raw_window_ref, pending.idempotency_key)
+            self._known_pins[memory_id] = (
+                pending.raw_window_ref, pending.idempotency_key, pending.raw_window_expires_at_ms,
+            )
         return SensorIngestReceipt(
             step_index, decision, memory_id, pending.idempotency_key,
             pending.raw_window_ref, True,

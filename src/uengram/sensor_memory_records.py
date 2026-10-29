@@ -29,6 +29,8 @@ class PendingSensorRecord:
     event_type: str
     retention_class: int
     raw_window_ref: str | None
+    raw_window_checksum: str | None
+    raw_window_expires_at_ms: int | None
 
 
 def validate_sensor_window(window: SensorWindow, dimension: int) -> np.ndarray:
@@ -48,6 +50,19 @@ def validate_sensor_window(window: SensorWindow, dimension: int) -> np.ndarray:
             raise ValueError("raw_window_ref must be non-empty text")
         if "\0" in ref or '"' in ref or "\\" in ref or len(ref.encode("utf-8")) > 192:
             raise ValueError("raw_window_ref must be JSON-safe and fit 192 UTF-8 bytes")
+        checksum = window.raw_window_checksum
+        if not isinstance(checksum, str) or not checksum:
+            raise ValueError("raw_window_checksum is required whenever raw_window_ref is set")
+        if "\0" in checksum or '"' in checksum or "\\" in checksum or len(checksum.encode("utf-8")) > 128:
+            raise ValueError("raw_window_checksum must be JSON-safe and fit 128 UTF-8 bytes")
+    elif window.raw_window_checksum is not None:
+        raise ValueError("raw_window_checksum requires raw_window_ref")
+    if window.raw_window_ttl_ms is not None:
+        ttl = window.raw_window_ttl_ms
+        if isinstance(ttl, bool) or not isinstance(ttl, Integral) or ttl <= 0:
+            raise ValueError("raw_window_ttl_ms must be a positive integer")
+        if window.raw_window_ref is None:
+            raise ValueError("raw_window_ttl_ms requires raw_window_ref")
 
     for label, value in (
         ("step_index", window.step_index),
@@ -159,6 +174,10 @@ def make_sensor_record(
         _tag("mode", window.operating_mode),
         f"item_{decision.item_id}",
     )
+    expires_at_ms = (
+        int(window.observed_at_ms) + int(window.raw_window_ttl_ms)
+        if window.raw_window_ttl_ms is not None else None
+    )
     return PendingSensorRecord(
         content=content,
         structured_value=structured,
@@ -169,6 +188,8 @@ def make_sensor_record(
         event_type=event_type,
         retention_class=4 if window.raw_window_ref is not None else int(window.retention_class),
         raw_window_ref=window.raw_window_ref,
+        raw_window_checksum=window.raw_window_checksum,
+        raw_window_expires_at_ms=expires_at_ms,
     )
 
 
