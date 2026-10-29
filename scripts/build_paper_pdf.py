@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+import tempfile
 from html import escape
 from pathlib import Path
 
@@ -41,8 +42,7 @@ STYLE = PAPER_DIR / "paper.css"
 FIGURES_DIR = PAPER_DIR / "figures"
 HTML_OUT = PAPER_MD.with_suffix(".html")
 PDF_OUT = PAPER_MD.with_suffix(".pdf")
-KICKER = ("Original Research Article · Embedded Systems, Signal Processing &amp; Machine Learning",
-          "μEngram Reference Implementation")
+KICKER = ("Preprint", "Machine Learning for Embedded Sensor Systems")
 MD_EXTENSIONS = ["tables", "fenced_code"]
 ALGO_KEYWORDS = ("for each", "for", "if", "else if", "else", "then", "do", "return", "repeat",
                  "raise")
@@ -80,9 +80,9 @@ def caption_html(caption: str) -> str:
     return f"<b>{match.group(1)}</b> {inline_markdown(match.group(2))}"
 
 
-def stash_figures(content: str, blocks: Stash) -> str:
+def stash_figures(content: str, blocks: Stash, figure_dir: Path = FIGURES_DIR) -> str:
     def replace(match):
-        svg = (FIGURES_DIR / match.group(2)).read_text(encoding="utf-8")
+        svg = (figure_dir / match.group(2)).read_text(encoding="utf-8")
         svg = re.sub(r"<\?xml.*?\?>", "", svg).strip()
         return blocks.put(
             f'<figure class="paper-figure"><div class="frame">{svg}</div>'
@@ -139,11 +139,8 @@ def protect_math(content: str, maths: Stash) -> str:
 
 
 def caption_tables(html: str) -> str:
-    html = re.sub(r'<p><strong>(Table [A-Z]?\d+\.)</strong>\s*(<span class="outcome (\w+)">.*?)</p>\s*<table>',
-                  r'<table class="tone-\3"><caption><b>\1</b> \2</caption>', html, flags=re.S)
     return re.sub(r"<p><strong>(Table [A-Z]?\d+\.)</strong>\s*(.*?)</p>\s*<table>",
                   r"<table><caption><b>\1</b> \2</caption>", html, flags=re.S)
-
 
 def polish_text(html: str) -> str:
     """Let long inline code paths wrap after '/' and '_', and keep names such as
@@ -160,7 +157,7 @@ def polish_text(html: str) -> str:
     return "".join(out)
 
 
-def render_front(head: str) -> tuple[str, str]:
+def render_front(head: str, reference_count: int = 0) -> tuple[str, str, dict[str, str]]:
     match = re.fullmatch(
         r"# (?P<title>.+?)\n\n\*\*(?P<name>.+?)\*\* · (?P<email>\S+@\S+)\n\n"
         r"(?P<affiliation>.+?)\n\n\*\*Keywords:\*\* (?P<keywords>.+?)\n\n(?P<date>.+?)\n\n"
@@ -169,9 +166,23 @@ def render_front(head: str) -> tuple[str, str]:
     if not match:
         raise ValueError("front matter does not follow the documented layout")
     findings, email = match.group("findings"), match.group("email")
+    title = match.group("title")
+    keywords = re.sub(r"<[^>]+>", "", markdown.markdown(
+        match.group("keywords"), extensions=MD_EXTENSIONS))
+    abstract_text = re.sub(r"<[^>]+>", " ", markdown.markdown(match.group("abstract")))
+    metadata = {
+        "title": title,
+        "author": match.group("name"),
+        "subject": re.sub(r"\s+", " ", abstract_text).strip(),
+        "keywords": keywords,
+    }
+    abstract_words = re.findall(r"\b[\w’'-]+\b", abstract_text)
+    if len(abstract_words) > 250:
+        print(f"Warning: abstract contains {len(abstract_words)} words (maximum recommended: 250)")
+    short_title = re.sub(r"\s+", " ", title.split(":", 1)[0]).strip()
     html = (
         f'<div class="kicker"><span>{KICKER[0]}</span><span>{KICKER[1]}</span></div>'
-        f'<h1 class="title">{match.group("title")}</h1>'
+        f'<h1 class="title">{title}</h1>'
         f'<div class="author-box"><span class="name">{escape(match.group("name"))}</span>'
         f'<span class="sep">·</span><a href="mailto:{email}">{email}</a></div>'
         f'<p class="affiliation">{escape(match.group("affiliation"))}</p>'
@@ -182,32 +193,40 @@ def render_front(head: str) -> tuple[str, str]:
         f'{markdown.markdown(match.group("abstract"), extensions=MD_EXTENSIONS)}</div>'
         + (markdown.markdown(findings, extensions=MD_EXTENSIONS) if findings else "")
     )
-    return polish_text(link_references(html)), re.sub(r"\s+", " ",
-                                     re.sub(r"\$[^$]*\$|MATH\d+END", "", match.group("title")))
+    return polish_text(link_references(html, reference_count)), short_title, metadata
 
 
 CITATION = re.compile(r"\[(\d+(?:\s*[,\u2013-]\s*\d+)*)\]")
-REFERENCE_COUNT = 26
 
 
-def cite_links(match: re.Match) -> str:
-    """[4, 5] becomes [4], [5] and [8-11] becomes [8]-[11], each number a link."""
+def cite_links(match: re.Match, reference_count: int) -> str:
     parts = re.split(r"(\s*[,\u2013-]\s*)", match.group(1))
-    numbers = [int(n) for n in parts[::2]]
-    if not all(1 <= n <= REFERENCE_COUNT for n in numbers):
+    entries = parts[::2]
+    numbers = [int(n) for n in entries]
+    for index, separator in enumerate(parts[1::2]):
+        if "-" in separator or "\u2013" in separator:
+            numbers.extend(range(min(int(entries[index]), int(entries[index + 1])),
+                                 max(int(entries[index]), int(entries[index + 1])) + 1))
+    if not all(1 <= n <= reference_count for n in numbers):
         return match.group(0)
     out = []
-    for n, sep in zip(numbers, parts[1::2] + [""]):
+    for n, sep in zip(entries, parts[1::2] + [""]):
         out.append(f'<a class="cite" href="#ref-{n}">[{n}]</a>')
         out.append("\u2013" if "\u2013" in sep or "-" in sep else ", " if sep else "")
     return "".join(out)
 
 
-def link_references(html: str) -> str:
-    """Make in-text citations jump to their entry and give each entry an anchor."""
-    body, marker, appendix = html.partition("<h2>Appendix A")
+def reference_count_from_markdown(content: str) -> int:
+    match = re.search(r"(?m)^## References\s*$([\s\S]*?)(?=^## |\Z)", content)
+    if not match:
+        return 0
+    return len(re.findall(r"(?m)^\s*\d+[.)]\s+", match.group(1)))
+
+
+def link_references(html: str, reference_count: int) -> str:
+    head, marker, refs = html.partition("<h2>References</h2>")
     pieces, in_code = [], False
-    for piece in re.split(r"(<[^>]+>)", body):
+    for piece in re.split(r"(<[^>]+>)", head):
         if piece.startswith("<"):
             in_code = piece.startswith(("<code", "<pre", "<a ")) or (
                 in_code and piece not in ("</code>", "</pre>", "</a>"))
@@ -215,37 +234,48 @@ def link_references(html: str) -> str:
         elif in_code:
             pieces.append(piece)
         else:
-            pieces.append(CITATION.sub(cite_links, piece))
-    body = "".join(pieces)
-    head, ref_marker, refs = body.partition("<h2>References</h2>")
-    if ref_marker:
-        count = iter(range(1, REFERENCE_COUNT + 1))
-        refs = re.sub(r"<li>", lambda _: f'<li id="ref-{next(count)}">', refs)
-        body = head + ref_marker + refs
-    return body + marker + appendix
+            pieces.append(CITATION.sub(lambda m: cite_links(m, reference_count), piece))
+    if marker:
+        count = iter(range(1, reference_count + 1))
+        ref_list, closer, appendix = refs.partition("</ol>")
+        ref_list = re.sub(r"<li>", lambda _: f'<li id="ref-{next(count)}">', ref_list)
+        refs = ref_list + closer + appendix
+    return "".join(pieces) + marker + refs
 
 
-def build_html() -> Path:
+def build_html(paper_md: Path = PAPER_MD, html_out: Path | None = None,
+               metadata_out: dict[str, str] | None = None) -> Path:
     blocks, maths = Stash("BLOCK"), Stash("MATH")
-    content = PAPER_MD.read_text(encoding="utf-8")
-    content = stash_code_blocks(stash_figures(content, blocks), blocks)
+    content = paper_md.read_text(encoding="utf-8")
+    reference_count = reference_count_from_markdown(content)
+    content = stash_code_blocks(stash_figures(content, blocks, paper_md.parent / "figures"), blocks)
     content = protect_math(content, maths)
     head, separator, body = content.partition("\n---\n")
     if not separator:
         raise ValueError("paper needs a '---' line after the front matter")
-    front, title = render_front(head)
+    front, short_title, metadata = render_front(head, reference_count)
+    if metadata_out is not None:
+        metadata_out.update(metadata)
     body_html = polish_text(link_references(caption_tables(
-        markdown.markdown(body, extensions=MD_EXTENSIONS))))
+        markdown.markdown(body, extensions=MD_EXTENSIONS)), reference_count))
     page = blocks.restore(maths.restore(front + body_html, escape_items=True))
+    katex_uri = (PAPER_DIR / KATEX).resolve().as_uri()
+    css_short_title = short_title.replace("\\", "\\\\").replace('"', '\\"').replace("\n", " ")
+    paper_css = STYLE.read_text(encoding="utf-8").replace("__SHORT_TITLE__", css_short_title)
+    title = metadata["title"]
     pygments_css = HtmlFormatter(style="friendly").get_style_defs("figure.listing pre")
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>{title}</title>
-<link rel="stylesheet" href="{KATEX}/katex.min.css">
-<script src="{KATEX}/katex.min.js"></script>
-<script src="{KATEX}/contrib/auto-render.min.js"></script>
+<title>{escape(title)}</title>
+<meta name="author" content="{escape(metadata['author'], quote=True)}">
+<meta name="subject" content="{escape(metadata['subject'], quote=True)}">
+<meta name="keywords" content="{escape(metadata['keywords'], quote=True)}">
+<meta name="description" content="{escape(metadata['subject'], quote=True)}">
+<link rel="stylesheet" href="{katex_uri}/katex.min.css">
+<script src="{katex_uri}/katex.min.js"></script>
+<script src="{katex_uri}/contrib/auto-render.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => renderMathInElement(document.body, {{
     delimiters: [{{left: "$$", right: "$$", display: true}},
@@ -254,7 +284,7 @@ document.addEventListener("DOMContentLoaded", () => renderMathInElement(document
 }}));
 </script>
 <style>
-{STYLE.read_text(encoding="utf-8")}
+{paper_css}
 {pygments_css}
 figure.listing pre {{ background: none; }}
 </style>
@@ -264,26 +294,78 @@ figure.listing pre {{ background: none; }}
 </body>
 </html>
 """
-    HTML_OUT.write_text(html, encoding="utf-8")
-    return HTML_OUT
+    output = html_out or paper_md.with_suffix(".html")
+    output.write_text(html, encoding="utf-8")
+    return output
 
 
-def compile_pdf(html_path: Path) -> Path:
+def count_link_annotations(reader) -> int:
+    return sum(
+        annotation.get_object().get("/Subtype") == "/Link"
+        for page in reader.pages
+        for annotation in page.get("/Annots", [])
+    )
+
+
+def set_pdf_metadata(pdf_path: Path, metadata: dict[str, str]) -> None:
+    try:
+        from pypdf import PdfReader, PdfWriter
+    except ImportError:
+        print("Warning: pypdf is unavailable; leaving Chromium PDF metadata unchanged.")
+        return
+
+    reader = PdfReader(str(pdf_path))
+    links_before = count_link_annotations(reader)
+    writer = PdfWriter(clone_from=reader)
+    writer.add_metadata({
+        "/Title": metadata["title"],
+        "/Author": metadata["author"],
+        "/Subject": metadata["subject"],
+        "/Keywords": metadata["keywords"],
+        "/Creator": "paper build pipeline",
+    })
+    with tempfile.NamedTemporaryFile(dir=pdf_path.parent, suffix=".pdf", delete=False) as temp:
+        temp_path = Path(temp.name)
+    try:
+        writer.write(temp_path)
+        updated = PdfReader(str(temp_path))
+        links_after = count_link_annotations(updated)
+        temp_path.replace(pdf_path)
+    except Exception:
+        temp_path.unlink(missing_ok=True)
+        raise
+    print(f"PDF link annotations: {links_before} before metadata update, {links_after} after.")
+
+
+def compile_pdf(html_path: Path, pdf_out: Path, metadata: dict[str, str] | None = None) -> Path:
     subprocess.run([
         "chromium", "--headless=new", "--no-sandbox", "--disable-gpu",
         "--no-pdf-header-footer", "--run-all-compositor-stages-before-draw",
-        "--virtual-time-budget=15000", f"--print-to-pdf={PDF_OUT}",
+        "--virtual-time-budget=15000", f"--print-to-pdf={pdf_out}",
         f"file://{html_path.resolve()}",
     ], check=True, stderr=subprocess.DEVNULL)
-    return PDF_OUT
+    if metadata is not None:
+        set_pdf_metadata(pdf_out, metadata)
+    return pdf_out
 
 
 def main():
-    print("Building HTML with KaTeX, listings, and inlined figures...")
-    html_path = build_html()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Build the research paper PDF.")
+    parser.add_argument("--paper", type=Path, default=PAPER_MD)
+    parser.add_argument("--out-dir", type=Path)
+    args = parser.parse_args()
+    output_dir = args.out_dir or args.paper.parent
+    output_dir.mkdir(parents=True, exist_ok=True)
+    metadata: dict[str, str] = {}
+    html_path = build_html(args.paper, output_dir / args.paper.with_suffix(".html").name,
+                           metadata_out=metadata)
     print(f"HTML generated at: {html_path}")
-    print("Compiling PDF with Chromium headless...")
-    print(f"PDF successfully compiled at: {compile_pdf(html_path)}")
+    subprocess.run([".venv/bin/python", str(ROOT / "scripts" / "lint_paper.py"),
+                    str(args.paper)], cwd=ROOT, check=True)
+    pdf_path = output_dir / args.paper.with_suffix(".pdf").name
+    print(f"PDF successfully compiled at: {compile_pdf(html_path, pdf_path, metadata)}")
 
 
 if __name__ == "__main__":

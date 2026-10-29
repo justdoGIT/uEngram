@@ -18,14 +18,13 @@
 @page {
     size: A4;
     margin: 17mm 17mm 19mm 17mm;
-    @bottom-left {
-        content: "μEngram (MicroEngram): From Sensor Streams to Machine Memory by K.K Pandey · kamal.pandey@kepr.dev";
+    @top-center {
+        content: "__SHORT_TITLE__";
         font-family: var(--sans);
         font-size: 7.5pt;
         color: #64748b;
-        vertical-align: top;
-        padding-top: 6pt;
-        white-space: nowrap;
+        vertical-align: bottom;
+        padding-bottom: 6pt;
     }
     @bottom-right {
         content: "Page " counter(page) " of " counter(pages);
@@ -37,7 +36,7 @@
         padding-top: 6pt;
     }
 }
-html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; hyphens: auto; }
 body {
     font-family: var(--serif);
     font-size: 9.6pt;
@@ -152,7 +151,7 @@ h2 {
 }
 h3 { font-size: 10.4pt; color: var(--accent); margin: 12pt 0 4pt; }
 h4 { font-size: 9.6pt; margin: 10pt 0 3pt; }
-p { margin: 0 0 6.5pt; text-align: justify; hyphens: auto; }
+p { margin: 0 0 6.5pt; text-align: justify; hyphens: auto; widows: 3; orphans: 3; }
 ul, ol { margin: 0 0 6.5pt; padding-left: 17pt; }
 li { margin-bottom: 2.5pt; text-align: justify; }
 hr { display: none; }
@@ -188,7 +187,7 @@ caption {
     padding-bottom: 4pt;
 }
 th {
-    background: #f1f5f9;
+    background: none;
     color: #0f172a;
     font-weight: 700;
     text-align: left;
@@ -196,8 +195,7 @@ th {
     border-top: 1.5pt solid #0f172a;
     border-bottom: 0.75pt solid #64748b;
 }
-td { padding: 4.5pt 6pt; border-bottom: 0.75pt solid #e2e8f0; vertical-align: top; }
-tbody tr:nth-child(even) td { background: #f8fafc; }
+td { padding: 4.5pt 6pt; vertical-align: top; }
 tbody tr:last-child td { border-bottom: 1.5pt solid #0f172a; }
 td code, th code { font-size: 7.2pt; background: none; padding: 0; }
 a.cite { color: var(--accent); }
@@ -255,23 +253,6 @@ figure.algorithm .cm { font-style: italic; color: #64748b; }
 .katex-display { margin: 6pt 0 8pt; }
 
 /* ---------- appendix ledger ---------- */
-.outcome {
-    display: inline-block;
-    font-family: var(--sans);
-    font-size: 6.6pt;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    padding: 0.6pt 4pt;
-    margin-right: 4pt;
-    border-radius: 2pt;
-    color: #ffffff;
-    vertical-align: 1pt;
-}
-.outcome.positive { background: #15803d; }
-.outcome.mixed { background: #b45309; }
-.outcome.null { background: #64748b; }
-.outcome.negative { background: #b91c1c; }
 p.table-note {
     font-family: var(--sans);
     font-size: 7.6pt;
@@ -280,9 +261,4 @@ p.table-note {
     margin: -8pt 0 12pt;
 }
 p.table-note b { color: var(--ink); }
-table[class^="tone-"] th { color: #ffffff; border-top: none; border-bottom: none; }
-table.tone-positive th { background: #166534; }
-table.tone-mixed th { background: #92400e; }
-table.tone-null th { background: #475569; }
-table.tone-negative th { background: #991b1b; }
 p.table-note { break-before: avoid; }

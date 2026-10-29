@@ -14,7 +14,7 @@ baselines = [
     "river>=0.21",
 ]
 laya = ["laya>=0.4.13,<0.5"]
-docs = ["markdown>=3.7", "pygments>=2.18", "pillow>=11.0"]
+docs = ["markdown>=3.7", "pygments>=2.18", "pillow>=11.0", "pypdf>=5"]
 
 [dependency-groups]
 dev = ["pytest>=8"]
