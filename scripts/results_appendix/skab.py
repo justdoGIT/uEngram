@@ -95,7 +95,7 @@ def build(repo: Path) -> list[dict]:
         "mixed",
         columns,
         rows,
-        f"The sweep shows all {len(rows)} embedding settings; {best['encoder']} detected {int(best['metrics']['events_detected'])} of {total} experiments. Seed count is not reported in this file.",
+        f"The sweep shows all {len(rows)} embedding settings; {best['encoder']} detected {int(best['metrics']['events_detected'])} of {total} experiments. {_seed_note(data)} The DSP encoder is deterministic; seeds 0-9 of dsp_d48 gave identical results.",
     ))
 
     data = _load(repo, "skab_persistence_sweep.json")

@@ -252,7 +252,7 @@ Across development and holdout studies [6], empirical performance diverges sharp
 Several benchmark failures exposed traps that routinely distort published anomaly-detection claims:
 
 * **Retraction of the NASA IMS "63.8-Hour Early Warning" Claim [7]:** A prior project-session recap and draft section reported that an "optimal strategy" on the NASA/IMS bearing dataset achieved 63.8 hours of early warning and zero false alarms over four healthy weeks. Inspection of the external script invalidated both claims: (1) the script hardcoded assumed degradation row indices in Python and evaluated lead time against its own hardcoded indices using the final sample as failure reference, without adjudicated physical fault-onset timestamps; and (2) "zero alarms" came from the assumed healthy prefix of a single campaign. Those claims are retracted in full (`docs/research-paper/sensor-state-memory.md:266-270`).
-* **Encoder Width Regressions:** Sweeping DSP width from $d=16$ to $d=36$ on synthetic streams dropped mean event recall from 1.00 to 0.8012 and mean AP from 0.9955 to 0.5336 (10 seeds each; $d=36$ from `results/synth_d36_runs.jsonl`, median AP 0.5407; $d=16$ from `results/synth_runs.jsonl`). On SKAB, an exploratory $d=48$ sweep (`results/skab_d_sweep.json`) detected 9/34 events, against 5/34 for the frozen $d=16$ detector. The sweeps do not identify one embedding dimension that is best across datasets.
+* **Encoder Width Regressions:** Sweeping DSP width from $d=16$ to $d=36$ on synthetic streams dropped mean event recall from 1.00 to 0.8012 and mean AP from 0.9955 to 0.5336 (10 seeds each; $d=36$ from `results/synth_d36_runs.jsonl`, median AP 0.5407; $d=16$ from `results/synth_runs.jsonl`). On SKAB, an exploratory $d=48$ run (`results/skab_d_sweep.json`, seed 0) detected 9/34 events with 4 false-alarm episodes, against 5/34 with 5 for the frozen $d=16$ detector; AP moved from 0.419 to 0.441. The DSP encoder is deterministic, and seeds 0-9 at $d=48$ gave identical results, so this is one result, not a distribution. The sweeps do not identify one embedding dimension that is best across datasets.
 * **Threshold Tuning Cannot Fix Missing State Coverage:** A parameter sweep over MetroPT-3 alarm policies failed to find any setting meeting all three operational criteria (4/4 events detected, $\le 2\%$ clean alarm time, $\le 1$ FA/week). Forcing 4/4 detection required enabling a health path for unbaselined states, which inflated clean alarm time to $\ge 4.6\%$. An earlier version of this same sweep reported 4/4 events at 1.06% clean alarm time by ANDing the gated policy with an error-threshold vote (`docs/research-error-gated-alarm.md:140-148`); auditing that result showed the vote never activates in sustained load (0 of 1,832 state-2 test windows), so the "gate" was a recency cap on state-0/1 windows, not corroborated detection — a diagnostic recency-only rule with no error content reproduces the same 4/4 rows. Correcting unknown-sample handling to the ISA three-valued rule (`docs/research-alarm-definition.md:104-111`) made the 1.06% result disappear, leaving the $\ge 4.6\%$ figure above.
 
 ---
@@ -476,6 +476,7 @@ Each result file cited in the principal text, and the script that writes it, is 
 | `results/metropt_runs.jsonl` | `bench/run_metropt.py` | |
 | `results/cmapss_runs.jsonl` | `bench/run_cmapss.py` | |
 | `results/skab_validation.json` | `bench/validate_skab.py` | |
+| `results/skab_d_sweep.json` | `bench/skab_d_sweep.py` | SKAB, `dsp_d16`/`d24`/`d32`/`d48`, seed 0, regenerated at HEAD |
 | `results/scania_validation.json` | `bench/validate_scania.py` | |
 | `results/v8_interaction_replay_metropt2.jsonl` | `bench/alarm_interaction.py` | |
 | `results/moment_tsb_ad_holdout.json` | `bench/moment_tsb_ad_holdout.py` | |
@@ -743,12 +744,12 @@ This appendix tabulates every non-versioned result file in the repository, excep
 
 | Setting | Events detected / total | False alarm episodes | AUROC | AP |
 |---|---|---|---|---|
-| dsp_d16 | 5 / 34 | 5 | 0.550 | 0.423 |
-| dsp_d24 | 5 / 34 | 6 | 0.554 | 0.426 |
-| dsp_d32 | 5 / 34 | 6 | 0.592 | 0.451 |
-| dsp_d48 | 9 / 34 | 5 | 0.592 | 0.514 |
+| dsp_d16 | 5 / 34 | 5 | 0.546 | 0.419 |
+| dsp_d24 | 5 / 34 | 6 | 0.551 | 0.419 |
+| dsp_d32 | 5 / 34 | 7 | 0.575 | 0.415 |
+| dsp_d48 | 9 / 34 | 4 | 0.558 | 0.441 |
 
-<p class="table-note"><b>Source</b> <code>results/skab_d_sweep.json, results/skab_validation.json</code>. The sweep shows all 4 embedding settings; dsp_d48 detected 9 of 34 experiments. Seed count is not reported in this file.</p>
+<p class="table-note"><b>Source</b> <code>results/skab_d_sweep.json, results/skab_validation.json</code>. The sweep shows all 4 embedding settings; dsp_d48 detected 9 of 34 experiments. Single-seed result (seed 0). The DSP encoder is deterministic; seeds 0-9 of dsp_d48 gave identical results.</p>
 
 **Table A18.** <span class="outcome mixed">Mixed</span>SKAB persistence and threshold sweep
 
