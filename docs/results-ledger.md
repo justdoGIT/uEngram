@@ -137,11 +137,11 @@ These supplementary tables are generated from files in `results/` (43 tables), e
 | fifo | 4.0 / 4 | 14.95 | 4.0 / 4 | 16.27 | 4.0 / 4 | 12.13 | 3.0 / 4 | 16.41 |
 | reference_labelfree | 0.0 / 4 | 0.16 | 0.0 / 4 | 1.37 | 0.0 / 4 | 1.67 | 0.0 / 4 | 0.47 |
 | hst | 2.6 / 4 | 12.76 | 3.6 / 4 | 14.55 | 2.2 / 4 | 4.14 | 3.0 / 4 | 14.61 |
-| memstream | 4.0 / 4 | 16.96 | 2.8 / 4 | 4.28 | 4.0 / 4 | 29.44 | 3.2 / 4 | 7.09 |
+| memstream | 4.0 / 4 | 16.96 | 2.8 / 4 | 4.20 | 4.0 / 4 | 29.44 | 3.2 / 4 | 7.09 |
 | naive | 4.0 / 4 | 7.74 | 4.0 / 4 | 7.99 | 4.0 / 4 | 7.16 | 3.0 / 4 | 5.49 |
 | reservoir | 4.0 / 4 | 12.73 | 4.0 / 4 | 18.63 | 4.0 / 4 | 13.70 | 3.0 / 4 | 15.94 |
-| uengram | 3.0 / 4 | 14.12 | 3.6 / 4 | 10.20 | 3.0 / 4 | 5.70 | 3.0 / 4 | 11.35 |
-| uengram_frozen | 3.0 / 4 | 4.91 | 3.6 / 4 | 11.87 | 3.0 / 4 | 2.82 | 3.0 / 4 | 10.25 |
+| uengram | 3.0 / 4 | 14.95 | 4.0 / 4 | 12.61 | 3.0 / 4 | 5.70 | 3.0 / 4 | 11.35 |
+| uengram_frozen | 3.0 / 4 | 6.12 | 4.0 / 4 | 13.69 | 3.0 / 4 | 2.82 | 3.0 / 4 | 10.25 |
 
 <p class="table-note"><b>Source</b> <code>results/metropt_runs.jsonl, results/metropt_d42_runs.jsonl, results/metropt_slope_runs.jsonl</code>. Detection and false-alarm rates are seed means across 8 methods. The table compares DSP d16, CNN d16, DSP d42, and DSP slope configurations.</p>
 
@@ -538,7 +538,7 @@ These supplementary tables are generated from files in `results/` (43 tables), e
 
 | Stream | Test state 0 count | Test state 1 count | Test state 2 count | Event novelty-above rate in state 2 | Clean novelty-above rate in state 2 | Novelty clean/event separation | Health clean/event separation | Observed openings per week | Counter Markov triggers per week (k=3) |
 |---|---|---|---|---|---|---|---|---|---|
-| metropt3 | 9156 | 10396 | 1744 | 0.949 | 0.583 | 0.776 | 0.838 | 0.741 | 0.800 |
+| metropt3 | 9156 | 10396 | 1744 | 0.949 | 0.583 | 0.801 | 0.838 | 0.582 | 4.239 |
 | metropt2_jan | 4276 | 10005 | 202 | 0.000 | 0.000 | 0.582 | 0.740 | 0.000 | 0.000 |
 | metropt2_apr | 4802 | 3244 | 44 | 0.138 | 0.000 | 0.890 | 0.953 | 0.000 | 0.000 |
 

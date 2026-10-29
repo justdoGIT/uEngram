@@ -20,3 +20,15 @@
 - Table 7 (CNN readouts) was regenerated from the released pipeline: 146 of 150 per-seed values identical, four differ by less than 4e-6.
 - Added the synthetic comparison table (Table 4) from the committed d=16 and d=36 result files, with event retention, write reduction and AP per method.
 - Figure 7 panel B (formerly Figure 6) now reads its CNN row from the SKAB sensor-fusion result file instead of hard-coded values. The EngineAD figure is kept as Figure 5.
+
+## October 2026 improvement pass
+
+- Added 95% percentile-bootstrap intervals (10,000 resamples over the 10 synthetic seeds) to Section 5.1 and 5.2, including a paired d=16-to-d=36 difference, so the width regression is shown to not be a seed artifact.
+- Added Section 5.10 and Table 10: μEngram against two external streaming baselines, half-space trees and MemStream [6], on MetroPT-3 and SKAB, under the same frozen-alarm-selection protocol as the rest of the paper. New script `bench.skab_baselines`; new artifact `results/skab_baselines.json`.
+- While regenerating the MetroPT-3 baseline numbers, found that `results/metropt_runs.jsonl` (the CNN-encoder row cited in Table 5) and the DSP uEngram row of `results/v2_development.jsonl` were stale relative to the current slot-admission code — the same class of staleness fixed earlier for the d=36 and SKAB-sweep files, here hiding in a committed lifecycle result rather than an obviously out-of-date one. Regenerated both at HEAD. MetroPT-3's primary result changed from "3.6 of 4 events (range 2–4); 10.2 false alarms per week" to "4 of 4 events in every seed; 12.6 false alarms per week"; the pre-report AUROC figures (0.07, 0.35), which come from a separate frozen-score artifact, did not move beyond rounding.
+- Found that `bench.alarm_components` (writer of `results/v8_component_profile.json`) reads a live score cache under `~/.local/state/uengram/v2scores` rather than a committed input, and that cache was stale for the same reason. Regenerated it; the paper's cited pre-report AUROC values were unchanged at the reported precision.
+- Regenerated `results/v2_metropt2.jsonl` at HEAD: event counts (0 of 3 January, 0 or 2 of 2 April) are unchanged; the April less-conservative-rule false-alarm rate moved from 14.9 to 17.8 per week, and Table 5's MetroPT-2 row was updated.
+- Corrected Table 2's slot-budget entry: the 48/208 semantic/episodic split applies to the synthetic and CMAPSS experiments; the MetroPT, SKAB and SCANIA alarm experiments use 192/64 (`EngramConfig` defaults, unmodified by those runners). The earlier text stated 48/208 for every experiment.
+- Verified the dataset split dates, window lengths and clean-negative exclusion buffers in Table 2 against the loaders; no other discrepancies found.
+- Split `scripts/build_paper_pdf.py` (372 lines) into the entry point and a new `scripts/paper_render_lib.py`, both under the file-size limit, with no change to the built output (HTML byte-identical before and after).
+- Trimmed the abstract from 250 to 247 words and added the baseline-comparison result to it.

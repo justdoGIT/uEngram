@@ -35,8 +35,12 @@ Runtime is listed only where repository notes document a bound or measurement; o
 | Synthetic lifecycle, d=16 | `python -m bench.run_synth --seeds 0-9 --encoders dsp --out results/synth_runs.jsonl` | `synth_runs.jsonl` | Not documented | No (committed output; no current-code rerun recorded) |
 | Synthetic lifecycle, d=36 | `python -m bench.run_synth --seeds 0-9 --encoders dsp_d36 --out results/synth_d36_runs.jsonl` | `synth_d36_runs.jsonl` | Not documented | Yes, recorded regenerated at HEAD |
 | CMAPSS lifecycle | `python -m bench.run_cmapss --seeds 0-4 --encoders dsp,cnn --out results/cmapss_runs.jsonl` | `cmapss_runs.jsonl` | Not documented | No |
-| MetroPT-3 lifecycle | `python -m bench.run_metropt --seeds 0-4 --encoders dsp,cnn --jobs 2 --out results/metropt_runs.jsonl` | `metropt_runs.jsonl` | Not documented; first data download is about 218 MB | No |
-| MetroPT-2 alarm-policy replay | `python -m bench.alarm_interaction replay` | `v8_interaction_replay_metropt2.jsonl` | Not documented | No; replay consumes frozen scores and writes the configured results artifact |
+| MetroPT-3 lifecycle | `python -m bench.run_metropt --seeds 0-4 --encoders dsp,cnn --jobs 2 --out results/metropt_runs.jsonl` | `metropt_runs.jsonl` | Not documented; first data download is about 218 MB | Yes (October 2026 audit): the committed CNN-encoder row was stale relative to the current slot-admission code; regenerated at HEAD |
+| MetroPT-2 confirmation (μEngram, half-space trees, MemStream) | `python -m bench.run_v2 --streams metropt2 --methods uengram:dsp,hst:dsp,memstream:dsp --seeds 0-4 --out results/v2_metropt2.jsonl` | `v2_metropt2.jsonl` | About 1 minute | Yes (October 2026 audit): regenerated at HEAD; event counts unchanged, the April false-alarm rate moved from 14.9 to 17.8 per week |
+| MetroPT-3 confirmation (μEngram, half-space trees, MemStream, DSP encoder) | `python -m bench.run_v2 --streams metropt3 --methods uengram:dsp,hst:dsp,memstream:dsp --seeds 0-4 --out results/v2_development.jsonl` | `v2_development.jsonl` (DSP rows only; the file's CNN-encoder rows were not rechecked and are not cited in the paper) | About 1 minute for the DSP rows | Yes (October 2026 audit): μEngram's DSP row was stale, like the CNN row above; half-space trees and MemStream were unaffected |
+| SKAB baselines (μEngram, half-space trees, MemStream) | `python -m bench.skab_baselines --methods uengram,hst,memstream --seeds 0,1,2,3,4 --out results/skab_baselines.json` | `skab_baselines.json` | About 30 seconds | Yes (October 2026 audit): new script and artifact |
+| Synthetic bootstrap intervals | `python -m bench.synth_bootstrap --out results/synth_bootstrap_ci.json` | `synth_bootstrap_ci.json` | A few seconds | Yes (October 2026 audit): new script and artifact |
+| Alarm component profile | `python -m bench.alarm_components` | `v8_component_profile.json` | About 25 seconds | Yes (October 2026 audit): the module reads a score cache under `~/.local/state/uengram/v2scores` that was stale relative to the current code; regenerated at HEAD. The cited MetroPT-3 pre-report AUROC values (0.07 health, 0.35 novelty) did not change beyond rounding. |
 | SKAB frozen validation | `python -m bench.validate_skab --out results/skab_validation.json` | `skab_validation.json` | Not documented | No |
 | SKAB embedding-dimension sweep | `python -m bench.skab_d_sweep --encoders dsp_d16,dsp_d24,dsp_d32,dsp_d48 --seeds 0 --out results/skab_d_sweep.json` | `skab_d_sweep.json` | Not documented | Yes, recorded regenerated at HEAD |
 | SKAB d=48 seed check | `python -m bench.skab_d_sweep --encoders dsp_d48 --seeds 0,1,2,3,4,5,6,7,8,9 --out results/skab_d48_seeds.json` | `skab_d48_seeds.json` | Not documented | No |
@@ -49,8 +53,7 @@ Runtime is listed only where repository notes document a bound or measurement; o
 | SKAB teacher time gate | `python -m bench.skab_teacher_time_gate --root data/skab --out results/skab_teacher_time_gate.json` | `skab_teacher_time_gate.json` | Not documented (no enforced CPU cap exists in the code) | No |
 | TSB-AD-U MOMENT holdout | `python -m bench.moment_tsb_ad_holdout --archive /path/to/TSB-AD-U.zip --out results/moment_tsb_ad_holdout.json --device cpu` | `moment_tsb_ad_holdout.json` | Not documented | No |
 | CNN intermediate readouts | `python -m bench.cnn_stability --datasets skab,metropt3 --variants plain30,middle30,multiscale30 --seeds 0,1,2,3,4 --out results/cnn_intermediate_pipeline.json` | `cnn_intermediate_pipeline.json` | Model fitting totalled about 4 minutes on 4 CPU cores (October 2026 run) | Yes (October 2026 audit): 146 of 150 per-seed values identical, four differ by less than 4e-6 |
-| Alarm component profile | `python -m bench.alarm_components` | `v8_component_profile.json` | Not documented | No; module writes its fixed output path |
-| Alarm-policy definition sweep | `python -m bench.alarm_definition_sweep sweep` | `v7_alarm_definition_sweep_metropt3.jsonl` | Not documented | No; module writes fixed result paths |
+| Alarm-policy definition sweep | `python -m bench.alarm_definition_sweep sweep` | `v7_alarm_definition_sweep_metropt3.jsonl` | Not documented | No; module writes fixed result paths. This sweep and the 1.22%/1.80 and 0.63%/4.62% figures in Section 5.5 were not rechecked against the regenerated score cache above. |
 | Alarm-policy interaction sweep | `python -m bench.alarm_interaction sweep` | `v8_interaction_sweep_metropt3.jsonl` | Not documented | No; module writes fixed result paths |
 | EngineAD GPU artifact | `python scripts/colab_run_study.py` (run in Colab GPU environment) | `enginead/cnn_seed_stability.json` | About 6.3 GB dataset; GPU required | No; not reproducible locally |
 
@@ -60,11 +63,11 @@ The alarm component and sweep modules do not expose `--out`; their committed fil
 
 | Paper item | Experiment above |
 |---|---|
-| Table 4 (synthetic controls), Section 5.1 | Synthetic lifecycle, d=16 and d=36 |
+| Table 4 (synthetic controls), Section 5.1 and 5.2 | Synthetic lifecycle, d=16 and d=36; synthetic bootstrap intervals |
 | Section 5.2 (width regressions) | Synthetic lifecycle d=36; SKAB embedding-dimension sweep |
 | Table 5, CMAPSS row | CMAPSS lifecycle |
 | Table 5, MetroPT-3 row | MetroPT-3 lifecycle; alarm component profile |
-| Table 5, MetroPT-2 row | MetroPT-2 alarm-policy replay |
+| Table 5, MetroPT-2 row | MetroPT-2 confirmation |
 | Table 5, SKAB row | SKAB frozen validation |
 | Table 5, SCANIA row | SCANIA frozen validation |
 | Table 5, EngineAD row, Figure 5 | EngineAD GPU artifact (Colab) |
@@ -74,5 +77,6 @@ The alarm component and sweep modules do not expose `--out`; their committed fil
 | Section 5.7 items 1–5, Figure 6 | Distillation: MOMENT cross-domain and context studies (`bench.cnn_moment_distillation`, `bench.cnn_moment_context_study`), TSB-AD-U holdout, MFPT and CWRU gates, CMAPSS two-teacher gate, SKAB teacher time gate |
 | Section 5.8, Figure 7B | SKAB sensor-fusion gate (`bench.skab_sensor_fusion_gate`) and role gate (`bench.role_skab_gate`) |
 | Tables 8 and 9, Figure 7A | OS-Metrics specialist and role gates |
+| Table 10 (external baselines), Section 5.10 | MetroPT-3 confirmation; SKAB baselines |
 
 The competitive-admission figures that earlier drafts cited (a 16-slot budget) are not reported in the paper: a rerun with admission disabled gave identical results on five seeds, so that comparison cannot support a claim.

@@ -10,7 +10,7 @@ Preprint · October 29, 2026
 
 ## Abstract
 
-Industrial and edge equipment produce continuous telemetry that cannot be kept in full on flash storage, while first-in-first-out buffers overwrite rare fault episodes with routine data. We study μEngram, a bounded stateful memory that compresses short sensor windows into noise-whitened low-dimensional vectors, tracks operating regimes with a fixed budget of semantic, candidate and episodic slots, quarantines unverified shifts, and pins raw waveform slices for rare episodes. We evaluate it and several encoder variants on a synthetic generator and on public benchmarks: CMAPSS, MetroPT-2 and MetroPT-3, SKAB, SCANIA Component X, OS-Metrics, EngineAD, MFPT, CWRU and TSB-AD-U. On the synthetic stream the memory cuts write operations by 86.2% over 10 seeds while holding every injected event, but this is a modeled count, not measured flash wear. On public data, ranking quality and operational early warning diverge. Frozen detectors give no pre-report signal inside MetroPT-3's uncommissioned load state, detect no event on MetroPT-2 under the selected alarm design, and catch 5 of 34 SKAB faults; a CNN encoder scores near chance on held-out EngineAD trucks. Distilling foundation models into a 46 KB student improves window ranking on some tasks, yet every model flags the held-out healthy recording in both bearing tests, and the students raise CMAPSS alarms earlier than the maintenance horizon. A role-separated, per-subsystem architecture with pre-fit numerical diagnostics detects 29 of 30 test-split events on one OS-Metrics workload, against 27 of 30 for a single-encoder baseline, with fewer false alarms. All results come from single-workload studies without a field validation cohort.
+Industrial and edge equipment produce continuous telemetry that cannot be kept in full on flash storage, while first-in-first-out buffers overwrite rare fault episodes with routine data. We study μEngram, a bounded stateful memory that compresses short sensor windows into noise-whitened low-dimensional vectors, tracks operating regimes with a fixed budget of semantic, candidate and episodic slots, quarantines unverified shifts, and pins raw waveform slices for rare episodes. We evaluate it and several encoder variants on a synthetic generator and nine public benchmarks: CMAPSS, MetroPT-2 and MetroPT-3, SKAB, SCANIA Component X, OS-Metrics, EngineAD, MFPT, CWRU and TSB-AD-U. On the synthetic stream the memory cuts write operations by 86.2% over 10 seeds while holding every injected event, but this is a modeled count, not measured flash wear. On public data, ranking quality and operational early warning diverge. Frozen detectors give no pre-report signal inside MetroPT-3's uncommissioned load state, catch 5 of 34 SKAB faults at the highest false-alarm rate of three compared streaming methods, and score near chance on held-out EngineAD trucks. Distilling foundation models into a 46 KB student improves window ranking on some tasks, yet every model flags the held-out healthy recording in both bearing tests, and the students raise CMAPSS alarms earlier than the maintenance horizon. A role-separated, per-subsystem architecture with pre-fit numerical diagnostics detects 29 of 30 test-split events on one OS-Metrics workload, against 27 of 30 for a single-encoder baseline, with fewer false alarms. All results come from single-workload studies without a field validation cohort.
 
 > **Principal findings**
 >
@@ -249,13 +249,13 @@ Windows are causal and, except where a stride is stated, non-overlapping and gap
 
 ### 4.3 Baselines, Seeds and Reporting
 
-On the synthetic stream we compare: **naive** (append every vector without limit), **FIFO** (circular buffer of $B$ vectors), **reservoir** sampling, a **centroid-clustering store** in a label-free variant and an oracle variant that receives ground-truth severity, μEngram, and three μEngram ablations (fixed slot variance, no candidate promotion, and no step detection). The budget is $B = 256$ slots, of which 208 are episodic and 48 semantic, with the other defaults in Table 3. The synthetic experiments use seeds 0–9. The CMAPSS lifecycle experiment uses seeds 0–4, MetroPT-3 uses five seeds, EngineAD uses ten seeds at each of three encoder widths, and SKAB, SCANIA, MetroPT-2 and the foundation-model gates use a single seed. We report means with ranges across seeds; where a result is deterministic across seeds, we say so. Single-seed results are single-run estimates with no variance estimate.
+On the synthetic stream we compare: **naive** (append every vector without limit), **FIFO** (circular buffer of $B$ vectors), **reservoir** sampling, a **centroid-clustering store** in a label-free variant and an oracle variant that receives ground-truth severity, μEngram, and three μEngram ablations (fixed slot variance, no candidate promotion, and no step detection). The budget is $B = 256$ slots in every experiment. The synthetic and CMAPSS lifecycle experiments assign 81.25% of them to episodic slots (208 episodic, 48 semantic); the field alarm experiments (MetroPT, SKAB, SCANIA) assign a quarter (64 episodic, 192 semantic). Other defaults are in Table 3. The synthetic experiments use seeds 0–9. The CMAPSS lifecycle experiment uses seeds 0–4, MetroPT-3 uses five seeds, EngineAD uses ten seeds at each of three encoder widths, and SKAB, SCANIA, MetroPT-2 and the foundation-model gates use a single seed. We report means with ranges across seeds; where a result is deterministic across seeds, we say so. Single-seed results are single-run estimates with no variance estimate.
 
 **Table 3.** Default slot-engine parameters.
 
 | Parameter | Value | Parameter | Value |
 |---|---|---|---|
-| Semantic / episodic slots (at $B = 256$) | 48 / 208 | Gate level | $10^{-4}$ |
+| Semantic / episodic slots ($B = 256$) | 48 / 208 (synthetic, CMAPSS); 192 / 64 (field alarm runs) | Gate level | $10^{-4}$ |
 | Minimum adaptation rate $\beta_{\min}$ | 0.01 | Candidate promotion | 5 hits in 8 steps |
 | Re-confirmation of episodic slot | 20 hits in 30 steps | Consolidation period | 200 steps |
 | Duplicate-merge Bhattacharyya threshold | 0.5 | Dormant age | 2,000 steps |
@@ -268,7 +268,7 @@ On the synthetic stream we compare: **naive** (append every vector without limit
 
 ### 5.1 Synthetic Stream: Lifecycle Against Controls
 
-On the synthetic stream with the DSP encoder at $d = 16$, μEngram retains every injected event in every seed (retention 1.00) and cuts write operations by 86.2% on average (range 85.3–87.2%; about 2,762 of 20,000 windows written). Average precision is 0.9955 (range 0.9795–1.0000). Table 4 compares the controls.
+On the synthetic stream with the DSP encoder at $d = 16$, μEngram retains every injected event in every seed (retention 1.00) and cuts write operations by 86.2% on average (95% bootstrap interval over seeds 85.9–86.5%; range 85.3–87.2%; about 2,762 of 20,000 windows written). Average precision is 0.9955 (interval 0.991–0.999; range 0.9795–1.0000). Table 4 compares the controls. Intervals in this section are percentile bootstrap intervals of the mean over the 10 seeds (10,000 resamples); they quantify seed-to-seed variation of one generator, not uncertainty about other streams.
 
 **Table 4.** Synthetic stream, 10 seeds, means. Event retention (Ret.), write-operation reduction (W.red., %) and AP at $d = 16$ and $d = 36$.
 
@@ -287,7 +287,7 @@ Three observations follow. First, only μEngram and the naive store retain every
 
 ### 5.2 Encoder Width Regressions
 
-Widening the DSP projection from $d = 16$ to $d = 36$ lowers μEngram's event retention from 1.00 to 0.801 (range 0.766–0.845 over seeds) and its AP from 0.996 to 0.534 (median 0.541), and bytes written rise to 4.79 MB, 50% above the naive store. At $d = 36$ the label-free centroid store retains every event with a 93.1% write reduction but an AP of 0.137, so no method dominates on all three measures. On the 8-channel SKAB benchmark the effect is mixed (Table 6, Section 5.4): $d = 48$ detects more events but spends 18.6% of clean time in alarm. The sweeps do not identify an embedding dimension that is best across datasets.
+Widening the DSP projection from $d = 16$ to $d = 36$ lowers μEngram's event retention from 1.00 to 0.801 (interval 0.784–0.819; range 0.766–0.845 over seeds) and its AP from 0.996 to 0.534 (interval 0.483–0.586; median 0.541). Paired by seed, the change is −0.199 in retention (interval −0.216 to −0.181), −0.462 in AP (−0.510 to −0.411) and −14.6 points of write reduction (−15.0 to −14.2), so the regression is not a seed artifact. Bytes written rise to 4.79 MB, 50% above the naive store. At $d = 36$ the label-free centroid store retains every event with a 93.1% write reduction but an AP of 0.137 (interval 0.118–0.157), so no method dominates on all three measures. On the 8-channel SKAB benchmark the effect is mixed (Table 6, Section 5.4): $d = 48$ detects more events but spends 18.6% of clean time in alarm. The sweeps do not identify an embedding dimension that is best across datasets.
 
 ### 5.3 Core Benchmark Evidence
 
@@ -298,8 +298,8 @@ Table 5 summarizes the experiments on field-like data, and Figure 5 shows the pe
 | Dataset | Configuration | Primary result | Interpretation |
 |---|---|---|---|
 | CMAPSS FD001 (5 seeds) | DSP, $d = 16$ | Health AUROC 0.999, AP 0.995; RUL RMSE 42.1 (memory lookup) and 25.5 (health score) against 25.8 for naive storage (range 23.2–25.8) | Separating early from late life does not yield remaining-life regression better than the naive baseline. $d = 32$ failed with "fewer than 10 difference pairs for noise estimate" after segments fragmented under an ill-conditioned covariance. Quality metrics are identical across seeds; only latency varies. |
-| MetroPT-3 (5 seeds) | CNN encoder, frozen alarm policy | 3.6 of 4 events (range 2–4); 10.2 false alarms per week (6.1–14.2); mean first alarm minus report start −5.95 h (−16.5 to +11.3) | 492 of 495 event windows fall in sustained load, which commissioning never contained, and 87% of healthy sustained-load windows already exceed the health setpoint. Within sustained load, clean windows against the 24 h before a report give frozen seed-0 DSP AUROC 0.07 (health) and 0.35 (novelty). At 10.2 false alarms per week, an alarm inside a 24 h look-back is expected by chance, so lead times are not evidence of early warning. |
-| MetroPT-2 | MetroPT-3 design replayed | 0 of 5 events under the selected alarm design (January 0 of 3, April 0 of 2) | An earlier, less conservative alarm rule catches both April events at 14.9 false alarms per week, so the outcome depends on alarm design. The replay uses frozen seed-0 DSP scores. |
+| MetroPT-3 (5 seeds) | CNN encoder, frozen alarm policy | 4 of 4 events in every seed; 12.6 false alarms per week (6.9–18.3); mean first alarm minus report start −7.40 h (−16.6 to +8.6) | 492 of 495 event windows fall in sustained load, which commissioning never contained, and 87% of healthy sustained-load windows already exceed the health setpoint. Within sustained load, clean windows against the 24 h before a report give frozen seed-0 DSP AUROC 0.07 (health) and 0.35 (novelty). At 12.6 false alarms per week, an alarm inside a 24 h look-back is expected by chance, so lead times are not evidence of early warning. |
+| MetroPT-2 | MetroPT-3 design replayed | 0 of 5 events under the selected alarm design (January 0 of 3, April 0 of 2) | A less conservative alarm rule catches both April events at 17.8 false alarms per week, so the outcome depends on alarm design. The replay uses frozen seed-0 DSP scores. |
 | SKAB (seed 0) | DSP, frozen alarm policy | 5 of 34 fault experiments; AUROC 0.546; AP 0.419; 135 false alarms per week | All five detections come 28–114 s after fault onset. The weekly rate is extrapolated from 5 episodes over about 6.2 clean hours. |
 | SCANIA Component X (seed 0) | Frozen alarm policy | 22.8% recall on classes 1–4 at the final row; 19.3% alarm rate on class 0; AUROC 0.541 | Coarse repair-proximity classes cannot measure lead time or early warning. |
 | EngineAD (10 seeds per width) | CNN encoder, $d \in \{8, 16, 32\}$, 30 epochs, 95th-percentile threshold | Held-out-truck pooled segment AUROC near chance: seed medians 0.539, 0.556, 0.537 for $d$ = 8, 16, 32 ($d = 16$ range 0.540–0.567); median AP 0.176, 0.200, 0.179 against an anomaly base rate of 0.176 | The released principal components were fitted on the whole fleet, including the held-out trucks, so preprocessing leaks across splits. Labels are per segment and 135 segments mix normal and anomalous points. Only five trucks are held out, and segment labels give no event onsets, so event recall and false alarms per week cannot be computed. |
@@ -394,6 +394,23 @@ Per-subsystem results show where each detection comes from; the event counts sum
 | Fused (OR of specialists) | All five primitive channels | 29/42 (69.0%) | 14 (19.6/week) | 0.8919 |
 
 In isolated incidents, only the responsible specialist fired (for example, only the memory specialist for one memory event). In cascading disruptions, several specialists fired together, and in one such event all three did. Because the CPU specialist fires on 20 of the 30 test-split events, "cascading" is our reading of the trigger pattern, not an independently labeled event type. The per-specialist false-alarm counts in Table 9 are each measured against that specialist's own subsystem events and are not comparable to the fused 14.
+
+### 5.10 Comparison Against External Streaming Baselines
+
+Sections 5.1–5.9 compare μEngram against internal controls (naive, FIFO, reservoir, centroid clustering). Table 10 adds two external streaming-anomaly-detection baselines, half-space trees and MemStream [6], on MetroPT-3 and SKAB, under the DSP encoder and each method's own alarm configuration selected on MetroPT-3 development data, calibrated the same way as μEngram (Section 3.4).
+
+**Table 10.** MetroPT-3 and SKAB against half-space trees and MemStream. DSP encoder; MetroPT-3 over 5 seeds, SKAB over 5 seeds for half-space trees and MemStream (μEngram's DSP score is deterministic, so 1 seed).
+
+| Dataset | Method | Events detected | False alarms / week | AUROC |
+|---|---|---:|---:|---:|
+| MetroPT-3 (4 events) | μEngram | 3 / 4 | 0.53 | 0.985 |
+| MetroPT-3 (4 events) | Half-space trees | 1.6 / 4 (1–3) | 0.46 (0.26–0.69) | 0.889 |
+| MetroPT-3 (4 events) | MemStream | 2.0 / 4 (1–3) | 0.26 (0.21–0.32) | 0.920 |
+| SKAB (34 events) | μEngram | 5 / 34 | 135.2 | 0.546 |
+| SKAB (34 events) | Half-space trees | 3.6 / 34 (2–5) | 10.8 (0.0–27.0) | 0.519 |
+| SKAB (34 events) | MemStream | 1.0 / 34 | 0.0 | 0.545 |
+
+Under this frozen, DSP-encoded configuration (distinct from the CNN-encoded configuration in Table 5), μEngram detects the most events on both datasets, at the cost of the highest false-alarm rate: 135.2 per week on SKAB against 10.8 for half-space trees and 0.0 for MemStream, and 0.53 per week on MetroPT-3 against 0.46 and 0.26. None of the three methods reaches both high recall and a low false-alarm rate on SKAB. All three alarm configurations were selected on MetroPT-3 development data, so this is a same-protocol comparison, not independent confirmation of any method.
 
 ---
 
