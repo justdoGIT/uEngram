@@ -12,11 +12,11 @@
 <text x="20.0" y="69.0" font-size="10.5" font-weight="700" fill="#0f172a" text-anchor="start">Synthetic streams and CMAPSS</text>
 <rect x="259.9" y="54.0" width="52.0" height="22.0" rx="3" fill="#15803d" stroke="none" stroke-width="1.0"/>
 <text x="285.9" y="69.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
-<rect x="311.9" y="54.0" width="104.0" height="22.0" rx="3" fill="#b45309" stroke="none" stroke-width="1.0"/>
-<text x="363.9" y="69.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
-<rect x="415.9" y="54.0" width="78.0" height="22.0" rx="3" fill="#b91c1c" stroke="none" stroke-width="1.0"/>
-<text x="454.9" y="69.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
-<text x="501.9" y="69.0" font-size="9.5" fill="#475569" text-anchor="start">9 tables</text>
+<rect x="311.9" y="54.0" width="130.0" height="22.0" rx="3" fill="#b45309" stroke="none" stroke-width="1.0"/>
+<text x="376.9" y="69.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+<rect x="441.9" y="54.0" width="78.0" height="22.0" rx="3" fill="#b91c1c" stroke="none" stroke-width="1.0"/>
+<text x="480.9" y="69.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<text x="527.9" y="69.0" font-size="9.5" fill="#475569" text-anchor="start">10 tables</text>
 <text x="20.0" y="109.0" font-size="10.5" font-weight="700" fill="#0f172a" text-anchor="start">MetroPT, CARE, and SCANIA</text>
 <rect x="259.9" y="94.0" width="26.0" height="22.0" rx="3" fill="#b45309" stroke="none" stroke-width="1.0"/>
 <text x="272.9" y="109.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
@@ -51,11 +51,11 @@
 <text x="20.0" y="269.0" font-size="10.5" font-weight="700" fill="#0f172a" text-anchor="start">All groups</text>
 <rect x="259.9" y="254.0" width="26.0" height="22.0" rx="3" fill="#15803d" stroke="none" stroke-width="1.0"/>
 <text x="272.9" y="269.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
-<rect x="285.9" y="254.0" width="199.3" height="22.0" rx="3" fill="#b45309" stroke="none" stroke-width="1.0"/>
-<text x="385.6" y="269.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">23</text>
-<rect x="485.3" y="254.0" width="17.3" height="22.0" rx="3" fill="#64748b" stroke="none" stroke-width="1.0"/>
-<text x="493.9" y="269.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
-<rect x="502.6" y="254.0" width="138.7" height="22.0" rx="3" fill="#b91c1c" stroke="none" stroke-width="1.0"/>
-<text x="571.9" y="269.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">16</text>
-<text x="649.3" y="269.0" font-size="9.5" fill="#475569" text-anchor="start">44 tables</text>
+<rect x="285.9" y="254.0" width="208.0" height="22.0" rx="3" fill="#b45309" stroke="none" stroke-width="1.0"/>
+<text x="389.9" y="269.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">24</text>
+<rect x="493.9" y="254.0" width="17.3" height="22.0" rx="3" fill="#64748b" stroke="none" stroke-width="1.0"/>
+<text x="502.6" y="269.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<rect x="511.3" y="254.0" width="138.7" height="22.0" rx="3" fill="#b91c1c" stroke="none" stroke-width="1.0"/>
+<text x="580.6" y="269.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">16</text>
+<text x="657.9" y="269.0" font-size="9.5" fill="#475569" text-anchor="start">45 tables</text>
 </svg>

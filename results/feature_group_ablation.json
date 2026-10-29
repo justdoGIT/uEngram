@@ -1,0 +1,129 @@
+{
+  "groups": {
+    "all": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "no_band_energy": [
+      0,
+      1
+    ],
+    "no_log_std": [
+      0,
+      2,
+      3,
+      4,
+      5
+    ],
+    "no_mean": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "results": {
+    "all": {
+      "cmapss_fd001": {
+        "eol_retention": 1.0,
+        "health_auroc": 0.9989709286177206,
+        "rul_rmse": 42.05087414353777,
+        "write_reduction_pct": 96.70076213397513
+      },
+      "cmapss_fd003": {
+        "eol_retention": 0.12,
+        "health_auroc": 0.982388005561937,
+        "rul_rmse": 24.10402888940726,
+        "write_reduction_pct": 80.00734686380751
+      },
+      "skab_seed0": {
+        "ap": 0.4192044063879338,
+        "auroc": 0.5458055694765479,
+        "events_detected": 5.0,
+        "false_alarm_episodes": 5,
+        "n_events": 34
+      },
+      "synthetic": {
+        "ap": 0.9954855125353594,
+        "event_recall": 1.0,
+        "write_reduction_pct": 86.1895
+      }
+    },
+    "no_band_energy": {
+      "cmapss_fd001": {
+        "error": "ValueError: fewer than 10 difference pairs for noise estimate"
+      },
+      "cmapss_fd003": {
+        "eol_retention": 0.16,
+        "health_auroc": 0.9981908926640201,
+        "rul_rmse": 25.13829160042873,
+        "write_reduction_pct": 77.62879970612545
+      },
+      "skab_seed0": {
+        "ap": 0.47429201079290684,
+        "auroc": 0.5717522040624297,
+        "events_detected": 9.0,
+        "false_alarm_episodes": 9,
+        "n_events": 34
+      },
+      "synthetic": {
+        "error": "ValueError: could not broadcast input array from shape (12,) into shape (16,)"
+      }
+    },
+    "no_log_std": {
+      "cmapss_fd001": {
+        "eol_retention": 1.0,
+        "health_auroc": 0.9998793321606024,
+        "rul_rmse": 42.747458539617305,
+        "write_reduction_pct": 97.44283995186522
+      },
+      "cmapss_fd003": {
+        "eol_retention": 0.66,
+        "health_auroc": 0.9836828352444095,
+        "rul_rmse": 30.48483659753011,
+        "write_reduction_pct": 90.55928000734687
+      },
+      "skab_seed0": {
+        "ap": 0.42292100507453934,
+        "auroc": 0.5537646127804938,
+        "events_detected": 5.0,
+        "false_alarm_episodes": 6,
+        "n_events": 34
+      },
+      "synthetic": {
+        "ap": 0.9908837715061083,
+        "event_recall": 1.0,
+        "write_reduction_pct": 88.989
+      }
+    },
+    "no_mean": {
+      "cmapss_fd001": {
+        "eol_retention": 0.22,
+        "health_auroc": 0.7205928463413881,
+        "rul_rmse": 38.10989657529488,
+        "write_reduction_pct": 88.01644604893703
+      },
+      "cmapss_fd003": {
+        "error": "ValueError: fewer than 10 difference pairs for noise estimate"
+      },
+      "skab_seed0": {
+        "ap": 0.3610998847895253,
+        "auroc": 0.5059854230163439,
+        "events_detected": 0.0,
+        "false_alarm_episodes": 0,
+        "n_events": 34
+      },
+      "synthetic": {
+        "ap": 0.9953809834494688,
+        "event_recall": 1.0,
+        "write_reduction_pct": 86.309
+      }
+    }
+  },
+  "seeds": "0-9"
+}

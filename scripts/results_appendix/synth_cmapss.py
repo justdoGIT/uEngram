@@ -140,6 +140,24 @@ def build(repo: Path) -> list[dict]:
                          "EWMA-inflation estimate fails on its operating-condition switching. uengram end-of-life retention falls from 1.000 "
                          "on FD001 to 0.062 on FD002 and 0.120 on FD003 while the health score stays above 0.98 AUROC."))
 
+    # DSP feature-group ablation (one group dropped at a time).
+    ablation = json.loads((repo / "results" / "feature_group_ablation.json").read_text())["results"]
+
+    def _cell(entry, *keys):
+        return "fit fails" if "error" in entry else " / ".join(_fmt(entry[k]) for k in keys)
+
+    rows = [[label, _cell(r["synthetic"], "event_recall", "ap"),
+             "fit fails" if "error" in r["skab_seed0"] else f"{int(r['skab_seed0']['events_detected'])} / {r['skab_seed0']['n_events']}",
+             _cell(r["cmapss_fd001"], "health_auroc", "eol_retention"),
+             _cell(r["cmapss_fd003"], "health_auroc", "eol_retention")]
+            for label, r in ablation.items()]
+    tables.append(_table("DSP feature-group ablation", "mixed", "results/feature_group_ablation.json",
+                         ["features", "synthetic recall / AP", "SKAB events", "FD001 health AUROC / EOL retention",
+                          "FD003 health AUROC / EOL retention"], rows,
+                         "One group (mean, log standard deviation or the four band energies) is dropped at a time. Synthetic is a 10-seed "
+                         "mean; SKAB is seed 0; CMAPSS is one deterministic run. Dropping the band energies leaves 2 features per channel, "
+                         "which cannot support d=16 on the synthetic stream or FD001."))
+
     # CMAPSS slope features versus ordinary DSP: run metrics are identical across seeds per method.
     base = _load(repo, "cmapss_runs.jsonl")
     slope = _load(repo, "cmapss_slope_runs.jsonl")
