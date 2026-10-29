@@ -30,24 +30,32 @@ def main() -> None:
     parser.add_argument("--root", default=None)
     parser.add_argument("--out", default="results/skab_d_sweep.json")
     parser.add_argument("--K", type=int, default=10)
-    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--encoders", default=",".join(ENCODERS))
+    parser.add_argument("--seeds", default="0", help="comma-separated; more than one writes a per-seed file")
     args = parser.parse_args()
 
+    encoders = [e.strip() for e in args.encoders.split(",") if e.strip()]
+    seeds = [int(s) for s in args.seeds.split(",") if s.strip()]
     stream = skab_stream(args.root, K=args.K)
     names = stream.extra["experiment_names"]
     rows = []
-    for enc in ENCODERS:
-        sc = score_stream(stream, "uengram", enc, args.seed, f"skab {enc}")
-        m, d, _ = apply_policy(stream, sc, FROZEN["uengram"])
-        rows.append({
-            "encoder": enc,
-            "false_alarm_episodes": int(d["false_alarm_episodes"]),
-            "detected_experiments": [names[r["event"]] for r in d["events"] if r["detected"]],
-            "metrics": {k: float(m[k]) for k in METRICS if isinstance(m[k], (int, float, np.floating))},
-        })
-        print(f"{enc}: detected={int(m['events_detected'])}/{len(stream.events)} "
-              f"fa_episodes={rows[-1]['false_alarm_episodes']} ap={m['ap']:.4f}", flush=True)
-    out = {"protocol": "docs/validation-skab-protocol.md", "seed": args.seed, "K": args.K, "rows": rows}
+    for seed in seeds:
+        for enc in encoders:
+            sc = score_stream(stream, "uengram", enc, seed, f"skab {enc} s{seed}")
+            m, d, _ = apply_policy(stream, sc, FROZEN["uengram"])
+            row = {
+                "encoder": enc,
+                "false_alarm_episodes": int(d["false_alarm_episodes"]),
+                "detected_experiments": [names[r["event"]] for r in d["events"] if r["detected"]],
+                "metrics": {k: float(m[k]) for k in METRICS if isinstance(m[k], (int, float, np.floating))},
+            }
+            if len(seeds) > 1:
+                row["seed"] = seed
+            rows.append(row)
+            print(f"{enc} seed={seed}: detected={int(m['events_detected'])}/{len(stream.events)} "
+                  f"fa_episodes={row['false_alarm_episodes']} ap={m['ap']:.4f}", flush=True)
+    out = {"protocol": "docs/validation-skab-protocol.md", "K": args.K, "rows": rows}
+    out["seed" if len(seeds) == 1 else "seeds"] = seeds[0] if len(seeds) == 1 else seeds
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps(out, indent=2, sort_keys=True, allow_nan=False) + "\n")
 

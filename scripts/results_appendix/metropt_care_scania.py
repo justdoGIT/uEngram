@@ -77,22 +77,24 @@ def _metropt(repo: Path) -> dict:
 def build(repo: Path) -> list[dict]:
     tables = [_metropt(repo)]
 
-    # MetroPT-2: separate stream and dimension; values are seed means.
+    # MetroPT-2: one row per stream, dimension and alarm policy. The file holds seed 0 only, and the
+    # two policies (v1_rule, v2) must not be averaged: that would blend a catch and a miss.
     metro2 = _jsonl(repo, "metropt2_d16_d24_d32_d42.jsonl")
-    by_stream_encoder: dict[tuple[str, str], list[dict]] = {}
-    for item in metro2:
-        by_stream_encoder.setdefault((item["stream"], item["encoder"]), []).append(item)
+    ordered = sorted(metro2, key=lambda r: (r["stream"], int(r["encoder"].rsplit("d", 1)[-1]), r["policy"]))
     rows = []
-    for stream, encoder in sorted(by_stream_encoder, key=lambda pair: (pair[0], int(pair[1].rsplit("d", 1)[-1]))):
-        runs = by_stream_encoder[(stream, encoder)]
-        metric = lambda key: _avg([r["metrics"].get(key, float("nan")) for r in runs], 3)
-        clean_sec = _avg([r["details"].get("clean_alarm_seconds", float("nan")) for r in runs], 1)
-        total_events = len(runs[0]["details"]["events"])
-        rows.append([stream, encoder, f"{metric('events_detected')} / {total_events}", clean_sec, metric("false_alarm_per_week"), metric("auroc")])
+    for run in ordered:
+        total_events = len(run["details"]["events"])
+        rows.append([
+            run["stream"], run["encoder"], run["policy"],
+            f"{int(run['metrics']['events_detected'])} / {total_events}",
+            _avg([run["details"].get("clean_alarm_seconds", float("nan"))], 1),
+            _avg([run["metrics"].get("false_alarm_per_week", float("nan"))], 3),
+            _avg([run["metrics"].get("auroc", float("nan"))], 3),
+        ])
     tables.append(_table(
         "MetroPT-2 dimension sweep", "mixed", "results/metropt2_d16_d24_d32_d42.jsonl",
-        ["Stream", "Encoder / dimension", "Mean events detected / total", "Mean clean alarm time (seconds)", "Mean false alarms per week", "Mean AUROC"], rows,
-        f"The {len(rows)} stream-dimension combinations report event detections, clean alarm duration in seconds, false alarms, and AUROC as means across seeds. Results vary across streams and dimensions, including missed events.",
+        ["Stream", "Encoder / dimension", "Alarm policy", "Events detected / total", "Clean alarm time (seconds)", "False alarms per week", "AUROC"], rows,
+        f"The {len(rows)} rows are one run each (seed 0) for every stream, dimension and alarm policy; the policies are not averaged. Results vary across streams, dimensions and policies, including missed events.",
     ))
 
     # Cross-domain transfer gate from the recorded frozen TSB-AD-U holdout.

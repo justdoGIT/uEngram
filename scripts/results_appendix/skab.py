@@ -89,13 +89,19 @@ def build(repo: Path) -> list[dict]:
             _fmt(metrics["ap"]),
         ])
     best = max(data["rows"], key=lambda item: item["metrics"]["events_detected"])
+    seed_data = _load(repo, "skab_d48_seeds.json")
+    runs = seed_data["rows"]
+    identical = all(run["metrics"] == runs[0]["metrics"]
+                    and run["false_alarm_episodes"] == runs[0]["false_alarm_episodes"] for run in runs)
+    seed_check = (f"A separate check of {runs[0]['encoder']} over {len(runs)} seeds (results/skab_d48_seeds.json) "
+                  + ("gave identical metrics in every run." if identical else "gave differing metrics across runs."))
     tables.append(_table(
         "SKAB embedding-dimension sweep",
-        "results/skab_d_sweep.json, results/skab_validation.json",
+        "results/skab_d_sweep.json, results/skab_d48_seeds.json, results/skab_validation.json",
         "mixed",
         columns,
         rows,
-        f"The sweep shows all {len(rows)} embedding settings; {best['encoder']} detected {int(best['metrics']['events_detected'])} of {total} experiments. {_seed_note(data)} The DSP encoder is deterministic; seeds 0-9 of dsp_d48 gave identical results.",
+        f"The sweep shows all {len(rows)} embedding settings; {best['encoder']} detected {int(best['metrics']['events_detected'])} of {total} experiments. {_seed_note(data)} {seed_check}",
     ))
 
     data = _load(repo, "skab_persistence_sweep.json")

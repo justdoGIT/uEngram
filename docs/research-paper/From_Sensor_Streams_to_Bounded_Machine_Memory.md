@@ -29,13 +29,13 @@ While synthetic benchmarks confirm that μEngram cuts storage write operations b
 
 ## 1. Introduction and the Flawed "Edge Mem0" Premise
 
-Embedded telemetry systems face a structural retention dilemma: at one 16-float vector per second (86,400 vectors/day), raw vector payloads alone consume ~5.3 MiB daily before accounting for timestamps, metadata, index structures, and high-rate source waveforms. Updating approximate nearest-neighbor (ANN) graph indexes (such as HNSW) in place also introduces random-write amplification on raw NAND flash and eMMC storage. Conversely, ring buffers that evict strictly by age discard historical fault signatures whenever a machine runs normally for days after an incident.
+Embedded telemetry systems face a structural retention dilemma: at one 16-float vector per second (86,400 vectors/day), raw vector payloads alone consume ~5.3 MiB daily before accounting for timestamps, metadata, index structures, and high-rate source waveforms. Updating approximate nearest-neighbor (ANN) graph indexes (such as HNSW) in place is expected to introduce random-write amplification on raw NAND flash and eMMC storage [INFERENCE: not measured here]. Conversely, ring buffers that evict strictly by age discard historical fault signatures whenever a machine runs normally for days after an incident.
 
 This investigation originated from an embedded database proposal to port cloud LLM memory frameworks—specifically Mem0 [1]—directly to edge devices using ANN vector search. Testing that concept against physical telemetry exposed three architectural fallacies:
 
 1. **Physical State vs. Conversational Memory:** Mining trucks, wind turbines, and compressors do not need natural-language entity extraction to remember user preferences; they require bounded tracking of wear baselines, operating regimes, and acute fault excursions.
 2. **The Ingestion-Path Compute Bottleneck:** Cloud Mem0 invokes an LLM on every write to deduplicate facts and resolve contradictions. On an embedded gateway ingesting 100 Hz–1 kHz sensor streams, placing a language model in the write loop violates real-time latency and RAM bounds. Ingestion and consolidation must remain deterministic and mathematical.
-3. **RAM Starvation and Flash Wear:** Continuous mutation of in-memory HNSW graphs starves constrained RAM and accelerates flash wear. Edge state memory requires tiered, density-aware compaction and strict admission gates.
+3. **RAM Starvation and Flash Wear:** Continuous mutation of in-memory HNSW graphs is expected to starve constrained RAM and accelerate flash wear [INFERENCE: not measured here; hardware profiling is gate 5 in §6]. Edge state memory requires tiered, density-aware compaction and strict admission gates.
 
 To evaluate what works in practice, we analyze the `uEngram` Python reference implementation alongside its `EdgeMemory Lite` persistence adapter, synthesizing mechanism proofs, negative transfer findings, and methodological corrections across synthetic and field datasets.
 
@@ -104,7 +104,7 @@ Early versions of μEngram evicted the weakest mature episodic slot whenever any
 
 ![Figure 3. Slot state machine of `Engram.ingest`: gate routing, candidate probation, promotion, step supersession, and competitive episodic admission. A window inside an episodic slot's gate is absorbed by that slot; only the candidate path is drawn.](figures/slot-state-machine.svg)
 
-On a five-seed synthetic benchmark with a configured total budget of 16 slots (13 episodic, 3 semantic; `docs/EXPLAINED.md:375`), competitive admission raised mean event recall from 0.760 to 0.851 and write reduction from 85.78% to 87.56%; type recall stayed at 1.0 and current-regime retrieval rose from 0.998 to 1.0. Seizure-event recall fell from 0.667 to 0.600, so the rule is not a universal improvement and must be validated on independent real streams.
+On a five-seed synthetic benchmark with a configured total budget of 16 slots (13 episodic, 3 semantic; `docs/EXPLAINED.md:375`), competitive admission raised mean event retention from 0.760 to 0.851 and write reduction from 85.78% to 87.56%; type recall stayed at 1.0 and current-regime retrieval rose from 0.998 to 1.0. Seizure-event retention fell from 0.667 to 0.600, so the rule is not a universal improvement and must be validated on independent real streams. These budget-16 figures are reported in `docs/research-paper/sensor-state-memory.md:522-531`; no budget-16 result file is committed under `results/`.
 
 Algorithm 2 is the per-window update in `Engram.ingest`. Novelty is scored against semantic (normal) slots only, so a recurring fault held in an episodic slot cannot mask itself; rarity, the distance to any stored slot, ranks what is worth keeping. When the episodic bank is full, a new window must beat the weakest episode's importance, surprisal × (1 + log n) × $2^{-\text{age}/h}$ with $h$ = `half_life_epi` (default 20,000 steps), or it is discarded (Listing 2).
 
@@ -252,7 +252,7 @@ Across development and holdout studies [6], empirical performance diverges sharp
 Several benchmark failures exposed traps that routinely distort published anomaly-detection claims:
 
 * **Retraction of the NASA IMS "63.8-Hour Early Warning" Claim [7]:** A prior project-session recap and draft section reported that an "optimal strategy" on the NASA/IMS bearing dataset achieved 63.8 hours of early warning and zero false alarms over four healthy weeks. Inspection of the external script invalidated both claims: (1) the script hardcoded assumed degradation row indices in Python and evaluated lead time against its own hardcoded indices using the final sample as failure reference, without adjudicated physical fault-onset timestamps; and (2) "zero alarms" came from the assumed healthy prefix of a single campaign. Those claims are retracted in full (`docs/research-paper/sensor-state-memory.md:266-270`).
-* **Encoder Width Regressions:** Sweeping DSP width from $d=16$ to $d=36$ on synthetic streams dropped mean event retention from 1.00 to 0.8012 and mean AP from 0.9955 to 0.5336 (10 seeds each; $d=36$ from `results/synth_d36_runs.jsonl`, median AP 0.5407; $d=16$ from `results/synth_runs.jsonl`). On SKAB, an exploratory $d=48$ run (`results/skab_d_sweep.json`, seed 0) detected 9/34 events with 4 false-alarm episodes, against 5/34 with 5 for the frozen $d=16$ detector; AP moved from 0.419 to 0.441, but the share of clean time in alarm rose from 1.3% to 18.6%. The DSP encoder is deterministic: a scratch run of seeds 0–9 at $d=48$ (not committed; `bench/skab_d_sweep.py --seed N` reproduces one seed) gave identical metrics, so this is one result, not a distribution. The sweeps do not identify one embedding dimension that is best across datasets.
+* **Encoder Width Regressions:** Sweeping DSP width from $d=16$ to $d=36$ on synthetic streams dropped mean event retention from 1.00 to 0.8012 and mean AP from 0.9955 to 0.5336 (10 seeds each; $d=36$ from `results/synth_d36_runs.jsonl`, median AP 0.5407; $d=16$ from `results/synth_runs.jsonl`). On SKAB, an exploratory $d=48$ run (`results/skab_d_sweep.json`, seed 0) detected 9/34 events with 4 false-alarm episodes, against 5/34 with 5 for the frozen $d=16$ detector; AP moved from 0.419 to 0.441, but the share of clean time in alarm rose from 1.3% to 18.6%. The DSP encoder is deterministic: seeds 0–9 at $d=48$ give identical metrics (`results/skab_d48_seeds.json`, from `bench/skab_d_sweep.py --encoders dsp_d48 --seeds 0,1,2,3,4,5,6,7,8,9`), so this is one result, not a distribution. The sweeps do not identify one embedding dimension that is best across datasets.
 * **Threshold Tuning Cannot Fix Missing State Coverage:** A parameter sweep over MetroPT-3 alarm policies failed to find any setting meeting all three operational criteria (4/4 events detected, $\le 2\%$ clean alarm time, $\le 1$ FA/week). Every setting that reached 4/4 broke a budget: the lowest clean alarm time at 4/4 was 1.22% but at 1.80 FA/week, and the lowest false-alarm rate was 0.63 FA/week but at 4.62% clean alarm time (`docs/research-alarm-definition.md:143`). An earlier version of this same sweep reported 4/4 events at 1.06% clean alarm time by ANDing the gated policy with an error-threshold vote (`docs/research-error-gated-alarm.md:149-155`); auditing that result showed the vote never activates in sustained load (0 of 1,832 state-2 test windows), so the "gate" was a recency cap on state-0/1 windows, not corroborated detection — a diagnostic recency-only rule with no error content nearly reproduces the same 4/4 rows (1.25% vs 1.06% clean alarm time at a 6 h cap). Correcting unknown-sample handling to the ISA three-valued rule (`docs/research-alarm-definition.md:104-111`) made the 1.06% result disappear.
 
 ---
@@ -261,7 +261,7 @@ Several benchmark failures exposed traps that routinely distort published anomal
 
 ### 4.1 Intermediate CNN Readouts: Proxy Screen vs. Full Pipeline
 
-Recent literature suggests that intermediate network layers and patch prototypes preserve localized anomaly signals that final reconstruction bottlenecks smooth over, including VGG middle-layer game-theoretic importance (LayerIM) [12], layer-16 foundation representations in TimeRep [13], and patch memory gates in MOMEMTO [15].
+Recent literature suggests that intermediate network layers and patch prototypes preserve localized anomaly signals that final reconstruction bottlenecks smooth over, including VGG middle-layer game-theoretic importance (LayerIM) [12], layer-16 foundation representations in TimeRep [13], patch-based representation learning in PaAno [14], and patch memory gates in MOMEMTO [15].
 
 To test this without test-label leakage, we extended `CNNEncoder` with a `representation="multiscale"` option that pools and concatenates first- and second-stage convolutional feature maps ($r(x) = [\operatorname{pool}(h_1(x)); \operatorname{pool}(h_2(x))]$) before PCA and noise whitening. We first ran a label-free synthetic screen across 5 neural seeds (384 training windows, 96 selection windows injected with 5 fault families: level shift, drift, impulse, oscillation, freeze). On that proxy ruler, the middle-layer readout ($d=32$, 30 epochs) ranked first with a median worst-family displacement score of **0.610** (vs. **0.373** for multi-level and **0.356** for the final bottleneck), while training for 90 epochs degraded every configuration; over-specialization on waveform reconstruction is a plausible cause but was not tested [INFERENCE].
 
@@ -436,7 +436,7 @@ Domain Specialists achieved the highest strict recall (69.0%) and the lowest fal
 
 Three limits apply to these OS-Metrics figures. First, 12 of the 42 annotated disturbances begin before the test split, in the fit and calibration days, where nothing is scored, so every method scores 0/12 on them by construction. On the 30 test-split events the strict recall is 27/30 for DSP, 24/30 for the all-channel role encoder and 29/30 for the specialists. Second, windows overlapping annotated events were removed from the fit and calibration sets using the event labels (`bench/osmetrics_specialist_gate.py:78-83`). Third, "attribution" counts an event when any specialist raises a single-window flag, with no persistence requirement, and counts it correct when the true subsystem is among the triggers. By that measure 30/30 test-split events are attributed correctly, but only 14 have a single trigger; 13 have two and 3 have all three, and the CPU specialist fires on 13 of the 23 non-CPU events. The fused strict-recall figure of 29/30 requires persistence, so one test-split event is flagged without being detected under that stricter rule.
 
-![Figure 7. Strict event recall of domain specialists and role separation against monolithic encoders on OS-Metrics (A) and SKAB (B).](figures/domain-specialist-comparison.svg)
+![Figure 7. Strict event recall of domain specialists and role separation against monolithic encoders on OS-Metrics (A) and SKAB (B). Panel A is drawn from `results/osmetrics_specialist_gate.json` with all 42 annotated events as the denominator, of which 30 lie in the test split (see the limits paragraph above). Panel B reads `results/role_skab_gate.json`; its CNN row is hard-coded in `scripts/generate_paper_figures.py` (0/34, 2.74–13.68 false alarms per hour) and is not comparable to Table 3.](figures/domain-specialist-comparison.svg)
 
 Per-subsystem results (from `results/osmetrics_specialist_gate.json`) show where each detection comes from. The per-subsystem event counts sum to the 42 disturbances (13 + 12 + 17):
 
@@ -455,7 +455,7 @@ In isolated incidents, such as `mem_1765646427688_2393`, only the memory special
 
 ## 6. Discussion, Limitations, and Deployment Gate
 
-This study makes no "first-ever" algorithmic claim; it builds on established analytical redundancy [4, 5], noise whitening [3], streaming memory [8–11], and recent time-series models and benchmarks [18–26]. Its primary contribution is architectural and methodological: it proposes how bounded sensor-state memory could separate mode, level, dynamic and health roles per subsystem, with quarantine routing intended to guard against baseline poisoning (untested; gate 2 below), and it documents benchmark practices that expose deceptive metrics. The evidence is a set of heterogeneous public-benchmark studies on single workloads, not a validated field cohort, and several feature and policy changes that helped one dataset regressed another.
+This study makes no "first-ever" algorithmic claim; it builds on established analytical redundancy [4, 5], noise whitening [3], streaming and memory-based anomaly detection [8–11, 17], and recent time-series models and benchmarks [18–26]. Its primary contribution is architectural and methodological: it proposes how bounded sensor-state memory could separate mode, level, dynamic and health roles per subsystem, with quarantine routing intended to guard against baseline poisoning (untested; gate 2 below), and it documents benchmark practices that expose deceptive metrics. The evidence is a set of heterogeneous public-benchmark studies on single workloads, not a validated field cohort, and several feature and policy changes that helped one dataset regressed another.
 
 Appendix A tabulates the result files in the repository as committed, each with its source file and an outcome tag. Not every file was regenerated at the current code: the synthetic d=36 and SKAB d-sweep files were found stale and regenerated, but other aggregates remain historical committed outputs (`docs/RESULTS.md:3-5`). Figure A1 shows the balance: most tables are negative or mixed, and only a few are clean positives, so the positive findings in §2 to §5 should be read against that record.
 
@@ -481,6 +481,7 @@ Result files cited in the principal text, and the scripts that write them, are l
 | `results/cmapss_runs.jsonl` | `bench/run_cmapss.py` | |
 | `results/skab_validation.json` | `bench/validate_skab.py` | |
 | `results/skab_d_sweep.json` | `bench/skab_d_sweep.py` | SKAB, `dsp_d16`/`d24`/`d32`/`d48`, seed 0, regenerated at HEAD |
+| `results/skab_d48_seeds.json` | `bench/skab_d_sweep.py` (`--encoders dsp_d48 --seeds 0,1,2,3,4,5,6,7,8,9`) | Seeds 0–9 at `dsp_d48`; all ten give identical metrics |
 | `results/scania_validation.json` | `bench/validate_scania.py` | |
 | `results/v8_interaction_replay_metropt2.jsonl` | `bench/alarm_interaction.py` | |
 | `results/moment_tsb_ad_holdout.json` | `bench/moment_tsb_ad_holdout.py` | |
@@ -495,9 +496,9 @@ Result files cited in the principal text, and the scripts that write them, are l
 | `results/cnn_moment_context_study.json` | `bench/cnn_moment_context_study.py` | |
 | `results/cnn_moment_distillation_crossdomain.json` | `bench/cnn_moment_distillation.py` | Command in `docs/research-teacher-distillation.md:273-284` |
 | `results/cnn_intermediate_pipeline.json` | `bench/cnn_stability.py` | Committed in 93f7cd5; exact command not recorded and not rerun at HEAD |
-| `results/enginead/cnn_seed_stability.json` | Not identified in the repository | Committed in f46f7d9; read by `scripts/generate_paper_figures.py` |
+| `results/enginead/cnn_seed_stability.json` | `scripts/colab_run_study.py` with `scripts/colab_study_lib.py` | Colab GPU run, output file `/content/cnn_seed_stability.json`; the artifact's `script_sha256` field holds the label `colab-gpu-sweep-v1`, which matches `scripts/colab_run_study.py:211`. Committed in f46f7d9; not rerun here (about 6.3 GB dataset and a GPU) |
 
-Exceptions: `results/cnn_intermediate_screen.json` (§4.1) and `results/cnn_moment_distillation_metropt_stats.json` (§4.3) are cited here by name only in Appendix A, and no single writer command is recorded for them. The EngineAD artifact's `script_sha256` field holds the label `colab-gpu-sweep-v1`, which matches `scripts/colab_run_study.py:166,211`; that script is untracked and is not part of this repository.
+Exceptions: `results/cnn_intermediate_screen.json` (§4.1) and `results/cnn_moment_distillation_metropt_stats.json` (§4.3) are cited here by name only in Appendix A, and no single writer command is recorded for them.
 
 ---
 
@@ -681,18 +682,26 @@ This appendix tabulates every non-versioned result file in the repository, excep
 
 **Table A10.** <span class="outcome mixed">Mixed</span>MetroPT-2 dimension sweep
 
-| Stream | Encoder / dimension | Mean events detected / total | Mean clean alarm time (seconds) | Mean false alarms per week | Mean AUROC |
-|---|---|---|---|---|---|
-| metropt2_apr | dsp_d16 | 1.000 / 2 | 32745.0 | 7.456 | 0.812 |
-| metropt2_apr | dsp_d24 | 1.500 / 2 | 25075.0 | 5.628 | 0.803 |
-| metropt2_apr | dsp_d32 | 1.000 / 2 | 36875.0 | 8.333 | 0.958 |
-| metropt2_apr | dsp_d42 | 1.000 / 2 | 22420.0 | 5.409 | 0.927 |
-| metropt2_jan | dsp_d16 | 0.000 / 3 | 5605.0 | 0.693 | 0.491 |
-| metropt2_jan | dsp_d24 | 0.500 / 3 | 6195.0 | 0.655 | 0.637 |
-| metropt2_jan | dsp_d32 | 0.500 / 3 | 5015.0 | 0.539 | 0.603 |
-| metropt2_jan | dsp_d42 | 1.000 / 3 | 67260.0 | 7.161 | 0.603 |
+| Stream | Encoder / dimension | Alarm policy | Events detected / total | Clean alarm time (seconds) | False alarms per week | AUROC |
+|---|---|---|---|---|---|---|
+| metropt2_apr | dsp_d16 | v1_rule | 2 / 2 | 65490.0 | 14.911 | 0.812 |
+| metropt2_apr | dsp_d16 | v2 | 0 / 2 | 0.0 | 0.000 | 0.812 |
+| metropt2_apr | dsp_d24 | v1_rule | 2 / 2 | 50150.0 | 11.257 | 0.803 |
+| metropt2_apr | dsp_d24 | v2 | 1 / 2 | 0.0 | 0.000 | 0.803 |
+| metropt2_apr | dsp_d32 | v1_rule | 2 / 2 | 73750.0 | 16.666 | 0.958 |
+| metropt2_apr | dsp_d32 | v2 | 0 / 2 | 0.0 | 0.000 | 0.958 |
+| metropt2_apr | dsp_d42 | v1_rule | 2 / 2 | 44840.0 | 10.818 | 0.927 |
+| metropt2_apr | dsp_d42 | v2 | 0 / 2 | 0.0 | 0.000 | 0.927 |
+| metropt2_jan | dsp_d16 | v1_rule | 0 / 3 | 11210.0 | 1.386 | 0.491 |
+| metropt2_jan | dsp_d16 | v2 | 0 / 3 | 0.0 | 0.000 | 0.491 |
+| metropt2_jan | dsp_d24 | v1_rule | 1 / 3 | 12390.0 | 1.309 | 0.637 |
+| metropt2_jan | dsp_d24 | v2 | 0 / 3 | 0.0 | 0.000 | 0.637 |
+| metropt2_jan | dsp_d32 | v1_rule | 1 / 3 | 10030.0 | 1.078 | 0.603 |
+| metropt2_jan | dsp_d32 | v2 | 0 / 3 | 0.0 | 0.000 | 0.603 |
+| metropt2_jan | dsp_d42 | v1_rule | 2 / 3 | 134520.0 | 14.323 | 0.603 |
+| metropt2_jan | dsp_d42 | v2 | 0 / 3 | 0.0 | 0.000 | 0.603 |
 
-<p class="table-note"><b>Source</b> <code>results/metropt2_d16_d24_d32_d42.jsonl</code>. The 8 stream-dimension combinations report event detections, clean alarm duration in seconds, false alarms, and AUROC as means across seeds. Results vary across streams and dimensions, including missed events.</p>
+<p class="table-note"><b>Source</b> <code>results/metropt2_d16_d24_d32_d42.jsonl</code>. The 16 rows are one run each (seed 0) for every stream, dimension and alarm policy; the policies are not averaged. Results vary across streams, dimensions and policies, including missed events.</p>
 
 **Table A11.** <span class="outcome null">Null</span>Stronger cross-dataset transfer gate
 
@@ -762,7 +771,7 @@ This appendix tabulates every non-versioned result file in the repository, excep
 | dsp_d32 | 5 / 34 | 7 | 0.575 | 0.415 |
 | dsp_d48 | 9 / 34 | 4 | 0.558 | 0.441 |
 
-<p class="table-note"><b>Source</b> <code>results/skab_d_sweep.json, results/skab_validation.json</code>. The sweep shows all 4 embedding settings; dsp_d48 detected 9 of 34 experiments. Single-seed result (seed 0). The DSP encoder is deterministic; seeds 0-9 of dsp_d48 gave identical results.</p>
+<p class="table-note"><b>Source</b> <code>results/skab_d_sweep.json, results/skab_d48_seeds.json, results/skab_validation.json</code>. The sweep shows all 4 embedding settings; dsp_d48 detected 9 of 34 experiments. Single-seed result (seed 0). A separate check of dsp_d48 over 10 seeds (results/skab_d48_seeds.json) gave identical metrics in every run.</p>
 
 **Table A18.** <span class="outcome mixed">Mixed</span>SKAB persistence and threshold sweep
 
