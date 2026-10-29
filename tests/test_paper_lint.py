@@ -1,4 +1,9 @@
+from pathlib import Path
+
 from scripts.lint_paper import lint_markdown
+
+ROOT = Path(__file__).resolve().parents[1]
+PAPER_MD = ROOT / "docs" / "research-paper" / "From_Sensor_Streams_to_Bounded_Machine_Memory.md"
 
 
 PASSING_PAPER = """# A paper: short title
@@ -90,3 +95,12 @@ return value
     assert any("Table 2 is not referenced" in message for message in messages)
     assert any("Algorithm numbering must be consecutive" in message for message in messages)
     assert any("Algorithm 2 is not referenced" in message for message in messages)
+
+
+def test_tracked_paper_lints_clean():
+    """Regression guard: the real paper must stay free of repository-specific
+    leakage and citation/numbering problems. Fixture-only coverage above would
+    miss a regression reintroduced directly into the tracked paper."""
+    assert PAPER_MD.exists(), f"paper not found at {PAPER_MD}"
+    messages = lint_markdown(PAPER_MD.read_text(encoding="utf-8"))
+    assert messages == [], "\n".join(f"{line}: {message}" for line, message in messages)
