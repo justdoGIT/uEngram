@@ -6,11 +6,13 @@ raw sensor windows and embeddings remain in the host's evidence store.
 """
 from __future__ import annotations
 
+import math
 from numbers import Integral
 from typing import Sequence
 
 import numpy as np
 
+from .confirmed_adaptation import ConfirmedLatentAdapter
 from .engine import Engram
 from .store import IngestResult
 from .sensor_memory_records import (
@@ -59,6 +61,12 @@ class SensorStateMemory:
     must arrive once, in strictly increasing `step_index` order. `step_index`
     is a sample counter for uEngram's M-of-N timers; wall-clock milliseconds
     belong in `observed_at_ms` and must never be passed as the engine step.
+
+    With an `adapter` (confirmed_adaptation.ConfirmedLatentAdapter), each identity key
+    (asset, subsystem, mode, schema) keeps a bounded latent offset that is subtracted
+    before scoring. It is updated only from windows the operator marked
+    `operator_confirmed_normal` while no alarm was open and the key already had a
+    learned normal state, so gradual wear nobody confirmed is never absorbed.
     """
 
     def __init__(
@@ -69,9 +77,13 @@ class SensorStateMemory:
         raw_evidence: RawEvidencePins | None = None,
         last_step: int = -1,
         last_alarm: bool | None = None,
+        adapter: ConfirmedLatentAdapter | None = None,
     ) -> None:
         if engine.events:
             raise ValueError("drain pre-existing engine events before attaching the adapter")
+        if adapter is not None and adapter.d != engine.d:
+            raise ValueError("adapter dimension must match the engine's")
+        self.adapter = adapter
         self.engine = engine
         self.memory = memory
         self.raw_evidence = raw_evidence
@@ -93,8 +105,16 @@ class SensorStateMemory:
         if window.raw_window_ref is not None and self.raw_evidence is None:
             raise ValueError("raw_window_ref requires a RawEvidencePins implementation")
 
-        decision = self.engine.ingest(vector, window.step_index, window.raw_idx,
-                                      mode_key=identity_key(window))
+        key = identity_key(window)
+        scored = vector if self.adapter is None else self.adapter.apply(vector[None, :], key)[0]
+        decision = self.engine.ingest(scored, window.step_index, window.raw_idx, mode_key=key)
+        if self.adapter is not None:
+            self.adapter.update(
+                vector[None, :], key,
+                operator_confirmed_normal=window.operator_confirmed_normal,
+                alarm_closed=decision.flagged is not True,
+                commissioned=math.isfinite(decision.score),
+            )
         self._last_step = window.step_index
         lifecycle_events = tuple(self.engine.drain_events())
         alarm_transition = False

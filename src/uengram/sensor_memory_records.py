@@ -84,6 +84,8 @@ def validate_sensor_window(window: SensorWindow, dimension: int) -> np.ndarray:
         or window.retention_class not in (1, 2, 3, 4)
     ):
         raise ValueError("retention_class must be an EdgeMemory class from 1 to 4")
+    if not isinstance(window.operator_confirmed_normal, bool):
+        raise ValueError("operator_confirmed_normal must be a bool")
     if window.source_event_id is not None:
         event_id = window.source_event_id
         if not isinstance(event_id, str) or not event_id:

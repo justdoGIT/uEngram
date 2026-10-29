@@ -59,7 +59,7 @@ class PinStore:
         self.details.pop((reference, owner_key), None)
 
 
-def make_pipeline(store=None, pins=None):
+def make_pipeline(store=None, pins=None, adapter=None):
     config = EngramConfig(
         B_sem=4,
         B_epi=4,
@@ -70,7 +70,7 @@ def make_pipeline(store=None, pins=None):
         consolidate_every=10_000,
     )
     engine = Engram(config, 2, np.ones(2), raw_window_bytes=64)
-    return SensorStateMemory(engine, store or MemoryBackend(), raw_evidence=pins)
+    return SensorStateMemory(engine, store or MemoryBackend(), raw_evidence=pins, adapter=adapter)
 
 
 def window(step, values, **overrides):
@@ -239,3 +239,64 @@ def test_operating_modes_are_separate_identities_in_the_engine():
     other_asset = pipeline.ingest(window(3, [0, 0], asset_id="pump-18"))
     assert again.decision.item_id == steady.decision.item_id
     assert len({steady.decision.item_id, startup.decision.item_id, other_asset.decision.item_id}) == 3
+
+
+def _adapter_pipeline():
+    from uengram.confirmed_adaptation import ConfirmedLatentAdapter
+    adapter = ConfirmedLatentAdapter(2, max_offset=10.0, min_quarantine_count=3)
+    pipeline = make_pipeline(adapter=adapter)
+    for step in range(6):  # five hits promote a semantic state, so the key is commissioned
+        pipeline.ingest(window(step, [0, 0]))
+    return pipeline, adapter
+
+
+def _key():
+    from uengram.sensor_memory_records import identity_key
+    return identity_key(window(0, [0, 0]))
+
+
+def test_confirmed_normal_windows_move_the_offset_and_it_is_applied_before_scoring():
+    pipeline, adapter = _adapter_pipeline()
+    for step in range(6, 9):
+        pipeline.ingest(window(step, [0.4, 0.4], operator_confirmed_normal=True))
+    np.testing.assert_allclose(adapter.state[_key()], [0.4, 0.4])
+    # the next window at the same raw level scores lower than it does without the adapter
+    adapted = pipeline.ingest(window(9, [0.4, 0.4])).decision.score
+    control = make_pipeline()
+    for step in range(6):
+        control.ingest(window(step, [0, 0]))
+    assert adapted < 0.5 * control.ingest(window(6, [0.4, 0.4])).decision.score
+
+
+def test_unconfirmed_windows_never_move_the_offset():
+    pipeline, adapter = _adapter_pipeline()
+    for step in range(6, 14):
+        pipeline.ingest(window(step, [0.4, 0.4]))
+    assert adapter.state == {}
+
+
+def test_confirmed_windows_during_an_open_alarm_are_not_absorbed():
+    pipeline, adapter = _adapter_pipeline()
+    for step in range(6, 9):  # the first three windows at a fault level: alarm open each time
+        receipt = pipeline.ingest(window(step, [10, 10], operator_confirmed_normal=True))
+        assert receipt.decision.flagged is True
+    assert adapter.state == {}
+
+
+def test_confirmation_before_the_key_has_a_learned_normal_state_is_ignored():
+    from uengram.confirmed_adaptation import ConfirmedLatentAdapter
+    adapter = ConfirmedLatentAdapter(2, max_offset=10.0, min_quarantine_count=2)
+    pipeline = make_pipeline(adapter=adapter)
+    for step in range(3):  # score is NaN until a semantic state exists
+        pipeline.ingest(window(step, [0.4, 0.4], operator_confirmed_normal=True))
+    assert adapter.state == {}
+
+
+def test_adapter_dimension_and_confirmation_flag_are_validated_up_front():
+    from uengram.confirmed_adaptation import ConfirmedLatentAdapter
+    with pytest.raises(ValueError, match="adapter dimension"):
+        make_pipeline(adapter=ConfirmedLatentAdapter(3, max_offset=1.0))
+    pipeline = make_pipeline()
+    with pytest.raises(ValueError, match="operator_confirmed_normal must be a bool"):
+        pipeline.ingest(window(0, [0, 0], operator_confirmed_normal=1))
+    assert len(pipeline.engine.items().ids) == 0  # rejected before the engine consumed it
