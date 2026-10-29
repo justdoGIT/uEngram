@@ -15,6 +15,7 @@ from .engine import Engram
 from .store import IngestResult
 from .sensor_memory_records import (
     PendingSensorRecord,
+    identity_key,
     make_sensor_record,
     validate_sensor_window,
     _tag,
@@ -92,7 +93,8 @@ class SensorStateMemory:
         if window.raw_window_ref is not None and self.raw_evidence is None:
             raise ValueError("raw_window_ref requires a RawEvidencePins implementation")
 
-        decision = self.engine.ingest(vector, window.step_index, window.raw_idx)
+        decision = self.engine.ingest(vector, window.step_index, window.raw_idx,
+                                      mode_key=identity_key(window))
         self._last_step = window.step_index
         lifecycle_events = tuple(self.engine.drain_events())
         alarm_transition = False

@@ -193,6 +193,17 @@ def make_sensor_record(
     )
 
 
+def identity_key(window: SensorWindow) -> int:
+    """Stable non-zero 56-bit key of (asset, subsystem, operating mode, feature schema).
+
+    Engram slots only absorb, merge with and are superseded by slots of the same key;
+    0 is reserved for engines used without identity keys."""
+    digest = hashlib.sha256(
+        f"{window.asset_id}\0{window.subsystem_id}\0{window.operating_mode}\0{window.feature_schema}".encode()
+    ).digest()
+    return int.from_bytes(digest[:7], "big") or 1
+
+
 def _tag(label: str, value: str) -> str:
     digest = hashlib.sha256(value.encode("utf-8")).hexdigest()[:20]
     return f"{label}_{digest}"

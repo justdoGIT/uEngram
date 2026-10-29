@@ -50,13 +50,18 @@ def split_on_step(eng, k: int, z, t: int) -> int | None:
     init_slot(eng, j, new_iid, z, t, SEM)
     eng.S[j] = eng.S[k]
     eng.ledger.write_now(new_iid, eng.slot_bytes)
+    eng.mode_key[j] = eng.mode_key[k]
     _supersede(eng, k, new_iid, t, "step")
     return new_iid
 
 
 def merge_slots(eng, a: int, b: int, t: int) -> None:
-    """Merge slot indices a,b; the one with larger n survives (lower id on ties)."""
-    if (eng.n[a], -eng.item_id[a]) >= (eng.n[b], -eng.item_id[b]):
+    """Merge slot indices a,b; the one with larger n survives (lower id on ties).
+    A protected slot always survives its merge partner (callers never pair two)."""
+    prot_a, prot_b = int(eng.item_id[a]) in eng.protected, int(eng.item_id[b]) in eng.protected
+    if prot_a != prot_b:
+        dst, src = (a, b) if prot_a else (b, a)
+    elif (eng.n[a], -eng.item_id[a]) >= (eng.n[b], -eng.item_id[b]):
         dst, src = a, b
     else:
         dst, src = b, a
@@ -79,6 +84,7 @@ def _clear(eng, idx: int) -> None:
     eng.kind[idx] = EMPTY
     eng.item_id[idx] = -1
     eng.superseded_by[idx] = -1
+    eng.mode_key[idx] = 0
 
 
 def evict_slot(eng, idx: int, t: int, kind_label: str) -> None:
@@ -88,6 +94,12 @@ def evict_slot(eng, idx: int, t: int, kind_label: str) -> None:
     eng.events.append(("evict", iid))
     eng.superseded_by[eng.superseded_by == iid] = -1
     _clear(eng, idx)
+
+
+def _same_key_pairs(eng, idx: np.ndarray) -> np.ndarray:
+    """[n, n] bool: which pairs of the given slots share an identity key (merge-eligible)."""
+    keys = eng.mode_key[idx]
+    return keys[:, None] == keys[None, :]
 
 
 def _unprotected(eng, idx: np.ndarray) -> np.ndarray:
@@ -113,7 +125,10 @@ def make_semantic_room(eng, t: int) -> bool:
     act = _unprotected(eng, np.flatnonzero(eng.kind == SEM))
     if len(act) < 2:
         return False
-    cost = ward_cost_pairwise(eng.n[act], eng.mu[act], eng.sigma0_sq)
+    cost = np.where(_same_key_pairs(eng, act),
+                    ward_cost_pairwise(eng.n[act], eng.mu[act], eng.sigma0_sq), np.inf)
+    if not np.isfinite(cost.min()):
+        return False  # no two protection-free slots share an identity key
     i, j = np.unravel_index(np.argmin(cost), cost.shape)
     merge_slots(eng, int(act[i]), int(act[j]), t)
     return True
@@ -162,7 +177,11 @@ def consolidate(eng, t: int) -> None:
         act = np.flatnonzero(eng.kind == SEM)
         if len(act) < 2:
             break
-        db = bhattacharyya_pairwise(eng.mu[act], eng._gate_var(act))
+        eligible = _same_key_pairs(eng, act)
+        if eng.protected:  # two protected slots never merge: neither may lose its item id
+            prot = np.isin(eng.item_id[act], tuple(eng.protected))
+            eligible &= ~(prot[:, None] & prot[None, :])
+        db = np.where(eligible, bhattacharyya_pairwise(eng.mu[act], eng._gate_var(act)), np.inf)
         i, j = np.unravel_index(np.argmin(db), db.shape)
         if db[i, j] > cfg.db_merge:
             break
@@ -188,7 +207,8 @@ def consolidate(eng, t: int) -> None:
         o = int(o)
         if t - eng.t_last[o] < cfg.t_dormant:
             continue
-        succ = act[(eng.kind[act] == SEM) & (eng.t_created[act] > eng.t_last[o]) & (act != o)]
+        succ = act[(eng.kind[act] == SEM) & (eng.t_created[act] > eng.t_last[o]) & (act != o)
+                   & (eng.mode_key[act] == eng.mode_key[o])]
         if len(succ) == 0:
             continue
         gv_o = eng._gate_var(np.array([o]))[0]

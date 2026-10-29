@@ -229,3 +229,13 @@ def test_forgetting_the_pin_makes_the_slot_evictable_again():
     pipeline.ingest(window(1, [100, 0]))
     pipeline.ingest(window(2, [200, 0]))
     assert receipt.decision.item_id not in set(pipeline.engine.items().ids.tolist())
+
+
+def test_operating_modes_are_separate_identities_in_the_engine():
+    pipeline = make_pipeline()
+    steady = pipeline.ingest(window(0, [0, 0]))
+    again = pipeline.ingest(window(1, [0, 0]))
+    startup = pipeline.ingest(window(2, [0, 0], operating_mode="startup"))
+    other_asset = pipeline.ingest(window(3, [0, 0], asset_id="pump-18"))
+    assert again.decision.item_id == steady.decision.item_id
+    assert len({steady.decision.item_id, startup.decision.item_id, other_asset.decision.item_id}) == 3

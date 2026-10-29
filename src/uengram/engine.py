@@ -80,6 +80,9 @@ class Engram:
         self.surpr = np.zeros(cap)
         self.item_id = np.full(cap, -1, dtype=np.int64)
         self.superseded_by = np.full(cap, -1, dtype=np.int64)
+        # Identity key of each slot (asset/subsystem/mode/schema, hashed by the host).
+        # Slots only absorb, merge with, or are superseded by slots of the same key.
+        self.mode_key = np.zeros(cap, dtype=np.int64)
         self.ewma_e = np.zeros((cap, d))  # step-detector state per slot
         self.ref_mu, self.ref_var = np.zeros((0, d)), np.zeros((0, d))  # frozen healthy reference
         ring = max(cfg.m_promote, cfg.m_reconfirm)
@@ -168,7 +171,7 @@ class Engram:
             self._protect_count[key] -= 1
 
     # -- ingest ----------------------------------------------------------
-    def ingest(self, z, t: int, raw_idx: int, **_) -> IngestResult:
+    def ingest(self, z, t: int, raw_idx: int, mode_key: int = 0, **_) -> IngestResult:
         cfg = self.cfg
         z = np.asarray(z, dtype=np.float64)
         gate = np.flatnonzero((self.kind == CAND) | (self.kind == EPI) | (self.kind == SEM))
@@ -185,7 +188,9 @@ class Engram:
             # retention: a pattern that keeps recurring is less precious than a
             # unique one, even when both are far from normal.
             rarity = float(d2.min())
-            inside = d2 <= self.tau
+            # A window is only absorbed by a slot of its own identity key; a state
+            # that looks like another key's gate still becomes its own candidate.
+            inside = (d2 <= self.tau) & (self.mode_key[gate] == mode_key)
             if inside.any():
                 # Habit memory has priority: a point inside any semantic gate is
                 # routine, so episodic/candidate slots cannot capture it and
@@ -199,7 +204,7 @@ class Engram:
         if chosen >= 0:
             res = self._absorb(chosen, z, t, raw_idx, score, alarm)
         else:
-            res = self._new_slot(z, t, raw_idx, score, alarm, rarity)
+            res = self._new_slot(z, t, raw_idx, score, alarm, rarity, mode_key)
         res.health = float(self.health(z)[0])
 
         stale = np.flatnonzero((self.kind == CAND) & (t - self.t_created > cfg.n_promote))
@@ -260,7 +265,7 @@ class Engram:
                     and self.step_c * float(self.ewma_e[k] @ self.ewma_e[k]) > self.step_h)
 
     def _new_slot(self, z, t: int, raw_idx: int, score: float, alarm: bool,
-                  rarity: float) -> IngestResult:
+                  rarity: float, mode_key: int = 0) -> IngestResult:
         incoming_surprisal = 0.0 if np.isnan(rarity) else surprisal(rarity, self.d)
         if not lc.make_episodic_room(self, t, incoming_surprisal):
             return IngestResult(-1, score, alarm, "discard")
@@ -268,6 +273,7 @@ class Engram:
         iid = self._new_id()
         lc.init_slot(self, k, iid, z, t, CAND if self.cfg.use_promotion else EPI)
         self.surpr[k] = incoming_surprisal
+        self.mode_key[k] = mode_key
         self.exemplars[iid] = [raw_idx, raw_idx]
         self.ledger.write_now(iid, self.slot_bytes + self.raw_window_bytes)
         return IngestResult(iid, score, alarm, "new_candidate")
