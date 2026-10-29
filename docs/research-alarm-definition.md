@@ -1,5 +1,11 @@
 # What causes a uEngram alarm: definition, corrections and verified results (v7)
 
+> **October 2026 regeneration note.** The tables below were written against an earlier score
+> cache. After regenerating the sweep at the current code, the headline changed: 1 of 1,302
+> calibratable settings now meets the full budget (config 4, `m=1`, `L=6 h`: 4/4 events, 1.21%
+> clean, 0.58 false alarms per week), where this study reports none. Config 42, the frozen
+> alarm, is unchanged in kind (best 4/4 clean share 4.62%). See `docs/paper-corrections.md`.
+
 This study answers three questions:
 
 - What is an alarm, and which conditions must all be met for one to be raised and cleared?

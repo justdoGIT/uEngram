@@ -15,29 +15,30 @@
           "min_state_windows": 100,
           "new_state_alert": true,
           "aci_gamma": 0.01,
-          "health_needs_baseline": true
+          "health_needs_baseline": true,
+          "shock_mult": 0.0
         },
         "corroboration": {
           "family": "dataset",
           "min_errors": 1,
-          "lookback_h": 6
+          "lookback_h": 3
         },
         "calibration_unavailable": null,
         "metrics": {
           "events_detected": 2.0,
-          "false_alarm_per_week": 0.052908479178658846,
-          "alarm_time_share_clean": 0.00018685931138494593,
+          "false_alarm_per_week": 0.0,
+          "alarm_time_share_clean": 0.0,
           "events_warned_before_report": 0.0,
           "hours_before_report": null,
-          "notifications_per_week_all": 39.04619220402074,
-          "first_alarm_minus_report_h": 24.21611111111111
+          "notifications_per_week_all": 10.399479058037583,
+          "first_alarm_minus_report_h": 18.702083333333334
         },
         "events": [
           {
             "event": 0,
             "detected": true,
-            "first_alarm_minus_report_h": 3.2058333333333335,
-            "alarm_windows": 5,
+            "first_alarm_minus_report_h": 2.8755555555555556,
+            "alarm_windows": 3,
             "windows": 143,
             "hours_before_lps": null
           },
@@ -52,8 +53,8 @@
           {
             "event": 2,
             "detected": true,
-            "first_alarm_minus_report_h": 45.22638888888889,
-            "alarm_windows": 4,
+            "first_alarm_minus_report_h": 34.52861111111111,
+            "alarm_windows": 34,
             "windows": 285,
             "hours_before_lps": null
           },
@@ -67,8 +68,8 @@
           }
         ],
         "vote_share_clean": {
-          "true": 0.18464869323160987,
-          "false": 0.8153513067683901,
+          "true": 0.16449301510387132,
+          "false": 0.8355069848961286,
           "unknown": 0.0
         },
         "corroboration_ceiling_events": 3,
@@ -76,76 +77,77 @@
       }
     },
     "calibrated": {
-      "used": "fallback",
+      "used": "primary",
       "selected": {
         "stream": "metropt3",
-        "alarm_index": 20,
+        "alarm_index": 4,
         "alarm_config": {
-          "alpha": 0.003,
+          "alpha": 0.03,
           "k_novelty": 3,
           "k_health": 0,
           "per_state": true,
           "min_state_windows": 100,
           "new_state_alert": true,
-          "aci_gamma": 0.01,
-          "health_needs_baseline": true
+          "aci_gamma": 0.0,
+          "health_needs_baseline": true,
+          "shock_mult": 0.0
         },
         "corroboration": {
           "family": "calibrated",
           "min_errors": 1,
-          "lookback_h": 24
+          "lookback_h": 6
         },
         "calibration_unavailable": null,
         "metrics": {
-          "events_detected": 3.0,
-          "false_alarm_per_week": 0.10581695835731769,
-          "alarm_time_share_clean": 0.0008008881066147846,
+          "events_detected": 4.0,
+          "false_alarm_per_week": 0.5819932709652473,
+          "alarm_time_share_clean": 0.01212617202604133,
           "events_warned_before_report": 0.0,
           "hours_before_report": null,
-          "notifications_per_week_all": 39.04619220402074,
-          "first_alarm_minus_report_h": 6.825648148148148
+          "notifications_per_week_all": 9.918021694239547,
+          "first_alarm_minus_report_h": -3.057986111111111
         },
         "events": [
           {
             "event": 0,
             "detected": true,
-            "first_alarm_minus_report_h": 3.2058333333333335,
-            "alarm_windows": 8,
+            "first_alarm_minus_report_h": -13.956111111111111,
+            "alarm_windows": 21,
             "windows": 143,
             "hours_before_lps": null
           },
           {
             "event": 1,
             "detected": true,
-            "first_alarm_minus_report_h": 3.0125,
-            "alarm_windows": 14,
+            "first_alarm_minus_report_h": 0.36833333333333335,
+            "alarm_windows": 39,
             "windows": 41,
             "hours_before_lps": null
           },
           {
             "event": 2,
             "detected": true,
-            "first_alarm_minus_report_h": 14.258611111111112,
-            "alarm_windows": 49,
+            "first_alarm_minus_report_h": 0.8766666666666667,
+            "alarm_windows": 39,
             "windows": 285,
             "hours_before_lps": null
           },
           {
             "event": 3,
-            "detected": false,
-            "first_alarm_minus_report_h": null,
-            "alarm_windows": 0,
+            "detected": true,
+            "first_alarm_minus_report_h": 0.4791666666666667,
+            "alarm_windows": 14,
             "windows": 26,
             "hours_before_lps": null
           }
         ],
         "vote_share_clean": {
-          "true": 0.9822671271715037,
-          "false": 0.0039177277179236044,
-          "unknown": 0.01381514511057271
+          "true": 0.9483994020310326,
+          "false": 0.017681323779576267,
+          "unknown": 0.0339192741893912
         },
         "corroboration_ceiling_events": 4,
-        "satisfies_recall_and_budget": false
+        "satisfies_recall_and_budget": true
       }
     }
   }

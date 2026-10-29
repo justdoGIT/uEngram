@@ -1,0 +1,31 @@
+{
+  "seeds": "0-9",
+  "skab_seed0": {
+    "whitening_off": {
+      "ap": 0.38340930622226554,
+      "auroc": 0.5320084454967579,
+      "events_detected": 2.0,
+      "false_alarm_episodes": 4,
+      "n_events": 34
+    },
+    "whitening_on": {
+      "ap": 0.4192044063879338,
+      "auroc": 0.5458055694765479,
+      "events_detected": 5.0,
+      "false_alarm_episodes": 5,
+      "n_events": 34
+    }
+  },
+  "synthetic": {
+    "whitening_off": {
+      "ap": 0.9918258216454878,
+      "event_recall": 1.0,
+      "write_reduction_pct": 85.99849999999999
+    },
+    "whitening_on": {
+      "ap": 0.9954855125353594,
+      "event_recall": 1.0,
+      "write_reduction_pct": 86.1895
+    }
+  }
+}

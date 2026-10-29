@@ -1,0 +1,105 @@
+{
+  "rows": [
+    {
+      "accept_all": {
+        "ap": NaN,
+        "event_recall": 0.0011695906432748538,
+        "write_reduction_pct": -7.079000000000004
+      },
+      "budget": 2,
+      "competitive_admission": {
+        "ap": NaN,
+        "event_recall": 0.04279528101437526,
+        "write_reduction_pct": 27.078
+      },
+      "metrics_identical": false,
+      "trace_ratio_1_0_one_seed": {
+        "cand_branch": 0,
+        "capacity_skip": 4,
+        "epi_branch": 10583,
+        "rejected": 10579
+      }
+    },
+    {
+      "accept_all": {
+        "ap": 0.19408572576281297,
+        "event_recall": 0.010156492408203408,
+        "write_reduction_pct": 22.134
+      },
+      "budget": 4,
+      "competitive_admission": {
+        "ap": 0.19408572576281297,
+        "event_recall": 0.18994636811883006,
+        "write_reduction_pct": 42.75
+      },
+      "metrics_identical": false,
+      "trace_ratio_1_0_one_seed": {
+        "cand_branch": 0,
+        "capacity_skip": 8,
+        "epi_branch": 4349,
+        "rejected": 4345
+      }
+    },
+    {
+      "accept_all": {
+        "ap": 0.6141768470724129,
+        "event_recall": 0.2741135461807105,
+        "write_reduction_pct": 81.45
+      },
+      "budget": 8,
+      "competitive_admission": {
+        "ap": 0.42800604587404545,
+        "event_recall": 0.5351158842823641,
+        "write_reduction_pct": 90.133
+      },
+      "metrics_identical": false,
+      "trace_ratio_1_0_one_seed": {
+        "cand_branch": 0,
+        "capacity_skip": 120,
+        "epi_branch": 2024,
+        "rejected": 1957
+      }
+    },
+    {
+      "accept_all": {
+        "ap": 0.9854899913136238,
+        "event_recall": 0.7776346489978034,
+        "write_reduction_pct": 85.892
+      },
+      "budget": 16,
+      "competitive_admission": {
+        "ap": 0.9817295734189274,
+        "event_recall": 0.9014957625903287,
+        "write_reduction_pct": 86.669
+      },
+      "metrics_identical": false,
+      "trace_ratio_1_0_one_seed": {
+        "cand_branch": 0,
+        "capacity_skip": 34,
+        "epi_branch": 32,
+        "rejected": 26
+      }
+    },
+    {
+      "accept_all": {
+        "ap": 0.9966809739622082,
+        "event_recall": 1.0,
+        "write_reduction_pct": 86.269
+      },
+      "budget": 256,
+      "competitive_admission": {
+        "ap": 0.9966809739622082,
+        "event_recall": 1.0,
+        "write_reduction_pct": 86.269
+      },
+      "metrics_identical": true,
+      "trace_ratio_1_0_one_seed": {
+        "cand_branch": 0,
+        "capacity_skip": 47,
+        "epi_branch": 0,
+        "rejected": 0
+      }
+    }
+  ],
+  "seeds": "0-4"
+}

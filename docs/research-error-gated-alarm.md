@@ -3,6 +3,11 @@
 > The calibrated-gate result below (4/4 at 1.06%) relies on treating unjudged windows as
 > normal. [research-alarm-definition.md](research-alarm-definition.md) (v7) corrects that with
 > three-valued evidence, and the result does not survive.
+>
+> October 2026: regenerated at the current code, the two-valued sweep gives 1.05% / 0.79 false
+> alarms per week for config 4 and 1.06% / 0.95 for the frozen config 42 (both `m=1`, `L=6 h`).
+> The "recency-only" comparison table below has no committed script or result and has not been
+> reproduced.
 
 This study keeps the existing alarm measure unchanged and adds one requirement: at least `m`
 error conditions, each a threshold crossing, must be present before the alarm stands.
