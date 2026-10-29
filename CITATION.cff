@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite the paper below."
+title: "μEngram: bounded sensor-state memory reference implementation"
+version: 0.1.0
+date-released: 2026-10-29
+authors:
+  - family-names: Pandey
+    given-names: Kamal Kishor
+    email: kamal.pandey@kepr.dev
+    affiliation: Independent Researcher
+preferred-citation:
+  type: article
+  title: "From Sensor Streams to Bounded Machine Memory: Architecture, Negative Transfer Results, and Domain Specialists in μEngram"
+  authors:
+    - family-names: Pandey
+      given-names: Kamal Kishor
+      email: kamal.pandey@kepr.dev
+      affiliation: Independent Researcher
+  year: 2026
+  date-published: 2026-10-29
+  notes: "Paper source: docs/research-paper/From_Sensor_Streams_to_Bounded_Machine_Memory.md"
