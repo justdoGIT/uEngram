@@ -81,3 +81,4 @@ class SensorIngestReceipt:
 class SensorRecall:
     patterns: tuple[PatternRecall, ...]
     historical_events: tuple[object, ...]
+    ranked_history: tuple[object, ...] = ()

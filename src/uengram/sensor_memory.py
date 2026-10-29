@@ -14,6 +14,7 @@ import numpy as np
 
 from .confirmed_adaptation import ConfirmedLatentAdapter
 from .engine import Engram
+from .retrieval import RetrievalWeights, rank_events
 from .store import IngestResult
 from .sensor_memory_records import (
     PendingSensorRecord,
@@ -196,6 +197,8 @@ class SensorStateMemory:
         operating_mode: str | None = None,
         historical_keywords: Sequence[str] = (),
         max_history: int = 16,
+        now_ms: int | None = None,
+        retrieval_weights: RetrievalWeights | None = None,
     ) -> SensorRecall:
         """Return exact uEngram pattern matches plus Lite keyword event matches."""
         for label, value in (("t_now", t_now), ("k", k), ("max_history", max_history)):
@@ -203,6 +206,11 @@ class SensorStateMemory:
                 raise ValueError(f"{label} must be a non-negative integer")
         if mode not in ("current", "history"):
             raise ValueError("mode must be 'current' or 'history'")
+        if now_ms is not None:
+            if isinstance(now_ms, bool) or not isinstance(now_ms, Integral) or now_ms < 0:
+                raise ValueError("now_ms must be a non-negative integer")
+            if not asset_id or not subsystem_id:
+                raise ValueError("ranked history requires both asset_id and subsystem_id")
         query = np.asarray(query_vector, dtype=np.float64)
         if query.shape != (self.engine.d,) or not np.isfinite(query).all():
             raise ValueError(f"query_vector must be finite with shape ({self.engine.d},)")
@@ -242,7 +250,15 @@ class SensorStateMemory:
             kind_mask=_EDGE_KIND_MASK_EVENT,
             max_results=max_history,
         )
-        return SensorRecall(patterns, tuple(getattr(response, "items", ())))
+        items = tuple(getattr(response, "items", ()))
+        ranked = ()
+        if now_ms is not None and items:
+            ranked = tuple(rank_events(
+                items, query, now_ms, retrieval_weights,
+                asset_id=asset_id, subsystem_id=subsystem_id, operating_mode=operating_mode,
+                limit=max_history,
+            ))
+        return SensorRecall(patterns, items, ranked)
 
     def _persist(
         self, pending: PendingSensorRecord, decision: IngestResult, step_index: int

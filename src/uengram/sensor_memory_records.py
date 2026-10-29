@@ -10,8 +10,9 @@ from typing import Sequence
 
 import numpy as np
 
-from .store import IngestResult
+from .retrieval import encode_vector
 from .sensor_memory_types import SensorWindow
+from .store import IngestResult
 
 
 _SCHEMA_VERSION = 1
@@ -155,11 +156,18 @@ def make_sensor_record(
         "feature_dimension": int(vector.size),
         "raw_window_ref": window.raw_window_ref,
         "source_event_id": source_event,
+        "t_ms": int(window.observed_at_ms),
         "lifecycle_events": [list(event) for event in lifecycle_events],
     }
     structured = json.dumps(metadata, ensure_ascii=False, separators=(",", ":"))
     if len(structured.encode("utf-8")) > _MAX_STRUCTURED_BYTES:
         raise ValueError("sensor event metadata exceeds EdgeMemory's 1024-byte value limit")
+    # Best-effort: a hybrid-retrieval vector snapshot (src/uengram/retrieval.py), included only
+    # when it still fits the budget; event storage never fails because of it.
+    with_vector = json.dumps({**metadata, "vec": encode_vector(vector)},
+                             ensure_ascii=False, separators=(",", ":"))
+    if len(with_vector.encode("utf-8")) <= _MAX_STRUCTURED_BYTES:
+        structured = with_vector
     source_id = "sensor:" + hashlib.sha256(
         f"{window.asset_id}\0{window.subsystem_id}".encode()
     ).hexdigest()[:24]

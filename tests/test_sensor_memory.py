@@ -300,3 +300,35 @@ def test_adapter_dimension_and_confirmation_flag_are_validated_up_front():
     with pytest.raises(ValueError, match="operator_confirmed_normal must be a bool"):
         pipeline.ingest(window(0, [0, 0], operator_confirmed_normal=1))
     assert len(pipeline.engine.items().ids) == 0  # rejected before the engine consumed it
+
+
+def test_recall_ranks_real_persisted_history_by_the_hybrid_score():
+    store = MemoryBackend()
+    pipeline = make_pipeline(store)
+    for step, values in enumerate([[0, 0]] * 5):
+        pipeline.ingest(window(step, values))
+    far = pipeline.ingest(window(5, [10, 10]))  # a distant event, far from the next query
+    near = pipeline.ingest(window(6, [0.01, 0.01]))  # back near the baseline: closest to query 0
+
+    recall = pipeline.recall(
+        np.zeros(2), t_now=7, asset_id="pump-17", subsystem_id="bearing",
+        now_ms=window(6, [0, 0]).observed_at_ms,
+    )
+    assert len(recall.ranked_history) == len(recall.historical_events)
+    best = recall.ranked_history[0]
+    assert best.similarity == max(r.similarity for r in recall.ranked_history)
+    assert set(best.missing) <= {"severity"}  # window() sets no severity; vector/time are present
+
+
+def test_recall_without_now_ms_leaves_ranked_history_empty():
+    store = MemoryBackend()
+    pipeline = make_pipeline(store)
+    pipeline.ingest(window(0, [10, 10]))
+    recall = pipeline.recall(np.zeros(2), t_now=1, asset_id="pump-17", subsystem_id="bearing")
+    assert recall.historical_events and recall.ranked_history == ()
+
+
+def test_recall_ranking_requires_asset_and_subsystem():
+    pipeline = make_pipeline()
+    with pytest.raises(ValueError, match="ranked history requires"):
+        pipeline.recall(np.zeros(2), t_now=1, now_ms=0)
