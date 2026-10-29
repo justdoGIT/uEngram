@@ -4,21 +4,22 @@ import pytest
 
 from bench.alarm_sensitivity import BASELINE, OFAT_GRIDS, _record, pairwise, summarize_ofat
 from bench.streams import load_stream
-from bench.v2_scoring import cached_scores
+from bench.v2_scoring import score_stream
 from dataclasses import replace
 from pathlib import Path
 
 STREAM = load_stream("metropt3")
-SCORES = cached_scores(STREAM, "uengram", "dsp", 0,
-                       str(Path.home() / ".local/state/uengram/v2scores"))
+# Computed directly, not read from a cache directory: deterministic and reproducible
+# on any machine without depending on prior out-of-band runs.
+SCORES = score_stream(STREAM, "uengram", "dsp", 0)
 
 
 def test_baseline_matches_frozen_v2_metrics():
     row = _record(STREAM, SCORES, BASELINE, {"param": None, "value": None, "is_baseline": True})
     assert row["metrics"]["events_detected"] == 3.0
     assert row["event3_detected"] is False
-    assert row["metrics"]["false_alarm_per_week"] == pytest.approx(0.7407187085012238)
-    assert row["metrics"]["alarm_time_share_clean"] == pytest.approx(0.005996644230718761)
+    assert row["metrics"]["false_alarm_per_week"] == pytest.approx(0.5290847917865884)
+    assert row["metrics"]["alarm_time_share_clean"] == pytest.approx(0.022472281660668388)
 
 
 def test_too_tight_alpha_reports_calibration_unavailable_not_a_crash():

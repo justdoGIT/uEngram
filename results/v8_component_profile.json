@@ -23,16 +23,16 @@
         "own_reference": 1.0,
         "novelty_above": 0.0026,
         "health_above": 0.0038,
-        "new_memory_state": 0.0178,
+        "new_memory_state": 0.0027,
         "low_pressure": 0.0,
         "oil_departed": 0.132
       },
       "clean/state1": {
         "windows": 9726,
         "own_reference": 1.0,
-        "novelty_above": 0.0078,
+        "novelty_above": 0.0077,
         "health_above": 0.012,
-        "new_memory_state": 0.168,
+        "new_memory_state": 0.0218,
         "low_pressure": 0.0005,
         "oil_departed": 0.1342
       },
@@ -41,25 +41,25 @@
         "own_reference": 0.0,
         "novelty_above": 0.5825,
         "health_above": 0.8723,
-        "new_memory_state": 0.5182,
+        "new_memory_state": 0.2181,
         "low_pressure": 0.0298,
         "oil_departed": 0.3318
       },
       "pre24h/state0": {
         "windows": 224,
         "own_reference": 1.0,
-        "novelty_above": 0.0045,
+        "novelty_above": 0.0,
         "health_above": 0.0045,
-        "new_memory_state": 0.0089,
+        "new_memory_state": 0.0045,
         "low_pressure": 0.0,
         "oil_departed": 0.3259
       },
       "pre24h/state1": {
         "windows": 193,
         "own_reference": 1.0,
-        "novelty_above": 0.0207,
+        "novelty_above": 0.0155,
         "health_above": 0.0207,
-        "new_memory_state": 0.1347,
+        "new_memory_state": 0.0,
         "low_pressure": 0.0,
         "oil_departed": 0.0
       },
@@ -68,7 +68,7 @@
         "own_reference": 0.0,
         "novelty_above": 0.0566,
         "health_above": 0.0566,
-        "new_memory_state": 0.4528,
+        "new_memory_state": 0.0566,
         "low_pressure": 0.0,
         "oil_departed": 0.0
       },
@@ -95,51 +95,51 @@
         "own_reference": 0.0,
         "novelty_above": 0.9492,
         "health_above": 0.9695,
-        "new_memory_state": 0.685,
+        "new_memory_state": 0.0955,
         "low_pressure": 0.0224,
         "oil_departed": 0.0
       }
     },
     "clustering": {
       "counted_exceedances": {
-        "p": 0.012320222691891335,
-        "a": 0.008921030405405405,
-        "b": 0.2966101694915254,
+        "p": 0.02680550543842466,
+        "a": 0.009001285897985427,
+        "b": 0.6821705426356589,
         "pairs": 19180
       },
       "clean_weeks": 18.90056216931217,
-      "observed_openings_per_week": 0.7407187085012238,
+      "observed_openings_per_week": 0.5819932709652473,
       "predicted_triggers_per_week_k3": {
         "counter": {
-          "independent": 0.0019187945386259736,
-          "markov": 0.7998715516022238
+          "independent": 0.019740264130114867,
+          "markov": 4.23905094255993
         },
         "consecutive": {
-          "independent": 0.0018957334307607538,
-          "markov": 0.7963372286887285
+          "independent": 0.019239094654679163,
+          "markov": 4.23514645923473
         },
         "m_of_n": {
-          "independent": 0.018038629259488393,
-          "markov": 0.8768001131214529
+          "independent": 0.17256127722176318,
+          "markov": 4.280320109611598
         },
         "ewma": {
-          "independent": 0.005884093751856174,
-          "markov": 0.8344781286627521
+          "independent": 0.06170205578394384,
+          "markov": 4.261992436579491
         }
       }
     },
     "phi_with_sustained_load": {
       "clean": {
-        "novelty_above": 0.696,
+        "novelty_above": 0.697,
         "health_above": 0.859,
-        "new_memory_state": 0.295,
+        "new_memory_state": 0.305,
         "low_pressure": 0.155,
         "oil_departed": 0.129
       },
       "event": {
         "novelty_above": 0.319,
         "health_above": 0.402,
-        "new_memory_state": 0.114,
+        "new_memory_state": 0.025,
         "low_pressure": 0.012,
         "oil_departed": -0.576
       }
@@ -147,8 +147,8 @@
     "separability": {
       "state2": {
         "novelty": {
-          "clean_vs_event": 0.7763773024496321,
-          "clean_vs_pre24h": 0.3462343280170216
+          "clean_vs_event": 0.8007599693890695,
+          "clean_vs_pre24h": 0.34911814872777786
         },
         "health": {
           "clean_vs_event": 0.838345494358951,
@@ -340,7 +340,7 @@
           "markov": 1.3382207448516316e-09
         },
         "ewma": {
-          "independent": 1.3038335191022605e-09,
+          "independent": 1.3038335191066848e-09,
           "markov": 0.0
         }
       }
@@ -570,8 +570,8 @@
           "markov": 1.573872980713638e-05
         },
         "ewma": {
-          "independent": 1.546536248999496e-05,
-          "markov": 9.188910631196937e-09
+          "independent": 1.5465362489995582e-05,
+          "markov": 9.188910633671844e-09
         }
       }
     },
