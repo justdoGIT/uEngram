@@ -4,9 +4,18 @@ A reference implementation and benchmark of a deterministic, fixed-budget memory
 
 - `docs/PLAN.md`: the original implementation plan.
 - `docs/EXPLAINED.md`: every component in plain words and math, and where it lives in code.
-- `docs/RESULTS.md`: benchmark tables and findings (v3; v1 and v2 kept in `results/v1/`, `results/v2/`).
+- `docs/RESULTS.md`: benchmark tables and findings; its v1–v3 material and `results/v1/`, `results/v2/` references are historical context.
 - `docs/IMPROVEMENT-ANALYSIS.md`: the diagnostics that motivated v2; v3's are in `docs/EXPLAINED.md` sections 7c and 10c.
 - `docs/research-*.md`: literature notes (machine-state mathematics, anomaly-detection evaluation, condition-monitoring features, CMAPSS practice).
+
+## Paper and project metadata
+
+- License: [MIT](LICENSE).
+- Citation metadata: [CITATION.cff](CITATION.cff).
+- Paper source: [`docs/research-paper/From_Sensor_Streams_to_Bounded_Machine_Memory.md`](docs/research-paper/From_Sensor_Streams_to_Bounded_Machine_Memory.md); PDF: [`docs/research-paper/From_Sensor_Streams_to_Bounded_Machine_Memory.pdf`](docs/research-paper/From_Sensor_Streams_to_Bounded_Machine_Memory.pdf).
+- Supplementary results: [generated results ledger](docs/results-ledger.md).
+- Reproduction commands and data layout: [reproducing the paper](docs/reproducing-the-paper.md).
+- Audit changes and corrections: [paper corrections](docs/paper-corrections.md).
 
 ## Environment
 
