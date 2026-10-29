@@ -153,7 +153,7 @@ h3 { font-size: 12.5pt; color: var(--accent); margin: 13pt 0 5pt; }
 h4 { font-size: 11pt; margin: 11pt 0 4pt; }
 p { margin: 0 0 7.5pt; text-align: justify; hyphens: auto; widows: 3; orphans: 3; }
 ul, ol { margin: 0 0 7.5pt; padding-left: 18pt; }
-li { margin-bottom: 3.5pt; text-align: justify; }
+li { margin-bottom: 2.5pt; text-align: justify; }
 hr { display: none; }
 a { color: var(--accent); text-decoration: none; }
 code {
