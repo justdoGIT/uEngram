@@ -5,10 +5,9 @@ Needs the "docs" extra (markdown, pygments, pillow): `uv sync --extra docs`.
 Usage: .venv/bin/python scripts/generate_paper_figures.py
 
 Numbers in the data figures come from committed result files:
-  Figure 5  results/enginead/cnn_seed_stability.json
-  Figure 6  results/moment_tsb_ad_holdout.json
-  Figure 7  results/osmetrics_specialist_gate.json, results/role_skab_gate.json,
-            results/skab_sensor_fusion_gate.json
+  TSB-AD-U holdout comparison   results/moment_tsb_ad_holdout.json
+  Domain-specialist comparison  results/osmetrics_specialist_gate.json, results/role_skab_gate.json,
+                                results/skab_sensor_fusion_gate.json
 """
 from __future__ import annotations
 
@@ -22,7 +21,6 @@ from paper_figures_lib import (
 
 ROOT = Path(__file__).resolve().parents[1]
 FIGURES = ROOT / "docs" / "research-paper" / "figures"
-ENGINEAD = ROOT / "results" / "enginead" / "cnn_seed_stability.json"
 MARGIN = 16
 
 
@@ -57,7 +55,7 @@ def fig_architecture() -> Canvas:
         "win": ("Sensor window", ("C channels", "× K samples")),
         "enc": ("Encoder", ("DSP · CNN · roles", "PCA + noise whitening")),
         "slots": ("uEngram slots", ("semantic", "candidate · episodic")),
-        "db": ("EdgeMemory Lite", ("event records", "raw-window pins")),
+        "db": ("Event store", ("event records", "raw-window pins")),
         "op": ("Operator", ("optional LLM", "after retrieval")),
         "diag": ("Pre-fit diagnostics", ("rank · condition", "sentinel rates")),
         "fit": ("Fit encoder", ("PCA + MAD", "noise covariance N")),
@@ -116,8 +114,8 @@ def fig_slots() -> Canvas:
     hook = b["sem"].right - 22
     c.arrow([b["epi"].top_mid(), (b["epi"].cx, lane), (hook, lane), (hook, b["sem"].bottom)],
             label="20 hits in 30 steps", label_at=((b["epi"].cx + hook) / 2, lane))
-    c.text(MARGIN, bottom + 24, "Defaults from EngramConfig (src/uengram/engine.py): "
-           "m_promote=5, n_promote=8, m_reconfirm=20, n_reconfirm=30, β_min=0.01.", 10,
+    c.text(MARGIN, bottom + 24, "Default parameters: promotion m = 5 hits in n = 8 steps, "
+           "re-confirmation m = 20 hits in n = 30 steps, minimum adaptation rate β_min = 0.01.", 10,
            italic=True)
     c.width, c.height = right + MARGIN, bottom + 34
     return c
@@ -126,15 +124,15 @@ def fig_slots() -> Canvas:
 def fig_persistence() -> Canvas:
     spec = {
         "win": ("Sensor window", ("validate schema", "step must increase")),
-        "eng": ("Engine ingest", ("encode + lifecycle",)),
+        "eng": ("Engine update", ("encode + lifecycle",)),
         "gate": ("Persist gate", ("action, alarm edge,", "or lifecycle event?")),
         "skip": ("Receipt only", ("no storage write",)),
         "pin": ("Pin raw slice", ("before the write",)),
-        "rem": ("Remember event", ("EdgeMemory Lite", "idempotency key")),
-        "ok": ("Receipt", ("memory_id, persisted",)),
+        "rem": ("Remember event", ("embedded event store", "idempotency key")),
+        "ok": ("Receipt", ("record id, persisted flag",)),
         "fail": ("Unpin + raise", ("error carries", "the pending record")),
-        "retry": ("persist_pending", ("retry storage;", "never re-ingest")),
-        "recall": ("Recall (read path)", ("engine state", "+ Lite keyword history")),
+        "retry": ("Retry pending", ("retry storage;", "never re-ingest")),
+        "recall": ("Recall (read path)", ("engine state", "+ keyword history")),
     }
     place = {"win": (0, 0), "eng": (1, 0), "gate": (2, 0), "skip": (3, 0), "pin": (2, 1),
              "rem": (2, 2), "ok": (3, 2), "fail": (2, 3), "retry": (3, 3), "recall": (0, 2)}
@@ -156,39 +154,6 @@ def fig_persistence() -> Canvas:
     c.arrow([b["retry"].right_mid(), (edge_x, b["retry"].cy), (edge_x, b["pin"].cy),
              b["pin"].right_mid()], dash="4 3")
     c.width, c.height = edge_x + MARGIN, bottom + 16
-    return c
-
-
-def fig_enginead() -> Canvas:
-    data = json.loads(ENGINEAD.read_text())
-    runs: dict[int, list[float]] = {}
-    for row in data["results"]:
-        runs.setdefault(row["d"], []).append(row["pooled_test"]["any_positive_label"]["auroc"])
-    lo, hi = 0.49, 0.59
-    c = Canvas(720, 220, "enginead")
-    x0, x1 = 92, 690
-
-    def sx(v):
-        return x0 + (v - lo) / (hi - lo) * (x1 - x0)
-
-    for tick in (0.50, 0.52, 0.54, 0.56, 0.58):
-        c.line(sx(tick), 26, sx(tick), 172, "#e2e8f0")
-        c.text(sx(tick), 188, f"{tick:.2f}", 10, anchor="middle")
-    c.line(sx(0.50), 20, sx(0.50), 172, "#ef4444", 1.2, dash="4 3")
-    c.pill(sx(0.50), 16, "chance", color="#b91c1c")
-    c.text((x0 + x1) / 2, 210, "Pooled held-out segment AUROC (one dot per training seed)", 10.5,
-           anchor="middle")
-    for i, d in enumerate(sorted(runs)):
-        y = 50 + i * 50
-        values = sorted(runs[d])
-        c.text(x0 - 14, y + 4, f"d = {d}", BODY_SIZE + 1, True, INK, anchor="end")
-        c.line(sx(values[0]), y, sx(values[-1]), y, "#cbd5e1", 2)
-        for v in values:
-            c.parts.append(f'<circle cx="{sx(v):.1f}" cy="{y}" r="4.6" fill="{SERIES[2]}" '
-                           'fill-opacity="0.55" stroke="#1e3a8a" stroke-width="0.8"/>')
-        med = statistics.median(values)
-        c.line(sx(med), y - 12, sx(med), y + 12, INK, 2)
-        c.text(sx(med), y - 16, f"median {med:.3f}", 9.5, True, INK, anchor="middle")
     return c
 
 
@@ -228,6 +193,10 @@ def fig_tsb() -> Canvas:
 def fig_specialists() -> Canvas:
     os_gate = json.loads((ROOT / "results" / "osmetrics_specialist_gate.json").read_text())
     skab = json.loads((ROOT / "results" / "role_skab_gate.json").read_text())["policies"]
+    fusion = json.loads((ROOT / "results" / "skab_sensor_fusion_gate.json").read_text())["results"]
+    cnn_hits = max(r["events_detected"] for r in fusion.values())
+    cnn_total = skab["dynamic_health"]["events_total"]
+    cnn_fa = [r["false_alarms_per_hour"] for r in fusion.values()]
     dsp = os_gate["baseline_dsp_d16"]
     role = os_gate["baseline_all_channel_role"]["dynamic_health"]
     spec = os_gate["domain_specialists"]["policies"]["or_dynamic_health"]
@@ -246,14 +215,15 @@ def fig_specialists() -> Canvas:
     panels = [
         ("(A) OS-Metrics, 5 channels: strict event recall", [
             os_row("DSP baseline (d = 16)", dsp, SERIES[0]),
-            os_row("All-channel role (dynamic_health)", role, SERIES[1]),
-            os_row("Domain specialists (or_dynamic_health)", spec, SERIES[2]),
+            os_row("All-channel role encoder (dynamic–health)", role, SERIES[1]),
+            os_row("Domain specialists (OR of dynamic–health)", spec, SERIES[2]),
         ]),
         ("(B) SKAB, 8 channels: strict in-interval recall", [
-            ("8-channel CNN (all readouts)", 0.0, "0.0% (0/34)",
-             "2.74–13.68 false alarms / hour", SERIES[0]),
-            skab_row("Role separation (dynamic_health)", skab["dynamic_health"], SERIES[1]),
-            skab_row("Role separation (at_least_2)", skab["at_least_2"], SERIES[2]),
+            ("8-channel CNN (all three readouts)", cnn_hits / cnn_total,
+             f"{100 * cnn_hits / cnn_total:.1f}% ({cnn_hits}/{cnn_total})",
+             f"{min(cnn_fa):.2f}–{max(cnn_fa):.2f} false alarms / hour", SERIES[0]),
+            skab_row("Role separation (dynamic–health)", skab["dynamic_health"], SERIES[1]),
+            skab_row("Role separation (at least 2 branches)", skab["at_least_2"], SERIES[2]),
         ]),
     ]
     all_rows = [row for _, rows in panels for row in rows]
@@ -270,7 +240,6 @@ FIGURES_OUT = {
     "system-architecture.svg": fig_architecture,
     "slot-state-machine.svg": fig_slots,
     "sensor-persistence-pipeline.svg": fig_persistence,
-    "enginead-seed-histogram.svg": fig_enginead,
     "tsb-holdout-comparison.svg": fig_tsb,
     "domain-specialist-comparison.svg": fig_specialists,
 }

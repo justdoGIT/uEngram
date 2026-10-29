@@ -1,57 +1,57 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 632 379" role="img" aria-label="persist" font-family="'Nimbus Sans', Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 646 379" role="img" aria-label="persist" font-family="'Nimbus Sans', Helvetica, Arial, sans-serif">
 <defs><marker id="persist-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#64748b"/></marker></defs>
-<rect width="632" height="379" fill="#ffffff"/>
+<rect width="646" height="379" fill="#ffffff"/>
 <rect x="16.0" y="16.0" width="129.0" height="63.2" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.0"/>
 <text x="80.5" y="36.9" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Sensor window</text>
 <text x="80.5" y="52.0" font-size="10.5" fill="#475569" text-anchor="middle">validate schema</text>
 <text x="80.5" y="66.2" font-size="10.5" fill="#475569" text-anchor="middle">step must increase</text>
-<rect x="175.0" y="16.0" width="107.4" height="63.2" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.0"/>
-<text x="228.7" y="44.0" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Engine ingest</text>
-<text x="228.7" y="59.1" font-size="10.5" fill="#475569" text-anchor="middle">encode + lifecycle</text>
-<rect x="312.4" y="16.0" width="124.3" height="63.2" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.0"/>
-<text x="374.6" y="36.9" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="middle">Persist gate</text>
-<text x="374.6" y="52.0" font-size="10.5" fill="#475569" text-anchor="middle">action, alarm edge,</text>
-<text x="374.6" y="66.2" font-size="10.5" fill="#475569" text-anchor="middle">or lifecycle event?</text>
-<rect x="477.3" y="16.0" width="124.3" height="63.2" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.0"/>
-<text x="539.4" y="44.0" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="middle">Receipt only</text>
-<text x="539.4" y="59.1" font-size="10.5" fill="#475569" text-anchor="middle">no storage write</text>
-<rect x="312.4" y="113.2" width="124.3" height="49.0" rx="7" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.0"/>
-<text x="374.6" y="134.1" font-size="12.5" font-weight="700" fill="#78350f" text-anchor="middle">Pin raw slice</text>
-<text x="374.6" y="149.3" font-size="10.5" fill="#475569" text-anchor="middle">before the write</text>
-<rect x="312.4" y="196.3" width="124.3" height="63.2" rx="7" fill="#f0fdf4" stroke="#86efac" stroke-width="1.0"/>
-<text x="374.6" y="217.1" font-size="12.5" font-weight="700" fill="#14532d" text-anchor="middle">Remember event</text>
-<text x="374.6" y="232.3" font-size="10.5" fill="#475569" text-anchor="middle">EdgeMemory Lite</text>
-<text x="374.6" y="246.5" font-size="10.5" fill="#475569" text-anchor="middle">idempotency key</text>
-<rect x="477.3" y="196.3" width="124.3" height="63.2" rx="7" fill="#f0fdf4" stroke="#86efac" stroke-width="1.0"/>
-<text x="539.4" y="224.2" font-size="12.5" font-weight="700" fill="#14532d" text-anchor="middle">Receipt</text>
-<text x="539.4" y="239.4" font-size="10.5" fill="#475569" text-anchor="middle">memory_id, persisted</text>
-<rect x="312.4" y="299.5" width="124.3" height="63.2" rx="7" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.0"/>
-<text x="374.6" y="320.4" font-size="12.5" font-weight="700" fill="#7f1d1d" text-anchor="middle">Unpin + raise</text>
-<text x="374.6" y="335.6" font-size="10.5" fill="#475569" text-anchor="middle">error carries</text>
-<text x="374.6" y="349.7" font-size="10.5" fill="#475569" text-anchor="middle">the pending record</text>
-<rect x="477.3" y="299.5" width="124.3" height="63.2" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.0"/>
-<text x="539.4" y="320.4" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="middle">persist_pending</text>
-<text x="539.4" y="335.6" font-size="10.5" fill="#475569" text-anchor="middle">retry storage;</text>
-<text x="539.4" y="349.7" font-size="10.5" fill="#475569" text-anchor="middle">never re-ingest</text>
+<rect x="175.0" y="16.0" width="110.0" height="63.2" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.0"/>
+<text x="230.0" y="44.0" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Engine update</text>
+<text x="230.0" y="59.1" font-size="10.5" fill="#475569" text-anchor="middle">encode + lifecycle</text>
+<rect x="315.1" y="16.0" width="127.8" height="63.2" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.0"/>
+<text x="379.0" y="36.9" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="middle">Persist gate</text>
+<text x="379.0" y="52.0" font-size="10.5" fill="#475569" text-anchor="middle">action, alarm edge,</text>
+<text x="379.0" y="66.2" font-size="10.5" fill="#475569" text-anchor="middle">or lifecycle event?</text>
+<rect x="483.5" y="16.0" width="132.8" height="63.2" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.0"/>
+<text x="549.8" y="44.0" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="middle">Receipt only</text>
+<text x="549.8" y="59.1" font-size="10.5" fill="#475569" text-anchor="middle">no storage write</text>
+<rect x="315.1" y="113.2" width="127.8" height="49.0" rx="7" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.0"/>
+<text x="379.0" y="134.1" font-size="12.5" font-weight="700" fill="#78350f" text-anchor="middle">Pin raw slice</text>
+<text x="379.0" y="149.3" font-size="10.5" fill="#475569" text-anchor="middle">before the write</text>
+<rect x="315.1" y="196.3" width="127.8" height="63.2" rx="7" fill="#f0fdf4" stroke="#86efac" stroke-width="1.0"/>
+<text x="379.0" y="217.1" font-size="12.5" font-weight="700" fill="#14532d" text-anchor="middle">Remember event</text>
+<text x="379.0" y="232.3" font-size="10.5" fill="#475569" text-anchor="middle">embedded event store</text>
+<text x="379.0" y="246.5" font-size="10.5" fill="#475569" text-anchor="middle">idempotency key</text>
+<rect x="483.5" y="196.3" width="132.8" height="63.2" rx="7" fill="#f0fdf4" stroke="#86efac" stroke-width="1.0"/>
+<text x="549.8" y="224.2" font-size="12.5" font-weight="700" fill="#14532d" text-anchor="middle">Receipt</text>
+<text x="549.8" y="239.4" font-size="10.5" fill="#475569" text-anchor="middle">record id, persisted flag</text>
+<rect x="315.1" y="299.5" width="127.8" height="63.2" rx="7" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.0"/>
+<text x="379.0" y="320.4" font-size="12.5" font-weight="700" fill="#7f1d1d" text-anchor="middle">Unpin + raise</text>
+<text x="379.0" y="335.6" font-size="10.5" fill="#475569" text-anchor="middle">error carries</text>
+<text x="379.0" y="349.7" font-size="10.5" fill="#475569" text-anchor="middle">the pending record</text>
+<rect x="483.5" y="299.5" width="132.8" height="63.2" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.0"/>
+<text x="549.8" y="320.4" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="middle">Retry pending</text>
+<text x="549.8" y="335.6" font-size="10.5" fill="#475569" text-anchor="middle">retry storage;</text>
+<text x="549.8" y="349.7" font-size="10.5" fill="#475569" text-anchor="middle">never re-ingest</text>
 <rect x="16.0" y="196.3" width="129.0" height="63.2" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.0"/>
 <text x="80.5" y="217.1" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="middle">Recall (read path)</text>
 <text x="80.5" y="232.3" font-size="10.5" fill="#475569" text-anchor="middle">engine state</text>
-<text x="80.5" y="246.5" font-size="10.5" fill="#475569" text-anchor="middle">+ Lite keyword history</text>
+<text x="80.5" y="246.5" font-size="10.5" fill="#475569" text-anchor="middle">+ keyword history</text>
 <path d="M 145.0 47.6 L 175.0 47.6" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#persist-arrow)"/>
-<path d="M 282.4 47.6 L 312.4 47.6" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#persist-arrow)"/>
-<path d="M 374.6 162.3 L 374.6 196.3" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#persist-arrow)"/>
-<path d="M 436.7 331.1 L 477.3 331.1" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#persist-arrow)"/>
-<path d="M 436.7 47.6 L 477.3 47.6" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#persist-arrow)"/>
-<rect x="447.7" y="39.1" width="18.6" height="12.8" rx="3" fill="#ffffff" stroke="none" stroke-width="1.0"/>
-<text x="457.0" y="48.8" font-size="9.5" fill="#475569" text-anchor="middle">no</text>
-<path d="M 374.6 79.2 L 374.6 113.2" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#persist-arrow)"/>
-<rect x="363.3" y="87.7" width="22.5" height="12.8" rx="3" fill="#ffffff" stroke="none" stroke-width="1.0"/>
-<text x="374.6" y="97.4" font-size="9.5" fill="#475569" text-anchor="middle">yes</text>
-<path d="M 436.7 227.9 L 477.3 227.9" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#persist-arrow)"/>
-<rect x="448.0" y="219.3" width="18.0" height="12.8" rx="3" fill="#ffffff" stroke="none" stroke-width="1.0"/>
-<text x="457.0" y="229.0" font-size="9.5" fill="#475569" text-anchor="middle">ok</text>
-<path d="M 374.6 259.5 L 374.6 299.5" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#persist-arrow)"/>
-<rect x="350.9" y="270.9" width="47.4" height="12.8" rx="3" fill="#ffffff" stroke="none" stroke-width="1.0"/>
-<text x="374.6" y="280.6" font-size="9.5" fill="#475569" text-anchor="middle">write fails</text>
-<path d="M 601.6 331.1 L 615.6 331.1 L 615.6 137.8 L 436.7 137.8" fill="none" stroke="#64748b" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#persist-arrow)"/>
+<path d="M 285.1 47.6 L 315.1 47.6" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#persist-arrow)"/>
+<path d="M 379.0 162.3 L 379.0 196.3" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#persist-arrow)"/>
+<path d="M 442.9 331.1 L 483.5 331.1" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#persist-arrow)"/>
+<path d="M 442.9 47.6 L 483.5 47.6" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#persist-arrow)"/>
+<rect x="453.9" y="39.1" width="18.6" height="12.8" rx="3" fill="#ffffff" stroke="none" stroke-width="1.0"/>
+<text x="463.2" y="48.8" font-size="9.5" fill="#475569" text-anchor="middle">no</text>
+<path d="M 379.0 79.2 L 379.0 113.2" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#persist-arrow)"/>
+<rect x="367.7" y="87.7" width="22.5" height="12.8" rx="3" fill="#ffffff" stroke="none" stroke-width="1.0"/>
+<text x="379.0" y="97.4" font-size="9.5" fill="#475569" text-anchor="middle">yes</text>
+<path d="M 442.9 227.9 L 483.5 227.9" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#persist-arrow)"/>
+<rect x="454.2" y="219.3" width="18.0" height="12.8" rx="3" fill="#ffffff" stroke="none" stroke-width="1.0"/>
+<text x="463.2" y="229.0" font-size="9.5" fill="#475569" text-anchor="middle">ok</text>
+<path d="M 379.0 259.5 L 379.0 299.5" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#persist-arrow)"/>
+<rect x="355.3" y="270.9" width="47.4" height="12.8" rx="3" fill="#ffffff" stroke="none" stroke-width="1.0"/>
+<text x="379.0" y="280.6" font-size="9.5" fill="#475569" text-anchor="middle">write fails</text>
+<path d="M 616.2 331.1 L 630.2 331.1 L 630.2 137.8 L 442.9 137.8" fill="none" stroke="#64748b" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#persist-arrow)"/>
 </svg>
