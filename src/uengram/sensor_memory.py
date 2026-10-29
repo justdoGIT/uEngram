@@ -146,7 +146,8 @@ class SensorStateMemory:
         deleted = self.memory.forget(receipt.memory_id)
         if reference is not None:
             self.raw_evidence.unpin(reference, owner)
-            self._known_pins.pop(receipt.memory_id, None)
+            if self._known_pins.pop(receipt.memory_id, None) is not None:
+                self.engine.unprotect(receipt.decision.item_id)
         return deleted
 
     def expired_pins(self, now_ms: int) -> tuple[int, ...]:
@@ -252,9 +253,12 @@ class SensorStateMemory:
             raise
         memory_id = int(getattr(result, "memory_id"))
         if pinned:
+            already_known = memory_id in self._known_pins
             self._known_pins[memory_id] = (
                 pending.raw_window_ref, pending.idempotency_key, pending.raw_window_expires_at_ms,
             )
+            if not already_known:
+                self.engine.protect(decision.item_id)
         return SensorIngestReceipt(
             step_index, decision, memory_id, pending.idempotency_key,
             pending.raw_window_ref, True,

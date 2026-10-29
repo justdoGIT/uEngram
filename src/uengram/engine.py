@@ -89,6 +89,7 @@ class Engram:
         self.events: list[tuple] = []
         self.ledger = WriteLedger(cfg.flush_every)
         self._next_id = 0
+        self._protect_count: dict[int, int] = {}
 
     # -- helpers ---------------------------------------------------------
     def _gate_var(self, idx: np.ndarray) -> np.ndarray:
@@ -138,6 +139,33 @@ class Engram:
         i = self._next_id
         self._next_id += 1
         return i
+
+    @property
+    def protected(self) -> frozenset[int]:
+        return frozenset(self._protect_count)
+
+    def protect(self, item_id: int) -> None:
+        """Shield an item from budget-pressure eviction (lifecycle.make_*_room) until
+        a matching unprotect. Reference-counted: an item pinned by two separate raw
+        windows needs two unprotect calls before it is evictable again. Absorption,
+        promotion, merging as a survivor, and gate matching still work normally; only
+        eviction as a victim is refused. A protected id that does not currently hold
+        a slot is harmless (ignored until it reappears, if ever)."""
+        if isinstance(item_id, bool) or not isinstance(item_id, (int, np.integer)):
+            raise ValueError("item_id must be an integer")
+        key = int(item_id)
+        self._protect_count[key] = self._protect_count.get(key, 0) + 1
+
+    def unprotect(self, item_id: int) -> None:
+        if isinstance(item_id, bool) or not isinstance(item_id, (int, np.integer)):
+            raise ValueError("item_id must be an integer")
+        key = int(item_id)
+        if key not in self._protect_count:
+            return
+        if self._protect_count[key] <= 1:
+            del self._protect_count[key]
+        else:
+            self._protect_count[key] -= 1
 
     # -- ingest ----------------------------------------------------------
     def ingest(self, z, t: int, raw_idx: int, **_) -> IngestResult:

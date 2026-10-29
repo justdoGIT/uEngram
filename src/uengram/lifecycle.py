@@ -90,17 +90,27 @@ def evict_slot(eng, idx: int, t: int, kind_label: str) -> None:
     _clear(eng, idx)
 
 
+def _unprotected(eng, idx: np.ndarray) -> np.ndarray:
+    """`idx` filtered to slots whose item_id is not in eng.protected."""
+    if not eng.protected:
+        return idx
+    return idx[~np.isin(eng.item_id[idx], tuple(eng.protected))]
+
+
 def make_semantic_room(eng, t: int) -> bool:
-    """Ensure the semantic group {3,4} has a free slot. False if impossible."""
+    """Ensure the semantic group {3,4} has a free slot. False if impossible.
+
+    Protected slots (eng.protected, Engram.protect) are never picked as a victim,
+    whether to evict outright or to lose identity as the smaller side of a merge."""
     group = np.flatnonzero((eng.kind == SEM) | (eng.kind == SUPER))
     if len(group) < eng.cfg.B_sem:
         return True
-    sup = np.flatnonzero(eng.kind == SUPER)
+    sup = _unprotected(eng, np.flatnonzero(eng.kind == SUPER))
     if len(sup):
         victim = sup[np.argmin(eng.t_last[sup])]
         evict_slot(eng, int(victim), t, "evict_superseded")
         return True
-    act = np.flatnonzero(eng.kind == SEM)
+    act = _unprotected(eng, np.flatnonzero(eng.kind == SEM))
     if len(act) < 2:
         return False
     cost = ward_cost_pairwise(eng.n[act], eng.mu[act], eng.sigma0_sq)
@@ -122,12 +132,13 @@ def make_episodic_room(eng, t: int, incoming_surprisal: float | None = None) -> 
     only if its initial importance exceeds the weakest mature episode. This
     prevents a low-value arrival from evicting a stronger retained episode.
     Candidates remain replaceable so a possible new normal state can complete
-    its probation.
+    its probation. Protected slots (eng.protected) are never picked as a victim;
+    if every candidate and episodic slot is protected, no room can be made.
     """
     group = np.flatnonzero((eng.kind == CAND) | (eng.kind == EPI))
     if len(group) < eng.cfg.B_epi:
         return True
-    epi = np.flatnonzero(eng.kind == EPI)
+    epi = _unprotected(eng, np.flatnonzero(eng.kind == EPI))
     if len(epi):
         importance = _episodic_importance(eng, epi, t)
         victim_pos = int(np.argmin(importance))
@@ -136,7 +147,9 @@ def make_episodic_room(eng, t: int, incoming_surprisal: float | None = None) -> 
             return False
         victim = epi[victim_pos]
     else:
-        cand = np.flatnonzero(eng.kind == CAND)
+        cand = _unprotected(eng, np.flatnonzero(eng.kind == CAND))
+        if not len(cand):
+            return False
         victim = cand[np.argmin(eng.t_created[cand])]
     evict_slot(eng, int(victim), t, "evict_episodic")
     return True

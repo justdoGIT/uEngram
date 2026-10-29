@@ -190,3 +190,42 @@ def test_bad_or_replayed_window_is_rejected_before_engine_state_changes():
     with pytest.raises(ValueError, match="step_index must increase strictly"):
         pipeline.ingest(window(0, [0, 0]))
     assert pipeline.engine.items().mass[0] == 1
+
+
+def _pressure_pipeline(pins=None):
+    config = EngramConfig(B_sem=4, B_epi=2, use_step_detect=False, alarm_threshold=1.0,
+                          consolidate_every=10_000)
+    engine = Engram(config, 2, np.ones(2), raw_window_bytes=64)
+    return SensorStateMemory(engine, MemoryBackend(), raw_evidence=pins)
+
+
+def _first_item_survives(pipeline, **first_window):
+    """Ingest one outlier, then two further distant outliers into a 2-slot episodic bank."""
+    first = pipeline.ingest(window(0, [3, 0], **first_window))
+    pipeline.ingest(window(1, [100, 0]))
+    pipeline.ingest(window(2, [200, 0]))
+    return first, first.decision.item_id in set(pipeline.engine.items().ids.tolist())
+
+
+def test_pinned_raw_evidence_shields_its_slot_from_eviction_pressure():
+    _, survives_unpinned = _first_item_survives(_pressure_pipeline())
+    assert not survives_unpinned  # control: without a pin, the oldest candidate is the victim
+
+    pins = PinStore()
+    pipeline = _pressure_pipeline(pins)
+    receipt, survives = _first_item_survives(
+        pipeline, raw_window_ref="ring://pump-17/0-4", raw_window_checksum="sha256:deadbeef")
+    assert survives
+    assert receipt.decision.item_id in pipeline.engine.protected
+
+
+def test_forgetting_the_pin_makes_the_slot_evictable_again():
+    pins = PinStore()
+    pipeline = _pressure_pipeline(pins)
+    receipt = pipeline.ingest(window(
+        0, [3, 0], raw_window_ref="ring://pump-17/0-4", raw_window_checksum="sha256:deadbeef"))
+    assert pipeline.forget(receipt) == 1
+    assert receipt.decision.item_id not in pipeline.engine.protected
+    pipeline.ingest(window(1, [100, 0]))
+    pipeline.ingest(window(2, [200, 0]))
+    assert receipt.decision.item_id not in set(pipeline.engine.items().ids.tolist())

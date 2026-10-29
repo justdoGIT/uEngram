@@ -180,6 +180,59 @@ def test_episodic_admission_evicts_weaker_memory_for_stronger_one():
     assert [eng.surpr[i] for i in np.flatnonzero(eng.kind == lc.EPI)] == [300.0]
 
 
+def test_protected_episodic_slot_is_never_the_eviction_victim():
+    """Same setup as test_episodic_admission_evicts_weaker_memory_for_stronger_one,
+    but the slot that would otherwise be evicted is protected first."""
+    eng = make(B_epi=2, B_sem=4)
+    ids = []
+    for surpr in (300.0, 5.0):
+        k = eng._alloc()
+        eng.kind[k], eng.n[k], eng.surpr[k] = lc.EPI, 1, surpr
+        eng.t_last[k] = 0
+        eng.item_id[k] = eng._new_id()
+        eng.exemplars[int(eng.item_id[k])] = [0, 0]
+        ids.append(int(eng.item_id[k]))
+    weak_id = ids[1]  # the surpr=5.0 slot, which would be evicted unprotected
+    eng.protect(weak_id)
+    assert not lc.make_episodic_room(eng, 10, incoming_surprisal=10.0)
+    assert sorted(eng.surpr[i] for i in np.flatnonzero(eng.kind == lc.EPI)) == [5.0, 300.0]
+    eng.unprotect(weak_id)
+    assert lc.make_episodic_room(eng, 10, incoming_surprisal=10.0)
+    assert [eng.surpr[i] for i in np.flatnonzero(eng.kind == lc.EPI)] == [300.0]
+
+
+def test_protected_semantic_slot_is_excluded_from_merge_victim_search():
+    eng = make(B_sem=2, B_epi=4)
+    ids = []
+    for i, level in enumerate((0.0, 0.01)):  # close together: the cheapest Ward-merge pair
+        k = eng._alloc()
+        eng.kind[k], eng.n[k] = lc.SEM, 50
+        eng.mu[k] = np.full(D, level)
+        eng.S[k] = np.full(D, SIG ** 2) * 50
+        eng.t_last[k] = eng.t_created[k] = 0
+        eng.item_id[k] = eng._new_id()
+        ids.append(int(eng.item_id[k]))
+    eng.protect(ids[0])
+    assert not lc.make_semantic_room(eng, 10)
+    assert count(eng, lc.SEM) == 2  # neither slot touched: only one unprotected, can't form a pair
+    eng.unprotect(ids[0])
+    assert lc.make_semantic_room(eng, 10)
+    assert count(eng, lc.SEM) == 1  # now mergeable
+
+
+def test_protect_unprotect_is_reference_counted():
+    eng = make()
+    eng.unprotect(7)  # never protected: a no-op, not an error
+    assert 7 not in eng.protected
+    eng.protect(7)
+    eng.protect(7)
+    assert 7 in eng.protected
+    eng.unprotect(7)
+    assert 7 in eng.protected  # one reference still held
+    eng.unprotect(7)
+    assert 7 not in eng.protected
+
+
 def test_slow_drift_tracked_without_flags():
     rng = np.random.default_rng(0)
     eng, flags = make(), []
