@@ -158,6 +158,27 @@ def build(repo: Path) -> list[dict]:
                          "mean; SKAB is seed 0; CMAPSS is one deterministic run. Dropping the band energies leaves 2 features per channel, "
                          "which cannot support d=16 on the synthetic stream or FD001."))
 
+    # SMD confirmation on 28 machines and the per-machine feature-group relation test.
+    smd = json.loads((repo / "results" / "smd_confirmation.json").read_text())["summary"]
+    labels = [("uengram_d16", "uengram d=16"), ("uengram_d36", "uengram d=36"), ("hst", "half-space trees (5 seeds, mean)"),
+              ("memstream", "MemStream (5 seeds, mean)"), ("uengram_no_mean", "uengram without mean"),
+              ("uengram_no_log_std", "uengram without log std"), ("uengram_no_band_energy", "uengram without band energies")]
+    rows = []
+    for key, label in labels:
+        s = smd[key]
+        ev, fa, au = (_mean(s[k]) if isinstance(s[k], list) else s[k] for k in ("events_detected", "false_alarms_per_week", "mean_auroc"))
+        rows.append([label, f"{ev:.1f} / {s['events']}", _fmt(fa, 2), _fmt(au)])
+    tables.append(_table("SMD confirmation (28 machines)", "mixed", "results/smd_confirmation.json",
+                         ["method", "events detected", "false alarms / week", "mean AUROC"], rows,
+                         "Frozen alarm policies selected on MetroPT-3; nothing is tuned on SMD. The time axis is a synthetic one-minute grid, "
+                         "so false-alarm rates are per 168 h of that grid. Event detection is weak for every method."))
+    rel = json.loads((repo / "results" / "smd_feature_relations.json").read_text())["tests"]
+    rows = [[g, str(t["n"]), _fmt(t["spearman"], 2), _fmt(t["permutation_p"], 3), _fmt(t["mean_auroc_loss"], 3)] for g, t in rel.items()]
+    tables.append(_table("SMD: feature-group signal-to-noise versus AUROC lost on removal", "negative", "results/smd_feature_relations.json",
+                         ["feature group", "machines", "Spearman rho", "permutation p", "mean AUROC loss"], rows,
+                         "Hypothesis fixed before the run: removing a group costs more where its label-free signal-to-noise is higher. "
+                         "With three tests the threshold is 0.05/3 = 0.017; none is below it."))
+
     # CMAPSS slope features versus ordinary DSP: run metrics are identical across seeds per method.
     base = _load(repo, "cmapss_runs.jsonl")
     slope = _load(repo, "cmapss_slope_runs.jsonl")

@@ -232,6 +232,7 @@ Table 2 summarizes the datasets. All public datasets are used as released. Datas
 | CWRU [28] | 1 (drive end) | $K = 512$ at 12 kHz, stride 256 | Normal recordings at 0–2 HP fit; one held-out normal recording at 3 HP and 12 fault recordings test | Inner race, rolling element, outer race |
 | TSB-AD-U [17] | 1 (six series) | $K = 64$, stride 32 | First half of each series' pre-anomaly prefix fits; later windows test | Window positive if any point is anomalous |
 | EngineAD [29] | 8 (released principal components) | 300-point segments, as released | 15 trucks fit (normal-only segments, 150,442); 5 trucks calibrate (41,671 normal segments); 5 held-out trucks test (55,890 segments) | Segment label = first point label (9,810 anomalous test segments, 17.6%); 135 of 269,247 segments have mixed point labels |
+| SMD [30] | 38 | $K = 10$ (10 min at 1-minute sampling), non-overlapping | Per machine: the first 70% of the normal-only training file fits and the last 30% calibrates; the labelled test file is scored; 28 machines | Maximal runs of anomalous test rows (327 events over 28 machines) |
 
 Windows are causal and, except where a stride is stated, non-overlapping and gap-aware: no window spans a data gap or a split boundary, and the first window after a gap is not monitorable. MetroPT-3 and MetroPT-2 clean negatives exclude the 24 hours before and 48 hours after each event. SKAB uses no exclusion buffer. OS-Metrics removes fit and calibration windows that overlap an annotated event, so event labels enter fitting there.
 
@@ -434,6 +435,26 @@ Table 11 shows that the groups matter differently by dataset. The mean is the ca
 
 Two cautions apply. Dropping the band energies leaves two features per channel, which is 12 features on the synthetic stream, 16 on SKAB and 28 on FD001. Twelve cannot support $d = 16$, so the synthetic fit fails. At 16 the PCA does no reduction on SKAB, and the 9 of 34 detections (against 5) come with 9 false-alarm episodes (against 5), so this is a different operating point of one seed rather than an improvement; the change is also confounded with the effective dimension. The SKAB and CMAPSS columns are single runs, and the suggested mechanism (that the level feature carries slow drift) is untested.
 
+### 5.12 Confirmation on 28 Server Machines
+
+To test whether the findings above depend on the few datasets used to develop them, we ran the frozen alarm policies on the Server Machine Dataset (SMD) [30]: 28 server machines with 38 resource-usage channels each, a normal-only training file and a labelled test file per machine. SMD was not used to choose any parameter. The alarm configurations of μEngram, half-space trees and MemStream are those selected on MetroPT-3 development data (Section 5.10), so this is a same-protocol check on unseen assets, not tuned operation. The files carry no timestamps, so a one-minute grid is assumed (train, then test), and false-alarm rates per week are per 168 hours of that grid.
+
+**Table 12.** SMD, 28 machines, 327 labelled events, DSP encoder, 256 slots. Events and false alarms are pooled over machines; AUROC is the unweighted mean over machines. Half-space trees and MemStream: mean (range) over 5 seeds. The last three rows drop one DSP feature group (Table 11).
+
+| Method | Events detected (of 327) | False alarms / week | Mean AUROC |
+|---|---:|---:|---:|
+| μEngram, $d = 16$ | 35 | 1.23 | 0.832 |
+| μEngram, $d = 36$ | 41 | 1.23 | 0.832 |
+| Half-space trees | 35.0 (30–41) | 0.55 (0.45–0.61) | 0.767 |
+| MemStream | 9.0 (7–11) | 0.05 (0.03–0.08) | 0.764 |
+| μEngram without the mean | 20 | 0.76 | 0.743 |
+| μEngram without log std | 38 | 0.76 | 0.839 |
+| μEngram without band energies | 39 | 0.78 | 0.845 |
+
+Table 12 shows three results. First, event-level detection is weak for every method: μEngram detects 35 of 327 events (11%), at least one event on 17 of 28 machines and all events on 2. It matches half-space trees on events at about twice the false-alarm rate, and ranks windows better (mean AUROC 0.832 against 0.767 and 0.764). Second, the width regression of Section 5.2 does not reproduce: $d = 36$ detects 41 events against 35 at the same pooled AUROC (paired by machine, 18 machines improve and 10 worsen, mean change +0.0001), so widening the projection is not harmful in general. Third, the mean carries signal here as on SKAB and CMAPSS FD001: dropping it costs 15 events and 0.089 AUROC, while dropping log std or band energies does not hurt (38 and 39 events, AUROC 0.839 and 0.845).
+
+SMD also allows a per-asset test of whether a label-free descriptor predicts which machines depend on a feature group. The hypothesis, fixed before the run, was that dropping a group costs more AUROC on machines where that group has higher signal-to-noise. The descriptor is computed from fit windows only: per channel, the robust variance of the feature across windows divided by the noise variance from successive-window differences, then the median over non-constant channels of the base-10 logarithm. The effect is AUROC with all features minus AUROC with the group dropped. Across the 28 machines the rank correlations are $-0.16$ for the mean (permutation $p = 0.40$), $+0.38$ for log std ($p = 0.047$) and $+0.34$ for band energies ($p = 0.077$; 10,000 permutations). With three tests the threshold is $0.05/3 = 0.017$, so none is significant and the hypothesis is not supported: this descriptor does not tell us which machines need which features.
+
 ---
 
 ## 6. Discussion and Limitations
@@ -477,7 +498,7 @@ We studied a bounded, deterministic memory for sensor streams and a set of encod
 
 ## Data and Code Availability
 
-All datasets are public and are cited in Table 2: CMAPSS FD001 [20], MetroPT-3 [21], MetroPT-2 [22, 23], SKAB [24], SCANIA Component X [25], OS-Metrics [26], MFPT [27], CWRU [28], TSB-AD-U [17] and EngineAD [29]. The synthetic generator is part of the released code. The reference implementation, the experiment scripts, the committed result files and step-by-step reproduction instructions that map each table and figure of this paper to a command are in the project repository at https://github.com/justdoGIT/uEngram, released under the MIT license. The repository's reproduction guide lists the dataset layout expected by the loaders. The synthetic $d = 36$ results and the SKAB width sweep were regenerated from the released code for this paper. For Table 7, a fresh run of the released pipeline reproduced 146 of the 150 underlying per-seed values (five metrics, three readouts, five seeds, two datasets) exactly; the other four differ by less than $4 \times 10^{-6}$. The EngineAD study (30 runs, 1,962 s in total on a cloud GPU) was produced by a released script and its result file is committed; it needs a GPU and the 6.3 GB dataset, so we did not rerun it locally for this paper.
+All datasets are public and are cited in Table 2: CMAPSS FD001 [20] (FD002 and FD003 come from the same archive), MetroPT-3 [21], MetroPT-2 [22, 23], SKAB [24], SCANIA Component X [25], OS-Metrics [26], MFPT [27], CWRU [28], TSB-AD-U [17], EngineAD [29] and SMD [30]. The synthetic generator is part of the released code. The reference implementation, the experiment scripts, the committed result files and step-by-step reproduction instructions that map each table and figure of this paper to a command are in the project repository at https://github.com/justdoGIT/uEngram, released under the MIT license. The repository's reproduction guide lists the dataset layout expected by the loaders. The synthetic $d = 36$ results and the SKAB width sweep were regenerated from the released code for this paper. For Table 7, a fresh run of the released pipeline reproduced 146 of the 150 underlying per-seed values (five metrics, three readouts, five seeds, two datasets) exactly; the other four differ by less than $4 \times 10^{-6}$. The EngineAD study (30 runs, 1,962 s in total on a cloud GPU) was produced by a released script and its result file is committed; it needs a GPU and the 6.3 GB dataset, so we did not rerun it locally for this paper.
 
 ---
 
@@ -512,3 +533,4 @@ All datasets are public and are cited in Table 2: CMAPSS FD001 [20], MetroPT-3 [
 27. Bechhoefer, E. (2013). “A Data-Driven Approach to Predictive Maintenance of Industrial Equipment.” MFPT Fault Data Sets. [https://www.mfpt.org/fault-data-sets/](https://www.mfpt.org/fault-data-sets/).
 28. Case Western Reserve University Bearing Data Center. [Source 97.mat](https://engineering.case.edu/sites/default/files/97.mat) · [[Metadata Manifest]](https://github.com/VictorBauler/BearingDatasets/blob/main/src/bearing_datasets/datasets/cwru/files.csv).
 29. Hojjati, H., Roth, C., Woods, R., Sills, K., and Armanfard, N. (2026). “EngineAD: A Real-World Vehicle Engine Anomaly Detection Dataset.” [arXiv:2603.25955](https://arxiv.org/abs/2603.25955). Data: version 2.2, [doi:10.5683/SP3/TX13P1](https://doi.org/10.5683/SP3/TX13P1), CC BY-NC 4.0.
+30. Su, Y., Zhao, Y., Niu, C., Liu, R., Sun, W., and Pei, D. (2019). “Robust Anomaly Detection for Multivariate Time Series through Stochastic Recurrent Neural Network.” *Proc. KDD 2019*, 2828–2837. Data (Server Machine Dataset): [https://github.com/NetManAIOps/OmniAnomaly](https://github.com/NetManAIOps/OmniAnomaly).
