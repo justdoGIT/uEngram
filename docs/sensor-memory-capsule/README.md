@@ -77,7 +77,7 @@ Measured results (SMD server metrics, systems recovery only):
 - **The capsule matches an uninterrupted run** in all 60 runs, all 448 sweep cells, and all
   780 SIGKILL trials, including against the real EdgeMemory Lite library.
 - **Durability costs real time on real disks.** Full synchronization costs 8 to 490 ms per
-  window on an SSD, a hard disk and a slow overlay filesystem, against about 1.5 ms with
+  window on SSDs, a hard disk and a slow overlay filesystem, against 1.5 to 2.9 ms with
   `synchronous=NORMAL`. An earlier "five to six times" figure was measured on tmpfs, where
   fsync is nearly free, and was CPU cost only; it was wrong as a cost of durable commits.
 - **Not tested:** power loss, torn writes, the durability of `NORMAL`, embedded targets.

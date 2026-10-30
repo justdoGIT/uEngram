@@ -662,7 +662,7 @@ These supplementary tables are generated from files in `results/` (55 tables), e
 | msi | not recorded | sidecar | 0/15 | 0/15 | 1 | 2 | 4 | 32.0 |
 | msi | not recorded | capsule | 15/15 | 15/15 | 0 | 0 | 3 | 102.2 |
 
-<p class="table-note"><b>Source</b> <code>results/capsule_resilience_summary.json</code>. SMD machine-1-1, first 64 test windows, restart at the midpoint; 3 crash boundaries per host. The uninterrupted reference emits 3 lifecycle records. Three crash boundaries x 5 repeats per host, stub event store. Storage was not recorded in these artifacts; /tmp was tmpfs on msi, hp and asus (lenovo was unreachable to check), so the timings exclude fsync cost and measure CPU work. Without detector state the restarted arms re-emit two records and miss the alarm-open record. The restart is a reopen inside one process, and the hosts are x86 desktops, so this is not a power-loss or embedded result.</p>
+<p class="table-note"><b>Source</b> <code>results/capsule_resilience_summary.json</code>. SMD machine-1-1, first 64 test windows, restart at the midpoint; 3 crash boundaries per host. The uninterrupted reference emits 3 lifecycle records. Three crash boundaries x 5 repeats per host, stub event store. Storage was not recorded in these artifacts; /tmp was tmpfs on all four hosts, so the timings exclude fsync cost and measure CPU work. Without detector state the restarted arms re-emit two records and miss the alarm-open record. The restart is a reopen inside one process, and the hosts are x86 desktops, so this is not a power-loss or embedded result.</p>
 
 **Table A50.** <span class="outcome mixed">Mixed</span>Capsule restart recovery with temp storage on each host's disk
 
@@ -674,11 +674,14 @@ These supplementary tables are generated from files in `results/` (55 tables), e
 | hp | overlay | lite | 0/9 | 0/9 | 1 | 2 | 1 | 7.6 |
 | hp | overlay | sidecar | 0/9 | 0/9 | 1 | 2 | 4 | 318.5 |
 | hp | overlay | capsule | 9/9 | 9/9 | 0 | 0 | 3 | 2336.0 |
+| lenovo | ext4 | lite | 0/9 | 0/9 | 1 | 2 | 1 | 21.6 |
+| lenovo | ext4 | sidecar | 0/9 | 0/9 | 1 | 2 | 4 | 69.0 |
+| lenovo | ext4 | capsule | 9/9 | 9/9 | 0 | 0 | 3 | 379.0 |
 | msi | ext4 | lite | 0/15 | 0/15 | 1 | 2 | 1 | 7.3 |
 | msi | ext4 | sidecar | 0/15 | 0/15 | 1 | 2 | 4 | 29.9 |
 | msi | ext4 | capsule | 15/15 | 15/15 | 0 | 0 | 3 | 207.7 |
 
-<p class="table-note"><b>Source</b> <code>results/capsule_resilience_disk_summary.json</code>. SMD machine-1-1, first 64 test windows, restart at the midpoint; 3 crash boundaries per host. The uninterrupted reference emits 3 lifecycle records. Same experiment with TMPDIR on the host&#x27;s disk (5 repeats on msi, 3 on hp and asus; lenovo was unreachable). fsync is real here, so the capsule&#x27;s restart-to-completion time is far above the memory-only arms. hp&#x27;s overlay storage varied roughly 6x between runs.</p>
+<p class="table-note"><b>Source</b> <code>results/capsule_resilience_disk_summary.json</code>. SMD machine-1-1, first 64 test windows, restart at the midpoint; 3 crash boundaries per host. The uninterrupted reference emits 3 lifecycle records. Same experiment with TMPDIR on the host&#x27;s disk (5 repeats on msi, 3 on each other host). fsync is real here, so the capsule&#x27;s restart-to-completion time is far above the memory-only arms. hp&#x27;s overlay storage varied roughly 6x between runs.</p>
 
 **Table A51.** <span class="outcome mixed">Mixed</span>Capsule restart recovery against the real EdgeMemory Lite library
 
@@ -751,6 +754,22 @@ These supplementary tables are generated from files in `results/` (55 tables), e
 | msi | tmpfs | 256 | NORMAL | 4 | 0.48 | 1.00 | 4.3 | 15 | 3 |
 | msi | tmpfs | 256 | NORMAL | 16 | 0.48 | 0.66 | 3.3 | 19 | 15 |
 | msi | tmpfs | 256 | NORMAL | 64 | 0.48 | 0.59 | 2.3 | 81 | 63 |
+| lenovo | ext4 | 64 | FULL | 1 | 0.38 | 9.95 | 15.8 | 26 | 0 |
+| lenovo | ext4 | 64 | FULL | 4 | 0.38 | 5.16 | 12.9 | 31 | 3 |
+| lenovo | ext4 | 64 | FULL | 16 | 0.38 | 4.10 | 10.8 | 44 | 15 |
+| lenovo | ext4 | 64 | FULL | 64 | 0.38 | 3.61 | 10.2 | 113 | 63 |
+| lenovo | ext4 | 64 | NORMAL | 1 | 0.38 | 2.93 | 4.3 | 14 | 0 |
+| lenovo | ext4 | 64 | NORMAL | 4 | 0.38 | 1.18 | 3.1 | 17 | 3 |
+| lenovo | ext4 | 64 | NORMAL | 16 | 0.38 | 0.75 | 2.9 | 24 | 15 |
+| lenovo | ext4 | 64 | NORMAL | 64 | 0.38 | 0.63 | 1.7 | 53 | 63 |
+| lenovo | tmpfs | 64 | FULL | 1 | 0.38 | 2.76 | 3.2 | 14 | 0 |
+| lenovo | tmpfs | 64 | FULL | 4 | 0.38 | 1.15 | 2.9 | 16 | 3 |
+| lenovo | tmpfs | 64 | FULL | 16 | 0.38 | 0.73 | 2.8 | 23 | 15 |
+| lenovo | tmpfs | 64 | FULL | 64 | 0.38 | 0.62 | 1.6 | 49 | 63 |
+| lenovo | tmpfs | 64 | NORMAL | 1 | 0.38 | 2.75 | 3.2 | 14 | 0 |
+| lenovo | tmpfs | 64 | NORMAL | 4 | 0.38 | 1.15 | 3.0 | 16 | 3 |
+| lenovo | tmpfs | 64 | NORMAL | 16 | 0.38 | 0.72 | 2.8 | 23 | 15 |
+| lenovo | tmpfs | 64 | NORMAL | 64 | 0.38 | 0.62 | 1.6 | 51 | 63 |
 | hp | overlay | 64 | FULL | 1 | 0.14 | 489.87 | 2357.4 | 6 | 0 |
 | hp | overlay | 64 | FULL | 4 | 0.14 | 281.49 | 992.2 | 7 | 3 |
 | hp | overlay | 64 | FULL | 16 | 0.14 | 243.93 | 844.6 | 18 | 15 |
@@ -784,4 +803,4 @@ These supplementary tables are generated from files in `results/` (55 tables), e
 | asus | tmpfs | 64 | NORMAL | 16 | 0.14 | 0.34 | 1.4 | 10 | 15 |
 | asus | tmpfs | 64 | NORMAL | 64 | 0.14 | 0.28 | 0.8 | 21 | 63 |
 
-<p class="table-note"><b>Source</b> <code>results/capsule_cost/*.json</code>. Median over interleaved repeats (5 on msi at 256 windows; 3 on hp and asus at 64 windows). On tmpfs fsync is nearly free, so FULL equals NORMAL and the cost is CPU work in checkpoint serialization. On disk, FULL costs one fsync per window even at long cadences (the input log commits every window); NORMAL avoids that but weakens durability against power loss, which is not tested. hp&#x27;s overlay storage varied roughly 6x between runs, so its figures are indicative only. msi is an interactive workstation.</p>
+<p class="table-note"><b>Source</b> <code>results/capsule_cost/*.json</code>. Median over interleaved repeats (5 on msi at 256 windows; 3 on the other hosts at 64 windows). On tmpfs fsync is nearly free, so FULL equals NORMAL and the cost is CPU work in checkpoint serialization. On disk, FULL costs one fsync per window even at long cadences (the input log commits every window); NORMAL avoids that but weakens durability against power loss, which is not tested. hp&#x27;s overlay storage varied roughly 6x between runs, so its figures are indicative only. msi is an interactive workstation.</p>

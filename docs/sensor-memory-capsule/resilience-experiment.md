@@ -143,14 +143,15 @@ The cost on real storage is in the last section.
 ### Restart recovery with temporary storage on disk
 
 The same experiment with `TMPDIR` on each host's disk
-(`results/capsule_resilience_disk/`, `results/capsule_resilience_disk_summary.json`): 33
-artifacts (five repeats on `msi`, three on `hp` and `asus`). The capsule matched the
-uninterrupted run in 33 / 33 runs, `lite` and `sidecar` in 0 / 66. Median restart-to-completion
-time at `after_ingest` (ms):
+(`results/capsule_resilience_disk/`, `results/capsule_resilience_disk_summary.json`): 42
+artifacts (five repeats on `msi`, three on each of `hp`, `asus` and `lenovo`). The capsule
+matched the uninterrupted run in 42 / 42 runs, `lite` and `sidecar` in 0 / 84. Median
+restart-to-completion time at `after_ingest` (ms):
 
 | Host (temporary storage) | `lite` | `sidecar` | `capsule` |
 |---|---:|---:|---:|
 | msi (ext4, SSD) | 7.3 | 29.9 | 207.7 |
+| lenovo (ext4, SSD) | 21.6 | 69.0 | 379.0 |
 | asus (ext4, hard disk) | 7.9 | 460.2 | 3374.0 |
 | hp (overlay) | 7.6 | 318.5 | 2336.0 |
 
@@ -222,21 +223,23 @@ the relaxed rows show only that those configurations survive process death.
 ### Cost of durability
 
 `python -m bench.capsule_cost_study` (`results/capsule_cost/`). Mean ingest cost per window
-(ms), medians over interleaved repeats (5 x 256 windows on `msi`; 3 x 64 on `hp` and `asus`):
+(ms), medians over interleaved repeats (5 x 256 windows on `msi`; 3 x 64 on the other three hosts):
 
 | Host (storage) | Memory-only | FULL, every window | FULL, every 16 | FULL, every 64 | NORMAL, every window | NORMAL, every 16 |
 |---|---:|---:|---:|---:|---:|---:|
 | msi (ext4, SSD) | 0.14 | 7.77 | 3.64 | 3.23 | 1.47 | 0.31 |
+| lenovo (ext4, SSD) | 0.38 | 9.95 | 4.10 | 3.61 | 2.93 | 0.75 |
 | asus (ext4, hard disk) | 0.44 | 104.61 | 56.99 | 56.42 | 1.76 | 0.73 |
 | hp (overlay) | 0.14 | 489.87 | 243.93 | 225.14 | 1.52 | 0.35 |
 | msi (tmpfs) | 0.48 | 2.94 | 1.03 | 0.82 | 2.80 | 0.66 |
 | asus (tmpfs) | 0.14 | 1.36 | 0.34 | 0.28 | 1.36 | 0.34 |
 | hp (tmpfs) | 0.13 | 1.27 | 0.32 | 0.27 | 1.27 | 0.32 |
+| lenovo (tmpfs) | 0.38 | 2.76 | 0.73 | 0.62 | 2.75 | 0.72 |
 
 On tmpfs FULL equals NORMAL, which is why the earlier timings misled. On disk, FULL costs about
 one fsync per window even at long intervals, because the input log commits every window: a
 longer checkpoint interval removes only the second commit. NORMAL avoids the per-window fsync
-at 0.3 to 1.8 ms but weakens durability on power loss, which is untested. A longer interval
+at 0.3 to 2.9 ms but weakens durability on power loss, which is untested. A longer interval
 also lengthens the worst-case replay (up to the interval minus one windows): on the hard disk
 under FULL a 64-window interval recovered in 438 ms against 26 ms for every-window checkpoints.
 `msi` is an interactive workstation and `hp`'s storage varied about sixfold between runs.
@@ -251,8 +254,8 @@ under FULL a 64-window interval recovered in 438 ms against 26 ms for every-wind
   and the durability of `synchronous=NORMAL` are untested.
 - The hosts are x86 desktop and laptop machines, not embedded targets. Timings are host-local
   and say nothing about embedded latency, RAM, or flash endurance.
-- `lenovo-worker` (in the first four-host runs) and `gigabyte-worker` were unreachable for the
-  later runs and are not covered; the on-disk results cover three hosts.
+- `gigabyte-worker` was unreachable and is not covered. The first four-host runs and the
+  on-disk runs cover the same four hosts (`msi`, `hp`, `asus`, `lenovo`).
 - `msi` ran Python 3.12 with NumPy 2.5.4; the other hosts ran Python 3.14 with NumPy 2.5.3.
   All shared one input digest and gave the same correctness outcome.
 - This is a systems-recovery result, not anomaly-detection accuracy.

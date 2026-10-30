@@ -127,7 +127,7 @@ def _kill(repo: Path) -> dict:
 
 def _cost(repo: Path) -> dict:
     rows = []
-    for host in ("msi", "hp", "asus"):
+    for host in ("msi", "lenovo", "hp", "asus"):
         for storage in ("disk", "tmpfs"):
             doc = _load(repo, f"capsule_cost/{host}-{storage}.json")
             base = doc["memory_only"]["mean_ms"]
@@ -140,7 +140,7 @@ def _cost(repo: Path) -> dict:
             "columns": ["host", "temp storage", "windows", "sync", "checkpoint every", "memory-only ms/window",
                         "capsule ms/window", "p99 ms", "worst-case recovery ms", "max replayed windows"],
             "rows": rows,
-            "note": "Median over interleaved repeats (5 on msi at 256 windows; 3 on hp and asus at 64 windows). "
+            "note": "Median over interleaved repeats (5 on msi at 256 windows; 3 on the other hosts at 64 windows). "
                     "On tmpfs fsync is nearly free, so FULL equals NORMAL and the cost is CPU work in "
                     "checkpoint serialization. On disk, FULL costs one fsync per window even at long "
                     "cadences (the input log commits every window); NORMAL avoids that but weakens durability "
@@ -153,14 +153,14 @@ def build(repo: Path) -> list[dict]:
         _resilience(repo, "capsule_resilience_summary.json",
                     "Capsule restart recovery against Lite-only and file-sidecar persistence (tmpfs)", "mixed",
                     "Three crash boundaries x 5 repeats per host, stub event store. Storage was not recorded in "
-                    "these artifacts; /tmp was tmpfs on msi, hp and asus (lenovo was unreachable to check), so "
+                    "these artifacts; /tmp was tmpfs on all four hosts, so "
                     "the timings exclude fsync cost and measure CPU work. Without detector state the restarted "
                     "arms re-emit two records and miss the alarm-open record. The restart is a reopen inside "
                     "one process, and the hosts are x86 desktops, so this is not a power-loss or embedded result."),
         _resilience(repo, "capsule_resilience_disk_summary.json",
                     "Capsule restart recovery with temp storage on each host's disk", "mixed",
-                    "Same experiment with TMPDIR on the host's disk (5 repeats on msi, 3 on hp and asus; "
-                    "lenovo was unreachable). fsync is real here, so the capsule's restart-to-completion time "
+                    "Same experiment with TMPDIR on the host's disk (5 repeats on msi, 3 on each other host). "
+                    "fsync is real here, so the capsule's restart-to-completion time "
                     "is far above the memory-only arms. hp's overlay storage varied roughly 6x between runs."),
         _resilience(repo, "capsule_resilience_real_summary.json",
                     "Capsule restart recovery against the real EdgeMemory Lite library", "mixed",
