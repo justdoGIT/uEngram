@@ -14,8 +14,10 @@ latency, or flash endurance.
 | `sidecar` | No | File outbox | Exact file-vector sidecar |
 | `capsule` | SQLite input WAL + checkpoint | SQLite outbox | Exact SQLite vector index |
 
-All arms consume the same four deterministic 2-D sensor windows. They use the same
-uEngram configuration, idempotent Lite-like store, event identifiers, and query.
+All arms consume the same ordered replay prefix, uEngram configuration,
+idempotent Lite-like store, event identifiers, and query. The default `fixture`
+uses deterministic 2-D windows. The `smd` option uses existing SMD window-mean
+features as systems inputs only; it neither reads labels nor tunes the detector.
 
 ## Crash boundaries
 
@@ -32,10 +34,31 @@ than that checkpoint.
 | Endpoint | Required capsule outcome | Interpretation |
 |---|---|---|
 | `state_equivalent_to_uninterrupted` | `true` at every crash boundary | Detector state exactly matches uninterrupted replay |
-| `vendor_event_count` | 4 | Idempotent replay did not create duplicate projections or lose records |
+| `vendor_event_count` | Matches uninterrupted replay | Idempotent replay did not create duplicate projections or lose lifecycle records |
 | `ranked_history_count` | At least Lite-only count | Exact local index retains candidates beyond Lite recall truncation |
 | `recovery_ns` | Report only | Local-process timing, not target-device latency |
 | `local_storage_bytes` | Report only | Workload-specific local persistence cost |
+
+## Representative-stream and host artifacts
+
+Every v2 JSON result records the stream name, input-window count, feature dimension,
+SHA-256 digest of the ordered feature bytes, and Python/NumPy/host/CPU metadata.
+`--target-label` is an operator-supplied identifier, not a hardware certification.
+Use `--require-target-label` for target-device artifacts so unnamed runs fail closed.
+
+Run an SMD replay prefix on a named target:
+
+```bash
+python -m bench.capsule_resilience \
+  --stream smd --machine machine-1-1 --windows 64 \
+  --crash after_ingest \
+  --target-label msi --require-target-label \
+  --out ~/.local/state/uengram/capsule-smd-machine-1-1.json
+```
+
+Repeat each crash boundary on each target host and preserve the generated JSON files.
+The recorded `recovery_ns` values are host-local timing observations; compare them only
+between artifacts with a matching stream digest and declared host metadata.
 
 Run one boundary:
 
