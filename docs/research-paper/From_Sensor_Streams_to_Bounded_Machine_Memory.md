@@ -20,6 +20,7 @@ Industrial and edge equipment produce continuous telemetry that cannot be kept i
 > 4. **Distillation shifts alarm timing:** on CMAPSS all four models alarm before failure on 10 of 10 engines, but the students' alarms start earlier and more often than the ordinary CNN's.
 > 5. **Partitioning beats pooling on one workload:** domain specialists detect 29 of 30 OS-Metrics test events at 19.6 false alarms per week, against 27 of 30 at 26.6 for the DSP baseline.
 > 6. **Detector state must survive restarts:** after a simulated restart with no detector checkpoint, the engine re-emitted lifecycle records and lost alarm-open records in 120 of 120 Lite-only and sidecar runs, and in 406 of 448 machine-and-restart-position cells across 28 server machines where the uninterrupted run alarms. A SQLite input log plus engine checkpoint matched the uninterrupted run in all 60 runs, all 448 cells and all 780 SIGKILL trials, including against the real EdgeMemory Lite library. Durability is not free: full synchronization costs 8 to 490 ms per window on real disks, against 1.5 to 2.9 ms with relaxed synchronization whose power-loss durability is untested (Section 5.14).
+> 7. **Modeled crash images expose a durability trade-off:** across 6,599 whole-syscall crash images, `FULL` and `NORMAL` recovered a consistent capsule and final vendor state, but `NORMAL` lost acknowledged input windows in 1,938 images; a no-journal control corrupted 166 of 483. This is not hardware power-loss evidence.
 
 ---
 
@@ -514,10 +515,38 @@ Without detector state the restarted engine treated the machine as new: it re-em
 | Normal sync, checkpoint every 16 windows (stand-in, pause) | 60 | 47 | 43 | 39 | 60 |
 
 Natural timing rarely killed the process between a vendor commit and the matching checkpoint (14 and 9 trials), which is the most dangerous boundary, so we injected a 40 ms pause after each vendor commit; that raised the count to between 29 and 47 trials per campaign. The real vendor store recovered from every kill without error. SIGKILL is not power loss: it leaves the operating system's page cache intact, so torn writes and lost unsynchronized data remain untested, and the relaxed rows show only that those configurations survive process death.
+**Modeled power loss.** SIGKILL leaves the operating system's page cache intact, so we added a
+crash-image campaign. An LD_PRELOAD shim recorded the capsule's file operations, and the
+model replayed those operations into images cut at whole-syscall write boundaries. It does
+not model sub-write tearing, block-device reordering below the page cache, or flash behavior.
+The campaign used three SMD machines, 48-window prefixes at checkpoint intervals 1 and 16,
+400-window prefixes at interval 1, both synchronization modes, and two negative controls.
+SMD labels were never read; results are shown in Table 16.
 
-**Cost on real storage.** An earlier version of this section attributed a five-to-six-fold restart cost to durable commits. That measurement used temporary storage on tmpfs, where fsync is nearly free, and reflected CPU work in checkpoint serialization; on tmpfs full and normal synchronization cost the same (Table 16). On disks the cost is very different. Full synchronization costs 7.8 and 9.9 ms per window on the two SSD hosts, 105 ms on a hard disk and 490 ms on a slow overlay filesystem, against 0.14 to 0.44 ms for the memory-only pipeline. In the restart experiment on the same disks, completing the second half of the 64-window stream took 208 ms and 379 ms on the two SSDs, 3.4 s on the hard disk and 2.3 s on the overlay filesystem, against 7 to 22 ms for the Lite-only arm; the overlay host's storage was about six times faster during that run than during the cost study, which is why its restart time is below the hard disk's. A longer checkpoint interval removes the second commit per window but not the first, because the input log commits every window, so full synchronization cannot fall below about one fsync per window: 56 ms on the hard disk even with a 64-window interval. Normal synchronization avoids this at 0.3 to 2.9 ms per window on every disk, but it gives up durability of the most recent commits on power loss, which we could not test; the process-death campaigns above show only that it is safe against SIGKILL. A longer interval also lengthens the worst-case replay, up to the interval minus one windows: on the hard disk under full synchronization a 64-window interval took 438 ms to recover against 26 ms with a checkpoint every window.
+**Table 16.** Modeled crash-image recovery. The consistency columns count crash images;
+`Max lost` counts source windows.
 
-**Table 16.** Mean ingest cost per window (ms) of the capsule by synchronization mode and checkpoint interval, against the memory-only pipeline. Medians over interleaved repeats: 5 repeats of 256 windows on the first SSD host, 3 repeats of 64 windows on the other three. The hard-disk host is a rotational disk; the overlay host's storage varied roughly sixfold between runs, so its figures are indicative only.
+| Configuration | Trials | Capsule consistent | Images losing acknowledged windows | Max lost | Final vendor consistent |
+|---|---:|---:|---:|---:|---:|
+| `FULL`, every window, 48-window prefix | 1,491 | 1,491 / 1,491 | 0 | 0 | 1,491 / 1,491 |
+| `FULL`, every 16, 48-window prefix | 1,471 | 1,471 / 1,471 | 0 | 0 | 1,471 / 1,471 |
+| `FULL`, every window, 400-window prefix | 337 | 337 / 337 | 0 | 0 | 337 / 337 |
+| `NORMAL`, every window, 48-window prefix | 1,491 | 1,491 / 1,491 | 949 | 47 | 1,491 / 1,491 |
+| `NORMAL`, every 16, 48-window prefix | 1,472 | 1,472 / 1,472 | 766 | 48 | 1,472 / 1,472 |
+| `NORMAL`, every window, 400-window prefix | 337 | 337 / 337 | 223 | 169 | 337 / 337 |
+| `sync-off` negative control | 481 | 481 / 481 | 337 | 48 | 481 / 481 |
+| `no-journal` negative control | 483 | 317 / 483 | 199 | 48 | 317 / 483 |
+
+All `FULL` and `NORMAL` images remained internally consistent in this model. `NORMAL`
+nevertheless lost acknowledged input windows in 1,938 images; `FULL` lost none. The
+no-journal control produced 166 inconsistent images, including malformed SQLite databases.
+These results establish a modeled whole-syscall recovery property and make the `NORMAL`
+durability risk concrete; they do not establish hardware power-loss safety.
+
+
+**Cost on real storage.** An earlier version of this section attributed a five-to-six-fold restart cost to durable commits. That measurement used temporary storage on tmpfs, where fsync is nearly free, and reflected CPU work in checkpoint serialization; on tmpfs full and normal synchronization cost the same (Table 17). On disks the cost is very different. Full synchronization costs 7.8 and 9.9 ms per window on the two SSD hosts, 105 ms on a hard disk and 490 ms on a slow overlay filesystem, against 0.14 to 0.44 ms for the memory-only pipeline. In the restart experiment on the same disks, completing the second half of the 64-window stream took 208 ms and 379 ms on the two SSDs, 3.4 s on the hard disk and 2.3 s on the overlay filesystem, against 7 to 22 ms for the Lite-only arm; the overlay host's storage was about six times faster during that run than during the cost study, which is why its restart time is below the hard disk's. A longer checkpoint interval removes the second commit per window but not the first, because the input log commits every window, so full synchronization cannot fall below about one fsync per window: 56 ms on the hard disk even with a 64-window interval. Normal synchronization avoids this at 0.3 to 2.9 ms per window on every disk, but it gives up durability of the most recent commits on power loss, which we could not test; the process-death campaigns above show only that it is safe against SIGKILL. A longer interval also lengthens the worst-case replay, up to the interval minus one windows: on the hard disk under full synchronization a 64-window interval took 438 ms to recover against 26 ms with a checkpoint every window.
+
+**Table 17.** Mean ingest cost per window (ms) of the capsule by synchronization mode and checkpoint interval, against the memory-only pipeline. Medians over interleaved repeats: 5 repeats of 256 windows on the first SSD host, 3 repeats of 64 windows on the other three. The hard-disk host is a rotational disk; the overlay host's storage varied roughly sixfold between runs, so its figures are indicative only.
 
 | Host (temporary storage) | Memory-only | Full, every window | Full, every 16 | Full, every 64 | Normal, every window | Normal, every 16 |
 |---|---:|---:|---:|---:|---:|---:|
@@ -530,7 +559,7 @@ Natural timing rarely killed the process between a vendor commit and the matchin
 | asus (tmpfs) | 0.14 | 1.36 | 0.34 | 0.28 | 1.36 | 0.34 |
 | hp (tmpfs) | 0.13 | 1.27 | 0.32 | 0.27 | 1.27 | 0.32 |
 
-**What this does not show.** The correctness results rest on SMD server metrics only, and the process-death and real-store campaigns on three machines of it. The alarm records come from a fixed threshold, so the operational value of an alarm-open record was not evaluated, and this is a systems-recovery result that says nothing about detection accuracy. SIGKILL is not power loss, so power cuts, torn writes and the durability of normal synchronization are untested. The hosts are x86 desktops and laptops, not embedded targets, so the times say nothing about embedded latency, memory or flash endurance. One further host was unreachable and is not covered. The first four-host timing runs used tmpfs and did not record the storage; the on-disk runs cover the same four hosts.
+**What this does not show.** The correctness results rest on SMD server metrics only, and the process-death, real-store and crash-image campaigns do not establish embedded behavior. The alarm records come from a fixed threshold, so the operational value of an alarm-open record was not evaluated, and this is a systems-recovery result that says nothing about detection accuracy. The crash-image model operates at whole-syscall write boundaries; sub-write tearing, block-device reordering, flash behavior and real hardware power cuts remain untested. The hosts are x86 desktops and laptops, not embedded targets, so the times say nothing about embedded latency, memory or flash endurance. One further host was unreachable and is not covered. The first four-host timing runs used tmpfs and did not record the storage; the on-disk runs cover the same four hosts.
 
 ---
 

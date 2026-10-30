@@ -219,8 +219,42 @@ Trials that finished before the kill landed are counted in the totals. Natural t
 killed the process between a vendor commit and the checkpoint, which is why the pause exists.
 SIGKILL leaves the OS page cache intact, so this does not test power loss or torn writes, and
 the relaxed rows show only that those configurations survive process death.
+### Power-loss crash-image campaign
+
+`scripts/capsule_power_loss_campaign.sh` records the capsule's file operations under an
+`LD_PRELOAD` shim, then replays the trace into crash images at whole-syscall write
+boundaries. The model simulates a power cut after each selected prefix; it does not model
+sub-write tearing, block-device reordering below the page cache, or hardware recovery.
+The campaign covered three SMD machines, `FULL` and `NORMAL`, checkpoint intervals 1 and
+16 over 48 windows, and one 400-window run for each mode. It also ran `sync-off` and
+`no-journal` negative controls on `machine-1-1`.
+
+| Configuration | Trials | Capsule consistent | Images losing acknowledged windows | Max lost |
+|---|---:|---:|---:|---:|
+| `FULL`, every window, 48-window prefix | 1,491 | 1,491 / 1,491 | 0 | 0 |
+| `FULL`, every 16, 48-window prefix | 1,471 | 1,471 / 1,471 | 0 | 0 |
+| `FULL`, every window, 400-window prefix | 337 | 337 / 337 | 0 | 0 |
+| `NORMAL`, every window, 48-window prefix | 1,491 | 1,491 / 1,491 | 949 | 47 |
+| `NORMAL`, every 16, 48-window prefix | 1,472 | 1,472 / 1,472 | 766 | 48 |
+| `NORMAL`, every window, 400-window prefix | 337 | 337 / 337 | 223 | 169 |
+| `sync-off` negative control | 481 | 481 / 481 | 337 | 48 |
+| `no-journal` negative control | 483 | 317 / 483 | 199 | 48 |
+
+All `FULL` and `NORMAL` crash images remained internally consistent and the final vendor
+state matched the reference. `NORMAL` nevertheless lost acknowledged input windows in
+the modeled images; the input log commits every window, but those commits are not all
+durable at a power cut. The `no-journal` control produced 166 inconsistent images,
+including malformed SQLite databases. These results support the capsule's modeled
+whole-syscall recovery behavior and the durability trade-off; they do not establish
+hardware power-loss safety.
+
+The artifacts are under `results/capsule_power_loss/`; the result ledger's Table A56
+contains every cell. SMD labels are never read.
+
+---
 
 ### Cost of durability
+
 
 `python -m bench.capsule_cost_study` (`results/capsule_cost/`). Mean ingest cost per window
 (ms), medians over interleaved repeats (5 x 256 windows on `msi`; 3 x 64 on the other three hosts):
@@ -250,8 +284,9 @@ under FULL a 64-window interval recovered in 438 ms against 26 ms for every-wind
   sweep covers 28 machines; the SIGKILL and real-library campaigns use three.
 - The alarm records come from a fixed threshold, so their operational value is not evaluated.
 - The stand-in vendor store is not Lite; only the real-library runs use the real backend.
-- SIGKILL and in-process reopening are not power loss. Torn writes, unsynchronized data loss,
-  and the durability of `synchronous=NORMAL` are untested.
+- SIGKILL and in-process reopening are not power loss. The crash-image campaign is a
+  whole-syscall model; sub-write tearing, block-device reordering, flash behavior, hardware
+  power cuts, and the durability of `synchronous=NORMAL` on real hardware remain untested.
 - The hosts are x86 desktop and laptop machines, not embedded targets. Timings are host-local
   and say nothing about embedded latency, RAM, or flash endurance.
 - `gigabyte-worker` was unreachable and is not covered. The first four-host runs and the

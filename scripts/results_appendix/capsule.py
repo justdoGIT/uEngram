@@ -148,6 +148,39 @@ def _cost(repo: Path) -> dict:
                     "runs, so its figures are indicative only. msi is an interactive workstation."}
 
 
+def _power_loss(repo: Path) -> dict:
+    rows = []
+    for path in sorted((repo / "results" / "capsule_power_loss").glob("*.json")):
+        doc = json.loads(path.read_text())
+        summary = doc["summary"]
+        control = doc.get("control", "none")
+        sync = doc["synchronous"]
+        rows.append([
+            doc["machine"], sync, doc["checkpoint_every"], doc["window_count"],
+            control, summary["trials"],
+            f"{summary['capsule_consistent']}/{summary['trials']}",
+            summary.get("images_losing_acknowledged_windows", 0),
+            summary.get("acknowledged_windows_lost_max", 0),
+            f"{summary['final_vendor_consistent']}/{summary['trials']}",
+        ])
+    if not rows:
+        raise ValueError("capsule power-loss campaign has no result files")
+    return {
+        "title": "Power-cut crash-image recovery",
+        "outcome": "mixed",
+        "source": "results/capsule_power_loss/*.json",
+        "columns": ["machine", "sync", "checkpoint every", "windows", "control", "trials",
+                    "capsule consistent", "images losing acknowledged windows",
+                    "max acknowledged windows lost", "final vendor consistent"],
+        "rows": rows,
+        "note": "The LD_PRELOAD trace is replayed into crash images at whole-syscall write "
+                "boundaries; the model has no sub-write tearing or block-device reordering. "
+                "FULL and NORMAL are safe only for the modeled image boundaries. NORMAL can "
+                "lose acknowledged windows, while disabling the journal is a negative control "
+                "that exposes database corruption. This is a model result, not hardware power-loss evidence.",
+    }
+
+
 def build(repo: Path) -> list[dict]:
     return [
         _resilience(repo, "capsule_resilience_summary.json",
@@ -168,5 +201,5 @@ def build(repo: Path) -> list[dict]:
                     "idempotency key), temp storage not recorded (the default tmpfs). The real store returns "
                     "every matching record up to its limit, so the Lite-only 'ranked history' of the stub "
                     "(newest record only) does not apply here."),
-        _sweep(repo), _warmup(repo), _kill(repo), _cost(repo),
+        _sweep(repo), _warmup(repo), _kill(repo), _cost(repo), _power_loss(repo),
     ]
