@@ -57,6 +57,11 @@ capsule for Lite delivery and exact-vector indexing, then checkpoints the result
 engine state. Lite writes remain idempotent projections. A raw-evidence adapter must
 reconcile the capsule's pin intents with idempotent `pin` and `unpin` operations.
 
+## Research protocol
+
+The deterministic A/B/C recovery experiment, crash boundaries, fixed endpoints, and
+claim limits are in [the resilience experiment protocol](resilience-experiment.md).
+
 ## Deliberate limits
 
 This is an exact host index, not ANN. It improves candidate completeness when Lite keyword recall is truncated, but does not prove detector accuracy, target-hardware latency, flash endurance, or field diagnostic value. Native vectors, binary payloads, graph relationships, and cross-store transactions still require a versioned vendor ABI and backend implementation.
