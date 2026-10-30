@@ -19,6 +19,7 @@ Industrial and edge equipment produce continuous telemetry that cannot be kept i
 > 3. **Proxy screens mislead:** the label-free screen's winner (middle layer, score 0.610) has a lower event median than the bottleneck in the full alarm pipeline on both SKAB and MetroPT-3.
 > 4. **Distillation shifts alarm timing:** on CMAPSS all four models alarm before failure on 10 of 10 engines, but the students' alarms start earlier and more often than the ordinary CNN's.
 > 5. **Partitioning beats pooling on one workload:** domain specialists detect 29 of 30 OS-Metrics test events at 19.6 false alarms per week, against 27 of 30 at 26.6 for the DSP baseline.
+> 6. **Detector state must survive restarts:** after a simulated restart with no detector checkpoint, the engine re-emitted two lifecycle records and missed the alarm-open record an uninterrupted run raised, in 120 of 120 Lite-only and sidecar runs. A SQLite input log plus engine checkpoint matched the uninterrupted run in 60 of 60, at roughly five to six times the restart time (Section 5.14).
 
 ---
 
@@ -42,6 +43,7 @@ Figure 1 contrasts the two designs. We analyze a Python reference implementation
 - A cross-benchmark evaluation that separates mechanism results from operational early-warning results, with explicit definitions of every metric and split (Sections 4 and 5).
 - Negative and diagnostic findings that are easy to miss: wide embeddings that regress, proxy screens that mislead, foundation-model students that flag healthy data, and alarm-tuning sweeps that cannot meet all operational budgets (Section 5).
 - A role-separated, per-subsystem architecture with pre-fit numerical diagnostics, evaluated on one workload (Sections 3.6, 3.7 and 5.9).
+- A host-owned durable capsule (an input write-ahead log and a versioned engine checkpoint in one SQLite store) and a restart experiment on four hosts that measures what losing detector state costs in lifecycle records (Sections 3.5 and 5.14).
 
 The remainder of the paper reviews related work (Section 2), describes the method (Section 3), the experimental setup (Section 4) and the results (Section 5), and closes with limitations (Section 6) and conclusions (Section 7).
 
@@ -160,6 +162,8 @@ The reference adapter (Figure 4, Table 1) keeps live states in memory and writes
 | Event storage | External embedded store: remember, recall, forget | A persistence error carries the pending records for retry |
 | Retrieval bundle | Exact state recall plus keyword history | Invalid mode or non-finite query rejected |
 | Alarm combination | Combination rule over channels | Not on the write path; only flagged transitions are persisted |
+
+**Detector checkpoint and input log.** The adapter's outbox makes event *delivery* restart-safe but does not preserve detector state. A single-host SQLite store, the *capsule*, adds three things in write-ahead-log mode with full synchronous commits: an input log written before the engine consumes a window, a versioned checkpoint of the engine arrays and alarm state, and the outbox with an exact vector index. Recovery restores the latest checkpoint and replays only logged windows newer than it; stable idempotency keys make the vendor-side replay safe. Checkpoints are NumPy archives with no executable deserialization and are refused when the engine configuration, dimension, array shapes or dtypes differ. The capsule is host-local: it does not turn the embedded event store and the capsule into one transaction (Section 6).
 
 ### 3.6 Role-Separated Encoders and Domain Specialists
 
@@ -477,6 +481,24 @@ Section 6 proposes keyed state superseding: an active baseline updates only from
 
 With benign drift, the frozen reference pays for never adapting: a 9.7% false-alarm rate on healthy windows, because "healthy but drifted" keeps tripping a threshold calibrated before the drift. Gating removes nearly all of it (0.5%) at no cost to ramp recall (86.6% against 87.2%): the confirmed-normal windows track the drift while the unconfirmed ramps are still flagged. The ungated control is the failure this gate exists to prevent: with every window accepted, the adapter partly absorbs the ramps themselves into the baseline, and recall collapses to 1.7% with AUROC near chance (0.546). Without drift, gating costs nothing (false-alarm rate and recall both match the frozen arm within noise), so the gate is not merely cautious, it is doing real work exactly where drift is present and failing exactly as designed when confirmation is not trustworthy.
 
+### 5.14 Restart Recovery: Detector State Is Part of the Memory
+
+Sections 5.1–5.13 assume an uninterrupted process. We tested what a restart does, using the first 64 test windows of one SMD machine (`machine-1-1`, 38 features per window, window means as inputs, no labels read) with a restart injected at window 32. Three arms received identical inputs and a Lite-like idempotent event store: **Lite-only** (events delivered directly), **sidecar** (a durable outbox and exact vector file, but no detector state) and the **capsule** (Section 3.5). The reference is an uninterrupted run, which emits three lifecycle records: a new candidate at step 0, a promotion at step 4 and an alarm-open at step 39. We compare engine arrays exactly and compare lifecycle records as sets of idempotency keys, not as counts. Each of three restart points (before the engine consumed the logged window, after it consumed the window but before a checkpoint, and after a checkpoint) was run five times on each of four hosts (x86 desktops and laptops: i7-6700, i3-6100, i3-3110M and i3-7100), giving 60 runs per arm; Table 14 reports them.
+
+**Table 14.** Restart recovery, 60 runs per arm (4 hosts × 3 restart points × 5 repeats). Every host and restart point gave the same outcome. Time is the median over five runs at the after-ingest restart point, from restart to completion, in milliseconds.
+
+| Arm | Engine state equals uninterrupted | Lifecycle keys equal reference | Missing | Extra | Ranked history | Time: hp / asus / lenovo / msi |
+|---|---:|---:|---:|---:|---:|---|
+| Lite-only | 0 / 60 | 0 / 60 | 1 | 2 | 1 | 7.9 / 7.8 / 23.6 / 18.6 |
+| Sidecar | 0 / 60 | 0 / 60 | 1 | 2 | 4 | 9.2 / 9.0 / 27.3 / 32.0 |
+| Capsule | 60 / 60 | 60 / 60 | 0 | 0 | 3 | 50.7 / 50.2 / 135.2 / 102.2 |
+
+Without detector state the restarted engine treated the machine as new: it re-emitted the new-candidate record (step 32) and the promotion record (step 36), and it never emitted the alarm-open record that the uninterrupted run raised at step 39. We did not isolate why the alarm did not open; the restarted engine's slots and reference were empty at step 32 and plausibly had not re-accumulated by step 39 (untested). A count comparison would have hidden this: the Lite-only arm held four records against the reference's three, which is two spurious records and one missing. The sidecar's exact index returned four candidates, two of them spurious and none the alarm. The capsule matched the reference in all 60 runs, with identical engine arrays and the same three keys.
+
+The cost was roughly five to six times the restart-to-completion time of the memory-only arms over about 32 replayed windows. That time includes opening the database, restoring the checkpoint and a durable commit per window, so it measures the price of durability and is not a pure recovery latency. Timing is noisy: capsule medians across the three restart points ranged 104.5 to 135.2 ms on the lenovo laptop and 96.0 to 103.1 ms on the interactive msi workstation.
+
+**What this does not show.** The result rests on one machine, one prefix and one restart position. The vendor store is a Lite-like in-process stand-in, not the real backend. A restart is a close and reopen inside one process, so power loss and torn writes are untested. The hosts are x86 machines, not embedded targets, so the times say nothing about embedded latency, memory or flash endurance. One further host was unreachable and is not covered. SMD windows serve only as an ordered replay source, so this is a systems-recovery result and says nothing about detection accuracy; the operational value of the alarm-open record was not evaluated.
+
 ---
 
 ## 6. Discussion and Limitations
@@ -493,6 +515,7 @@ With benign drift, the frozen reference pays for never adapting: a 9.7% false-al
 * *Metric sensitivity.* Event-level outcomes depend on the detection criterion (strict against active-in-interval) and on the alarm design, as the MetroPT-2 and CMAPSS results show.
 * *Estimator support.* An estimate resting on few pairs can silently change a headline result: the strict step-inflation estimate on FD001 $d = 24$, FD002 and FD003 moved end-of-life retention between 0.06 and 1.00 (Section 5.3). The 100-pair minimum follows from the variance of the estimate, not from these results, and the CMAPSS cells are single deterministic configurations on consumed benchmarks. Retention rose while the memory-lookup RUL worsened, so the two goals trade off.
 * *A retracted early-warning claim.* An earlier internal recap reported 63.8 hours of warning and zero false alarms over four healthy weeks on a public bearing run-to-failure set (NASA IMS). Inspection showed the supporting script hard-coded its own degradation indices, used the final sample as the failure reference and evaluated against those assumptions, and its 7-day run had three false-alarm episodes. We withdrew the claim and report nothing from that set: without independently adjudicated onset labels, a scripted changepoint measures a time trend, not detection before a physical failure.
+* *Restart experiment scope.* Section 5.14 uses one SMD machine, one 64-window prefix and one restart position, simulated restarts, a Lite-like stand-in for the event store and x86 hosts. Its timings come from interactive machines with run-to-run spread of tens of percent.
 
 **Toward a sensor-state memory database.** An earlier draft of this section proposed five primitives as unimplemented future work. Since then we implemented four of the five in the reference library and measured one of them; the identity keys default to 0, so none of this changes the public-benchmark results in Sections 5.1–5.12, all of which run a single identity per stream.
 
@@ -507,7 +530,7 @@ With benign drift, the frozen reference pays for never adapting: a 9.7% false-al
 1. *Preregistered multi-asset field cohort:* held-out physical assets with independently adjudicated fault-onset timestamps and complete operating-mode coverage (startup, idle, full load, post-repair), without preprocessing leakage across vehicles or machines.
 2. *Adversarial poisoning and shadow baselines:* replay slow degradation ramps against a frozen shadow reference to verify that quarantine prevents gradual wear from updating semantic healthy centroids. The semantic route was not exercised in the OS-Metrics runs, which contain no operator-confirmed normal labels.
 3. *Abstention as a first-class output:* emit unknown-operating-mode or insufficient-calibration-support outputs instead of forcing out-of-distribution loads into false alarms or healthy summaries.
-4. *Transactional cross-store crash recovery:* an atomic write-ahead outbox unifying memory checkpoints, event records and circular-buffer pin reference counts across power cuts.
+4. *Transactional cross-store crash recovery:* partly addressed. A single-host SQLite capsule restored uninterrupted detector state and lifecycle records in all simulated restarts (Section 5.14). Still open: power-cut and torn-write testing, one atomic unit spanning the memory checkpoint, the event store and circular-buffer pin reference counts, and a real vendor backend.
 5. *Hardware storage profiling:* p99 latency, peak RAM, flash write amplification, and approximate-search recall under high-water-mark eviction on target embedded flash.
 
 ---
@@ -521,6 +544,8 @@ We studied a bounded, deterministic memory for sensor streams and a set of encod
 ## Data and Code Availability
 
 All datasets are public and are cited in Table 2: CMAPSS FD001 [20] (FD002, FD003 and FD004 come from the same archive), MetroPT-3 [21], MetroPT-2 [22, 23], SKAB [24], SCANIA Component X [25], OS-Metrics [26], MFPT [27], CWRU [28], TSB-AD-U [17], EngineAD [29] and SMD [30]. The synthetic generator is part of the released code. The reference implementation, the experiment scripts, the committed result files and step-by-step reproduction instructions that map each table and figure of this paper to a command are in the project repository at https://github.com/justdoGIT/uEngram, released under the MIT license. The repository's reproduction guide lists the dataset layout expected by the loaders. The synthetic $d = 36$ results and the SKAB width sweep were regenerated from the released code for this paper. Every CMAPSS result file and the feature-group ablation were regenerated at the released commit after the step-inflation support rule (Section 3.7); the naive, FIFO, reservoir and label-free centroid rows of each file are identical to the earlier output, and only the μEngram rows moved. For Table 7, a fresh run of the released pipeline reproduced 146 of the 150 underlying per-seed values (five metrics, three readouts, five seeds, two datasets) exactly; the other four differ by less than $4 \times 10^{-6}$. The EngineAD study (30 runs) was produced by a released script on a cloud GPU (1,962 s) and its result file is committed. We reran the released script on a fresh Colab T4 GPU (1,680 s), after verifying all 25 data files against the same manifest (identical manifest hash, protocol and label audit, same Python, NumPy, pandas and torch versions). The seed medians of pooled segment AUROC were 0.540, 0.555 and 0.537 for $d$ = 8, 16 and 32 against 0.539, 0.556 and 0.537 in the original run, the medians of AP 0.177, 0.200 and 0.179 against 0.176, 0.200 and 0.179, and every one of the 30 per-run AUROC values lay within 0.005 of its original (mean difference 0.001). GPU kernels are not bitwise deterministic, so exact equality is not expected; both result files are committed. The original file records the sweep label rather than a hash of the script, so its match to the released script rests on its fields, not on a checksum.
+
+The restart experiment of Section 5.14 is produced by `scripts/capsule_target_run.sh` and aggregated by `python -m bench.capsule_resilience_summary`; its 60 raw per-run artifacts and the aggregate are committed under `results/`. Each artifact records the replay-input digest and host metadata (CPU model, memory, Python and NumPy versions), and the aggregator rejects a set that mixes inputs. The four hosts shared one input digest despite running two Python and NumPy builds. Timings were taken on interactive machines and are not a benchmark of embedded hardware.
 
 ---
 

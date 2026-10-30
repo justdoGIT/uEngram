@@ -57,10 +57,18 @@ capsule for Lite delivery and exact-vector indexing, then checkpoints the result
 engine state. Lite writes remain idempotent projections. A raw-evidence adapter must
 reconcile the capsule's pin intents with idempotent `pin` and `unpin` operations.
 
-## Research protocol
+## Research protocol and result
 
 The deterministic A/B/C recovery experiment, crash boundaries, fixed endpoints, and
 claim limits are in [the resilience experiment protocol](resilience-experiment.md).
+
+Measured result: on a 64-window SMD replay with a midpoint restart, repeated on four fleet
+hosts (60 runs per arm), the capsule reproduced the uninterrupted engine state and lifecycle
+records in every run. The Lite-only and file-sidecar arms never did: after losing detector
+state they emitted two spurious lifecycle records and never raised the alarm-open record the
+uninterrupted run raised. The capsule's price was roughly five to six times the
+restart-to-completion time of the memory-only arms. The restart is a reopen inside one
+process, so power loss and torn writes remain untested.
 
 ## Deliberate limits
 
