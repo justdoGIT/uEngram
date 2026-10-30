@@ -11,6 +11,7 @@ GROUPS = (
     ("skab", "SKAB event studies"),
     ("model_gates", "Encoder, teacher, and role gates"),
     ("v8_chain", "MetroPT alarm-definition campaign (final v8)"),
+    ("capsule", "Persistence and crash recovery"),
 )
 OUTCOMES = ("positive", "mixed", "null", "negative")
 LABELS = {"positive": "Positive", "mixed": "Mixed", "null": "Null", "negative": "Negative"}

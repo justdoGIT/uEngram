@@ -1,0 +1,58 @@
+{
+  "conditions": {
+    "capsule": {
+      "event_keys_match_reference": true,
+      "extra_event_count": 0,
+      "local_storage_bytes": 131072,
+      "missing_event_count": 0,
+      "ranked_history_count": 3,
+      "recovery_ns": 130917132,
+      "state_equivalent_to_uninterrupted": true,
+      "vendor_event_count": 3
+    },
+    "lite": {
+      "event_keys_match_reference": false,
+      "extra_event_count": 2,
+      "local_storage_bytes": 0,
+      "missing_event_count": 1,
+      "ranked_history_count": 1,
+      "recovery_ns": 22160369,
+      "state_equivalent_to_uninterrupted": false,
+      "vendor_event_count": 4
+    },
+    "sidecar": {
+      "event_keys_match_reference": false,
+      "extra_event_count": 2,
+      "local_storage_bytes": 3039,
+      "missing_event_count": 1,
+      "ranked_history_count": 4,
+      "recovery_ns": 24738456,
+      "state_equivalent_to_uninterrupted": false,
+      "vendor_event_count": 4
+    }
+  },
+  "crash_point": "after_wal",
+  "host": {
+    "cpu_count": 4,
+    "cpu_model": "Intel(R) Core(TM) i3-3110M CPU @ 2.40GHz",
+    "hostname": "lenovo",
+    "machine": "x86_64",
+    "memory_mib": 11860,
+    "numpy": "2.5.3",
+    "platform": "Linux-7.2.11_1-x86_64-with-glibc2.41",
+    "python": "3.14.8",
+    "target_label": "lenovo"
+  },
+  "input": {
+    "feature_dimension": 38,
+    "machine": "machine-1-1",
+    "sha256": "47257349ba07964c08e0dd6e529cb9efd80116021e153970697eed7236de67fd",
+    "stream": "smd",
+    "window_count": 64
+  },
+  "interpretation": "systems recovery and retrieval completeness only; not detector accuracy",
+  "protocol": "capsule-resilience-v3",
+  "reference": {
+    "vendor_event_count": 3
+  }
+}
