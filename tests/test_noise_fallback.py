@@ -166,3 +166,21 @@ def test_dsp_encoder_healthy_fit_keeps_its_dimension_and_reports_robust_quality(
     W = rng.normal(size=(800, 8, 64)).astype(np.float32)
     enc = DSPEncoder(d=16).fit(W, 1, None)
     assert enc.d == 16 and enc.whitening_quality == "robust"
+
+
+def test_gate_lag_widens_only_dimensions_with_slow_within_state_variation():
+    rng = np.random.default_rng(11)
+    T = 6000
+    slow = np.zeros((T, 3))
+    for t in range(1, T):
+        slow[t] = 0.995 * slow[t - 1] + 0.1 * rng.normal(size=3)  # correlation time ~200 samples
+    X = np.column_stack([slow / slow.std(0) * 10.0 + rng.normal(size=(T, 3)), rng.normal(size=(T, 3))])
+    base = DSPEncoder(d=6)
+    base._fit_projection(X, 1, None)
+    wide = DSPEncoder(d=6, gate_lag=20)
+    wide._fit_projection(X, 1, None)
+    assert base.gate_lag == 0
+    assert (wide.sigma0 >= base.sigma0 - 1e-12).all()  # never narrows the gate
+    ratio = wide.sigma0 / base.sigma0
+    assert np.sort(ratio)[-3:].min() > 2.0  # the slow dimensions
+    assert np.sort(ratio)[:3].max() < 1.5  # the white ones are left alone

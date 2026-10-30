@@ -98,9 +98,14 @@ def windowed_slopes(means: np.ndarray, segment, lags: tuple[int, ...]) -> np.nda
 class DSPEncoder:
     """Hand-built spectral features, robust standardisation, PCA + noise whitening."""
 
-    def __init__(self, d: int = 16):
+    def __init__(self, d: int = 16, gate_lag: int = 0):
+        """``gate_lag > 0`` widens each latent dimension's gate scale ``sigma0`` by the ratio of its
+        lag-``gate_lag`` difference noise to its lag-1 noise (never below 1). Whitening by lag-1
+        noise treats slow within-state variation as novelty; at ``d = 36`` that is most dimensions.
+        0 (default) keeps ``sigma0`` as the lag-1 noise std."""
         self.d = d
         self._d_requested = d
+        self.gate_lag = gate_lag
 
     def _raw(self, windows, sequential: bool) -> np.ndarray:
         return band_features(windows)
@@ -114,6 +119,10 @@ class DSPEncoder:
                           f"features; using d={d}", RuntimeWarning, stacklevel=3)
         self.d = d
         self.whitener, self.noise, self.sigma0 = fit_projection(X, d, noise_lag, groups)
+        if self.gate_lag:
+            Z = self.noise.transform(self.whitener.transform(X))
+            slow, _ = soft_noise_sigma(Z, self.gate_lag, groups)
+            self.sigma0 = self.sigma0 * np.maximum(slow / self.sigma0, 1.0)
 
     @property
     def whitening_quality(self) -> str:

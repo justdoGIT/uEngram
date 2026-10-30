@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import multiprocessing as mp
+import re
 import time
 
 from bench.common import (ALL_METHODS, calibrate_alarm, degradation, dump, make_store,
@@ -21,8 +22,9 @@ TEMP_CH, RPM_CH = synth.CHANNELS.index("coolant_temp"), synth.CHANNELS.index("rp
 def make_encoder(name: str, seed: int):
     if name == "dsp":
         return DSPEncoder()
-    if name.startswith("dsp_d") and name[len("dsp_d"):].isdigit():
-        return DSPEncoder(d=int(name[len("dsp_d"):]))
+    wide = re.fullmatch(r"dsp_d(\d+)(?:_g(\d+))?", name)  # _g<L>: DSPEncoder gate_lag
+    if wide:
+        return DSPEncoder(d=int(wide[1]), gate_lag=int(wide[2] or 0))
     if name == "dsp_slope":
         from uengram.encoder_slope import DSPSlopeEncoder
 
