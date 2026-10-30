@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 772 354" role="img" aria-label="results-ledger" font-family="'Nimbus Sans', Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 807 354" role="img" aria-label="results-ledger" font-family="'Nimbus Sans', Helvetica, Arial, sans-serif">
 <defs><marker id="results-ledger-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#64748b"/></marker></defs>
-<rect width="772" height="354" fill="#ffffff"/>
+<rect width="807" height="354" fill="#ffffff"/>
 <rect x="20.0" y="16.0" width="12.0" height="12.0" rx="2" fill="#15803d" stroke="none" stroke-width="1.0"/>
 <text x="38.0" y="26.5" font-size="10.5" font-weight="700" fill="#0f172a" text-anchor="start">Positive</text>
 <rect x="99.9" y="16.0" width="12.0" height="12.0" rx="2" fill="#b45309" stroke="none" stroke-width="1.0"/>
@@ -48,18 +48,20 @@
 <text x="363.9" y="229.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
 <text x="397.9" y="229.0" font-size="9.5" fill="#475569" text-anchor="start">5 tables</text>
 <text x="20.0" y="269.0" font-size="10.5" font-weight="700" fill="#0f172a" text-anchor="start">Persistence and crash recovery</text>
-<rect x="259.9" y="254.0" width="26.0" height="22.0" rx="3" fill="#b45309" stroke="none" stroke-width="1.0"/>
-<text x="272.9" y="269.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
-<text x="293.9" y="269.0" font-size="9.5" fill="#475569" text-anchor="start">1 tables</text>
-<line x1="20.0" y1="286.0" x2="752.4" y2="286.0" stroke="#e2e8f0" stroke-width="1.0"/>
+<rect x="259.9" y="254.0" width="52.0" height="22.0" rx="3" fill="#15803d" stroke="none" stroke-width="1.0"/>
+<text x="285.9" y="269.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<rect x="311.9" y="254.0" width="130.0" height="22.0" rx="3" fill="#b45309" stroke="none" stroke-width="1.0"/>
+<text x="376.9" y="269.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+<text x="449.9" y="269.0" font-size="9.5" fill="#475569" text-anchor="start">7 tables</text>
+<line x1="20.0" y1="286.0" x2="787.1" y2="286.0" stroke="#e2e8f0" stroke-width="1.0"/>
 <text x="20.0" y="309.0" font-size="10.5" font-weight="700" fill="#0f172a" text-anchor="start">All groups</text>
-<rect x="259.9" y="294.0" width="26.0" height="22.0" rx="3" fill="#15803d" stroke="none" stroke-width="1.0"/>
-<text x="272.9" y="309.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
-<rect x="285.9" y="294.0" width="234.0" height="22.0" rx="3" fill="#b45309" stroke="none" stroke-width="1.0"/>
-<text x="402.9" y="309.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">27</text>
-<rect x="519.9" y="294.0" width="17.3" height="22.0" rx="3" fill="#64748b" stroke="none" stroke-width="1.0"/>
-<text x="528.6" y="309.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
-<rect x="537.3" y="294.0" width="147.3" height="22.0" rx="3" fill="#b91c1c" stroke="none" stroke-width="1.0"/>
-<text x="610.9" y="309.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">17</text>
-<text x="692.6" y="309.0" font-size="9.5" fill="#475569" text-anchor="start">49 tables</text>
+<rect x="259.9" y="294.0" width="43.3" height="22.0" rx="3" fill="#15803d" stroke="none" stroke-width="1.0"/>
+<text x="281.6" y="309.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+<rect x="303.3" y="294.0" width="268.7" height="22.0" rx="3" fill="#b45309" stroke="none" stroke-width="1.0"/>
+<text x="437.6" y="309.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">31</text>
+<rect x="571.9" y="294.0" width="17.3" height="22.0" rx="3" fill="#64748b" stroke="none" stroke-width="1.0"/>
+<text x="580.6" y="309.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<rect x="589.3" y="294.0" width="147.3" height="22.0" rx="3" fill="#b91c1c" stroke="none" stroke-width="1.0"/>
+<text x="662.9" y="309.0" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">17</text>
+<text x="744.6" y="309.0" font-size="9.5" fill="#475569" text-anchor="start">55 tables</text>
 </svg>

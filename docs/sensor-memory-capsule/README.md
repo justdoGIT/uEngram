@@ -40,7 +40,12 @@ flowchart LR
 
 ## Storage model
 
-The capsule uses SQLite in WAL mode with `synchronous=FULL` for its local transaction log. Its schema contains input windows, checkpoints, lifecycle events, compact event vectors, raw pin intents, and Lite outbox rows. Arrays are stored in an explicit NumPy archive with no pickle payload; checkpoints refuse a mismatched engine configuration or latent dimension.
+The capsule uses SQLite in WAL mode with `synchronous=FULL` by default for its local transaction log; `SensorMemoryCapsule(path, synchronous="NORMAL")` relaxes it. Its schema contains input windows, checkpoints, lifecycle events, compact event vectors, raw pin intents, and Lite outbox rows. Arrays are stored in an explicit NumPy archive with no pickle payload; checkpoints refuse a mismatched engine configuration or latent dimension.
+
+Two options trade durability cost against replay length:
+
+- `synchronous`: `FULL` (default) syncs the WAL on every commit; `NORMAL` syncs only when SQLite checkpoints its WAL. `NORMAL` is far cheaper on slow disks but can lose the most recent commits on power loss. That durability is untested here; only process death (SIGKILL) is.
+- `CapsuleSensorStateMemory(..., checkpoint_every=N)` writes the engine checkpoint every `N` ingested windows (default 1). Recovery then replays up to `N - 1` logged windows. The input log still commits every window, so under `FULL` this removes the second fsync per window, not the first.
 
 ## Integration
 
@@ -62,14 +67,21 @@ reconcile the capsule's pin intents with idempotent `pin` and `unpin` operations
 The deterministic A/B/C recovery experiment, crash boundaries, fixed endpoints, and
 claim limits are in [the resilience experiment protocol](resilience-experiment.md).
 
-Measured result: on a 64-window SMD replay with a midpoint restart, repeated on four fleet
-hosts (60 runs per arm), the capsule reproduced the uninterrupted engine state and lifecycle
-records in every run. The Lite-only and file-sidecar arms never did: after losing detector
-state they emitted two spurious lifecycle records and never raised the alarm-open record the
-uninterrupted run raised. The capsule's price was roughly five to six times the
-restart-to-completion time of the memory-only arms. The restart is a reopen inside one
-process, so power loss and torn writes remain untested.
+Measured results (SMD server metrics, systems recovery only):
+
+- **Detector state is lost on restart.** After a restart the Lite-only and file-sidecar arms
+  emitted spurious lifecycle records and lost alarm-open records: in 120 / 120 runs on four
+  hosts, and in 406 / 448 machine-and-restart-position cells across all 28 SMD machines where
+  the uninterrupted run alarms. A replay experiment indicates why: a cold restart re-baselines
+  on already-drifted data.
+- **The capsule matches an uninterrupted run** in all 60 runs, all 448 sweep cells, and all
+  780 SIGKILL trials, including against the real EdgeMemory Lite library.
+- **Durability costs real time on real disks.** Full synchronization costs 8 to 490 ms per
+  window on an SSD, a hard disk and a slow overlay filesystem, against about 1.5 ms with
+  `synchronous=NORMAL`. An earlier "five to six times" figure was measured on tmpfs, where
+  fsync is nearly free, and was CPU cost only; it was wrong as a cost of durable commits.
+- **Not tested:** power loss, torn writes, the durability of `NORMAL`, embedded targets.
 
 ## Deliberate limits
 
-This is an exact host index, not ANN. It improves candidate completeness when Lite keyword recall is truncated, but does not prove detector accuracy, target-hardware latency, flash endurance, or field diagnostic value. Native vectors, binary payloads, graph relationships, and cross-store transactions still require a versioned vendor ABI and backend implementation.
+This is an exact host index, not ANN. It improves candidate completeness when Lite keyword recall is truncated, but does not prove detector accuracy, target-hardware latency, flash endurance, or field diagnostic value. Native vectors, binary payloads, graph relationships, and cross-store transactions still require a versioned vendor ABI and backend implementation. Process death is tested; power loss is not.
