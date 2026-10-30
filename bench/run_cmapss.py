@@ -14,7 +14,7 @@ from bench.evaluate import footprint, latency, mmd_metrics
 from bench.provenance import Provenance
 from bench.run_synth import make_encoder
 from uengram import cmapss
-from uengram.health import HealthRUL
+from uengram.health import HealthAgeRUL, HealthRUL
 from uengram.metrics import auroc, average_precision, median_heuristic
 
 METHODS = "naive,fifo,reservoir,reference_labelfree,uengram,uengram_frozen"
@@ -99,11 +99,19 @@ def run_one(task):
         # RUL from the health score: a table fitted on the labelled stream windows
         # (the labels the lookup above uses), applied to the test units' last windows
         if has_health:
-            err_h = HealthRUL().fit(health, Rs).predict(store.health(Zt)) - rul_true
+            ht = store.health(Zt)
+            err_h = HealthRUL().fit(health, Rs).predict(ht) - rul_true
             m["rul_rmse_health"] = float(np.sqrt(np.mean(err_h ** 2)))
             m["rul_mae_health"] = float(np.mean(np.abs(err_h)))
+            # the same labelled windows plus each unit's age (stream: cycle at the window's end)
+            age_s = np.concatenate([np.arange(c) + K for c in np.bincount(np.searchsorted(stream_units, Us))])
+            age_t = np.array([(test[:, 0] == u).sum() for u in Ut])
+            err_a = HealthAgeRUL().fit(health, age_s, Rs).predict(ht, age_t) - rul_true
+            m["rul_rmse_health_age"] = float(np.sqrt(np.mean(err_a ** 2)))
+            m["rul_mae_health_age"] = float(np.mean(np.abs(err_a)))
         else:
             m["rul_rmse_health"] = m["rul_mae_health"] = float("nan")
+            m["rul_rmse_health_age"] = m["rul_mae_health_age"] = float("nan")
         live_eol = set()
         for i in store.items().ids.tolist():
             if i in prov.items:

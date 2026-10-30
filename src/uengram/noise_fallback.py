@@ -33,11 +33,14 @@ import warnings
 
 import numpy as np
 
-from .stats import NoiseEstimateError, _diff_pairs, ewma_inflation, robust_noise_cov, robust_noise_sigma
+from .stats import (NoiseEstimateError, _diff_pairs, _segments, ewma_inflation, ewma_lag_pairs,
+                    robust_noise_cov, robust_noise_sigma)
 
 QUALITY = ("robust", "ungrouped", "shrunk")
 INFLATION_QUALITY = ("exact", "group_segments", "assumed_white")
 _SIGMA_FLOOR = 1e-6  # the floor robust_noise_sigma applies
+# A variance estimate from n pairs has relative standard error about sqrt(2/n); 100 pairs is ~14%.
+MIN_INFLATION_PAIRS = 100
 
 
 def worst_quality(*qualities: str) -> str:
@@ -92,21 +95,38 @@ def soft_noise_cov(z: np.ndarray, lag: int, groups: np.ndarray | None,
     return cov, "shrunk"
 
 
-def soft_ewma_inflation(z: np.ndarray, lam: float, groups: np.ndarray | None):
-    """(per-dimension EWMA variance inflation, quality) with all three step-inflation rungs."""
-    try:
-        return ewma_inflation(z, lam, groups), "exact"
-    except NoiseEstimateError as strict:
-        reason = str(strict)
+def soft_ewma_inflation(z: np.ndarray, lam: float, groups: np.ndarray | None,
+                        min_pairs: int = MIN_INFLATION_PAIRS):
+    """(per-dimension EWMA variance inflation, quality) with all three step-inflation rungs.
+
+    The strict estimate segments the stream at abrupt jumps. When that leaves fewer than
+    ``min_pairs`` warm lag pairs (steady degradation trips the jump detector, fragmenting each
+    unit) the estimate is too noisy to scale a detector by, and its clamp at 1 turns it into
+    "assume white". If the caller's own groups give more pairs they are used instead
+    (``group_segments``). ``min_pairs=0`` keeps the strict estimate whenever it exists."""
     z = np.asarray(z, dtype=np.float64)
+    strict, pairs, g = None, 0, None
+    try:
+        g = _segments(z, groups)
+        strict = ewma_inflation(z, lam, groups, segments=g)
+        pairs = ewma_lag_pairs(g, lam)
+        if pairs >= min_pairs:
+            return strict, "exact"
+        reason = f"only {pairs} warm lag pairs (< {min_pairs})"
+    except NoiseEstimateError as exc:
+        reason = str(exc)
     if groups is None:
         segments = np.zeros(len(z), dtype=np.int64)
     else:
-        g = np.asarray(groups)
-        segments = np.r_[0, np.cumsum(g[1:] != g[:-1])]  # contiguous run ids
+        gr = np.asarray(groups)
+        segments = np.r_[0, np.cumsum(gr[1:] != gr[:-1])]  # contiguous run ids
+    if strict is not None and ewma_lag_pairs(segments, lam) <= pairs:
+        return strict, "exact"  # the caller's groups are no better supported
     try:
         inflation = ewma_inflation(z, lam, groups, segments=segments)
     except NoiseEstimateError as exc:
+        if strict is not None:
+            return strict, "exact"
         _degraded("step inflation", "assumed_white", f"{reason}; groups too short as well ({exc})")
         return np.ones(z.shape[1]), "assumed_white"
     _degraded("step inflation", "group_segments", reason)

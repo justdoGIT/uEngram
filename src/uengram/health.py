@@ -41,3 +41,38 @@ class HealthRUL:
 
     def table_bytes(self) -> int:
         return len(self.centre) * 2 * 4
+
+
+class HealthAgeRUL:
+    """RUL from the health score and the unit's age (cycles observed so far).
+
+    Health alone saturates: units at the same health can be early or late in life. A quadratic
+    ridge regression on (log health, age) fitted offline on run-to-failure windows keeps six
+    float32 coefficients (24 bytes). Predictions are clipped to [0, cap]."""
+    AGE_SCALE = 100.0
+
+    def __init__(self, ridge: float = 1e-3, cap: float = 125.0):
+        self.ridge, self.cap = ridge, cap
+
+    @classmethod
+    def _design(cls, health, age) -> np.ndarray:
+        lh = HealthRUL._log(health)
+        a = np.asarray(age, dtype=np.float64) / cls.AGE_SCALE
+        return np.column_stack([np.ones(len(lh)), lh, lh ** 2, a, lh * a, a ** 2])
+
+    def fit(self, health, age, rul) -> "HealthAgeRUL":
+        A, rul = self._design(health, age), np.asarray(rul, dtype=np.float64)
+        ok = np.isfinite(A).all(axis=1) & np.isfinite(rul)
+        if not ok.any():
+            raise ValueError("no finite (health, age, rul) rows to fit")
+        A, rul = A[ok], rul[ok]
+        self.coef = np.linalg.solve(A.T @ A + self.ridge * np.eye(A.shape[1]), A.T @ rul)
+        return self
+
+    def predict(self, health, age) -> np.ndarray:
+        """Clipped RUL for each (health, age); NaN where the health score is NaN."""
+        out = np.clip(self._design(health, age) @ self.coef, 0.0, self.cap)
+        return np.where(np.isnan(np.asarray(health, dtype=np.float64)), np.nan, out)
+
+    def table_bytes(self) -> int:
+        return len(self.coef) * 4

@@ -100,6 +100,23 @@ def test_inflation_falls_back_to_group_segments_when_jump_segmentation_fragments
     assert quality == "group_segments" and infl.shape == (4,) and (infl > 0).all() and np.isfinite(infl).all()
 
 
+def test_inflation_prefers_better_supported_groups_when_jump_segments_are_thin():
+    rng = np.random.default_rng(8)
+    z = rng.normal(size=(280, 4))
+    z[93:] += 30.0
+    z[186:] -= 60.0  # two abrupt jumps leave three 93-sample segments
+    groups = np.zeros(280, dtype=int)
+    pairs = stats.ewma_lag_pairs(stats._segments(z, groups), 0.1)
+    assert 10 <= pairs < 100  # estimable, but too few pairs to scale a detector by
+    strict = stats.ewma_inflation(z, 0.1, groups)
+    with pytest.warns(RuntimeWarning, match="warm lag pairs"):
+        infl, quality = soft_ewma_inflation(z, 0.1, groups)
+    assert quality == "group_segments" and np.isfinite(infl).all()
+    infl0, quality0 = soft_ewma_inflation(z, 0.1, groups, min_pairs=0)
+    assert quality0 == "exact"
+    np.testing.assert_array_equal(infl0, strict)
+
+
 def test_inflation_assumes_white_noise_only_when_nothing_is_estimable():
     z = np.random.default_rng(6).normal(size=(30, 4))  # EWMA memory 19 and lag 38 exceed the data
     with pytest.raises(stats.NoiseEstimateError):

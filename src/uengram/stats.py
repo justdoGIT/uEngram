@@ -106,6 +106,15 @@ def _segments(z: np.ndarray, groups: np.ndarray | None, alpha: float = 1e-3) -> 
     return np.r_[0, np.cumsum(brk)]
 
 
+def ewma_lag_pairs(segments: np.ndarray, lam: float) -> int:
+    """Warm lag-L pairs ewma_inflation would estimate from: per segment, its
+    length less the EWMA warm-up b and less the lag L = 2b."""
+    b = (2.0 - lam) / lam
+    lag = int(math.ceil(2.0 * b))
+    counts = np.bincount(np.asarray(segments, dtype=np.int64))
+    return int(np.maximum(counts - int(math.ceil(b)) - lag, 0).sum())
+
+
 def ewma_inflation(z: np.ndarray, lam: float, groups: np.ndarray | None,
                    *, segments: np.ndarray | None = None) -> np.ndarray:
     """Per-dimension variance inflation of an EWMA(lam) of z over independent
