@@ -2,6 +2,8 @@
 from .sensor_memory import SensorMemoryPersistenceError, SensorStateMemory
 from .sensor_memory_outbox import FileSensorEventOutbox
 from .sensor_vector_index import FileSensorVectorIndex
+from .sensor_memory_capsule import SensorMemoryCapsule
+from .sensor_capsule_pipeline import CapsuleSensorStateMemory
 from .chronos_teacher import Chronos2TeacherAdapter
 from .teacher_transfer import (
     TeacherFeatures,
@@ -38,6 +40,8 @@ __all__ = [
     "FileSensorEventOutbox",
     "FileSensorVectorIndex",
     "RawEvidencePins",
+    "SensorMemoryCapsule",
+    "CapsuleSensorStateMemory",
     "SensorIngestReceipt",
     "SensorMemoryPersistenceError",
     "SensorRecall",
