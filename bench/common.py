@@ -10,7 +10,8 @@ from uengram.baseline_reference import ReferenceBaseline
 from uengram.baselines import FIFOStore, NaiveStore, ReservoirStore
 from uengram.encoder_slope import DSPSlopeEncoder
 from uengram.engine import Engram, EngramConfig
-from uengram.stats import conformal_threshold, ewma_inflation
+from uengram.noise_fallback import soft_ewma_inflation
+from uengram.stats import conformal_threshold
 
 ALL_METHODS = ("naive", "fifo", "reservoir", "reference_labelfree", "reference_oracle",
                "uengram", "uengram_fixedvar", "uengram_nopromo", "uengram_frozen",
@@ -52,10 +53,23 @@ def encode_windows(enc, windows: np.ndarray, groups=None, sequential: bool = Tru
     return enc.encode(windows, sequential=sequential)
 
 
-def measure_step_inflation(Ztrain: np.ndarray, groups: np.ndarray | None = None) -> np.ndarray:
-    """EWMA variance inflation of the encoder's training latents at the engine's
-    step-detector lambda; uEngram scales its step detector input by it."""
-    return ewma_inflation(Ztrain, EngramConfig.step_lambda, groups)
+def measure_step_inflation(Ztrain: np.ndarray, groups: np.ndarray | None = None):
+    """(EWMA variance inflation of the encoder's training latents at the engine's step-detector
+    lambda, noise_fallback quality). uEngram scales its step detector input by it. A degraded
+    estimate warns and is labeled; see ``degradation``."""
+    return soft_ewma_inflation(Ztrain, EngramConfig.step_lambda, groups)
+
+
+def degradation(enc, inflation_quality: str) -> dict:
+    """Result-row keys describing any noise-estimation fallback; empty when nothing degraded, so
+    regenerated result files stay identical to the committed ones for healthy runs."""
+    out = {}
+    noise_quality = getattr(getattr(enc, "noise", None), "quality", "robust")
+    if noise_quality != "robust":
+        out["noise_quality"] = noise_quality
+    if inflation_quality != "exact":
+        out["step_inflation_quality"] = inflation_quality
+    return out
 
 
 def calibrate_alarm(method: str, B: int, d: int, sigma0: np.ndarray, raw_bytes: int,

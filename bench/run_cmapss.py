@@ -7,7 +7,9 @@ import time
 
 import numpy as np
 
-from bench.common import dump, encode_windows, make_store, measure_step_inflation, parse_seeds, run_stream
+from bench.common import (
+    degradation, dump, encode_windows, make_store, measure_step_inflation, parse_seeds, run_stream,
+)
 from bench.evaluate import footprint, latency, mmd_metrics
 from bench.provenance import Provenance
 from bench.run_synth import make_encoder
@@ -51,7 +53,7 @@ def run_one(task):
     Wtr, Utr, _ = cmapss.windows(fit_rows, K, scaler=scaler)
     enc = make_encoder(enc_name, seed).fit(Wtr, K, Utr)
     Ztr = encode_windows(enc, Wtr, Utr)
-    infl = measure_step_inflation(Ztr, Utr)
+    infl, infl_quality = measure_step_inflation(Ztr, Utr)
     # commissioning stream: the first COMMISSION windows of every training unit,
     # assumed healthy without labels; uEngram freezes its normal states as the
     # healthy reference for the health score
@@ -110,7 +112,7 @@ def run_one(task):
         m.update(mmd_metrics(store, Z, h))
         m.update(latency(lat))
         row = {"dataset": "cmapss", "seed": seed, "encoder": enc_name,
-               "method": method, "budget": 256, "metrics": m}
+               "method": method, "budget": 256, "metrics": m, **degradation(enc, infl_quality)}
         if subset != "FD001":
             row["subset"] = subset
         if cond_norm:

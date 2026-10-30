@@ -8,6 +8,12 @@ import numpy as np
 _LN10 = math.log(10.0)
 
 
+class NoiseEstimateError(ValueError):
+    """The data cannot support a noise estimate: too few difference pairs, or trimming left too few
+    inliers. A ``ValueError`` subclass, so strict callers are unchanged; noise_fallback catches
+    exactly this and nothing else (an unsupported dimension is still a plain ``ValueError``)."""
+
+
 def _logsumexp(a: np.ndarray, axis: int = 0) -> np.ndarray:
     m = np.max(a, axis=axis, keepdims=True)
     m = np.where(np.isfinite(m), m, 0.0)
@@ -83,7 +89,7 @@ def robust_noise_sigma(z: np.ndarray, lag: int, groups: np.ndarray | None) -> np
     """Per-dimension noise std from MAD of lag-`lag` successive differences."""
     delta = _diff_pairs(z, lag, groups)
     if delta.shape[0] < 10:
-        raise ValueError("fewer than 10 difference pairs for noise estimate")
+        raise NoiseEstimateError("fewer than 10 difference pairs for noise estimate")
     med = np.median(delta, axis=0)
     mad = np.median(np.abs(delta - med), axis=0)
     return np.maximum(1.4826 * mad / math.sqrt(2.0), 1e-6)
@@ -100,18 +106,21 @@ def _segments(z: np.ndarray, groups: np.ndarray | None, alpha: float = 1e-3) -> 
     return np.r_[0, np.cumsum(brk)]
 
 
-def ewma_inflation(z: np.ndarray, lam: float, groups: np.ndarray | None) -> np.ndarray:
+def ewma_inflation(z: np.ndarray, lam: float, groups: np.ndarray | None,
+                   *, segments: np.ndarray | None = None) -> np.ndarray:
     """Per-dimension variance inflation of an EWMA(lam) of z over independent
     samples: Var(EWMA) / (lam / (2 - lam) Var(z)); 1 for white noise, larger
     when slow within-state variation correlates successive samples.
 
     Measured within segments free of abrupt changes (_segments), from robust
     lag-L differences with L twice the EWMA memory b = (2 - lam) / lam. The
-    EWMA restarts in each segment and its first b samples are skipped."""
+    EWMA restarts in each segment and its first b samples are skipped. Passing
+    ``segments`` (one non-decreasing id per row) replaces the jump-based
+    segmentation, e.g. with the caller's own groups (noise_fallback)."""
     z = np.asarray(z, dtype=np.float64)
     b = (2.0 - lam) / lam
     lag = int(math.ceil(2.0 * b))
-    g = _segments(z, groups)
+    g = _segments(z, groups) if segments is None else np.asarray(segments)
     y = np.empty_like(z)
     age = np.empty(len(z), dtype=np.int64)
     for t in range(len(z)):
@@ -138,7 +147,7 @@ def robust_noise_cov(z: np.ndarray, lag: int, groups: np.ndarray | None,
     D = _diff_pairs(z, lag, groups) / math.sqrt(2.0)
     n, d = D.shape
     if n < max(10, 2 * d):
-        raise ValueError("too few difference pairs for noise covariance")
+        raise NoiseEstimateError("too few difference pairs for noise covariance")
     q = chi2_isf(1.0 - trim, d)
     cons = trim / (1.0 - math.exp(float(chi2_logsf(q, d + 2))))
     s = robust_noise_sigma(z, lag, groups)
@@ -147,8 +156,8 @@ def robust_noise_cov(z: np.ndarray, lag: int, groups: np.ndarray | None,
         d2 = np.einsum("ij,jk,ik->i", D, np.linalg.inv(C), D)
         keep = d2 <= q
         if int(keep.sum()) < max(10, d + 1):
-            raise ValueError(f"noise covariance retained {int(keep.sum())} inliers; "
-                             f"need at least {max(10, d + 1)} at iteration {_ + 1}")
+            raise NoiseEstimateError(f"noise covariance retained {int(keep.sum())} inliers; "
+                                     f"need at least {max(10, d + 1)} at iteration {_ + 1}")
         C = np.cov(D[keep], rowvar=False) * cons
     return C
 

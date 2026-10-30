@@ -1,9 +1,11 @@
 """Window encoders: PCA whitening, noise whitening, and the DSP+PCA encoder."""
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 
-from .stats import robust_noise_cov, robust_noise_sigma
+from .noise_fallback import soft_noise_cov, soft_noise_sigma, worst_quality
 
 
 class Whitener:
@@ -37,9 +39,11 @@ class NoiseWhitener:
     """
     def __init__(self, rcond: float = 1e-12):
         self.rcond = rcond
+        self.quality = "robust"  # noise_fallback.QUALITY rung of the fitted estimate
 
     def fit(self, z: np.ndarray, noise_lag: int, groups: np.ndarray | None) -> "NoiseWhitener":
-        lam, V = np.linalg.eigh(robust_noise_cov(z, noise_lag, groups))
+        cov, self.quality = soft_noise_cov(z, noise_lag, groups)
+        lam, V = np.linalg.eigh(cov)
         lam = np.maximum(lam, self.rcond * max(float(lam.max()), 1e-12))
         self.W = (V / np.sqrt(lam)) @ V.T
         return self
@@ -49,11 +53,15 @@ class NoiseWhitener:
 
 
 def fit_projection(X: np.ndarray, d: int, noise_lag: int, groups: np.ndarray | None, rcond: float = 1e-12):
-    """PCA-whiten X to d dims, then noise-whiten. Returns (whitener, noise, sigma0)."""
+    """PCA-whiten X to d dims, then noise-whiten. Returns (whitener, noise, sigma0).
+
+    ``noise.quality`` is the worst noise_fallback rung used; a degraded fit also warns."""
     whitener = Whitener().fit(X, d)
     Zp = whitener.transform(X)
     noise = NoiseWhitener(rcond=rcond).fit(Zp, noise_lag, groups)
-    return whitener, noise, robust_noise_sigma(noise.transform(Zp), noise_lag, groups)
+    sigma0, sigma_quality = soft_noise_sigma(noise.transform(Zp), noise_lag, groups)
+    noise.quality = worst_quality(noise.quality, sigma_quality)
+    return whitener, noise, sigma0
 
 
 def band_features(windows: np.ndarray) -> np.ndarray:
@@ -92,9 +100,25 @@ class DSPEncoder:
 
     def __init__(self, d: int = 16):
         self.d = d
+        self._d_requested = d
 
     def _raw(self, windows, sequential: bool) -> np.ndarray:
         return band_features(windows)
+
+    def _fit_projection(self, X: np.ndarray, noise_lag: int, groups: np.ndarray | None) -> None:
+        """PCA + noise whitening at min(requested d, number of features); ``self.d`` is what the
+        latent really has, so callers sizing a memory from ``enc.d`` never see a mismatch."""
+        d = min(self._d_requested, X.shape[1])
+        if d < self._d_requested:
+            warnings.warn(f"requested d={self._d_requested} exceeds the {X.shape[1]} available "
+                          f"features; using d={d}", RuntimeWarning, stacklevel=3)
+        self.d = d
+        self.whitener, self.noise, self.sigma0 = fit_projection(X, d, noise_lag, groups)
+
+    @property
+    def whitening_quality(self) -> str:
+        """noise_fallback.QUALITY rung of the fitted noise estimate ('robust' = nothing degraded)."""
+        return self.noise.quality
 
     def fit(self, train_windows, noise_lag: int, groups: np.ndarray | None) -> "DSPEncoder":
         F = self._raw(train_windows, True)
@@ -103,8 +127,7 @@ class DSPEncoder:
         robust = (q75 - q25) / 1.349
         spread = F.std(axis=0)
         self.scale = np.where(robust > 1e-6, robust, np.maximum(spread, 1e-6))
-        self.whitener, self.noise, self.sigma0 = fit_projection(
-            (F - self.med) / self.scale, self.d, noise_lag, groups)
+        self._fit_projection((F - self.med) / self.scale, noise_lag, groups)
         return self
 
     def encode(self, windows, sequential: bool = True) -> np.ndarray:

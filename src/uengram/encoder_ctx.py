@@ -32,7 +32,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .encoders import DSPEncoder, band_features, fit_projection, windowed_slopes
+from .encoders import DSPEncoder, band_features, windowed_slopes
 
 TRIM_ITERS = 6
 TRIM_K = 4.0
@@ -129,8 +129,7 @@ class ContextEncoder(DSPEncoder):
         robust = (q75 - q25) / 1.349
         spread = F.std(axis=0)
         self.scale = np.where(robust > 1e-6, robust, np.maximum(spread, 1e-6))
-        self.whitener, self.noise, self.sigma0 = fit_projection(
-            (F - self.med) / self.scale, self.d, noise_lag, groups)
+        self._fit_projection((F - self.med) / self.scale, noise_lag, groups)
         return self
 
     def encode(self, windows, sequential: bool = True, segment=None) -> np.ndarray:

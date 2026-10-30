@@ -5,8 +5,8 @@ import argparse
 import multiprocessing as mp
 import time
 
-from bench.common import (ALL_METHODS, calibrate_alarm, dump, make_store, measure_step_inflation,
-                          parse_seeds, run_stream)
+from bench.common import (ALL_METHODS, calibrate_alarm, degradation, dump, make_store,
+                          measure_step_inflation, parse_seeds, run_stream)
 from bench.evaluate import evaluate_run
 from bench.provenance import Provenance
 from uengram import synth
@@ -44,7 +44,7 @@ def run_one(task):
     seed, enc_name, T, methods, budgets, tag, alarm_alpha, cal_T = task
     train = synth.generate(8000, seed + 10_000)
     enc = make_encoder(enc_name, seed).fit(train.windows, 1, None)
-    infl = measure_step_inflation(enc.encode(train.windows))
+    infl, infl_quality = measure_step_inflation(enc.encode(train.windows))
     stream = synth.generate(T, seed)
     probe = synth.make_probe(seed, T)
     # fault-free commissioning run, used only to calibrate uEngram's alarm threshold
@@ -88,7 +88,7 @@ def run_one(task):
             m.update(extra, n_supersede=len(sup_t),
                      supersede_delay_maint=float(min(maint_sup)) if maint_sup else float("nan"))
             lines.append({"dataset": "synth", "seed": seed, "encoder": enc_name,
-                          "method": method, "budget": B, "metrics": m})
+                          "method": method, "budget": B, "metrics": m, **degradation(enc, infl_quality)})
             print(f"[{tag}] seed={seed} enc={enc_name} method={method} B={B} "
                   f"done in {time.time() - t0:.1f}s", flush=True)
     return lines
