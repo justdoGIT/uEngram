@@ -1,0 +1,222 @@
+{
+  "arms": [
+    {
+      "first_flagged_step": null,
+      "keys_equal_reference_after_restart": false,
+      "records_after_restart": {
+        "new_candidate": 1,
+        "promote": 1
+      },
+      "warmup_windows": 0
+    },
+    {
+      "first_flagged_step": null,
+      "keys_equal_reference_after_restart": false,
+      "records_after_restart": {
+        "promote": 1
+      },
+      "warmup_windows": 2
+    },
+    {
+      "first_flagged_step": null,
+      "keys_equal_reference_after_restart": false,
+      "records_after_restart": {
+        "promote": 1
+      },
+      "warmup_windows": 4
+    },
+    {
+      "first_flagged_step": null,
+      "keys_equal_reference_after_restart": false,
+      "records_after_restart": {},
+      "warmup_windows": 8
+    },
+    {
+      "first_flagged_step": 44,
+      "keys_equal_reference_after_restart": false,
+      "records_after_restart": {
+        "alarm_clear": 2,
+        "alarm_open": 2
+      },
+      "warmup_windows": 16
+    },
+    {
+      "first_flagged_step": 39,
+      "keys_equal_reference_after_restart": true,
+      "records_after_restart": {
+        "alarm_open": 1
+      },
+      "warmup_windows": 24
+    },
+    {
+      "first_flagged_step": 39,
+      "keys_equal_reference_after_restart": true,
+      "records_after_restart": {
+        "alarm_open": 1
+      },
+      "warmup_windows": 32
+    }
+  ],
+  "input": {
+    "feature_dimension": 38,
+    "machine": "machine-1-1",
+    "sha256": "47257349ba07964c08e0dd6e529cb9efd80116021e153970697eed7236de67fd",
+    "stream": "smd",
+    "window_count": 64
+  },
+  "interpretation": "mechanism probe on one machine and one restart position; not detector accuracy",
+  "protocol": "capsule-warmup-ablation-v1",
+  "reference": {
+    "first_flagged_step": 39,
+    "records_after_restart": {
+      "alarm_open": 1
+    }
+  },
+  "restart_at": 32,
+  "score_trace": {
+    "reference": [
+      {
+        "flagged": false,
+        "score": 0.169,
+        "step": 32
+      },
+      {
+        "flagged": false,
+        "score": 0.175,
+        "step": 33
+      },
+      {
+        "flagged": false,
+        "score": 0.198,
+        "step": 34
+      },
+      {
+        "flagged": false,
+        "score": 0.267,
+        "step": 35
+      },
+      {
+        "flagged": false,
+        "score": 0.515,
+        "step": 36
+      },
+      {
+        "flagged": false,
+        "score": 0.721,
+        "step": 37
+      },
+      {
+        "flagged": false,
+        "score": 0.898,
+        "step": 38
+      },
+      {
+        "flagged": true,
+        "score": 1.214,
+        "step": 39
+      },
+      {
+        "flagged": true,
+        "score": 1.479,
+        "step": 40
+      },
+      {
+        "flagged": true,
+        "score": 1.404,
+        "step": 41
+      },
+      {
+        "flagged": true,
+        "score": 1.389,
+        "step": 42
+      },
+      {
+        "flagged": true,
+        "score": 1.578,
+        "step": 43
+      },
+      {
+        "flagged": true,
+        "score": 1.723,
+        "step": 44
+      },
+      {
+        "flagged": true,
+        "score": 1.847,
+        "step": 45
+      }
+    ],
+    "restarted_cold": [
+      {
+        "flagged": false,
+        "score": null,
+        "step": 32
+      },
+      {
+        "flagged": false,
+        "score": null,
+        "step": 33
+      },
+      {
+        "flagged": false,
+        "score": null,
+        "step": 34
+      },
+      {
+        "flagged": false,
+        "score": null,
+        "step": 35
+      },
+      {
+        "flagged": false,
+        "score": null,
+        "step": 36
+      },
+      {
+        "flagged": false,
+        "score": 0.084,
+        "step": 37
+      },
+      {
+        "flagged": false,
+        "score": 0.104,
+        "step": 38
+      },
+      {
+        "flagged": false,
+        "score": 0.152,
+        "step": 39
+      },
+      {
+        "flagged": false,
+        "score": 0.197,
+        "step": 40
+      },
+      {
+        "flagged": false,
+        "score": 0.162,
+        "step": 41
+      },
+      {
+        "flagged": false,
+        "score": 0.149,
+        "step": 42
+      },
+      {
+        "flagged": false,
+        "score": 0.18,
+        "step": 43
+      },
+      {
+        "flagged": false,
+        "score": 0.207,
+        "step": 44
+      },
+      {
+        "flagged": false,
+        "score": 0.23,
+        "step": 45
+      }
+    ]
+  }
+}

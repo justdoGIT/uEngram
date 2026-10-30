@@ -1,0 +1,718 @@
+{
+  "checks": {
+    "artifacts": 33,
+    "capsule_event_keys_match_reference": true,
+    "capsule_state_equivalent": true,
+    "lite_or_sidecar_event_keys_match_reference_runs": 0,
+    "lite_or_sidecar_runs": 66,
+    "lite_or_sidecar_state_equivalent_runs": 0
+  },
+  "hosts": {
+    "asus": {
+      "crashes": {
+        "after_checkpoint": {
+          "capsule": {
+            "event_keys_match_reference_runs": 3,
+            "extra_event_counts": [
+              0
+            ],
+            "local_storage_bytes_median": 131072,
+            "missing_event_counts": [
+              0
+            ],
+            "ranked_history_counts": [
+              3
+            ],
+            "recovery_ms": {
+              "max": 3407.111738,
+              "median": 3362.846446,
+              "min": 3274.809611
+            },
+            "runs": 3,
+            "state_equivalent_runs": 3,
+            "vendor_event_counts": [
+              3
+            ]
+          },
+          "lite": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 0,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              1
+            ],
+            "recovery_ms": {
+              "max": 8.220513,
+              "median": 8.215567,
+              "min": 7.825932
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          },
+          "sidecar": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 3039,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 525.216838,
+              "median": 458.585116,
+              "min": 436.652342
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          }
+        },
+        "after_ingest": {
+          "capsule": {
+            "event_keys_match_reference_runs": 3,
+            "extra_event_counts": [
+              0
+            ],
+            "local_storage_bytes_median": 131072,
+            "missing_event_counts": [
+              0
+            ],
+            "ranked_history_counts": [
+              3
+            ],
+            "recovery_ms": {
+              "max": 3561.944865,
+              "median": 3374.043174,
+              "min": 3330.911697
+            },
+            "runs": 3,
+            "state_equivalent_runs": 3,
+            "vendor_event_counts": [
+              3
+            ]
+          },
+          "lite": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 0,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              1
+            ],
+            "recovery_ms": {
+              "max": 7.874427,
+              "median": 7.853486,
+              "min": 7.777424
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          },
+          "sidecar": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 3039,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 471.27174,
+              "median": 460.22613,
+              "min": 426.438583
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          }
+        },
+        "after_wal": {
+          "capsule": {
+            "event_keys_match_reference_runs": 3,
+            "extra_event_counts": [
+              0
+            ],
+            "local_storage_bytes_median": 131072,
+            "missing_event_counts": [
+              0
+            ],
+            "ranked_history_counts": [
+              3
+            ],
+            "recovery_ms": {
+              "max": 3427.374644,
+              "median": 3418.200897,
+              "min": 3329.372896
+            },
+            "runs": 3,
+            "state_equivalent_runs": 3,
+            "vendor_event_counts": [
+              3
+            ]
+          },
+          "lite": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 0,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              1
+            ],
+            "recovery_ms": {
+              "max": 8.858558,
+              "median": 7.86792,
+              "min": 7.814835
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          },
+          "sidecar": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 3039,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 450.154351,
+              "median": 438.331507,
+              "min": 411.152118
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          }
+        }
+      },
+      "host": {
+        "cpu_count": 4,
+        "cpu_model": "Intel(R) Core(TM) i3-6100 CPU @ 3.70GHz",
+        "hostname": "asus",
+        "machine": "x86_64",
+        "memory_mib": 3786,
+        "numpy": "2.5.3",
+        "platform": "Linux-7.2.11_1-x86_64-with-glibc2.41",
+        "python": "3.14.8",
+        "storage": {
+          "fstype": "ext4",
+          "rotational": true,
+          "source": "/dev/sda4"
+        }
+      }
+    },
+    "hp": {
+      "crashes": {
+        "after_checkpoint": {
+          "capsule": {
+            "event_keys_match_reference_runs": 3,
+            "extra_event_counts": [
+              0
+            ],
+            "local_storage_bytes_median": 131072,
+            "missing_event_counts": [
+              0
+            ],
+            "ranked_history_counts": [
+              3
+            ],
+            "recovery_ms": {
+              "max": 5872.354723,
+              "median": 2344.814927,
+              "min": 2288.296501
+            },
+            "runs": 3,
+            "state_equivalent_runs": 3,
+            "vendor_event_counts": [
+              3
+            ]
+          },
+          "lite": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 0,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              1
+            ],
+            "recovery_ms": {
+              "max": 8.174537,
+              "median": 7.880121,
+              "min": 7.645527
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          },
+          "sidecar": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 3039,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 3702.6681,
+              "median": 318.819943,
+              "min": 303.813712
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          }
+        },
+        "after_ingest": {
+          "capsule": {
+            "event_keys_match_reference_runs": 3,
+            "extra_event_counts": [
+              0
+            ],
+            "local_storage_bytes_median": 131072,
+            "missing_event_counts": [
+              0
+            ],
+            "ranked_history_counts": [
+              3
+            ],
+            "recovery_ms": {
+              "max": 4427.138796,
+              "median": 2336.018644,
+              "min": 2325.57718
+            },
+            "runs": 3,
+            "state_equivalent_runs": 3,
+            "vendor_event_counts": [
+              3
+            ]
+          },
+          "lite": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 0,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              1
+            ],
+            "recovery_ms": {
+              "max": 7.900937,
+              "median": 7.643581,
+              "min": 7.570491
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          },
+          "sidecar": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 3039,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 3652.287804,
+              "median": 318.52934,
+              "min": 302.346234
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          }
+        },
+        "after_wal": {
+          "capsule": {
+            "event_keys_match_reference_runs": 3,
+            "extra_event_counts": [
+              0
+            ],
+            "local_storage_bytes_median": 131072,
+            "missing_event_counts": [
+              0
+            ],
+            "ranked_history_counts": [
+              3
+            ],
+            "recovery_ms": {
+              "max": 3261.001131,
+              "median": 2295.200683,
+              "min": 2276.861247
+            },
+            "runs": 3,
+            "state_equivalent_runs": 3,
+            "vendor_event_counts": [
+              3
+            ]
+          },
+          "lite": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 0,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              1
+            ],
+            "recovery_ms": {
+              "max": 8.118697,
+              "median": 7.887199,
+              "min": 7.500937
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          },
+          "sidecar": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 3039,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 2060.698579,
+              "median": 308.021762,
+              "min": 307.268819
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          }
+        }
+      },
+      "host": {
+        "cpu_count": 8,
+        "cpu_model": "Intel(R) Core(TM) i7-6700 CPU @ 3.40GHz",
+        "hostname": "hp",
+        "machine": "x86_64",
+        "memory_mib": 23899,
+        "numpy": "2.5.3",
+        "platform": "Linux-7.2.11_1-x86_64-with-glibc2.41",
+        "python": "3.14.8",
+        "storage": {
+          "fstype": "overlay",
+          "rotational": null,
+          "source": "LiveOS_rootfs"
+        }
+      }
+    },
+    "msi": {
+      "crashes": {
+        "after_checkpoint": {
+          "capsule": {
+            "event_keys_match_reference_runs": 5,
+            "extra_event_counts": [
+              0
+            ],
+            "local_storage_bytes_median": 131072,
+            "missing_event_counts": [
+              0
+            ],
+            "ranked_history_counts": [
+              3
+            ],
+            "recovery_ms": {
+              "max": 235.481744,
+              "median": 207.842475,
+              "min": 157.730246
+            },
+            "runs": 5,
+            "state_equivalent_runs": 5,
+            "vendor_event_counts": [
+              3
+            ]
+          },
+          "lite": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 0,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              1
+            ],
+            "recovery_ms": {
+              "max": 8.013214,
+              "median": 7.232655,
+              "min": 7.163621
+            },
+            "runs": 5,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          },
+          "sidecar": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 3039,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 116.091771,
+              "median": 73.108626,
+              "min": 16.62849
+            },
+            "runs": 5,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          }
+        },
+        "after_ingest": {
+          "capsule": {
+            "event_keys_match_reference_runs": 5,
+            "extra_event_counts": [
+              0
+            ],
+            "local_storage_bytes_median": 131072,
+            "missing_event_counts": [
+              0
+            ],
+            "ranked_history_counts": [
+              3
+            ],
+            "recovery_ms": {
+              "max": 353.885846,
+              "median": 207.738672,
+              "min": 133.636911
+            },
+            "runs": 5,
+            "state_equivalent_runs": 5,
+            "vendor_event_counts": [
+              3
+            ]
+          },
+          "lite": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 0,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              1
+            ],
+            "recovery_ms": {
+              "max": 7.825596,
+              "median": 7.266943,
+              "min": 7.265854
+            },
+            "runs": 5,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          },
+          "sidecar": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 3039,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 83.232371,
+              "median": 29.882465,
+              "min": 18.295307
+            },
+            "runs": 5,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          }
+        },
+        "after_wal": {
+          "capsule": {
+            "event_keys_match_reference_runs": 5,
+            "extra_event_counts": [
+              0
+            ],
+            "local_storage_bytes_median": 131072,
+            "missing_event_counts": [
+              0
+            ],
+            "ranked_history_counts": [
+              3
+            ],
+            "recovery_ms": {
+              "max": 209.132049,
+              "median": 151.985928,
+              "min": 112.516214
+            },
+            "runs": 5,
+            "state_equivalent_runs": 5,
+            "vendor_event_counts": [
+              3
+            ]
+          },
+          "lite": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 0,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              1
+            ],
+            "recovery_ms": {
+              "max": 8.463321,
+              "median": 7.239287,
+              "min": 7.199169
+            },
+            "runs": 5,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          },
+          "sidecar": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 3039,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 74.583511,
+              "median": 36.841295,
+              "min": 17.555246
+            },
+            "runs": 5,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          }
+        }
+      },
+      "host": {
+        "cpu_count": 4,
+        "cpu_model": "Intel(R) Core(TM) i3-7100 CPU @ 3.90GHz",
+        "hostname": "msi",
+        "machine": "x86_64",
+        "memory_mib": 15917,
+        "numpy": "2.5.4",
+        "platform": "Linux-7.2.11_1-x86_64-with-glibc2.41",
+        "python": "3.12.13",
+        "storage": {
+          "fstype": "ext4",
+          "rotational": false,
+          "source": "/dev/sdc1"
+        }
+      }
+    }
+  },
+  "input": {
+    "feature_dimension": 38,
+    "machine": "machine-1-1",
+    "sha256": "47257349ba07964c08e0dd6e529cb9efd80116021e153970697eed7236de67fd",
+    "stream": "smd",
+    "window_count": 64
+  },
+  "interpretation": "systems recovery only; timings are host-local, not embedded-device latency",
+  "protocol": "capsule-resilience-v3",
+  "reference_event_count": 3
+}

@@ -1,0 +1,124 @@
+{
+  "configs": [
+    {
+      "checkpoint_every": 1,
+      "disk_bytes": 397312,
+      "max_replay_windows": 0,
+      "mean_ms": 7.7729079609375,
+      "p50_ms": 6.393562,
+      "p99_ms": 22.901621799999997,
+      "recovery_ms": 4.941659,
+      "synchronous": "FULL",
+      "total_ms": 1989.864438
+    },
+    {
+      "checkpoint_every": 4,
+      "disk_bytes": 397312,
+      "max_replay_windows": 3,
+      "mean_ms": 4.5895399609375,
+      "p50_ms": 2.8961045,
+      "p99_ms": 21.944486999999995,
+      "recovery_ms": 5.787826,
+      "synchronous": "FULL",
+      "total_ms": 1174.92223
+    },
+    {
+      "checkpoint_every": 16,
+      "disk_bytes": 397312,
+      "max_replay_windows": 15,
+      "mean_ms": 3.636904453125,
+      "p50_ms": 2.6640175,
+      "p99_ms": 12.919404649999993,
+      "recovery_ms": 43.072259,
+      "synchronous": "FULL",
+      "total_ms": 931.04754
+    },
+    {
+      "checkpoint_every": 64,
+      "disk_bytes": 397312,
+      "max_replay_windows": 63,
+      "mean_ms": 3.2295666015625,
+      "p50_ms": 2.724126,
+      "p99_ms": 12.026661449999995,
+      "recovery_ms": 83.110102,
+      "synchronous": "FULL",
+      "total_ms": 826.76905
+    },
+    {
+      "checkpoint_every": 1,
+      "disk_bytes": 397312,
+      "max_replay_windows": 0,
+      "mean_ms": 1.46532128125,
+      "p50_ms": 1.1878194999999998,
+      "p99_ms": 1.6786200999999987,
+      "recovery_ms": 4.935154,
+      "synchronous": "NORMAL",
+      "total_ms": 375.122248
+    },
+    {
+      "checkpoint_every": 4,
+      "disk_bytes": 397312,
+      "max_replay_windows": 3,
+      "mean_ms": 0.49412798046875006,
+      "p50_ms": 0.26148550000000004,
+      "p99_ms": 1.34727475,
+      "recovery_ms": 5.821081,
+      "synchronous": "NORMAL",
+      "total_ms": 126.49676300000002
+    },
+    {
+      "checkpoint_every": 16,
+      "disk_bytes": 397312,
+      "max_replay_windows": 15,
+      "mean_ms": 0.30726498828125004,
+      "p50_ms": 0.230942,
+      "p99_ms": 1.2601573999999998,
+      "recovery_ms": 12.980101,
+      "synchronous": "NORMAL",
+      "total_ms": 78.65983700000001
+    },
+    {
+      "checkpoint_every": 64,
+      "disk_bytes": 397312,
+      "max_replay_windows": 63,
+      "mean_ms": 0.2542603125,
+      "p50_ms": 0.226444,
+      "p99_ms": 1.18905375,
+      "recovery_ms": 25.51157,
+      "synchronous": "NORMAL",
+      "total_ms": 65.09064
+    }
+  ],
+  "host": {
+    "cpu_count": 4,
+    "cpu_model": "Intel(R) Core(TM) i3-7100 CPU @ 3.90GHz",
+    "hostname": "msi",
+    "machine": "x86_64",
+    "memory_mib": 15917,
+    "numpy": "2.5.4",
+    "platform": "Linux-7.2.11_1-x86_64-with-glibc2.41",
+    "python": "3.12.13",
+    "storage": {
+      "fstype": "ext4",
+      "rotational": false,
+      "source": "/dev/sdc1"
+    },
+    "target_label": "msi"
+  },
+  "input": {
+    "feature_dimension": 38,
+    "machine": "machine-1-1",
+    "sha256": "6d41af5b77c55725bb922b641a41d53aa7ffe2e08f2239ebd67ce09d5f8bce40",
+    "stream": "smd",
+    "window_count": 256
+  },
+  "interpretation": "per-window ingest cost and worst-case replay; storage-specific; NORMAL's power-loss durability is not tested here",
+  "memory_only": {
+    "mean_ms": 0.1374546015625,
+    "p50_ms": 0.129192,
+    "p99_ms": 0.22176449999999995,
+    "total_ms": 35.188378
+  },
+  "protocol": "capsule-cost-study-v1",
+  "repeats": 5
+}

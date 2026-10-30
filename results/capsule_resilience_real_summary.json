@@ -1,0 +1,249 @@
+{
+  "checks": {
+    "artifacts": 15,
+    "capsule_event_keys_match_reference": true,
+    "capsule_state_equivalent": true,
+    "lite_or_sidecar_event_keys_match_reference_runs": 0,
+    "lite_or_sidecar_runs": 30,
+    "lite_or_sidecar_state_equivalent_runs": 0
+  },
+  "hosts": {
+    "msi": {
+      "crashes": {
+        "after_checkpoint": {
+          "capsule": {
+            "event_keys_match_reference_runs": 5,
+            "extra_event_counts": [
+              0
+            ],
+            "local_storage_bytes_median": 131072,
+            "missing_event_counts": [
+              0
+            ],
+            "ranked_history_counts": [
+              3
+            ],
+            "recovery_ms": {
+              "max": 191.16559,
+              "median": 156.079937,
+              "min": 136.74807
+            },
+            "runs": 5,
+            "state_equivalent_runs": 5,
+            "vendor_event_counts": [
+              3
+            ]
+          },
+          "lite": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 0,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 111.863473,
+              "median": 83.634203,
+              "min": 70.34258
+            },
+            "runs": 5,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          },
+          "sidecar": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 3039,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 138.539764,
+              "median": 80.940677,
+              "min": 63.451803
+            },
+            "runs": 5,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          }
+        },
+        "after_ingest": {
+          "capsule": {
+            "event_keys_match_reference_runs": 5,
+            "extra_event_counts": [
+              0
+            ],
+            "local_storage_bytes_median": 131072,
+            "missing_event_counts": [
+              0
+            ],
+            "ranked_history_counts": [
+              3
+            ],
+            "recovery_ms": {
+              "max": 170.581386,
+              "median": 153.074566,
+              "min": 135.859811
+            },
+            "runs": 5,
+            "state_equivalent_runs": 5,
+            "vendor_event_counts": [
+              3
+            ]
+          },
+          "lite": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 0,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 146.625015,
+              "median": 117.306557,
+              "min": 105.537012
+            },
+            "runs": 5,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          },
+          "sidecar": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 3039,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 132.662038,
+              "median": 79.087301,
+              "min": 65.532482
+            },
+            "runs": 5,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          }
+        },
+        "after_wal": {
+          "capsule": {
+            "event_keys_match_reference_runs": 5,
+            "extra_event_counts": [
+              0
+            ],
+            "local_storage_bytes_median": 131072,
+            "missing_event_counts": [
+              0
+            ],
+            "ranked_history_counts": [
+              3
+            ],
+            "recovery_ms": {
+              "max": 351.450797,
+              "median": 192.452459,
+              "min": 134.72454
+            },
+            "runs": 5,
+            "state_equivalent_runs": 5,
+            "vendor_event_counts": [
+              3
+            ]
+          },
+          "lite": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 0,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 154.126726,
+              "median": 129.603974,
+              "min": 72.001869
+            },
+            "runs": 5,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          },
+          "sidecar": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 3039,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 127.743754,
+              "median": 118.378596,
+              "min": 66.688109
+            },
+            "runs": 5,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          }
+        }
+      },
+      "host": {
+        "cpu_count": 4,
+        "cpu_model": "Intel(R) Core(TM) i3-7100 CPU @ 3.90GHz",
+        "hostname": "msi",
+        "machine": "x86_64",
+        "memory_mib": 15917,
+        "numpy": "2.5.4",
+        "platform": "Linux-7.2.11_1-x86_64-with-glibc2.41",
+        "python": "3.12.13"
+      }
+    }
+  },
+  "input": {
+    "feature_dimension": 38,
+    "machine": "machine-1-1",
+    "sha256": "47257349ba07964c08e0dd6e529cb9efd80116021e153970697eed7236de67fd",
+    "stream": "smd",
+    "window_count": 64
+  },
+  "interpretation": "systems recovery only; timings are host-local, not embedded-device latency",
+  "protocol": "capsule-resilience-v3",
+  "reference_event_count": 3
+}
