@@ -2,7 +2,7 @@
 
 **Kamal Kishor Pandey** · kamal.pandey@kepr.dev
 
-Independent Researcher
+Independent Researcher · ORCID https://orcid.org/0009-0002-9009-1972
 
 **Keywords:** Bounded edge memory · Streaming anomaly detection · Noise whitening · Time-series foundation models · Knowledge distillation · Telemetry databases
 
