@@ -58,9 +58,10 @@ def summarize(root: Path) -> dict:
     hosts: dict[str, dict] = {}
     for label in sorted({row["host"]["target_label"] for row in rows}):
         mine = [row for row in rows if row["host"]["target_label"] == label]
-        facts = {json.dumps({k: row["host"][k] for k in
-                             ("hostname", "platform", "machine", "cpu_model", "memory_mib",
-                              "python", "numpy", "cpu_count")},
+        facts = {json.dumps({**{k: row["host"][k] for k in
+                                ("hostname", "platform", "machine", "cpu_model", "memory_mib",
+                                 "python", "numpy", "cpu_count")},
+                             "storage": row["host"].get("storage")},  # absent in older artifacts
                             sort_keys=True) for row in mine}
         if len(facts) != 1:
             raise ValueError(f"{label}: host metadata differs between artifacts")
