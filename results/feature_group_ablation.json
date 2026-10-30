@@ -36,10 +36,10 @@
         "write_reduction_pct": 96.70076213397513
       },
       "cmapss_fd003": {
-        "eol_retention": 0.12,
-        "health_auroc": 0.982388005561937,
-        "rul_rmse": 24.10402888940726,
-        "write_reduction_pct": 80.00734686380751
+        "eol_retention": 1.0,
+        "health_auroc": 0.9873605653292492,
+        "rul_rmse": 41.90118095699412,
+        "write_reduction_pct": 95.63779961428965
       },
       "skab_seed0": {
         "ap": 0.4192044063879338,
@@ -56,13 +56,16 @@
     },
     "no_band_energy": {
       "cmapss_fd001": {
-        "error": "ValueError: fewer than 10 difference pairs for noise estimate"
+        "eol_retention": 1.0,
+        "health_auroc": 0.9987396228744252,
+        "rul_rmse": 42.7050398354594,
+        "write_reduction_pct": 95.38708383473727
       },
       "cmapss_fd003": {
-        "eol_retention": 0.16,
-        "health_auroc": 0.9981908926640201,
-        "rul_rmse": 25.13829160042873,
-        "write_reduction_pct": 77.62879970612545
+        "eol_retention": 0.98,
+        "health_auroc": 0.9898990387521915,
+        "rul_rmse": 41.298485720758066,
+        "write_reduction_pct": 91.50518872256406
       },
       "skab_seed0": {
         "ap": 0.47429201079290684,
@@ -72,7 +75,9 @@
         "n_events": 34
       },
       "synthetic": {
-        "error": "ValueError: could not broadcast input array from shape (12,) into shape (16,)"
+        "ap": 0.4756829721377744,
+        "event_recall": 0.789169172717715,
+        "write_reduction_pct": 69.9505
       }
     },
     "no_log_std": {
@@ -103,13 +108,16 @@
     },
     "no_mean": {
       "cmapss_fd001": {
-        "eol_retention": 0.22,
-        "health_auroc": 0.7205928463413881,
-        "rul_rmse": 38.10989657529488,
-        "write_reduction_pct": 88.01644604893703
+        "eol_retention": 1.0,
+        "health_auroc": 0.7481540289479369,
+        "rul_rmse": 42.741227970457636,
+        "write_reduction_pct": 97.78379462494986
       },
       "cmapss_fd003": {
-        "error": "ValueError: fewer than 10 difference pairs for noise estimate"
+        "eol_retention": 1.0,
+        "health_auroc": 0.8591698741846858,
+        "rul_rmse": 43.547430040554154,
+        "write_reduction_pct": 97.6673707411149
       },
       "skab_seed0": {
         "ap": 0.3610998847895253,

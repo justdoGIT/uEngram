@@ -105,10 +105,11 @@ def build(repo: Path) -> list[dict]:
                          f"The table shows uengram at every budget and fifo/reservoir at the minimum and maximum budgets. uengram event recall ranges from {_fmt(min(stats[(b,'uengram')]['event_recall'] for b in budgets))} to {_fmt(max(stats[(b,'uengram')]['event_recall'] for b in budgets))}, above fifo at each displayed endpoint."))
 
     # CMAPSS by dimension: dimension identified by the encoder suffix in each file.
-    files = [("d=16", "cmapss_runs.jsonl"), ("d=24", "cmapss_d24_runs.jsonl")]
+    files = [("d=16", "cmapss_runs.jsonl"), ("d=24", "cmapss_d24_runs.jsonl"), ("d=32", "cmapss_d32_runs.jsonl")]
     selected_methods = ("naive", "reservoir", "uengram")
     rows = []
-    metric_keys = ["health_auroc", "health_ap", "rul_rmse", "rul_mae", "rul_rmse_health", "rul_mae_health"]
+    metric_keys = ["health_auroc", "health_ap", "rul_rmse", "rul_mae", "rul_rmse_health", "rul_mae_health",
+                   "rul_rmse_health_age"]
     for dim, filename in files:
         records = _load(repo, filename)
         for encoder in sorted({r["encoder"] for r in records}):
@@ -118,13 +119,17 @@ def build(repo: Path) -> list[dict]:
                     continue
                 means = {k: _mean([r["metrics"].get(k) for r in selected]) for k in metric_keys}
                 rows.append([dim, encoder, method, str(len(selected))] + [_fmt(means[k]) for k in metric_keys])
-    tables.append(_table("CMAPSS health and RUL metrics by dimension", "mixed", "results/cmapss_runs.jsonl, results/cmapss_d24_runs.jsonl",
-                         ["dimension", "encoder", "method", "seeds", "health AUROC", "health AP", "RUL RMSE", "RUL MAE", "RUL RMSE health", "RUL MAE health"], rows,
-                         "The table reports seed means for health and RUL metrics by dimension and method; em dashes mark unavailable metrics in the source files."))
+    tables.append(_table("CMAPSS health and RUL metrics by dimension", "mixed",
+                         "results/cmapss_runs.jsonl, results/cmapss_d24_runs.jsonl, results/cmapss_d32_runs.jsonl",
+                         ["dimension", "encoder", "method", "seeds", "health AUROC", "health AP", "RUL RMSE", "RUL MAE",
+                          "RUL RMSE health", "RUL MAE health", "RUL RMSE health + age"], rows,
+                         "The table reports seed means for health and RUL metrics by dimension and method; em dashes mark unavailable metrics in the source files. "
+                         "The d=16 file predates the health-and-age predictor, so that column is empty for it."))
 
-    # CMAPSS subsets: FD001 as published; FD002 with per-condition normalization; FD003 raw.
-    subset_files = [("FD001", "cmapss_runs.jsonl"), ("FD002 (per-condition norm)", "cmapss_fd002_norm_runs.jsonl"),
-                    ("FD003", "cmapss_fd003_runs.jsonl")]
+    # CMAPSS subsets: FD001 as published; FD002 raw and with per-condition normalization; FD003 raw; FD004 normalized.
+    subset_files = [("FD001", "cmapss_runs.jsonl"), ("FD002", "cmapss_fd002_raw_runs.jsonl"),
+                    ("FD002 (per-condition norm)", "cmapss_fd002_norm_runs.jsonl"),
+                    ("FD003", "cmapss_fd003_runs.jsonl"), ("FD004 (per-condition norm)", "cmapss_fd004_norm_runs.jsonl")]
     rows = []
     for label, filename in subset_files:
         records = [r for r in _load(repo, filename) if r["encoder"] == "dsp"]
@@ -134,11 +139,13 @@ def build(repo: Path) -> list[dict]:
                 _fmt(_mean([r["metrics"].get(k) for r in selected]))
                 for k in ("eol_retention", "health_auroc", "rul_rmse", "write_reduction_pct")])
     tables.append(_table("CMAPSS subsets: end-of-life retention and health score", "mixed",
-                         "results/cmapss_runs.jsonl, results/cmapss_fd002_norm_runs.jsonl, results/cmapss_fd003_runs.jsonl",
+                         "results/cmapss_runs.jsonl, results/cmapss_fd002_raw_runs.jsonl, results/cmapss_fd002_norm_runs.jsonl, "
+                         "results/cmapss_fd003_runs.jsonl, results/cmapss_fd004_norm_runs.jsonl",
                          ["subset", "method", "seeds", "EOL retention", "health AUROC", "RUL RMSE", "write reduction %"], rows,
-                         "The DSP encoder is deterministic, so seeds vary only the reservoir baseline. FD004 is not reported: the encoder's "
-                         "EWMA-inflation estimate fails on its operating-condition switching. uengram end-of-life retention falls from 1.000 "
-                         "on FD001 to 0.062 on FD002 and 0.120 on FD003 while the health score stays above 0.98 AUROC."))
+                         "The DSP encoder is deterministic, so seeds vary only the reservoir baseline. uengram end-of-life retention is 1.000 on every "
+                         "subset: the step-inflation estimate falls back to the unit groups when the jump-segmented one has fewer than 100 warm lag pairs "
+                         "(earlier runs without that rule gave 0.062 on FD002 and 0.120 on FD003). RUL RMSE here is the memory lookup, which collapses "
+                         "to a near-constant prediction once the memory holds few items. FD002 without normalization has a health AUROC near 0.62."))
 
     # DSP feature-group ablation (one group dropped at a time).
     ablation = json.loads((repo / "results" / "feature_group_ablation.json").read_text())["results"]
@@ -156,7 +163,7 @@ def build(repo: Path) -> list[dict]:
                           "FD003 health AUROC / EOL retention"], rows,
                          "One group (mean, log standard deviation or the four band energies) is dropped at a time. Synthetic is a 10-seed "
                          "mean; SKAB is seed 0; CMAPSS is one deterministic run. Dropping the band energies leaves 2 features per channel, "
-                         "which cannot support d=16 on the synthetic stream or FD001."))
+                         "12 on the synthetic stream, so d is clamped from 16 to 12 there."))
 
     # SMD confirmation on 28 machines and the per-machine feature-group relation test.
     smd = json.loads((repo / "results" / "smd_confirmation.json").read_text())["summary"]

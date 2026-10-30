@@ -65,3 +65,43 @@ subsets where the CNN fills all 256 slots and loses end-of-life windows), seeds 
 No configuration improves both subsets: `maxavg` helps FD003 only, 90 epochs helps FD004 only, and a
 wider latent hurts. With two seeds the differences are within seed-to-seed spread, consistent with
 `research-pending-model-improvements.md`. No CNN default was changed.
+
+## 4. Regenerated results and a trade-off
+
+`cmapss_fd003_runs.jsonl`, `cmapss_fd002_norm_runs.jsonl`, `cmapss_d24_runs.jsonl` and
+`feature_group_ablation.json` were regenerated at HEAD with the rule. The non-uEngram rows (naive,
+FIFO, reservoir, label-free centroid) are identical to the earlier files, so only uEngram moved. The
+earlier d=24 file (retention 0.44) also predated the admission changes. Newly runnable cases, which
+raised "fewer than 10 difference pairs" before `noise_fallback`, are in `cmapss_d32_runs.jsonl`,
+`cmapss_fd002_raw_runs.jsonl` and `cmapss_fd004_norm_runs.jsonl`.
+
+The trade-off: once the memory keeps end-of-life states in few items, each item spans the whole RUL
+range and the memory-lookup RUL collapses to a near-constant prediction, as it already did on FD001.
+FD003 lookup RMSE goes 24.1 -> 41.9, FD002 (normalized) 38.6 -> 53.4 and FD001 d=24 21.1 -> 42.7.
+Health-based RUL improves (29.8 and 36.8 for health alone, 25.6 and 34.5 with age). On FD001 d=24 the
+frozen-reference variant's health AUROC falls from 0.9995 to 0.9874 and its health RUL from 26.4 to 31.2.
+
+In the feature-group ablation the sign of the FD003 log-std effect reverses: with the rule, dropping
+the log standard deviation lowers FD003 retention from 1.00 to 0.66 (it "raised" it from 0.12 before).
+Cells that earlier failed now run: without band energies the synthetic stream fits at d=12 (recall
+0.79, AP 0.476), and without the mean FD003 gives health AUROC 0.859.
+
+## 5. Gate scale at wide d (`DSPEncoder(gate_lag=...)`, off by default)
+
+At d=36 the synthetic uEngram fills all 256 slots (recall 0.801, AP 0.534). On seed-0 training latents
+(diagnostic not committed), the lag-100 difference noise exceeds the lag-1 noise by more than 2x in 26
+of 36 dimensions, against 4 of 16 at d=16, so lag-1 whitening treats slow within-state variation as
+novelty. `gate_lag=20` widens each dimension's gate scale `sigma0` to its lag-20 difference noise when
+larger. `bench.run_synth --encoders dsp_d36_g20` (10 seeds, `results/synth_d36_gate20_runs.jsonl`;
+naive and reservoir rows identical to `synth_d36_runs.jsonl`):
+
+| d=36 | event recall | AP (mean / median) | write reduction % | live items |
+|---|---|---|---|---|
+| default | 0.801 | 0.534 / 0.541 | 71.6 | 256 |
+| `gate_lag=20` | 0.999 (0.989-1.000) | 0.591 / 0.605 | 74.7 | 194 |
+
+It restores retention but AP stays far below d=16 (0.996). A lag of 100 on three d=16 seeds lowered
+AP (0.966-0.991) and a lag of 20 did not. Exploratory seed-0 checks (not committed, so not a result)
+at lag 20: d=16 synthetic, FD001, FD001 d=24 and FD003 unchanged within 0.01; FD002 (normalized)
+novelty AUROC 0.733 -> 0.710; SKAB d=16 5/34 events unchanged, SKAB d=48 9 -> 7 events. The default
+stays 0, so no published table changes.

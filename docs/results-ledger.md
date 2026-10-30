@@ -88,19 +88,22 @@ These supplementary tables are generated from files in `results/` (48 tables), e
 
 **Table A6.** <span class="outcome mixed">Mixed</span>CMAPSS health and RUL metrics by dimension
 
-| Dimension | Encoder | Method | Seeds | Health AUROC | Health AP | RUL RMSE | RUL MAE | RUL RMSE health | RUL MAE health |
-|---|---|---|---|---|---|---|---|---|---|
-| d=16 | cnn | naive | 5 | — | — | 23.918 | 17.905 | — | — |
-| d=16 | cnn | reservoir | 5 | — | — | 23.515 | 17.687 | — | — |
-| d=16 | cnn | uengram | 5 | 0.998 | 0.992 | 42.040 | 34.961 | 26.439 | 20.896 |
-| d=16 | dsp | naive | 5 | — | — | 25.798 | 18.670 | — | — |
-| d=16 | dsp | reservoir | 5 | — | — | 24.188 | 18.110 | — | — |
-| d=16 | dsp | uengram | 5 | 0.999 | 0.995 | 42.051 | 35.462 | 25.450 | 20.267 |
-| d=24 | dsp_d24 | naive | 5 | — | — | 24.609 | 17.908 | — | — |
-| d=24 | dsp_d24 | reservoir | 5 | — | — | 24.448 | 18.740 | — | — |
-| d=24 | dsp_d24 | uengram | 5 | 1.000 | 0.997 | 21.053 | 16.204 | 26.423 | 21.182 |
+| Dimension | Encoder | Method | Seeds | Health AUROC | Health AP | RUL RMSE | RUL MAE | RUL RMSE health | RUL MAE health | RUL RMSE health + age |
+|---|---|---|---|---|---|---|---|---|---|---|
+| d=16 | cnn | naive | 5 | — | — | 23.918 | 17.905 | — | — | — |
+| d=16 | cnn | reservoir | 5 | — | — | 23.515 | 17.687 | — | — | — |
+| d=16 | cnn | uengram | 5 | 0.998 | 0.992 | 42.040 | 34.961 | 26.439 | 20.896 | — |
+| d=16 | dsp | naive | 5 | — | — | 25.798 | 18.670 | — | — | — |
+| d=16 | dsp | reservoir | 5 | — | — | 24.188 | 18.110 | — | — | — |
+| d=16 | dsp | uengram | 5 | 0.999 | 0.995 | 42.051 | 35.462 | 25.450 | 20.267 | — |
+| d=24 | dsp_d24 | naive | 5 | — | — | 24.609 | 17.908 | — | — | — |
+| d=24 | dsp_d24 | reservoir | 5 | — | — | 24.448 | 18.740 | — | — | — |
+| d=24 | dsp_d24 | uengram | 5 | 0.998 | 0.993 | 42.740 | 35.896 | 25.792 | 19.694 | 24.472 |
+| d=32 | dsp_d32 | naive | 5 | — | — | 25.705 | 18.586 | — | — | — |
+| d=32 | dsp_d32 | reservoir | 5 | — | — | 24.948 | 19.020 | — | — | — |
+| d=32 | dsp_d32 | uengram | 5 | 0.998 | 0.992 | 42.741 | 35.892 | 27.253 | 20.151 | 24.346 |
 
-<p class="table-note"><b>Source</b> <code>results/cmapss_runs.jsonl, results/cmapss_d24_runs.jsonl</code>. The table reports seed means for health and RUL metrics by dimension and method; em dashes mark unavailable metrics in the source files.</p>
+<p class="table-note"><b>Source</b> <code>results/cmapss_runs.jsonl, results/cmapss_d24_runs.jsonl, results/cmapss_d32_runs.jsonl</code>. The table reports seed means for health and RUL metrics by dimension and method; em dashes mark unavailable metrics in the source files. The d=16 file predates the health-and-age predictor, so that column is empty for it.</p>
 
 **Table A7.** <span class="outcome mixed">Mixed</span>CMAPSS subsets: end-of-life retention and health score
 
@@ -109,25 +112,31 @@ These supplementary tables are generated from files in `results/` (48 tables), e
 | FD001 | naive | 5 | 1.000 | — | 25.798 | 0.000 |
 | FD001 | reservoir | 5 | 0.432 | — | 24.188 | 87.852 |
 | FD001 | uengram | 5 | 1.000 | 0.999 | 42.051 | 96.701 |
+| FD002 | naive | 5 | 1.000 | — | 53.719 | 0.000 |
+| FD002 | reservoir | 5 | 0.195 | — | 54.384 | 94.217 |
+| FD002 | uengram | 5 | 1.000 | 0.624 | 53.855 | 92.477 |
 | FD002 (per-condition norm) | naive | 5 | 1.000 | — | 32.127 | 0.000 |
 | FD002 (per-condition norm) | reservoir | 5 | 0.195 | — | 31.325 | 94.217 |
-| FD002 (per-condition norm) | uengram | 5 | 0.062 | 0.986 | 38.552 | 78.522 |
+| FD002 (per-condition norm) | uengram | 5 | 1.000 | 0.994 | 53.400 | 96.140 |
 | FD003 | naive | 5 | 1.000 | — | 22.327 | 0.000 |
 | FD003 | reservoir | 5 | 0.416 | — | 22.531 | 88.658 |
-| FD003 | uengram | 5 | 0.120 | 0.982 | 24.104 | 80.007 |
+| FD003 | uengram | 5 | 1.000 | 0.987 | 41.901 | 95.638 |
+| FD004 (per-condition norm) | naive | 5 | 1.000 | — | 33.055 | 0.000 |
+| FD004 (per-condition norm) | reservoir | 5 | 0.165 | — | 32.360 | 94.874 |
+| FD004 (per-condition norm) | uengram | 5 | 1.000 | 0.988 | 53.823 | 95.834 |
 
-<p class="table-note"><b>Source</b> <code>results/cmapss_runs.jsonl, results/cmapss_fd002_norm_runs.jsonl, results/cmapss_fd003_runs.jsonl</code>. The DSP encoder is deterministic, so seeds vary only the reservoir baseline. FD004 is not reported: the encoder&#x27;s EWMA-inflation estimate fails on its operating-condition switching. uengram end-of-life retention falls from 1.000 on FD001 to 0.062 on FD002 and 0.120 on FD003 while the health score stays above 0.98 AUROC.</p>
+<p class="table-note"><b>Source</b> <code>results/cmapss_runs.jsonl, results/cmapss_fd002_raw_runs.jsonl, results/cmapss_fd002_norm_runs.jsonl, results/cmapss_fd003_runs.jsonl, results/cmapss_fd004_norm_runs.jsonl</code>. The DSP encoder is deterministic, so seeds vary only the reservoir baseline. uengram end-of-life retention is 1.000 on every subset: the step-inflation estimate falls back to the unit groups when the jump-segmented one has fewer than 100 warm lag pairs (earlier runs without that rule gave 0.062 on FD002 and 0.120 on FD003). RUL RMSE here is the memory lookup, which collapses to a near-constant prediction once the memory holds few items. FD002 without normalization has a health AUROC near 0.62.</p>
 
 **Table A8.** <span class="outcome mixed">Mixed</span>DSP feature-group ablation
 
 | Features | Synthetic recall / AP | SKAB events | FD001 health AUROC / EOL retention | FD003 health AUROC / EOL retention |
 |---|---|---|---|---|
-| all | 1.000 / 0.995 | 5 / 34 | 0.999 / 1.000 | 0.982 / 0.120 |
-| no_band_energy | fit fails | 9 / 34 | fit fails | 0.998 / 0.160 |
+| all | 1.000 / 0.995 | 5 / 34 | 0.999 / 1.000 | 0.987 / 1.000 |
+| no_band_energy | 0.789 / 0.476 | 9 / 34 | 0.999 / 1.000 | 0.990 / 0.980 |
 | no_log_std | 1.000 / 0.991 | 5 / 34 | 1.000 / 1.000 | 0.984 / 0.660 |
-| no_mean | 1.000 / 0.995 | 0 / 34 | 0.721 / 0.220 | fit fails |
+| no_mean | 1.000 / 0.995 | 0 / 34 | 0.748 / 1.000 | 0.859 / 1.000 |
 
-<p class="table-note"><b>Source</b> <code>results/feature_group_ablation.json</code>. One group (mean, log standard deviation or the four band energies) is dropped at a time. Synthetic is a 10-seed mean; SKAB is seed 0; CMAPSS is one deterministic run. Dropping the band energies leaves 2 features per channel, which cannot support d=16 on the synthetic stream or FD001.</p>
+<p class="table-note"><b>Source</b> <code>results/feature_group_ablation.json</code>. One group (mean, log standard deviation or the four band energies) is dropped at a time. Synthetic is a 10-seed mean; SKAB is seed 0; CMAPSS is one deterministic run. Dropping the band energies leaves 2 features per channel, 12 on the synthetic stream, so d is clamped from 16 to 12 there.</p>
 
 **Table A9.** <span class="outcome mixed">Mixed</span>SMD confirmation (28 machines)
 
