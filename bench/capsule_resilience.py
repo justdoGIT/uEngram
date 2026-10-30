@@ -111,11 +111,16 @@ def _signature(engine: Engram) -> tuple[bytes, ...]:
             engine.ref_var.tobytes(), engine.hits.tobytes())
 
 
-def _reference(windows: tuple[SensorWindow, ...]) -> tuple[bytes, ...]:
-    pipeline = SensorStateMemory(_engine(len(windows[0].features)), LatestOnlyMemory())
+def _reference(windows: tuple[SensorWindow, ...]) -> tuple[tuple[bytes, ...], frozenset[str]]:
+    memory = LatestOnlyMemory()
+    pipeline = SensorStateMemory(_engine(len(windows[0].features)), memory)
     for window in windows:
         pipeline.ingest(window)
-    return _signature(pipeline.engine)
+    return _signature(pipeline.engine), _event_keys(memory)
+
+
+def _event_keys(memory: LatestOnlyMemory) -> frozenset[str]:
+    return frozenset(row["idempotency_key"] for row in memory.rows.values())
 
 
 def _query(pipeline: SensorStateMemory, windows: tuple[SensorWindow, ...]):
@@ -174,12 +179,25 @@ def _run_capsule(windows: tuple[SensorWindow, ...], root: Path, crash: str) -> d
             "ranked_count": len(ranked), "storage_bytes": _files_bytes(root)}
 
 
+def _proc_field(path: str, key: str) -> str | None:
+    """First ``key`` value from a Linux /proc file, or None where unavailable."""
+    try:
+        for line in Path(path).read_text().splitlines():
+            if line.startswith(key):
+                return line.split(":", 1)[1].strip()
+    except OSError:
+        return None
+    return None
+
+
 def host_provenance(target_label: str | None) -> dict:
     """Capture host facts; a label identifies, but does not certify, target hardware."""
+    mem_kib = _proc_field("/proc/meminfo", "MemTotal")
     return {"target_label": target_label, "hostname": socket.gethostname(),
             "platform": platform.platform(), "machine": platform.machine(),
-            "processor": platform.processor(), "python": sys.version.split()[0],
-            "numpy": np.__version__, "cpu_count": os.cpu_count()}
+            "cpu_model": _proc_field("/proc/cpuinfo", "model name"),
+            "memory_mib": None if mem_kib is None else int(mem_kib.split()[0]) // 1024,
+            "python": sys.version.split()[0], "numpy": np.__version__, "cpu_count": os.cpu_count()}
 
 
 def run(
@@ -190,22 +208,27 @@ def run(
     if require_target_label and not target_label:
         raise ValueError("target label is required for a target-hardware result")
     windows = _windows(stream, machine, window_count)
-    reference = _reference(windows)
+    reference, reference_keys = _reference(windows)
     conditions: dict[str, dict] = {}
     with tempfile.TemporaryDirectory(prefix="uengram-capsule-") as temporary:
         root = Path(temporary)
         for condition in ("lite", "sidecar", "capsule"):
             result = (_run_capsule(windows, root / condition, crash) if condition == "capsule"
                       else _run_lite_or_sidecar(condition, windows, root / condition))
+            keys = _event_keys(result["memory"])
             conditions[condition] = {
                 "state_equivalent_to_uninterrupted": _signature(result["engine"]) == reference,
-                "vendor_event_count": len(result["memory"].rows),
+                "event_keys_match_reference": keys == reference_keys,
+                "missing_event_count": len(reference_keys - keys),
+                "extra_event_count": len(keys - reference_keys),
+                "vendor_event_count": len(keys),
                 "ranked_history_count": result["ranked_count"],
                 "recovery_ns": result["recovery_ns"],
                 "local_storage_bytes": result["storage_bytes"],
             }
-    return {"protocol": "capsule-resilience-v2", "crash_point": crash,
+    return {"protocol": "capsule-resilience-v3", "crash_point": crash,
             "input": _input_info(stream, machine, windows), "host": host_provenance(target_label),
+            "reference": {"vendor_event_count": len(reference_keys)},
             "conditions": conditions,
             "interpretation": "systems recovery and retrieval completeness only; not detector accuracy"}
 

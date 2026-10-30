@@ -10,13 +10,16 @@ def test_capsule_recovers_state_after_each_predeclared_crash_boundary(crash):
     result = run(crash)
     conditions = result["conditions"]
 
-    assert result["protocol"] == "capsule-resilience-v2"
+    assert result["protocol"] == "capsule-resilience-v3"
     assert conditions["capsule"]["state_equivalent_to_uninterrupted"]
     assert not conditions["lite"]["state_equivalent_to_uninterrupted"]
     assert not conditions["sidecar"]["state_equivalent_to_uninterrupted"]
-    assert conditions["capsule"]["vendor_event_count"] == 4
+    # Lifecycle records are compared as an idempotency-key set against the uninterrupted run,
+    # not by count: detector amnesia replaces records rather than only adding them.
+    assert conditions["capsule"]["event_keys_match_reference"]
+    assert conditions["capsule"]["missing_event_count"] == conditions["capsule"]["extra_event_count"] == 0
+    assert conditions["capsule"]["vendor_event_count"] == result["reference"]["vendor_event_count"]
     assert conditions["capsule"]["ranked_history_count"] >= conditions["lite"]["ranked_history_count"]
-
 
 
 def test_fixture_result_records_host_and_input_provenance():
