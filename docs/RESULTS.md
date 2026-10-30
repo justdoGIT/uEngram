@@ -10,6 +10,8 @@ uEngram v2: novelty scored against normal (semantic) states only; candidate prob
 
 uEngram v3 adds: the step detector's input is scaled by the EWMA variance inflation measured on the encoder's training latents (within segments free of abrupt changes), so correlated within-state noise no longer reads as steps; on CMAPSS, a frozen healthy reference from a commissioning stream (first 30 windows of each training unit) gives a health score (`health_auroc`, `health_ap`).
 
+Later change (October 2026): the step-inflation estimate must rest on at least 100 warm lag pairs, else it uses the unit groups (`docs/research-inflation-min-support.md`). The CMAPSS files `cmapss_runs.jsonl`, `cmapss_slope_runs.jsonl`, `cmapss_d24_runs.jsonl`, `cmapss_fd002_norm_runs.jsonl` and `cmapss_fd003_runs.jsonl` were regenerated at that code, and `cmapss_d32_runs.jsonl`, `cmapss_d84_runs.jsonl`, `cmapss_fd002_raw_runs.jsonl` and `cmapss_fd004_norm_runs.jsonl` added. The CMAPSS tables below were generated from the earlier files; for FD001 the DSP rows are unchanged, the CNN rows differ slightly, and `uengram_frozen` on `dsp_slope` moved (end-of-life retention 1.0 to 0.6). Use `results-ledger.md` for current numbers.
+
 `reference_oracle` receives ground-truth anomaly labels as its severity input. It is an upper bound for the doc's engine, not a deployable configuration.
 
 ## Synthetic stream, encoder `cnn`

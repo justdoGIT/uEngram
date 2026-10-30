@@ -213,9 +213,12 @@ the same four gradual faults `DSPSlopeEncoder`/`CtxDSPEncoder` do, at the
 baseline's exact false-alarm count (5, not 10+). Raising `d` project-wide
 is not adopted either: it's a consistent win on MetroPT-3 (AUROC/AP up,
 false-alarm rate roughly halved, every method) but a regression on the
-synthetic benchmark (event_recall 1.00 -> 0.36) and hits a real numerical
-ceiling on CMAPSS (`d>24` fails: near-duplicate band-energy features make
-the noise-covariance estimate ill-conditioned). The matrix is now complete
+synthetic benchmark (event_recall 1.00 -> 0.80, AP 0.996 -> 0.53 at `d=36`;
+the opt-in `DSPEncoder(gate_lag=20)` restores recall to 0.999 but AP only to
+0.59). On CMAPSS `d>24` used to fail outright; the strict step-inflation
+estimate had too few pairs. With the minimum-support rule and the fail-soft
+estimators (`docs/research-inflation-min-support.md`) every width runs and none
+beats `d=16`. The matrix is now complete
 across all seven benchmarks: full dimension is also a strict win on
 MetroPT2 (`d=42`, matching MetroPT-3), a marginal recall-for-precision
 trade on CARE (`tab_d32`), and a recall-collapse trap on SCANIA (higher

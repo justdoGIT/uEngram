@@ -73,7 +73,12 @@ wider latent hurts. With two seeds the differences are within seed-to-seed sprea
 FIFO, reservoir, label-free centroid) are identical to the earlier files, so only uEngram moved. The
 earlier d=24 file (retention 0.44) also predated the admission changes. Newly runnable cases, which
 raised "fewer than 10 difference pairs" before `noise_fallback`, are in `cmapss_d32_runs.jsonl`,
-`cmapss_fd002_raw_runs.jsonl` and `cmapss_fd004_norm_runs.jsonl`.
+`cmapss_fd002_raw_runs.jsonl` and `cmapss_fd004_norm_runs.jsonl`. `cmapss_runs.jsonl` (FD001, `dsp` and
+`cnn`) and `cmapss_slope_runs.jsonl` were regenerated too: DSP rows are identical apart from the new
+health-and-age columns, the CNN uEngram rows differ slightly (largest relative change 0.30, on the small
+`mmd2_history`), and `uengram_frozen` on `dsp_slope` moved from retention 1.0 to 0.6 because the earlier
+file predates the admission changes. `cmapss_d84_runs.jsonl` was committed empty; it now holds the
+full-dimension run (health AUROC 0.989, retention 1.00).
 
 The trade-off: once the memory keeps end-of-life states in few items, each item spans the whole RUL
 range and the memory-lookup RUL collapses to a near-constant prediction, as it already did on FD001.

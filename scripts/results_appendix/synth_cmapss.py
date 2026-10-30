@@ -105,7 +105,8 @@ def build(repo: Path) -> list[dict]:
                          f"The table shows uengram at every budget and fifo/reservoir at the minimum and maximum budgets. uengram event recall ranges from {_fmt(min(stats[(b,'uengram')]['event_recall'] for b in budgets))} to {_fmt(max(stats[(b,'uengram')]['event_recall'] for b in budgets))}, above fifo at each displayed endpoint."))
 
     # CMAPSS by dimension: dimension identified by the encoder suffix in each file.
-    files = [("d=16", "cmapss_runs.jsonl"), ("d=24", "cmapss_d24_runs.jsonl"), ("d=32", "cmapss_d32_runs.jsonl")]
+    files = [("d=16", "cmapss_runs.jsonl"), ("d=24", "cmapss_d24_runs.jsonl"), ("d=32", "cmapss_d32_runs.jsonl"),
+             ("d=84", "cmapss_d84_runs.jsonl")]
     selected_methods = ("naive", "reservoir", "uengram")
     rows = []
     metric_keys = ["health_auroc", "health_ap", "rul_rmse", "rul_mae", "rul_rmse_health", "rul_mae_health",
@@ -120,11 +121,12 @@ def build(repo: Path) -> list[dict]:
                 means = {k: _mean([r["metrics"].get(k) for r in selected]) for k in metric_keys}
                 rows.append([dim, encoder, method, str(len(selected))] + [_fmt(means[k]) for k in metric_keys])
     tables.append(_table("CMAPSS health and RUL metrics by dimension", "mixed",
-                         "results/cmapss_runs.jsonl, results/cmapss_d24_runs.jsonl, results/cmapss_d32_runs.jsonl",
+                         "results/cmapss_runs.jsonl, results/cmapss_d24_runs.jsonl, results/cmapss_d32_runs.jsonl, "
+                         "results/cmapss_d84_runs.jsonl",
                          ["dimension", "encoder", "method", "seeds", "health AUROC", "health AP", "RUL RMSE", "RUL MAE",
                           "RUL RMSE health", "RUL MAE health", "RUL RMSE health + age"], rows,
                          "The table reports seed means for health and RUL metrics by dimension and method; em dashes mark unavailable metrics in the source files. "
-                         "The d=16 file predates the health-and-age predictor, so that column is empty for it."))
+                         "The d=16 file was regenerated at HEAD and now includes the health-and-age predictor."))
 
     # CMAPSS subsets: FD001 as published; FD002 raw and with per-condition normalization; FD003 raw; FD004 normalized.
     subset_files = [("FD001", "cmapss_runs.jsonl"), ("FD002", "cmapss_fd002_raw_runs.jsonl"),

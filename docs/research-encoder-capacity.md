@@ -34,12 +34,13 @@ script.
 
 | Benchmark | `d=16` (frozen) | Full/near-full `d` | Verdict |
 |---|---:|---:|---|
-| Synthetic (`d=36`, 10 seeds) | event_recall 1.00, seizure_recall 1.00, AP 0.996 | event_recall **0.8012**, seizure_recall 1.000, AP 0.5336 | **Regression** in event recall and AP; seizure_recall holds. Mechanism: `[INFERENCE]` PCA-budget limit, as in the slope encoder, not verified |
-| CMAPSS (`d=24`, 5 seeds) | AUROC 0.684, RUL-RMSE 42.05 | AUROC **0.520** (worse), RUL-RMSE **21.05** (halved) | Mixed; `d>24` fails outright (next section) |
+| Synthetic (`d=36`, 10 seeds) | event_recall 1.00, seizure_recall 1.00, AP 0.996 | event_recall **0.8012**, seizure_recall 1.000, AP 0.5336 | **Regression** in event recall and AP; seizure_recall holds. Mechanism (diagnostic on seed-0 latents, not committed): at `d=36` 26 of 36 dimensions have lag-100 difference noise over twice the lag-1 noise (4 of 16 at `d=16`), so lag-1 whitening reads slow within-state variation as novelty. `DSPEncoder(gate_lag=20)` raises recall to 0.999 and AP to 0.591 (`results/synth_d36_gate20_runs.jsonl`); AP stays far below 0.996. See `docs/research-inflation-min-support.md` section 5 |
+| CMAPSS (`d=24`, 5 seeds, regenerated at HEAD) | novelty AUROC 0.684, health AUROC 0.999, RUL-RMSE (memory lookup) 42.05 | novelty AUROC **0.649**, health AUROC 0.998, RUL-RMSE (lookup) **42.74**, retention 1.00 | **No gain.** The earlier AUROC 0.520 and "halved" RUL-RMSE 21.05 came from a strict step-inflation estimate resting on 40 pairs that acted as white noise; with the 100-pair minimum `d=24` is level with `d=16`. `d>24` now runs too (next section) |
 | MetroPT-3 (`d=42`, 5 seeds, `uengram`) | AUROC 0.979, AP 0.502, FA/week 14.12 | AUROC **0.988**, AP **0.601**, FA/week **5.70** | **Consistent improvement**, every method (naive/fifo/reservoir too), detection count unchanged (3/4) |
 | SKAB (`d=48`, seed 0) | 5/34 detected, 5 FA episodes | **9/34** detected, **5 FA episodes** (same) | **Clear win, free**: no slope/context feature engineering needed |
 
 Raw data: `results/synth_d36_runs.jsonl`, `results/cmapss_d24_runs.jsonl`,
+`results/cmapss_d32_runs.jsonl`, `results/cmapss_d84_runs.jsonl`,
 `results/metropt_d42_runs.jsonl`; SKAB tested via throwaway script (not
 committed as a separate results file, consistent with this project's
 diagnostic-script convention).
@@ -57,9 +58,9 @@ loss from aggressive compression. For SKAB specifically, plain `d=48` is
 strictly better than every encoder variant tested so far: more events,
 same false-alarm cost, no new feature code.
 
-### Why `d` cannot simply be raised everywhere: a real numerical ceiling
+### Why `d` cannot simply be raised everywhere: the strict estimator, and what replaced it
 
-CMAPSS fails outright above `d=24`:
+Originally CMAPSS failed outright above `d=24`:
 
 ```
 d=16 OK   inflation range=[3.17,26.38]
@@ -67,19 +68,28 @@ d=24 OK   inflation range=[0.39,16.17]
 d=32 FAILED: fewer than 10 difference pairs for noise estimate
 ```
 
-This is not a sample-size shortage (9,159 commissioning windows). CMAPSS's
-48 raw features come from a 4-way FFT-bin split of only `K//2=8` bins (`K=16`
-cycles), so several band-energy columns are near-duplicates at higher `d`.
-`_segments()` (`uengram/stats.py`) computes a Mahalanobis distance against
-`robust_noise_cov`, a `d×d` matrix; near-degenerate columns make that matrix
-ill-conditioned, its inverse unstable, and the chi-square change-point test
-fires on nearly every window — fragmenting the 50-unit grouping into tiny
-segments that then fail the outer lag-38 pair-count check. SKAB and MetroPT
-tolerate full dimension because each is one long, genuinely continuous
-commissioning stream (no per-unit fragmentation to begin with); CMAPSS's
-per-unit structure interacts badly with near-duplicate features at high `d`.
-**The practical ceiling is dataset-specific and must be found per dataset,
-not assumed from channel count.**
+This was not a sample-size shortage (9,159 commissioning windows): the strict estimator cuts each
+unit at every abrupt jump (`_segments()` in `uengram/stats.py`) and was left with too few lag-38
+pairs. The earlier explanation here, that near-duplicate band-energy columns (CMAPSS's 48 raw
+features come from a 4-way FFT-bin split of only `K//2=8` bins) make `robust_noise_cov`
+ill-conditioned and the chi-square change-point test fire on nearly every window, was **not
+tested** (`[INFERENCE]`). What was tested is the consequence: `d=24` had only 40 warm pairs
+(median inflation 2.75 against 8.6 from the unit groups), and the 100-pair minimum plus the
+fail-soft ladder (`src/uengram/noise_fallback.py`) now let every width run.
+
+Regenerated at HEAD, CMAPSS FD001, `uengram`, 5 seeds (the encoder is deterministic):
+
+| `d` | novelty AUROC | health AUROC | RUL-RMSE lookup / health / health+age | write reduction % | step inflation |
+|---:|---:|---:|---|---:|---|
+| 16 | 0.684 | 0.999 | 42.1 / 25.5 / 23.5 | 96.7 | exact |
+| 24 | 0.649 | 0.998 | 42.7 / 25.8 / 24.5 | 96.2 | group_segments |
+| 32 | 0.702 | 0.998 | 42.7 / 27.3 / 24.3 | 97.3 | group_segments |
+| 84 (full) | 0.652 | 0.989 | 42.8 / 30.0 / 26.8 | 92.4 | group_segments |
+
+No width beats `d=16` on health AUROC or on RUL from health. SKAB and MetroPT tolerate full
+dimension because each is one long, continuous commissioning stream with no per-unit
+fragmentation. **The practical ceiling is dataset-specific and must be found per dataset, not
+assumed from channel count.**
 
 ### Recommendation
 
@@ -91,10 +101,10 @@ already are:
   development stage with proper confirmation-style validation before
   changing the frozen candidate.
 - SKAB: `d=48` (full) is strictly better than the earlier slope ablation.
-- CMAPSS: `d=24` trades novelty AUROC for RUL-RMSE; not a clean win,
-  needs a decision about which objective matters more.
+- CMAPSS: `d=16` stays. `d=24`, `32` and `84` run but give no health or RUL gain (table above).
 - Synthetic: stay at `d=16`; this is the benchmark that would catch a
-  regression, and it did.
+  regression, and it did. The opt-in `gate_lag=20` removes the retention loss at `d=36`
+  (recall 0.999) but not the AP loss (0.591).
 
 ## 2. Improving the CNN encoders: undertrained and under-capacity, not
    fundamentally wrong

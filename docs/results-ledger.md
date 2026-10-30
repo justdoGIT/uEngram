@@ -92,18 +92,21 @@ These supplementary tables are generated from files in `results/` (48 tables), e
 |---|---|---|---|---|---|---|---|---|---|---|
 | d=16 | cnn | naive | 5 | — | — | 23.918 | 17.905 | — | — | — |
 | d=16 | cnn | reservoir | 5 | — | — | 23.515 | 17.687 | — | — | — |
-| d=16 | cnn | uengram | 5 | 0.998 | 0.992 | 42.040 | 34.961 | 26.439 | 20.896 | — |
+| d=16 | cnn | uengram | 5 | 0.998 | 0.992 | 42.040 | 34.961 | 26.439 | 20.896 | 25.269 |
 | d=16 | dsp | naive | 5 | — | — | 25.798 | 18.670 | — | — | — |
 | d=16 | dsp | reservoir | 5 | — | — | 24.188 | 18.110 | — | — | — |
-| d=16 | dsp | uengram | 5 | 0.999 | 0.995 | 42.051 | 35.462 | 25.450 | 20.267 | — |
+| d=16 | dsp | uengram | 5 | 0.999 | 0.995 | 42.051 | 35.462 | 25.450 | 20.267 | 23.499 |
 | d=24 | dsp_d24 | naive | 5 | — | — | 24.609 | 17.908 | — | — | — |
 | d=24 | dsp_d24 | reservoir | 5 | — | — | 24.448 | 18.740 | — | — | — |
 | d=24 | dsp_d24 | uengram | 5 | 0.998 | 0.993 | 42.740 | 35.896 | 25.792 | 19.694 | 24.472 |
 | d=32 | dsp_d32 | naive | 5 | — | — | 25.705 | 18.586 | — | — | — |
 | d=32 | dsp_d32 | reservoir | 5 | — | — | 24.948 | 19.020 | — | — | — |
 | d=32 | dsp_d32 | uengram | 5 | 0.998 | 0.992 | 42.741 | 35.892 | 27.253 | 20.151 | 24.346 |
+| d=84 | dsp_d84 | naive | 5 | — | — | 25.736 | 19.842 | — | — | — |
+| d=84 | dsp_d84 | reservoir | 5 | — | — | 25.990 | 19.965 | — | — | — |
+| d=84 | dsp_d84 | uengram | 5 | 0.989 | 0.964 | 42.829 | 35.809 | 29.969 | 23.585 | 26.764 |
 
-<p class="table-note"><b>Source</b> <code>results/cmapss_runs.jsonl, results/cmapss_d24_runs.jsonl, results/cmapss_d32_runs.jsonl</code>. The table reports seed means for health and RUL metrics by dimension and method; em dashes mark unavailable metrics in the source files. The d=16 file predates the health-and-age predictor, so that column is empty for it.</p>
+<p class="table-note"><b>Source</b> <code>results/cmapss_runs.jsonl, results/cmapss_d24_runs.jsonl, results/cmapss_d32_runs.jsonl, results/cmapss_d84_runs.jsonl</code>. The table reports seed means for health and RUL metrics by dimension and method; em dashes mark unavailable metrics in the source files. The d=16 file was regenerated at HEAD and now includes the health-and-age predictor.</p>
 
 **Table A7.** <span class="outcome mixed">Mixed</span>CMAPSS subsets: end-of-life retention and health score
 
@@ -186,7 +189,7 @@ These supplementary tables are generated from files in `results/` (48 tables), e
 | with_slope | naive | 5 | — | 37.309 | — | 0.000 |
 | with_slope | reservoir | 5 | — | 36.229 | — | 87.852 |
 | with_slope | uengram | 5 | 1.000 | 35.253 | 30.415 | 94.605 |
-| with_slope | uengram_frozen | 5 | 1.000 | 29.536 | 31.283 | 92.078 |
+| with_slope | uengram_frozen | 5 | 1.000 | 31.316 | 31.283 | 91.697 |
 
 <p class="table-note"><b>Source</b> <code>results/cmapss_runs.jsonl, results/cmapss_slope_runs.jsonl</code>. The table compares standard and slope DSP runs; uengram health AUROC changes from 0.999 without slopes to 1.000 with slopes, while the displayed RUL metrics also differ.</p>
 

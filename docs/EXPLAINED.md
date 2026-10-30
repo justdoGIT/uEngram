@@ -232,10 +232,12 @@ RUL needs labels: a unit's RUL is known only once it has failed. A lookup table 
 
 The alternative was to keep life-stage resolution inside the memory by storing every drift checkpoint (section 10) as a retrievable item that carries the RUL of the windows absorbed since the previous checkpoint. Measured on seed 0: checkpoints as items gave RMSE 35.5 (DSP) / 39.4 (CNN) with 32 / 46 extra items (5 to 7 KB); the health table gave 25.5 / 26.0 in 160 bytes. Checkpoint items each average a long stretch of life (prediction standard deviation 13.5 / 8.6 against a truth of 41.6), while the table follows the health score (33.6 / 33.4). Checkpoint items would also need RUL labels attached to windows inside the memory, which a device does not have when the windows arrive.
 
-Health is one number, so units that have not yet started to degrade all get similar RUL; a regression on the full deviation vector could separate more (`docs/IMPROVEMENT-ANALYSIS.md` section 5: ridge health index on window mean/slope features, RMSE 18.5), but it is not implemented.
+Health is one number, so units that have not yet started to degrade all get similar RUL; a regression on the full deviation vector could separate more (`docs/IMPROVEMENT-ANALYSIS.md` section 5: ridge health index on window mean/slope features, RMSE 18.5), but that is not implemented.
+
+What is implemented as a cheaper second feature is the unit's age. `HealthAgeRUL` fits a quadratic ridge regression on $(\log h, a)$ with $a$ the cycles observed so far (scaled by 100), over the same labelled stream windows: six float32 coefficients (24 bytes), predictions clipped to $[0, 125]$. On the five-seed DSP runs it lowers RUL RMSE in all 14 configurations tried (FD001 25.5 to 23.5, FD003 29.8 to 25.6, FD002 raw 53.0 to 39.6); smoothing $h$ over the last 5 to 40 windows did not help (FD001 25.5, 25.5, 27.5, 32.9). Metrics `rul_rmse_health_age`, `rul_mae_health_age` sit beside the unchanged health-only metrics. Details in `docs/research-inflation-min-support.md`.
 
 ### Where in code
-`src/uengram/engine.py:Engram.reference, Engram.set_reference, Engram.health`; `IngestResult.health` in `src/uengram/store.py`; `src/uengram/health.py:HealthRUL`; commissioning and the RUL table fit in `bench/run_cmapss.py:run_one`; metrics `health_auroc`, `health_ap`, `rul_rmse_health`, `rul_mae_health`.
+`src/uengram/engine.py:Engram.reference, Engram.set_reference, Engram.health`; `IngestResult.health` in `src/uengram/store.py`; `src/uengram/health.py:HealthRUL, HealthAgeRUL`; commissioning and the RUL table fit in `bench/run_cmapss.py:run_one`; metrics `health_auroc`, `health_ap`, `rul_rmse_health`, `rul_mae_health`, `rul_rmse_health_age`, `rul_mae_health_age`.
 
 ---
 
@@ -352,8 +354,11 @@ On the synthetic stream the CNN still supersedes 101 states (seed 0, from 155). 
 
 On CMAPSS the false steps had been doing useful work for RUL lookup: they cut each degradation run into short segments, so a recalled item carried a narrow RUL range (seed 0: within-item RUL standard deviation 3.3 to 4.0 cycles over 193 items). Calibrated, the memory tracks degradation as drift of 9 to 17 states, each spanning nearly the whole life, and RUL lookup falls to the constant-prediction RMSE (42; v2 21 to 23). RUL now comes from the health score through a lookup table (section 7c); storing drift checkpoints as retrievable items was measured and rejected there.
 
+### Minimum support and the soft ladder
+The estimate above rests on lag-$L$ pairs inside jump-free segments, $L = 2b = 38$ at $\lambda = 0.1$, after the first $b = 19$ samples of each segment. Steady degradation trips the jump detector, so on CMAPSS FD001 $d = 24$, FD002 (normalized) and FD003 the strict estimate had 40, 17 and 14 such pairs, came out at medians of 2.75, 0.87 and 2.24 (the unit groups give 8.6 to 9.0), and `step_scale = sqrt(max(f, 1))` clamped it to white noise: the detector fired on slow within-unit motion, slots saturated and end-of-life retention fell to 0.06 to 0.16. `soft_ewma_inflation` therefore requires `MIN_INFLATION_PAIRS = 100` pairs (relative standard error about $\sqrt{2/n}$, 14%) and otherwise uses the caller's own groups when they give more. If even those are too short it returns white noise with a `RuntimeWarning`. Every rung is named in the result row (`step_inflation_quality`); the encoders' noise estimates have their own ladder (robust, ungrouped, shrunk; `noise_quality`). With the rule, uEngram retains every end-of-life state on all four subsets (`docs/research-inflation-min-support.md`). The cost is the lookup RUL above: fewer, longer-lived items make it constant (FD003 24.1 to 41.9).
+
 ### Where in code
-`src/uengram/stats.py:ewma_inflation, _segments`; `Engram(step_inflation=...)`, `Engram._step_detected`; `bench/common.py:measure_step_inflation`, called by `bench/run_synth.py` and `bench/run_cmapss.py`.
+`src/uengram/stats.py:ewma_inflation, ewma_lag_pairs, _segments`; `src/uengram/noise_fallback.py:soft_ewma_inflation, soft_noise_sigma, soft_noise_cov, MIN_INFLATION_PAIRS`; `Engram(step_inflation=...)`, `Engram._step_detected`; `bench/common.py:measure_step_inflation, degradation`, called by `bench/run_synth.py` and `bench/run_cmapss.py`.
 
 ---
 
