@@ -106,6 +106,11 @@ class SensorStateMemory:
         self._last_alarm = last_alarm
         self._known_pins: dict[int, tuple[str, str, int | None]] = {}
 
+    @property
+    def last_step(self) -> int:
+        """Highest step already consumed; an upstream replay resumes after this index."""
+        return self._last_step
+
     def ingest(self, window: SensorWindow) -> SensorIngestReceipt:
         vector = validate_sensor_window(window, self.engine.d)
         if window.step_index <= self._last_step:

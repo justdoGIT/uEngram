@@ -3,6 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 
 from uengram import (
     CapsuleSensorStateMemory,
@@ -83,3 +84,52 @@ def test_capsule_runner_replays_a_wal_suffix_after_interrupted_ingest(tmp_path):
     assert capsule.uncheckpointed_windows() == ()
     capsule.close()
 
+
+
+@pytest.mark.parametrize("synchronous", ["FULL", "NORMAL"])
+@pytest.mark.parametrize("cadence", [1, 4, 7])
+def test_cadence_replays_only_the_uncheckpointed_suffix_and_matches_an_uninterrupted_run(
+    tmp_path, cadence, synchronous,
+):
+    windows = [window(step, [step * 10.0, 0.0]) for step in range(12)]
+    reference_memory = Memory()
+    reference = SensorStateMemory(Engram(config(), 2, np.ones(2), 64), reference_memory)
+    for item in windows:
+        reference.ingest(item)
+
+    memory = Memory()  # the vendor outlives the crashed process
+    capsule = SensorMemoryCapsule(tmp_path / "capsule.db", synchronous=synchronous)
+    runner = CapsuleSensorStateMemory(capsule, Engram(config(), 2, np.ones(2), 64), memory,
+                                      checkpoint_every=cadence)
+    for item in windows[:9]:
+        runner.ingest(item)
+    capsule.close()  # crash: up to cadence - 1 consumed windows are not checkpointed
+
+    capsule = SensorMemoryCapsule(tmp_path / "capsule.db", synchronous=synchronous)
+    engine = Engram(config(), 2, np.ones(2), 64)
+    runner = CapsuleSensorStateMemory(capsule, engine, memory, checkpoint_every=cadence)
+    replayed = runner.recover()
+    for item in windows[9:]:
+        runner.ingest(item)
+
+    assert [r.step_index for r in replayed] == list(range(9 - 9 % cadence, 9))
+    np.testing.assert_array_equal(engine.item_id, reference.engine.item_id)
+    np.testing.assert_allclose(engine.mu, reference.engine.mu)
+    assert {r["idempotency_key"] for r in memory.rows.values()} == {
+        r["idempotency_key"] for r in reference_memory.rows.values()}
+    assert len(memory.rows) == len(reference_memory.rows)  # replay did not duplicate vendor rows
+    capsule.close()
+
+
+@pytest.mark.parametrize("bad", [0, -1, True, 1.5])
+def test_invalid_checkpoint_cadence_is_rejected(tmp_path, bad):
+    capsule = SensorMemoryCapsule(tmp_path / "capsule.db")
+    with pytest.raises(ValueError, match="checkpoint_every"):
+        CapsuleSensorStateMemory(capsule, Engram(config(), 2, np.ones(2), 64), Memory(),
+                                 checkpoint_every=bad)
+    capsule.close()
+
+
+def test_unknown_synchronous_mode_is_rejected(tmp_path):
+    with pytest.raises(ValueError, match="synchronous"):
+        SensorMemoryCapsule(tmp_path / "capsule.db", synchronous="OFF")

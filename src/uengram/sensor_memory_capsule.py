@@ -28,12 +28,14 @@ class CapsuleState:
 class SensorMemoryCapsule:
     """Single-writer SQLite WAL, checkpoint, Lite-outbox and vector sidecar."""
 
-    def __init__(self, path: str | Path) -> None:
+    def __init__(self, path: str | Path, *, synchronous: str = "FULL") -> None:
+        if synchronous not in ("FULL", "NORMAL"):
+            raise ValueError("synchronous must be FULL or NORMAL")
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.db = sqlite3.connect(self.path)
         self.db.execute("PRAGMA journal_mode=WAL")
-        self.db.execute("PRAGMA synchronous=FULL")
+        self.db.execute(f"PRAGMA synchronous={synchronous}")  # value validated above
         self.db.execute("PRAGMA foreign_keys=ON")
         self._schema()
 

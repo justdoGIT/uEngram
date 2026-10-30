@@ -24,8 +24,13 @@ class CapsuleSensorStateMemory:
         *,
         raw_evidence: RawEvidencePins | None = None,
         adapter: ConfirmedLatentAdapter | None = None,
+        checkpoint_every: int = 1,
     ) -> None:
+        if isinstance(checkpoint_every, bool) or not isinstance(checkpoint_every, int) or checkpoint_every < 1:
+            raise ValueError("checkpoint_every must be an integer >= 1")
         self.capsule = capsule
+        self.checkpoint_every = checkpoint_every
+        self._since_checkpoint = 0
         restored = capsule.restore(engine, adapter)
         self.pipeline = SensorStateMemory(
             engine,
@@ -41,12 +46,15 @@ class CapsuleSensorStateMemory:
     def ingest(self, window: SensorWindow) -> SensorIngestReceipt:
         self.capsule.record_window(window)
         receipt = self.pipeline.ingest(window)
-        self.capsule.checkpoint(
-            self.pipeline.engine,
-            last_step=receipt.step_index,
-            last_alarm=receipt.decision.flagged,
-            adapter=self.pipeline.adapter,
-        )
+        self._since_checkpoint += 1
+        if self._since_checkpoint >= self.checkpoint_every:
+            self.capsule.checkpoint(
+                self.pipeline.engine,
+                last_step=receipt.step_index,
+                last_alarm=receipt.decision.flagged,
+                adapter=self.pipeline.adapter,
+            )
+            self._since_checkpoint = 0
         return receipt
 
     def recover(self) -> tuple[SensorIngestReceipt, ...]:
