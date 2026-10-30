@@ -31,6 +31,7 @@ from .sensor_memory_types import (
     SensorRecall,
     SensorWindow,
 )
+from .sensor_vector_index import SensorVectorIndex
 from .store import IngestResult
 
 _EDGE_EVENT = 2
@@ -82,6 +83,7 @@ class SensorStateMemory:
         *,
         raw_evidence: RawEvidencePins | None = None,
         outbox: SensorEventOutbox | None = None,
+        vector_index: SensorVectorIndex | None = None,
         last_step: int = -1,
         last_alarm: bool | None = None,
         adapter: ConfirmedLatentAdapter | None = None,
@@ -95,6 +97,7 @@ class SensorStateMemory:
         self.memory = memory
         self.raw_evidence = raw_evidence
         self.outbox = outbox
+        self.vector_index = vector_index
         if isinstance(last_step, bool) or not isinstance(last_step, Integral) or last_step < -1:
             raise ValueError("last_step must be an integer greater than or equal to -1")
         if last_alarm is not None and not isinstance(last_alarm, bool):
@@ -192,6 +195,8 @@ class SensorStateMemory:
             if known is not None and known[:2] != (reference, owner):
                 raise ValueError("receipt does not match the pinned memory")
         deleted = self.memory.forget(receipt.memory_id)
+        if deleted and self.vector_index is not None:
+            self.vector_index.forget(receipt.memory_id)
         if reference is not None:
             self.raw_evidence.unpin(reference, owner)
             if self._known_pins.pop(receipt.memory_id, None) is not None:
@@ -277,12 +282,19 @@ class SensorStateMemory:
         )
         items = tuple(getattr(response, "items", ()))
         ranked = ()
-        if now_ms is not None and items:
-            ranked = tuple(rank_events(
-                items, query, now_ms, retrieval_weights,
-                asset_id=asset_id, subsystem_id=subsystem_id, operating_mode=operating_mode,
-                limit=max_history,
-            ))
+        if now_ms is not None:
+            if self.vector_index is not None:
+                ranked = self.vector_index.rank(
+                    query, now_ms=now_ms, asset_id=asset_id, subsystem_id=subsystem_id,
+                    operating_mode=operating_mode, limit=max_history,
+                    weights=retrieval_weights,
+                )
+            elif items:
+                ranked = tuple(rank_events(
+                    items, query, now_ms, retrieval_weights,
+                    asset_id=asset_id, subsystem_id=subsystem_id, operating_mode=operating_mode,
+                    limit=max_history,
+                ))
         return SensorRecall(patterns, items, ranked)
 
     def _deliver(
@@ -326,6 +338,8 @@ class SensorStateMemory:
                 self.raw_evidence.unpin(pending.raw_window_ref, pending.idempotency_key)
             raise
         memory_id = int(result.memory_id)
+        if self.vector_index is not None:
+            self.vector_index.upsert(memory_id, pending)
         if pinned:
             already_known = memory_id in self._known_pins
             self._known_pins[memory_id] = (

@@ -145,6 +145,14 @@ function retrieve(query_features, asset, subsystem):
 This is restart-safe **event delivery**, not a full detector checkpoint. The uEngram engine has no supported state-export format, and EdgeMemory Lite has no cross-store transaction. A process crash before the local outbox enqueue, or without a host-owned engine checkpoint, can still lose detector state. Production callers must add an input write-ahead log or a versioned engine checkpoint under their own storage transaction; this repository does not claim that unavailable guarantee.
 
 Lite remains a text and keyword backend. It has no documented binary, vector, or ANN operation. The compact vector field occasionally included in uEngram event metadata is host-encoded evidence for host-side ranking, not a Lite vector index. Native vector/ANN integration remains unsupported until the vendor publishes a versioned request, response, filtering, consistency, quota, and latency contract that can be exercised against a real backend.
+### Host vector sidecar
+
+`FileSensorVectorIndex` is an optional, fsync-backed host sidecar for the compact vectors already present in uEngram event metadata. After Lite accepts an idempotent event, the adapter persists `(memory_id, idempotency_key, content, structured_value)` in the sidecar; replay repeats this safely. Ranked history then scans every indexed event with the existing strict asset/subsystem/mode filters and hybrid score. Lite keyword results remain separately exposed as `historical_events`.
+
+This is an exact $O(Nd)$ host scan, not Lite vector search and not ANN. The behavior test constrains Lite to its newest single keyword candidate: it exposes one event, while the sidecar recovers all three persisted lifecycle vectors and ranks the older exact vector match first. That proves retrieval completeness under keyword truncation; it does not establish latency, memory, flash, energy, or field-diagnostic benefit.
+
+For a vendor-native successor, the next ABI must add: (1) capability bits that distinguish exact-vector and ANN semantics; (2) a typed binary vector payload with dimension, metric, normalization and filtering rules; (3) query responses with distance, candidate-count, truncation and index-epoch metadata; (4) atomic mutation semantics spanning record, vector and idempotency mapping; and (5) reproducible target-hardware latency, RAM, flash-write and recall benchmarks. Relationships require their own typed identity and delete/consistency rules; they must not be overloaded into event keywords.
+
 
 
 ## 6. Python package and integration boundary
