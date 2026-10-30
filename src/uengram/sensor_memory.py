@@ -7,26 +7,31 @@ raw sensor windows and embeddings remain in the host's evidence store.
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from numbers import Integral
-from typing import Sequence
 
 import numpy as np
 
 from .confirmed_adaptation import ConfirmedLatentAdapter
 from .engine import Engram
 from .retrieval import RetrievalWeights, rank_events
-from .store import IngestResult
+from .sensor_memory_outbox import PendingSensorDelivery, SensorEventOutbox
 from .sensor_memory_records import (
     PendingSensorRecord,
+    _tag,
     identity_key,
     make_sensor_record,
     validate_sensor_window,
-    _tag,
 )
 from .sensor_memory_types import (
-    EdgeMemoryPort, PatternRecall, RawEvidencePins, SensorIngestReceipt,
-    SensorRecall, SensorWindow,
+    EdgeMemoryPort,
+    PatternRecall,
+    RawEvidencePins,
+    SensorIngestReceipt,
+    SensorRecall,
+    SensorWindow,
 )
+from .store import IngestResult
 
 _EDGE_EVENT = 2
 _EDGE_SOURCE_SENSOR = 2
@@ -76,6 +81,7 @@ class SensorStateMemory:
         memory: EdgeMemoryPort,
         *,
         raw_evidence: RawEvidencePins | None = None,
+        outbox: SensorEventOutbox | None = None,
         last_step: int = -1,
         last_alarm: bool | None = None,
         adapter: ConfirmedLatentAdapter | None = None,
@@ -88,6 +94,7 @@ class SensorStateMemory:
         self.engine = engine
         self.memory = memory
         self.raw_evidence = raw_evidence
+        self.outbox = outbox
         if isinstance(last_step, bool) or not isinstance(last_step, Integral) or last_step < -1:
             raise ValueError("last_step must be an integer greater than or equal to -1")
         if last_alarm is not None and not isinstance(last_alarm, bool):
@@ -141,7 +148,7 @@ class SensorStateMemory:
             window, decision, vector, event_type, lifecycle_events
         )
         try:
-            return self._persist(pending, decision, window.step_index)
+            return self._deliver(pending, decision, window.step_index)
         except Exception as exc:
             raise SensorMemoryPersistenceError(pending, decision, exc) from exc
 
@@ -150,9 +157,27 @@ class SensorStateMemory:
     ) -> SensorIngestReceipt:
         """Retry storage without feeding the already-consumed window twice."""
         try:
-            return self._persist(pending, decision, step_index)
+            return self._deliver(pending, decision, step_index)
         except Exception as exc:
             raise SensorMemoryPersistenceError(pending, decision, exc) from exc
+
+    def replay_outbox(self) -> tuple[SensorIngestReceipt, ...]:
+        """Deliver pending records after restart without ingesting their windows again."""
+        if self.outbox is None:
+            return ()
+        receipts = []
+        for delivery in self.outbox.pending():
+            try:
+                receipt = self._persist(
+                    delivery.record, delivery.decision, delivery.step_index
+                )
+                self.outbox.acknowledge(delivery.record.idempotency_key)
+            except Exception as exc:
+                raise SensorMemoryPersistenceError(
+                    delivery.record, delivery.decision, exc
+                ) from exc
+            receipts.append(receipt)
+        return tuple(receipts)
 
     def forget(self, receipt: SensorIngestReceipt) -> int:
         """Forget an event, then idempotently release its raw-window pin."""
@@ -260,6 +285,16 @@ class SensorStateMemory:
             ))
         return SensorRecall(patterns, items, ranked)
 
+    def _deliver(
+        self, pending: PendingSensorRecord, decision: IngestResult, step_index: int
+    ) -> SensorIngestReceipt:
+        if self.outbox is not None:
+            self.outbox.enqueue(PendingSensorDelivery(pending, decision, step_index))
+        receipt = self._persist(pending, decision, step_index)
+        if self.outbox is not None:
+            self.outbox.acknowledge(pending.idempotency_key)
+        return receipt
+
     def _persist(
         self, pending: PendingSensorRecord, decision: IngestResult, step_index: int
     ) -> SensorIngestReceipt:
@@ -272,6 +307,7 @@ class SensorStateMemory:
         try:
             result = self.memory.remember(
                 pending.content,
+
                 kind=_EDGE_EVENT,
                 structured_value=pending.structured_value,
                 source_class=_EDGE_SOURCE_SENSOR,
@@ -289,7 +325,7 @@ class SensorStateMemory:
                 assert self.raw_evidence is not None
                 self.raw_evidence.unpin(pending.raw_window_ref, pending.idempotency_key)
             raise
-        memory_id = int(getattr(result, "memory_id"))
+        memory_id = int(result.memory_id)
         if pinned:
             already_known = memory_id in self._known_pins
             self._known_pins[memory_id] = (

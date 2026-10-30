@@ -91,7 +91,7 @@ The hashed tags prevent raw asset identifiers from appearing in the keyword inde
 
 ### Raw evidence lifetime
 
-If `raw_window_ref` is present, the host must inject a durable `RawEvidencePins` implementation. The pipeline pins the immutable slice before writing its event, marks that event critical, and unpins it after a successful explicit `forget()`. If EdgeMemory persistence fails, the adapter attempts to release the pin. Critical records are protected from EdgeMemory's pressure eviction, but may still expire or be explicitly forgotten. This code supplies no automatic expiry, and it cannot guarantee the host time-series store honors pins unless its adapter does.
+If `raw_window_ref` is present, the host must inject a durable `RawEvidencePins` implementation. When a durable outbox is configured, the pipeline records the lifecycle event before pinning the immutable slice and calling EdgeMemory; this makes a restarted replay re-establish the idempotent pin before it retries the vendor write. A successful event is marked critical and unpinned after an explicit `forget()`. Critical records are protected from EdgeMemory's pressure eviction, but may still expire or be explicitly forgotten. This code supplies no automatic expiry, and it cannot guarantee the host time-series store honors pins unless its adapter does.
 
 ## 4. Critical data flow (pseudocode)
 
@@ -102,17 +102,20 @@ function on_window(window):
 
     if decision is a durable lifecycle change OR alarm state changed:
         event = encode small versioned metadata record
+        outbox.enqueue(event, decision)  # fsync before external delivery
         if event points to raw evidence:
             raw_store.pin(pointer, stable_event_key)
-        try:
-            edge_memory.remember(event, sensor_source, observed_time,
-                                 idempotency_key=stable_event_key)
-        except storage_error:
-            raise RetryableError(event, decision)
-            # Do NOT feed the same window into uEngram a second time.
+        edge_memory.remember(event, sensor_source, observed_time,
+                             idempotency_key=stable_event_key)
+        outbox.acknowledge(stable_event_key)
 
-function retry(retryable_error):
-    edge_memory.remember(retryable_error.event, same_idempotency_key)
+function after_restart():
+    restore the host-owned detector checkpoint, if one exists
+    for queued event in outbox:
+        raw_store.pin(pointer, stable_event_key)  # idempotent
+        edge_memory.remember(event, same_idempotency_key)
+        outbox.acknowledge(stable_event_key)
+    # Do NOT feed the already-consumed window into uEngram a second time.
 
 function retrieve(query_features, asset, subsystem):
     live_patterns = uEngram.exact_recall(query_features)
@@ -125,7 +128,7 @@ function retrieve(query_features, asset, subsystem):
 
 | Priority | Failure path | Why it matters | Safe response |
 |---|---|---|---|
-| Highest | EdgeMemory write fails after uEngram has consumed the window | Retrying `ingest()` would count the sample twice and could alter promotion/alarm timing | Catch `SensorMemoryPersistenceError`; retry `error.pending` via `persist_pending()` with the same idempotency key. Do not ingest that window again. |
+| Highest | EdgeMemory write fails after uEngram has consumed the window | Retrying `ingest()` would count the sample twice and could alter promotion/alarm timing | Configure `FileSensorEventOutbox`; call `replay_outbox()` before accepting new windows after restart. Otherwise catch `SensorMemoryPersistenceError` and retry `error.pending` with `persist_pending()`. Do not ingest that window again. |
 | Highest | A fault is promoted into an adaptive “normal” state | A persistent fault can be promoted as semantic; because later novelty may compare against learned semantic slots, the alarm can weaken or clear even while the physical fault remains | Keep alarm decisions anchored to a separately frozen, validated healthy reference; quarantine unverified states or disable promotion for fault candidates; replay persistent-fault and repair cases. Promotion is a memory lifecycle event, not proof of health. |
 | High | Raw pointer is evicted before its event is reviewed | The event becomes an unsupported summary with no waveform behind it | Use durable, idempotent pin/unpin operations. Keep raw storage and EdgeMemory deletion in a reconciled lifecycle; record failed unpins for retry. |
 | High | Event replay or duplicated input | Creates false frequency counts or shifts the detector twice | Enforce increasing step numbers; provide stable source event IDs for upstream retries; use EdgeMemory idempotency for durable writes. |
@@ -135,6 +138,14 @@ function retrieve(query_features, asset, subsystem):
 | Medium | Keyword retrieval is described as semantic retrieval | It may return records with matching tags, not meaning-equivalent records | Explain that Lite uses exact keyword matches; add vectors only with a real Standard/Advanced backend and test its ranking. |
 | Medium | Feature schema changes without a new schema ID | Old and new patterns may be compared as if their dimensions/meaning were the same | Version preprocessing and feature schemas; use distinct uEngram state namespaces for incompatible transforms. |
 | Medium | Critical events fill the logical quota | Critical records are not pressure-evicted, so writes may fail rather than silently delete them | Set quotas, expiry, explicit review and forget rules; alert on admission failure and preserve the raw evidence until policy allows release. |
+### Durable delivery boundary
+
+`FileSensorEventOutbox` is an optional single-writer, fsync-backed JSON outbox. It atomically replaces its file only after synchronizing the new content; a delivery stays pending until EdgeMemory accepts its stable idempotency key and local acknowledgement succeeds. `replay_outbox()` returns the original ingest receipts without feeding any recorded window back into uEngram. The implementation is covered for both a vendor outage and a crash-equivalent acknowledgement failure after the vendor commit.
+
+This is restart-safe **event delivery**, not a full detector checkpoint. The uEngram engine has no supported state-export format, and EdgeMemory Lite has no cross-store transaction. A process crash before the local outbox enqueue, or without a host-owned engine checkpoint, can still lose detector state. Production callers must add an input write-ahead log or a versioned engine checkpoint under their own storage transaction; this repository does not claim that unavailable guarantee.
+
+Lite remains a text and keyword backend. It has no documented binary, vector, or ANN operation. The compact vector field occasionally included in uEngram event metadata is host-encoded evidence for host-side ranking, not a Lite vector index. Native vector/ANN integration remains unsupported until the vendor publishes a versioned request, response, filtering, consistency, quota, and latency contract that can be exercised against a real backend.
+
 
 ## 6. Python package and integration boundary
 

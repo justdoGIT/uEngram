@@ -1,5 +1,6 @@
 
 from .sensor_memory import SensorMemoryPersistenceError, SensorStateMemory
+from .sensor_memory_outbox import FileSensorEventOutbox
 from .chronos_teacher import Chronos2TeacherAdapter
 from .teacher_transfer import (
     TeacherFeatures,
@@ -33,6 +34,7 @@ from .domain_specialists import (
 
 __all__ = [
     "PatternRecall",
+    "FileSensorEventOutbox",
     "RawEvidencePins",
     "SensorIngestReceipt",
     "SensorMemoryPersistenceError",
