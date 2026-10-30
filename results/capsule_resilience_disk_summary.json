@@ -1,10 +1,10 @@
 {
   "checks": {
-    "artifacts": 33,
+    "artifacts": 42,
     "capsule_event_keys_match_reference": true,
     "capsule_state_equivalent": true,
     "lite_or_sidecar_event_keys_match_reference_runs": 0,
-    "lite_or_sidecar_runs": 66,
+    "lite_or_sidecar_runs": 84,
     "lite_or_sidecar_state_equivalent_runs": 0
   },
   "hosts": {
@@ -469,6 +469,238 @@
           "fstype": "overlay",
           "rotational": null,
           "source": "LiveOS_rootfs"
+        }
+      }
+    },
+    "lenovo": {
+      "crashes": {
+        "after_checkpoint": {
+          "capsule": {
+            "event_keys_match_reference_runs": 3,
+            "extra_event_counts": [
+              0
+            ],
+            "local_storage_bytes_median": 131072,
+            "missing_event_counts": [
+              0
+            ],
+            "ranked_history_counts": [
+              3
+            ],
+            "recovery_ms": {
+              "max": 362.352045,
+              "median": 355.868585,
+              "min": 337.998852
+            },
+            "runs": 3,
+            "state_equivalent_runs": 3,
+            "vendor_event_counts": [
+              3
+            ]
+          },
+          "lite": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 0,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              1
+            ],
+            "recovery_ms": {
+              "max": 21.887507,
+              "median": 21.782749,
+              "min": 21.52969
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          },
+          "sidecar": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 3039,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 67.021248,
+              "median": 65.146937,
+              "min": 64.091233
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          }
+        },
+        "after_ingest": {
+          "capsule": {
+            "event_keys_match_reference_runs": 3,
+            "extra_event_counts": [
+              0
+            ],
+            "local_storage_bytes_median": 131072,
+            "missing_event_counts": [
+              0
+            ],
+            "ranked_history_counts": [
+              3
+            ],
+            "recovery_ms": {
+              "max": 399.233428,
+              "median": 379.000564,
+              "min": 324.08025
+            },
+            "runs": 3,
+            "state_equivalent_runs": 3,
+            "vendor_event_counts": [
+              3
+            ]
+          },
+          "lite": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 0,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              1
+            ],
+            "recovery_ms": {
+              "max": 22.184146,
+              "median": 21.631234,
+              "min": 21.530572
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          },
+          "sidecar": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 3039,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 79.56066,
+              "median": 68.951829,
+              "min": 59.616767
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          }
+        },
+        "after_wal": {
+          "capsule": {
+            "event_keys_match_reference_runs": 3,
+            "extra_event_counts": [
+              0
+            ],
+            "local_storage_bytes_median": 131072,
+            "missing_event_counts": [
+              0
+            ],
+            "ranked_history_counts": [
+              3
+            ],
+            "recovery_ms": {
+              "max": 351.871296,
+              "median": 345.177337,
+              "min": 336.207322
+            },
+            "runs": 3,
+            "state_equivalent_runs": 3,
+            "vendor_event_counts": [
+              3
+            ]
+          },
+          "lite": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 0,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              1
+            ],
+            "recovery_ms": {
+              "max": 21.751974,
+              "median": 21.732755,
+              "min": 21.543435
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          },
+          "sidecar": {
+            "event_keys_match_reference_runs": 0,
+            "extra_event_counts": [
+              2
+            ],
+            "local_storage_bytes_median": 3039,
+            "missing_event_counts": [
+              1
+            ],
+            "ranked_history_counts": [
+              4
+            ],
+            "recovery_ms": {
+              "max": 66.20661,
+              "median": 65.491038,
+              "min": 46.507715
+            },
+            "runs": 3,
+            "state_equivalent_runs": 0,
+            "vendor_event_counts": [
+              4
+            ]
+          }
+        }
+      },
+      "host": {
+        "cpu_count": 4,
+        "cpu_model": "Intel(R) Core(TM) i3-3110M CPU @ 2.40GHz",
+        "hostname": "lenovo",
+        "machine": "x86_64",
+        "memory_mib": 11860,
+        "numpy": "2.5.3",
+        "platform": "Linux-7.2.11_1-x86_64-with-glibc2.41",
+        "python": "3.14.8",
+        "storage": {
+          "fstype": "ext4",
+          "rotational": false,
+          "source": "/dev/sda4"
         }
       }
     },
