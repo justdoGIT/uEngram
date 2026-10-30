@@ -227,7 +227,7 @@ hr {{
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input", type=Path, nargs="?", default=Path("docs/research-paper/sensor-state-memory-and-anamoly-detection.md"))
+    parser.add_argument("input", type=Path, nargs="?", default=Path("docs/research-paper/sensor-state-memory.md"))
     parser.add_argument("-o", "--output", type=Path)
     args = parser.parse_args()
 

@@ -5,6 +5,7 @@
 **Project:** uEngram  
 **Evidence reviewed:** repository implementation, committed experiment reports and result files, available project-session recaps, and selected public research  
 **Audience:** engineers, students, and readers new to statistics and machine-learning terminology
+**Last updated:** October 30, 2026. This is the plain-English companion to the preprint *From Sensor Streams to Bounded Machine Memory*, which is the current, citable statement of the evidence. Sections 1–20 keep the original reasoning; Section 21 records what changed since, and where the two differ the preprint governs.
 
 ## Abstract
 
@@ -12,7 +13,7 @@ Machines produce streams of measurements: vibration, temperature, pressure, spee
 
 The repository supports a useful engineering finding: on synthetic streams, bounded stateful memory can reduce writes relative to storing every window and can retain more modeled events than simple first-in-first-out or reservoir baselines. The reservoir baseline itself uses fewer writes in that benchmark, so this is a trade-off—not a claim that uEngram minimizes writes against every method. Results on real datasets are mixed and often poor for the use that matters most—reliable, early, low-false-alarm fault warning. The frozen detector caught 5 of 34 labeled SKAB events, always after onset; it missed every valve-throttling test. The compressor and fleet results reveal operating-state coverage, calibration, label, and transfer problems. These are not side notes: they are the central findings.
 
-We also examine an analogy between text retrieval-augmented generation (RAG) and a proposed industrial “Sensor-State Memory” database. The analogy is useful, but the proposed database features—including a native temporal/vector score, centroid compaction, keyed state superseding, raw-signal pointers, and bounded eviction—are design ideas, not capabilities demonstrated by this repository. A Mem0-like lifecycle could help organize machine episodes and evolving baselines, but adapting a language-model memory idea to safety-relevant sensor data requires deterministic rules, provenance, uncertainty tracking, and strong safeguards against learning a fault as normal.
+We also examine an analogy between text retrieval-augmented generation (RAG) and an industrial “Sensor-State Memory” database. The analogy is useful. When this report was first written, the proposed database features—a native temporal/vector score, centroid compaction, keyed state superseding, raw-signal pointers, and bounded eviction—were design ideas. Since then the reference library implements four of them as proposed (hybrid retrieval ranking, keyed state superseding, checksummed raw-window pins, and protected eviction) and compaction in a narrower form (restricted to slots that share an identity key, without an operator-confirmation gate). Only keyed state superseding has been measured (Section 21). None has been benchmarked on target flash or RAM hardware, and none is a claim about a production database. A Mem0-like lifecycle could help organize machine episodes and evolving baselines, but adapting a language-model memory idea to safety-relevant sensor data requires deterministic rules, provenance, uncertainty tracking, and strong safeguards against learning a fault as normal.
 
 **Novelty conclusion:** this repository does not establish a new general anomaly-detection algorithm or prove the first edge-memory system. Its defensible contribution is a measured, unusually explicit set of failure analyses and a candidate combination of bounded memory, feature encoding, and lifecycle rules. A complete literature search and independent field evaluation remain outstanding.
 
@@ -34,8 +35,14 @@ The strongest positive results are on controlled, generated data. They show that
 | MetroPT-2, frozen v2 policy | No published events detected in either the two-event April subset or the three-event January subset | Low false alarms alone is not success when all target events are missed. |
 | SKAB, frozen DSP detector | 5/34 events detected; AUROC 0.546; AP 0.419; mean detection 57.6 s after onset; 20/20 valve-throttling tests missed | Partial, confirmation-only transfer on one water-loop testbed; no demonstrated early warning or fleet generalization. |
 | EngineAD CNN study | Across 30 seed runs and five held-out trucks, pooled segment AUROC stayed near chance; d=16 median 0.556 | Exploratory segment-level study. The representation used fleet-wide fitted PCA; segment labels are not precise fault intervals. Not independent event-level validation. |
-| OS-Metrics operational study | Domain specialists 29/42 strict recall (69.0%), 19.6 false alarms/week, 100% root-cause attribution | Exploratory operational workload comparison; domain partitioning beat DSP (27/42, 26.6 FA/wk) and all-channel role pooling (24/42, 42.0 FA/wk). Not a physical fleet confirmation. |
-| Full repository test suite | 345 passed, 1 skipped | Software tests passed in the current branch; this does not validate field performance or the proposed database design. |
+| OS-Metrics operational study | Domain specialists 29/42 strict recall (69.0%; 29/30 of the events inside the test split), 19.6 false alarms/week; the true subsystem is among the triggers for 30/30 test events, but only 14 have a single trigger | Exploratory operational workload comparison; domain partitioning beat DSP (27/42, 26.6 FA/wk) and all-channel role pooling (24/42, 42.0 FA/wk). Twelve of the 42 events start before the test split and score 0 for every method. Not a physical fleet confirmation. |
+| CMAPSS FD001–FD004, DSP, regenerated October 30 | With a minimum-support rule on the step-detector estimate, uEngram keeps every engine’s end-of-life state on all four subsets (retention 1.00; it had been 0.06 on FD002 and 0.12 on FD003); health AUROC 0.994 (FD002, normalized) and 0.987 (FD003) | A support check on one estimate changed a headline result. The memory-lookup RUL got worse as retention improved (FD003 24.1 → 41.9); health-based RUL with unit age improved (FD003 25.6). Single configurations on consumed data. |
+| External streaming baselines (MetroPT-3, SKAB) | MetroPT-3: uEngram 3/4 events at 0.53 false alarms/week against half-space trees 1.6/4 and MemStream 2.0/4. SKAB: 5/34 at 135.2/week against 3.6/34 (10.8) and 1.0/34 (0.0) | uEngram detects the most events and raises the most false alarms. No method reaches both high recall and a low false-alarm rate on SKAB. All three alarm settings were chosen on MetroPT-3, so this is a same-protocol comparison. |
+| SMD, 28 unseen server machines | uEngram d=16 detects 35 of 327 events (11%) at 1.23 false alarms/week, mean AUROC 0.832; half-space trees 35.0 at 0.55; MemStream 9.0 at 0.05 | Event detection is weak for every method. The d=36 regression seen on the synthetic stream did not reproduce here (41 events). Frozen settings on assets not used to choose them. |
+| DSP feature-group ablation | Dropping the mean removes all 5 SKAB detections and cuts CMAPSS FD001 health AUROC from 0.999 to 0.748; dropping the log standard deviation lowers FD003 retention from 1.00 to 0.66 | The level feature carries signal on real data that the synthetic stream cannot show. Single runs on SKAB and CMAPSS. |
+| Confirmed latent adaptation (synthetic drift) | With benign drift, gating cuts the health false-alarm rate from 9.7% to 0.5% with no loss of ramp recall (86.6% against 87.2%); an ungated control collapses recall to 1.7% | Shows the confirmation gate does real work. A synthetic stream built for this question, not field evidence. |
+| EngineAD rerun on a Colab GPU | Seed medians of pooled segment AUROC 0.540, 0.555, 0.537 for d = 8, 16, 32 against 0.539, 0.556, 0.537 originally | The original result reproduces within GPU nondeterminism. A repeat of the same study, not independent validation. |
+| Full repository test suite | 423 passed, 1 skipped (October 30) | Software tests passed in the current branch; this does not validate field performance or the proposed database design. |
 
 The data above are not a single contest with one winner. Datasets, labels, metrics, and experiment stages differ. The detailed qualification is in Section 6.
 
@@ -129,7 +136,7 @@ See [Figure 1](figures/rag-sensor-memory.svg). It is an architecture analogy; th
 
 ### 4.3 Five database-native capabilities proposed for a “Sensor-State Memory” engine
 
-The following are concrete design proposals inspired by the project discussion. They are **not claims that the current repository implements these database primitives**.
+The following are concrete design proposals inspired by the project discussion. When they were written, none was implemented. Status on October 30, 2026: hybrid retrieval ranking, keyed state superseding, checksummed raw-window pins and protected eviction are implemented in the reference library, and compaction is implemented in a narrower form (restricted to slots that share an identity key, with no operator-confirmation gate). Only keyed state superseding has been measured (Section 21.5); the others are unit tested, not benchmarked. **None of this is a claim about a production database or about target flash and RAM hardware.**
 
 #### 1. Hybrid temporal–vector retrieval with severity
 
@@ -252,7 +259,7 @@ The frozen CNN benchmark reports a mean 3.6 of four report-associated events det
 
 ### 5.4 SKAB: precise labels expose low recall and late detections
 
-SKAB is one water-circulation testbed, not a multi-asset industrial fleet. The frozen detector caught 5 of 34 point-labeled fault experiments. Its row-level AUROC was 0.550 and AP 0.423. All five alarms occurred 28–114 seconds **after** the annotated onset. The detector missed every one of the 20 valve-throttling experiments. It did better on several vibration-changing faults, which fits the DSP features’ sensitivity to frequency content; that is a plausible explanation, not a proven causal mechanism.
+SKAB is one water-circulation testbed, not a multi-asset industrial fleet. The frozen detector caught 5 of 34 point-labeled fault experiments. Its row-level AUROC was 0.550 and AP 0.423 (the window-level figures used in the summary table and in the preprint are 0.546 and 0.419; they are different statistics on the same run). All five alarms occurred 28–114 seconds **after** the annotated onset. The detector missed every one of the 20 valve-throttling experiments. It did better on several vibration-changing faults, which fits the DSP features’ sensitivity to frequency content; that is a plausible explanation, not a proven causal mechanism.
 
 A short clean exposure produced five false-alarm episodes over only 6.21 hours. Extrapolating that to 135 alarms per week is mathematically possible but operationally misleading: a few events in a short observation period produce an unstable weekly rate. The duration-weighted alarm share is also only a small-sample description. This report is valuable because it names the denominator and labels the weakness instead of presenting a flattering extrapolation.
 
@@ -287,14 +294,14 @@ The capacity sweep illustrates why results are split across dimensions and datas
 
 ### 5.8 Software tests
 
-The current full Python test run was:
+The current full Python test run (October 30, 2026) was:
 
 ```text
 PYTHONPATH=src:. .venv/bin/pytest tests/
-319 passed, 1 skipped
+423 passed, 1 skipped
 ```
 
-This shows that the tested code contracts and regression checks passed in that run. It does **not** show the model detects industrial faults, prove statistical claims, validate power-failure durability, exercise the proposed five database primitives, or certify safety. A good software test suite and a good field-validation study answer different questions.
+This shows that the tested code contracts and regression checks passed in that run. It does **not** show the model detects industrial faults, prove statistical claims, validate power-failure durability, exercise the proposed database primitives on real storage, or certify safety. A good software test suite and a good field-validation study answer different questions.
 
 ### 5.9 Stronger cross-dataset gate
 
@@ -320,9 +327,12 @@ public transfer holdout used one teacher and different window contracts.
 2. **Operating-state coverage is essential.** If commissioning misses a legitimate load or mode, a detector may label that mode novel. “Normal” must be defined conditionally on asset, subsystem, and operating state.
 3. **Fault warning is harder than anomaly scoring.** An anomaly score may rank data usefully while producing weak event recall, many false alarms, or alarms only after onset. Report event recall, false-alarm exposure, and timing, not only AUROC.
 4. **Labels determine what the experiment can prove.** A report timestamp, segment label, or assumed degradation index is not automatically a fault onset. The metric must match the label’s true meaning.
-5. **One embedding dimension does not fit every dataset.** Higher dimension can rescue weak patterns in one dataset and destabilize covariance estimation or reduce event recall in another.
+5. **One embedding dimension does not fit every dataset.** Higher dimension can rescue weak patterns in one dataset and destabilize covariance estimation or reduce event recall in another. Some of the apparent limits were estimator artifacts (Section 21.1), and the synthetic regression at d=36 did not reproduce on 28 unseen server machines (Section 21.3).
 6. **Memory lifecycle creates a fault-assimilation hazard.** If abnormal windows are allowed to update the healthy baseline, slow faults may become the new “normal.” The software must separate “observed often” from “verified healthy.”
-7. **The product idea is promising but the prototype gap is real.** The five native DB primitives are plausible engineering targets. They require transactional behavior, deterministic bounds, flash/RAM benchmarks, and raw-evidence retention semantics that this Python research code does not establish.
+7. **The product idea is promising but the prototype gap is real.** Four of the five native DB primitives now exist in the Python reference library, and a narrower form of the fifth; one is measured on synthetic data. They still need transactional behavior, deterministic bounds, flash/RAM benchmarks, and raw-evidence retention semantics that this Python research code does not establish.
+8. **An estimate resting on few samples can silently change a headline result.** Requiring enough support for the step-detector estimate moved CMAPSS end-of-life retention from 0.06 to 1.00 on one subset, while making lookup-based remaining-life error worse. Report how many samples back each estimate.
+9. **Frozen settings transfer weakly to unseen assets.** On 28 server machines, event detection was 11% for uEngram and similarly weak for the other methods, even though window ranking (AUROC 0.832) was good.
+10. **A confirmation gate has to be real.** Letting a baseline adapt only to operator-confirmed windows removed most drift false alarms; letting it adapt to everything absorbed the faults themselves.
 
 ## 7. Statistics and unfamiliar terms, in simple English
 
@@ -476,7 +486,7 @@ The potentially distinctive research question is the combination and evaluation:
 - Some numbers are from exploratory, single-seed, or per-dimension studies. Between-seed intervals do not represent uncertainty across unseen plants.
 - Feature and threshold choices have been explored on previously consumed datasets; those results cannot be reframed as new confirmation.
 - The Python code and tests do not establish deterministic real-time deadlines, RAM/flash budgets on target hardware, power-loss consistency, NAND endurance, or ANN-index update cost.
-- A new Python reference adapter now joins uEngram's bounded state memory with the inspected EdgeMemory Lite API: it writes lifecycle/alarm-edge events, supports keyword history recall, retries persisted events without re-ingesting windows, and manages externally pinned raw-window references. This does not provide DB-backed vectors, binary storage, ANN, relationships, atomic detector checkpoints, or field validation; see `docs/sensor-state-memory-pipeline.md`.
+- A Python reference adapter joins uEngram's bounded state memory with the inspected EdgeMemory Lite API: it writes lifecycle/alarm-edge events, supports keyword history recall, retries persisted events without re-ingesting windows, and manages externally pinned raw-window references with checksums and optional expiry. The engine now keys slots by asset, subsystem, mode and schema, shields raw-pinned slots from eviction, and ranks historical events by vector, time and severity. This still does not provide DB-backed vectors, binary storage, ANN, relationships, atomic detector checkpoints, hardware measurements or field validation; see `docs/sensor-state-memory-pipeline.md`.
 
 ### Recommended research sequence
 
@@ -484,7 +494,7 @@ The potentially distinctive research question is the combination and evaluation:
 2. **Pre-register the outcome.** Select event recall, false alarms per monitored operating week, warning lead, and operational limits before the final test. Calculate the number of assets/events needed; do not stop when results look favorable.
 3. **Fix leakage and split by asset and time.** Fit all learned preprocessing on training assets; hold out independent assets and later time periods. Save checksums and a frozen model/threshold manifest.
 4. **Test operating-state coverage.** Report performance separately for load, idle, startup, environment, repair, and sensor replacement. Add a deliberate unknown-state outcome.
-5. **Build the five DB primitives incrementally.** Start with durable event pointers and deterministic eviction; then add transparent retrieval scoring and state versioning; only then test centroid compaction. Compare RAM, flash writes, latency, power-cut recovery, and auditability on target hardware.
+5. **Measure the five DB primitives on target hardware.** Four are implemented in the Python library and compaction in a narrower form (Section 21.5), so the open work is evidence: compare RAM, flash writes, latency, power-cut recovery and auditability on target hardware, benchmark retrieval quality once a relevance-labeled query set exists, and decide whether verified, operator-confirmed compaction is needed.
 6. **Prove lifecycle safety.** Inject persistent faults and drift into controlled replay. Measure how often a fault can be absorbed into normal state, how quickly a repair creates a new baseline, and whether severe event evidence survives budget pressure.
 7. **Validate LLM use separately.** Measure whether generated explanations cite the correct raw windows and distinguish facts from hypotheses. Keep model output outside hard real-time control and state-update paths until independently justified.
 8. **Replicate independently.** Have another team reproduce preprocessing and metrics from the data manifest and frozen code, then evaluate on a new site or asset cohort.
@@ -507,7 +517,7 @@ This advances the earlier proposed architecture but does not cross the present E
 
 The implementation's behavioral tests cover lifecycle writes, alarm-edge de-duplication, asset/subsystem historical filtering, critical raw-window pin and release, storage retry without duplicate detector ingestion, and rejection of invalid/replayed windows. These tests establish adapter behavior only. They do not establish sensor-detection accuracy or safety on unseen equipment.
 
-Verification for the earlier Lite integration reported `306 passed, 2 skipped`; the current teacher-transfer branch reports `313 passed, 1 skipped`. The patched EdgeMemory Python binding reported three tests passed and one optional AutoGen module skipped; a real x64 CFFI smoke test stored/recalled `new_candidate` and `promote` events and returned one live pattern. These checks confirm tested software paths and binding interoperability, not anomaly-detection accuracy, production reliability, or an ANN/vector feature.
+Verification for the earlier Lite integration reported `306 passed, 2 skipped`; the then-current teacher-transfer branch reported `313 passed, 1 skipped`. Those counts are historical: the suite now stands at 423 passed, 1 skipped (Section 5.8). The patched EdgeMemory Python binding reported three tests passed and one optional AutoGen module skipped; a real x64 CFFI smoke test stored/recalled `new_candidate` and `promote` events and returned one live pattern. These checks confirm tested software paths and binding interoperability, not anomaly-detection accuracy, production reliability, or an ANN/vector feature.
 
 See [`docs/sensor-state-memory-pipeline.md`](../sensor-state-memory-pipeline.md) for the end-to-end diagram, RAG analogy, plain-language glossary, schema, failure priorities, and pseudocode.
 
@@ -1597,7 +1607,7 @@ two structural enhancements were developed and benchmarked:
    is partitioned into dedicated subsystem specialists (CPU, memory, network). Each
    specialist fits independent, calibrated level and dynamic branches on its own domain
    stream. Multi-expert fusion combines specialists via a calibrated decision rule
-   (`or_dynamic_health`) and outputs exact root-cause attribution.
+   (`or_dynamic_health`) and reports which specialists triggered as a root-cause attribution.
 
 Evaluated on the same chronological OS-Metrics test split:
 
@@ -1605,16 +1615,66 @@ Evaluated on the same chronological OS-Metrics test split:
 |---|---:|---:|---:|---:|---:|
 | DSP d16 baseline | 27/42 = 64.3% | 30/42 = 71.4% | 26.6 | 0.8845 | N/A |
 | All-channel Role `dynamic_health` | 24/42 = 57.1% | 30/42 = 71.4% | 42.0 | 0.8731 | N/A |
-| **Domain Specialists (`or_dynamic_health`)** | **29/42 = 69.0%** | **29/42 = 69.0%** | **19.6** | **0.8919** | **30/30 = 100.0%** |
+| **Domain Specialists (`or_dynamic_health`)** | **29/42 = 69.0%** | **29/42 = 69.0%** | **19.6** | **0.8919** | **30/30 contain the true subsystem; 14/30 have a single trigger** |
 
 Strict recall improved to **29/42 (69.0%)**, exceeding the DSP baseline (27/42) and
 all-channel role pooling (24/42), while false alarms dropped to **19.6 episodes/week**
-(lower than DSP at 26.6 and all-channel role at 42.0). Every detected test event (30/30)
-correctly identified the true disturbed subsystem in its triggered specialists.
-Per-window inference latency remained **6.27 $\mu s$**.
+(lower than DSP at 26.6 and all-channel role at 42.0). Twelve of the 42 annotated
+events begin before the test split, where nothing is scored, so every method scores 0
+of 12 on them; on the 30 events inside the test split the strict recall is 27/30 for
+DSP, 24/30 for the all-channel role encoder and 29/30 for the specialists. For all
+30 test events the true disturbed subsystem is among the specialists that fired, but
+only 14 have a single trigger (13 have two and 3 have all three), so this is
+containment, not exact attribution. Per-window inference latency remained
+**6.27 $\mu s$**.
 
 The evaluation artifact is [`results/osmetrics_specialist_gate.json`](../../results/osmetrics_specialist_gate.json);
 full documentation is in [`docs/osmetrics-specialist-gate.md`](../osmetrics-specialist-gate.md).
+
+
+## 21. Update (October 30, 2026): evidence added since the first draft
+
+This section lists what changed after Sections 1–20 were written. The numbers, tables and caveats are in the preprint; the explanations here are in plain English.
+
+### 21.1 A support check on one estimate changed the CMAPSS results
+
+The step detector watches for sudden jumps in a state’s level. To avoid reading slow, normal motion as a jump, it divides by a measured factor for how much slow motion the data contains. That factor is estimated from pairs of windows a fixed distance apart, inside stretches with no jumps. A CMAPSS engine wears out steadily, which trips the jump finder, so each engine was cut into short pieces and very few usable pairs remained: 40 on FD001 at dimension 24, 17 on FD002 (normalized) and 14 on FD003. The estimate came out below 1 and was treated as “no slow motion”, so the detector fired on ordinary wear, the slots filled up, and end-of-life windows were evicted. End-of-life retention fell to 0.06–0.16.
+
+The fix requires at least 100 usable pairs (an estimate from 100 pairs is accurate to about 14%) and otherwise uses the engine groups when they give more. The noise and step estimators also no longer crash when data is thin; they step down a labeled ladder, warn, and record which rung was used in the result. With the rule, uEngram keeps every engine’s end-of-life state on FD001–FD004 (retention 1.00), and widths that used to fail (dimension 32 and 84 on FD001, FD002 without normalization, FD004 with it) now run. No width beats dimension 16. The trade-off is real: once the memory keeps those states in few items, each item spans the whole life and the lookup-based remaining-life error rises (FD003 24.1 to 41.9), while the health-score predictor improves, especially with the engine’s age as a second input (FD001 25.5 to 23.5; FD003 29.8 to 25.6). The naive, FIFO, reservoir and centroid rows of every regenerated CMAPSS file are unchanged, so only uEngram moved. Details: `docs/research-inflation-min-support.md`.
+
+### 21.2 Why the d=36 synthetic regression happens, and a partial remedy
+
+Section 5.7 reports that widening the DSP projection from 16 to 36 dimensions lowers synthetic event recall from 1.00 to 0.801. A diagnostic on one seed’s training data (not committed) suggests why: at d=36 most dimensions contain slow within-state wander, so measuring “noise” from adjacent windows underestimates the spread that a state really shows, and ordinary wander looks novel. In 26 of 36 dimensions the noise measured 100 windows apart was more than twice the adjacent-window noise, against 4 of 16 at d=16. An opt-in setting that widens each dimension’s gate to its 20-window noise raises recall at d=36 to 0.999 (ten seeds) and AP from 0.534 to 0.591, with 194 live items instead of 256. AP stays far below its d=16 value of 0.996, so this restores what the memory keeps but not how well it ranks. It is off by default and no published table uses it.
+
+### 21.3 External baselines and 28 unseen machines
+
+Against half-space trees and MemStream, uEngram detects the most events on MetroPT-3 and SKAB and also raises the most false alarms (SKAB: 5 of 34 events at 135.2 alarms/week, against 3.6 of 34 at 10.8 and 1.0 of 34 at 0.0). All three alarm settings were chosen on MetroPT-3, so this is a same-protocol comparison. On the Server Machine Dataset (28 machines, 327 labelled events, settings frozen beforehand) event detection is weak for everyone: uEngram finds 35 events (11%) at 1.23 false alarms/week with mean AUROC 0.832, half-space trees 35.0 at 0.55, MemStream 9.0 at 0.05. The d=36 regression does not appear there (41 events at the same AUROC), so widening is not harmful in general.
+
+### 21.4 Which feature group carries the signal
+
+The DSP encoder builds six numbers per channel: the mean, the log standard deviation and four log band energies. Dropping one group at a time shows the mean is the carrier on SKAB and CMAPSS: without it SKAB loses all 5 detections and CMAPSS FD001 health AUROC falls from 0.999 to 0.748, yet the synthetic stream cannot tell the difference (AP 0.9955 against 0.9954). Dropping the log standard deviation lowers FD003 retention from 1.00 to 0.66. An earlier version of this ablation, made before the estimate fix in 21.1, showed the opposite sign on FD003 and several “fit fails” cells; those were artifacts. Without band energies the synthetic stream has only 12 features, so the encoder now runs at dimension 12 (recall 0.79, AP 0.476) instead of failing.
+
+### 21.5 Database primitives and the confirmed-adaptation test
+
+Status of the five proposed primitives: (1) hybrid temporal–vector–severity ranking is implemented and unit tested, not benchmarked for retrieval quality because no labeled query set exists; (2) compaction is implemented in a narrower form, restricted to slots that share an asset, subsystem, mode and schema key, with no operator-confirmation gate; (3) keyed state superseding is implemented as a bounded offset gated on an operator-confirmed-normal flag, a closed alarm and a commissioned key, and measured; (4) raw-window pins carry a required checksum and optional expiry; (5) a protect call shields a slot from eviction and merging. Items 4 and 5 are unit tested only.
+
+The measurement of item 3 used a synthetic 8-dimensional latent stream with benign drift and five wear ramps that were never confirmed. A frozen baseline pays for not adapting: 9.7% false alarms on healthy windows. Adapting only to confirmed-normal windows cut that to 0.5% with no loss of ramp recall (86.6% against 87.2%). An ungated control that treated every window as confirmed absorbed the ramps into the baseline, and recall collapsed to 1.7% with AUROC 0.546. Without drift, gating cost nothing. This is a synthetic stream built for the question, not field evidence.
+
+### 21.6 EngineAD reproduced on a Colab GPU
+
+The EngineAD study of Section 5.5 was repeated on a fresh Colab T4 GPU with the released script, after checking all 25 data files by size and checksum against the same manifest. Seed medians of pooled segment AUROC were 0.540, 0.555 and 0.537 for dimensions 8, 16 and 32 against 0.539, 0.556 and 0.537 originally, and every one of the 30 per-run values was within 0.005. GPU arithmetic is not bit-for-bit repeatable, so exact equality is not expected. This shows the earlier result reproduces; it is not independent validation, and the same preprocessing leakage and label caveats apply.
+
+### 21.7 Corrections to earlier sections of this report
+
+- Section 5.2 (CMAPSS dimension sweep) and Section 6 finding 5 were rewritten: the old dimension-32 failure and the “halved RUL at dimension 24” were estimator artifacts (21.1).
+- OS-Metrics: “100% root-cause attribution” overstated the result. The true subsystem is among the triggers for all 30 test events, but only 14 have a single trigger, and 12 of the 42 events lie outside the test split (Section 20.14).
+- SKAB: the row-level AUROC/AP (0.550/0.423) and the window-level figures (0.546/0.419) are different statistics on the same run (Section 5.4).
+- Test counts of 345, 319, 313 and 306 are historical; the suite now has 423 passing and 1 skipped.
+- Four of the five database primitives are implemented, no longer only proposed (Sections 4.3 and 21.5).
+
+### 21.8 Which document to rely on
+
+The preprint *From Sensor Streams to Bounded Machine Memory* is the current, citable version and the source of truth for every figure above. This report keeps the longer explanations, pseudocode, glossary and the transfer-learning notes of Section 20. An earlier shorter export of the same preprint has been removed from the repository.
 
 ## References
 

@@ -6,7 +6,7 @@ Independent Researcher
 
 **Keywords:** Bounded edge memory · Streaming anomaly detection · Noise whitening · Time-series foundation models · Knowledge distillation · Telemetry databases
 
-Preprint · October 29, 2026
+Preprint · October 30, 2026
 
 ## Abstract
 
@@ -492,6 +492,7 @@ With benign drift, the frozen reference pays for never adapting: a 9.7% false-al
 * *Modeled writes.* The write reduction counts operations in a benchmark model. Hardware flash endurance and write amplification were not measured.
 * *Metric sensitivity.* Event-level outcomes depend on the detection criterion (strict against active-in-interval) and on the alarm design, as the MetroPT-2 and CMAPSS results show.
 * *Estimator support.* An estimate resting on few pairs can silently change a headline result: the strict step-inflation estimate on FD001 $d = 24$, FD002 and FD003 moved end-of-life retention between 0.06 and 1.00 (Section 5.3). The 100-pair minimum follows from the variance of the estimate, not from these results, and the CMAPSS cells are single deterministic configurations on consumed benchmarks. Retention rose while the memory-lookup RUL worsened, so the two goals trade off.
+* *A retracted early-warning claim.* An earlier internal recap reported 63.8 hours of warning and zero false alarms over four healthy weeks on a public bearing run-to-failure set (NASA IMS). Inspection showed the supporting script hard-coded its own degradation indices, used the final sample as the failure reference and evaluated against those assumptions, and its 7-day run had three false-alarm episodes. We withdrew the claim and report nothing from that set: without independently adjudicated onset labels, a scripted changepoint measures a time trend, not detection before a physical failure.
 
 **Toward a sensor-state memory database.** An earlier draft of this section proposed five primitives as unimplemented future work. Since then we implemented four of the five in the reference library and measured one of them; the identity keys default to 0, so none of this changes the public-benchmark results in Sections 5.1–5.12, all of which run a single identity per stream.
 
