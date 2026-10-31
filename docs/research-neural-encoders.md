@@ -589,6 +589,14 @@ window and separates:
 3. early-warning episodes before that horizon; and
 4. false alarms measured only on healthy calibration windows.
 
+The recorded ordinary-CNN result is the frozen CMAPSS acceptance baseline:
+`bench.cmapss_gate_check` verifies recall by RUL 20 ≥ 0.70, zero sustained
+alarms on the 1,200-window healthy calibration slice, and at most seven
+pre-EOL alarm episodes. The baseline is exactly on the recall and episode
+boundaries (0.7000 and 7), so the checker uses inclusive comparisons. The
+teacher students do not pass this timely-recall gate; their higher AUROC and
+AP are not a promotion reason.
+
 This CMAPSS study therefore gives a stronger lifecycle diagnosis but does not
 establish industrial superiority. The next meaningful gate is a multi-asset,
 wall-clock run-to-failure dataset with healthy machines that do not all fail,
