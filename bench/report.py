@@ -49,7 +49,7 @@ def fmt(x):
 def cell(vals, method, metric):
     m, lo, hi = bootstrap_ci(vals)
     if not np.isfinite(m):
-        return "n/a (sphere space)" if (metric.startswith("mmd2") and method.startswith("reference")) else "n/a"
+        return "n/a (reference sphere space)" if (metric.startswith("mmd2") and method.startswith("reference")) else "n/a"
     return f"{fmt(m)} [{fmt(lo)}, {fmt(hi)}]"
 
 

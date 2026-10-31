@@ -63,7 +63,7 @@ Use `--jobs 2` as a conservative default. CARE workers materialize full datasets
 ## Layout
 
 ```
-src/uengram/   library: alarm, baselines, baseline_reference, cmapss, encoders, encoder_{cnn,cnn2,cnn3,ctx,tab}, engine, health, ledger, lifecycle, metrics, metropt, metropt2, persistence, skab, stats, store, stream_baselines, synth
+src/uengram/   library: alarm, baselines, reference_baseline, cmapss, encoders, encoder_{cnn,cnn2,cnn3,ctx,tab}, engine, health, ledger, lifecycle, metrics, metropt, metropt2, persistence, skab, stats, store, stream_baselines, synth
 bench/         harness: advisory_{experiment,eval,report}, alarm_{components,definition,definition_sweep,dev,eval,interaction,math,sensitivity}, care_score, colab_train, common, cnn3_experiment, domain_dataset, encoding_cache, encoder_gate, error_gated_{alarm,sweep}, evaluate, followup_{experiment,policy}, freeze_frames, jev_{advisory,experiment}, laya_{advisory,hosts,http}, leak_duty, metropt_{calibration,eval}, modality_{alarm,sweep}, native_snapshots, physical_residuals, provenance, report, report_{followup,v2}, run_{cmapss,metropt,synth,v2}, stream_{care,scania,skab}, streams, v2_scoring, validate_{scania,skab}
 tests/         unit and behaviour tests
 results/       committed run outputs (JSONL)

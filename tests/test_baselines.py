@@ -1,6 +1,6 @@
 import numpy as np
 
-from uengram.baseline_reference import ReferenceBaseline
+from uengram.reference_baseline import ReferenceBaseline
 from uengram.baselines import FIFOStore, NaiveStore, ReservoirStore
 from uengram.ledger import WriteLedger
 
@@ -50,6 +50,7 @@ def test_ledger_dirty_flush_bound():
 def test_reference_budget_and_oracle_flag():
     rng = np.random.default_rng(2)
     g = ReferenceBaseline(max_slots=5, d=8, raw_window_bytes=10, severity_mode="oracle")
+    assert g.name == "reference_oracle"
     flagged = 0
     for t in range(300):
         z = rng.normal(size=8)

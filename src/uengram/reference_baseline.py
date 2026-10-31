@@ -1,10 +1,10 @@
-# Port of EdgeMem0Engine from docs/EdgeAIMemoryArchitecture.md; logic unchanged.
-"""The architecture doc's engine, behind the common store protocol.
+# Historical reference baseline for the early edge-memory experiment.
+"""Historical baseline retained behind the common store protocol.
 
-Only interface changes: input is L2-normalised internally (the doc expects unit
-vectors), flash accounting goes through the shared WriteLedger, items carry
-ids, and the severity input is either constant (label-free) or supplied by the
-harness from ground truth (oracle; not deployable).
+Only interface changes: input is L2-normalised internally, matching the historical baseline's unit-vector assumption.
+Flash accounting goes through the shared WriteLedger, items carry ids, and
+the severity input is either constant (label-free) or derived from
+ground truth (oracle; not deployable).
 """
 from __future__ import annotations
 

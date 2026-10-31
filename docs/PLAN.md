@@ -1,7 +1,7 @@
 # uEngram reference implementation, benchmark and explainer
 
 ## Context
-`/home/kk/projects/uEngram` holds only `EdgeAIMemoryArchitecture.md`. That doc is a conversation that proposes "Mem0 for embedded sensors": deterministic memory that absorbs routine sensor windows, pins rare anomalies, tracks wear drift, resolves stale baselines and evicts within a fixed budget. It also contains a sketch `EdgeMem0Engine` (doc lines 417–507). Goal: build a Python/NumPy reference engine (`uengram`) with statistically correct state math, plus two encoders (a DSP+PCA encoder and the doc's Torch 1D-CNN autoencoder). Benchmark against naive append-only, FIFO, reservoir and the doc's engine as written. Data: a synthetic stream with full ground truth, and NASA CMAPSS FD001. Results get multi-seed confidence intervals. Also write a plain-language plus math explainer of every component.
+`/home/kk/projects/uEngram` started from a repository architecture note describing deterministic memory for embedded sensors: routine windows are absorbed, rare anomalies are pinned, wear drift is tracked, stale baselines are superseded and storage remains within a fixed budget. The goal is a Python/NumPy reference engine (`uengram`) with statistically correct state math, a DSP+PCA encoder and a Torch 1D-CNN variant. Benchmark against naive append-only, FIFO, reservoir and reference baselines on a synthetic stream with full ground truth and NASA CMAPSS FD001. Results get multi-seed confidence intervals. Also write a plain-language plus math explainer of every component.
 
 Scope stays Python. No C++ port, no daemon, no SocketCAN.
 
@@ -22,7 +22,7 @@ Scope stays Python. No C++ port, no daemon, no SocketCAN.
 ### Step 0: Repo and environment bootstrap
 - `/home` has 1.8 GB free, so put the uv cache and venv on `/home/kk/Backup` (48 GB free, kk-writable). Every `uv` command in this plan runs with
   `export UV_CACHE_DIR=/home/kk/Backup/.cache/uv UV_PROJECT_ENVIRONMENT=/home/kk/Backup/venvs/uengram`.
-- `git init -b main`. Add `.gitignore` covering `data/`, `__pycache__/`, `.pytest_cache/`, `*.pyc`, `.venv/`. Commit `EdgeAIMemoryArchitecture.md` and `.gitignore` on `main` with `git commit -s` (subject `Add architecture notes`). Then `git switch -c feat/uengram-reference`. After each step below, commit with `git commit -s` (subject ≤50 chars, body wrapped at 72, no model names). There is no remote; never push.
+- `git init -b main`. Add `.gitignore` covering `data/`, `__pycache__/`, `.pytest_cache/`, `*.pyc`, `.venv/`. Commit `docs/EdgeAIMemoryArchitecture.md` and `.gitignore` on `main` with `git commit -s` (subject `Add architecture notes`). Then `git switch -c feat/uengram-reference`. After each step below, commit with `git commit -s` (subject ≤50 chars, body wrapped at 72, no model names). This is the historical bootstrap plan; current development uses feature branches and pull requests.
 - `.python-version` contains `3.12` (uv-managed 3.12.13 is already installed; torch has `cp312` CPU wheels).
 - `pyproject.toml`:
   - `[project] name="uengram"`, `version="0.1.0"`, `requires-python=">=3.12,<3.15"`, `dependencies=["numpy>=2.0"]`.
@@ -144,14 +144,14 @@ Common protocol: `fit(train_windows[N,C,K], noise_lag:int, groups:np.ndarray|Non
   - `NaiveStore`: a preallocated array that grows ×2; every insert calls `write_now`.
   - `FIFOStore(B)`: a ring that overwrites the oldest; emits `("evict", old_id)`; each insert calls `write_now`.
   - `ReservoirStore(B, seed)`: Algorithm R. At t ≥ B, replace a uniform index with probability B/(t+1) (emitting evict plus `write_now`); otherwise the window is discarded with no write. Its `item_id` is −1 when discarded.
-- `src/uengram/reference_baseline.py`, `ReferenceBaseline(max_slots, sim_merge_thresh=0.90, ewma_beta=0.05, severity_mode)`. Port doc lines 417–507 verbatim in logic: ingest cases, `_evict_lowest_utility`, and the `remember` utility with 0.6/0.2/0.2 and decay 0.0005. The only changes:
+- `src/uengram/reference_baseline.py`, `ReferenceBaseline(max_slots, sim_merge_thresh=0.90, ewma_beta=0.05, severity_mode)`. This is a historical reference baseline retained for comparison. Its ingest cases, `_evict_lowest_utility`, and `remember` utility are defined by the implementation and tests; the corrections below describe the differences from the original experiment.
   - Input z is L2-normalised internally, as it expects unit vectors.
   - `flash_writes` is replaced by ledger calls: append → `write_now`, EWMA → `mark_dirty`, pop → `delete` plus an evict event.
   - Ids are added.
   - `score = 1 − best_sim`.
   - `flagged = action=="PINNED_EPISODIC"`.
 
-  `severity_mode="labelfree"` passes 0.1 always. `"oracle"` passes 0.9 when the harness label anomaly>0, else 0.1; the harness supplies `severity` via an extra kwarg `ingest(z,t,raw_idx,severity=...)`. Bytes per slot: d·4+32. Comment at top: `# Port of EdgeMem0Engine from EdgeAIMemoryArchitecture.md; logic unchanged.`
+  `severity_mode="labelfree"` passes 0.1 always. `"oracle"` passes 0.9 when the harness label anomaly>0, else 0.1; the harness supplies `severity` via an extra kwarg `ingest(z,t,raw_idx,severity=...)`. Bytes per slot: d·4+32. The baseline's behavior is historical and is not the specification for the current bounded engine.
 - Tests (`tests/test_baselines.py`):
   - FIFO holds exactly the last B ids.
   - Over 4000 seeded trials with T=100, B=10, the reservoir includes each index with frequency within 0.1±0.02.
@@ -264,12 +264,12 @@ Tests (`tests/test_engine.py`). Use d=16, `sigma0 = 0.5·ones(16)`, default conf
     - `mmd2_current`: live items with t_last ≥ T−2000, weights=mass, vs the last 2000 embeddings.
     - `mmd2_history`: all live items weighted by mass vs a uniform subsample of 2000 embeddings (rng seed 0).
     - Both use the same h for all methods in that (seed, encoder), computed by `median_heuristic` on the last 2000 embeddings. Point stores pass var=0 and mass=1. uEngram passes its gate variances and n.
-    - Reference stores unit-sphere centroids, which do not live in the reference space, so both MMD metrics are NaN for the Reference methods. RESULTS.md shows them as "n/a (sphere space)".
+    - The reference baseline stores unit-sphere centroids, which do not live in the reference space, so both MMD metrics are NaN for that method. RESULTS.md shows them as "n/a (reference sphere space)".
   - Latency: `lat_p50_us`, `lat_p99_us` from `time.perf_counter_ns` around `ingest`.
 - `bench/run_synth.py` CLI:
   - Arguments: `--seeds 0-9`, `--T 20000`, `--encoders dsp,cnn`, `--methods naive,fifo,reservoir,reference_labelfree,reference_oracle,uengram,uengram_fixedvar,uengram_nopromo,uengram_frozen`, `--budget 256`, `--jobs 2`, `--out results/synth_runs.jsonl`.
   - Method construction:
-    - Bounded stores use B=256 total: FIFO, reservoir and Reference get `max_slots=256`; uEngram gets B_sem=192, B_epi=64.
+    - Bounded stores use B=256 total: FIFO, reservoir and the reference baseline get `max_slots=256`; uEngram gets B_sem=192, B_epi=64.
     - `uengram_fixedvar`: `use_slot_var=False`.
     - `uengram_nopromo`: `use_promotion=False`.
     - `uengram_frozen`: `beta_min=0.0`.
@@ -336,8 +336,8 @@ Components, in order:
 `README.md`: one-paragraph description, the env exports from Step 0, and the exact commands from Verification.
 
 ## Critical files & anchors
-- `EdgeAIMemoryArchitecture.md:417-507`: source of the `EdgeMem0Engine` port; keep its logic intact in `reference_baseline.py`.
-- `EdgeAIMemoryArchitecture.md:326-357`: the doc's generator, superseded by `synth.py`. Do not reuse it, because of its global `np.random.seed` and label-1 drift heuristic.
+- `docs/EdgeAIMemoryArchitecture.md`: repository architecture summary; implementation behavior is defined by source code and tests.
+- `bench/run_synth.py`: synthetic generator and lifecycle benchmark; do not replace its deterministic seed handling with global process state.
 - `src/uengram/engine.py` / `lifecycle.py`: all state math. The probation expiry and supersession rules are the subtle parts, covered by engine tests 2–4.
 - `src/uengram/stats.py:chi2_logsf`: every threshold and surprisal depends on it, verified against table values.
 
@@ -351,7 +351,7 @@ All commands run from `/home/kk/projects/uEngram` with `export UV_CACHE_DIR=/hom
 5. CMAPSS smoke: `uv run python -m bench.run_cmapss --quick --out /tmp/uengram_cmapss_smoke.jsonl`. The first run downloads about 12 MB into `data/cmapss/`. Expect 6 lines with finite `rul_rmse`. Then the full run: `uv run python -m bench.run_cmapss --seeds 0-4 --encoders dsp,cnn --out results/cmapss_runs.jsonl 2>&1 | tee ~/.local/state/uengram/cmapss.log`, which yields 60 lines.
 6. `uv run python -m bench.report --out docs/RESULTS.md` writes the tables.
 7. Expected behavioural evidence in `docs/RESULTS.md`; the Findings section must report whatever is actually observed:
-   - uEngram `stale_at1` is lower than FIFO, reservoir and Reference (the supersession works).
+   - uEngram `stale_at1` is lower than FIFO, reservoir and the reference baseline (the supersession works).
    - `seizure_recall` is higher than FIFO's.
    - `write_reduction_pct` is >90% for uEngram.
    - The `uengram_frozen` ablation shows a higher `false_flag_rate_era1` than `uengram`.
