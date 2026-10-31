@@ -6,7 +6,7 @@ import time
 
 import numpy as np
 
-from uengram.baseline_reference import ReferenceBaseline
+from uengram.reference_baseline import ReferenceBaseline
 from uengram.baselines import FIFOStore, NaiveStore, ReservoirStore
 from uengram.engine import Engram, EngramConfig
 from uengram.stats import conformal_threshold, ewma_inflation

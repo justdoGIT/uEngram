@@ -95,7 +95,7 @@ python3 -m uengram.host dataset export \
 ## Layout
 
 ```
-src/uengram/   library: alarm, baselines, baseline_reference, cmapss, encoders, encoder_{cnn,cnn2,cnn3,ctx,tab}, engine, health, ledger, lifecycle, metrics, metropt, metropt2, persistence, stats, store, stream_baselines, synth
+src/uengram/   library: alarm, baselines, reference_baseline, cmapss, encoders, encoder_{cnn,cnn2,cnn3,ctx,tab}, engine, health, ledger, lifecycle, metrics, metropt, metropt2, persistence, stats, store, stream_baselines, synth
 src/uengram/host/  host telemetry: schema, perf, sources, collector, stream, hub, cluster, psi (stdlib); features, encoder, events, stepcal, node, daemon, synth (numpy); campaign, campaign_exec, tune, knob.sh, validate, validate_criteria, validate_variants, validate_signals, cli, cli_model
 bench/         harness: advisory_{experiment,eval,report}, alarm_{components,definition,definition_sweep,dev,eval,interaction,math,sensitivity}, care_score, colab_train, common, cnn3_experiment, domain_dataset, encoding_cache, encoder_gate, error_gated_{alarm,sweep}, evaluate, followup_{experiment,policy}, freeze_frames, jev_{advisory,experiment}, laya_{advisory,hosts,http}, leak_duty, metropt_{calibration,eval}, modality_{alarm,sweep}, native_snapshots, physical_residuals, provenance, report, report_{followup,v2}, run_{cmapss,metropt,synth,v2}, run_host_synth, stream_care, streams, v2_scoring
 deploy/        runit services (uengram-hostd, uengram-campaign, uengram-hub, uengram-recommission) and the node installer

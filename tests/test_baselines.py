@@ -1,6 +1,6 @@
 import numpy as np
 
-from uengram.baseline_reference import ReferenceBaseline
+from uengram.reference_baseline import ReferenceBaseline
 from uengram.baselines import FIFOStore, NaiveStore, ReservoirStore
 from uengram.ledger import WriteLedger
 
