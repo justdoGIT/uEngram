@@ -4,6 +4,7 @@ import pytest
 from bench.alarm_definition import Corroboration, Definition, vote
 from bench.alarm_eval import apply_policy
 from bench.alarm_sensitivity import BASELINE
+from bench.error_gated_alarm import frozen_scores_available
 from bench.error_gated_sweep import ALARM_CONFIGS
 from bench.streams import load_stream
 from uengram.alarm import AlarmConfig, AlarmPolicy
@@ -45,6 +46,8 @@ def test_vote_is_three_valued_and_counts_errors_within_the_lookback():
 
 @pytest.fixture(scope="module")
 def metropt3():
+    if not frozen_scores_available("metropt3"):
+        pytest.skip("frozen metropt3 scores not cached locally")
     return Definition(load_stream("metropt3"))
 
 

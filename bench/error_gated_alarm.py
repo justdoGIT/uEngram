@@ -62,6 +62,12 @@ class Gate:
         return f"{self.family}:m{self.min_errors}:L{self.lookback_h:g}h"
 
 
+def frozen_scores_available(name: str) -> bool:
+    """Whether a dataset's frozen v2 scores are cached locally. CI runners don't have
+    this developer-workstation cache; tests should skip rather than fail when it's absent."""
+    return (SCORE_DIRS[name] / f"{name}_uengram_dsp_0_final.npz").exists()
+
+
 def frozen_scores(stream) -> dict:
     """The cached seed-0 DSP uEngram scores; never rescored here."""
     path = SCORE_DIRS[stream.name] / f"{stream.name}_uengram_dsp_0_final.npz"

@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from bench.alarm_definition import Definition, actionability, fill_windows
+from bench.error_gated_alarm import frozen_scores_available
 from bench.modality_alarm import hold
 from bench.streams import load_stream
 
@@ -64,6 +65,8 @@ def test_three_valued_hold_pauses_on_undecided_windows_and_expires_when_stale():
 
 @pytest.fixture(scope="module")
 def metropt3():
+    if not frozen_scores_available("metropt3"):
+        pytest.skip("frozen metropt3 scores not cached locally")
     return Definition(load_stream("metropt3"))
 
 

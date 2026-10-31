@@ -5,7 +5,7 @@ import pytest
 
 from bench.alarm_eval import apply_policy
 from bench.alarm_sensitivity import BASELINE
-from bench.error_gated_alarm import Gate, Replay, _departs_from_calibration, gate_alarm, latch
+from bench.error_gated_alarm import Gate, Replay, _departs_from_calibration, frozen_scores_available, gate_alarm, latch
 from bench.streams import load_stream
 
 T0 = np.datetime64("2020-01-01T00:00:00", "s")
@@ -48,6 +48,8 @@ def test_flag_healthy_value_comes_from_calibration_not_documented_polarity():
 
 @pytest.fixture(scope="module")
 def metropt3():
+    if not frozen_scores_available("metropt3"):
+        pytest.skip("frozen metropt3 scores not cached locally")
     return Replay(load_stream("metropt3"))
 
 

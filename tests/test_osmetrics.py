@@ -1,13 +1,17 @@
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from bench.osmetrics import causal_windows, clean_values, event_overlap_mask, fit_fill_values, load
 
 
 ROOT = Path("/home/kk/.cache/uengram/osmetrics/extracted")
+_SKIP_REASON = f"osmetrics archive extracted data not available at {ROOT}"
+needs_osmetrics = pytest.mark.skipif(not ROOT.exists(), reason=_SKIP_REASON)
 
 
+@needs_osmetrics
 def test_osmetrics_archive_is_aligned_and_causally_annotated():
     data = load(ROOT)
     assert data.values.shape == (40320, 6)
@@ -16,6 +20,7 @@ def test_osmetrics_archive_is_aligned_and_causally_annotated():
     assert data.events[0].start_point <= data.events[-1].start_point
 
 
+@needs_osmetrics
 def test_invalid_values_use_fit_prefix_only():
     data = load(ROOT)
     fill = fit_fill_values(data, 5760)
@@ -41,6 +46,7 @@ def test_causal_windows_do_not_include_future_samples():
     assert windows[2, 0].tolist() == [8.0, 10.0, 12.0, 14.0]
 
 
+@needs_osmetrics
 def test_event_overlap_mask_marks_only_intersecting_windows():
     data = load(ROOT)
     fill = fit_fill_values(data, 5760)
@@ -50,6 +56,7 @@ def test_event_overlap_mask_marks_only_intersecting_windows():
     assert mask.dtype == bool
     assert mask.any()
 
+@needs_osmetrics
 def test_osmetrics_specialist_gate_smoke():
     from bench.osmetrics_specialist_gate import run
     result = run(ROOT)
