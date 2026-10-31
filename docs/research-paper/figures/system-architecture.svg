@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 722 250" role="img" aria-label="arch" font-family="'Nimbus Sans', Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 722 250" role="img" aria-label="arch" font-family="'Noto Sans', 'DejaVu Sans', sans-serif">
 <defs><marker id="arch-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#64748b"/></marker></defs>
 <rect width="722" height="250" fill="#ffffff"/>
 <rect x="16.0" y="34.0" width="133.5" height="63.2" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.0"/>

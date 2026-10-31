@@ -7,9 +7,9 @@
     --tint: #f8fafc;
     --accent: #1d4ed8;
     --navy: #1e293b;
-    --serif: Georgia, 'C059', 'Noto Serif', serif;
-    --sans: Arial, 'Nimbus Sans', Helvetica, sans-serif;
-    --mono: 'Roboto Mono', 'DejaVu Sans Mono', monospace;
+    --serif: 'Noto Serif', 'DejaVu Serif', serif;
+    --sans: 'Noto Sans', 'DejaVu Sans', sans-serif;
+    --mono: 'Noto Sans Mono', 'DejaVu Sans Mono', monospace;
     /* theme variables used by the hand-drawn SVG figures */
     --fg: #0f172a;
     --border: #94a3b8;
@@ -200,6 +200,12 @@ td { padding: 5.5pt 7pt; vertical-align: top; }
 tbody tr:last-child td { border-bottom: 1.5pt solid #0f172a; }
 td code, th code { font-size: 8.2pt; background: none; padding: 0; }
 a.cite { color: var(--accent); }
+h2:last-of-type + ol {
+    font-size: 9.7pt;
+    line-height: 1.35;
+    margin-bottom: 0;
+}
+h2:last-of-type + ol li { margin-bottom: 1pt; }
 
 /* ---------- figures, listings, algorithms ---------- */
 figure { margin: 9pt 0 14pt; break-inside: avoid; }
@@ -209,7 +215,14 @@ figure.paper-figure .frame {
     padding: 7pt;
     background: #ffffff;
 }
-figure.paper-figure svg { display: block; width: 100%; height: auto; max-height: 92mm; }
+figure.paper-figure svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 92mm;
+    shape-rendering: geometricPrecision;
+    text-rendering: geometricPrecision;
+}
 figcaption {
     font-family: var(--sans);
     font-size: 9pt;
