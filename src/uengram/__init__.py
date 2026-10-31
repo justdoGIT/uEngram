@@ -34,6 +34,19 @@ from .domain_specialists import (
     DomainSpecialistArchitecture,
     SpecialistScores,
 )
+from .trading import (
+    MarketTick,
+    MarkRecord,
+    TradeRecord,
+    TradingDecision,
+    TradingFeatureBank,
+    TradingFeatureConfig,
+    TradingMonitorConfig,
+    TradingRegimeMonitor,
+    iter_market_ticks,
+    iter_mark_records,
+    iter_trade_records,
+)
 
 __all__ = [
     "PatternRecall",
@@ -61,4 +74,15 @@ __all__ = [
     "diagnose_channels",
     "DomainSpecialistArchitecture",
     "SpecialistScores",
+    "MarketTick",
+    "MarkRecord",
+    "TradeRecord",
+    "TradingDecision",
+    "TradingFeatureBank",
+    "TradingFeatureConfig",
+    "TradingMonitorConfig",
+    "TradingRegimeMonitor",
+    "iter_market_ticks",
+    "iter_mark_records",
+    "iter_trade_records",
 ]

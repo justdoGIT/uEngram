@@ -7,6 +7,7 @@ A reference implementation and benchmark of a deterministic, fixed-budget memory
 - `docs/RESULTS.md`: benchmark tables and findings; its v1–v3 material and `results/v1/`, `results/v2/` references are historical context.
 - `docs/IMPROVEMENT-ANALYSIS.md`: the diagnostics that motivated v2; v3's are in `docs/EXPLAINED.md` sections 7c and 10c.
 - `docs/research-*.md`: literature notes (machine-state mathematics, anomaly-detection evaluation, condition-monitoring features, CMAPSS practice).
+- `docs/trading-regime-monitor.md`: bounded market-regime/risk monitor; not a trading strategy or order executor.
 
 ## Paper and project metadata
 
