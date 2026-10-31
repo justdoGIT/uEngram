@@ -115,3 +115,14 @@ The alarm component and sweep modules do not expose `--out`; their committed fil
 | Section 5.4, noise-whitening ablation | Noise-whitening ablation |
 
 **Pitfall for anyone writing a new ablation.** `bench.run_synth.main` always uses a `spawn` multiprocessing pool, even with `--jobs 1`. Spawned workers re-import their modules, so a monkeypatch applied in the parent process (for example to a config default) is silently ignored and both arms of the comparison run identical code. Call `bench.run_synth.run_one` in-process instead, as `bench.admission_ablation` and `bench.whitening_ablation` do.
+
+## Build the publication PDF
+
+The checked-in manuscript source, figures, and PDF are under `docs/research-paper/`. From the repository root, run:
+
+```bash
+.venv/bin/python scripts/lint_paper.py docs/research-paper/From_Sensor_Streams_to_Bounded_Machine_Memory.md
+.venv/bin/python scripts/build_paper_pdf.py --paper docs/research-paper/From_Sensor_Streams_to_Bounded_Machine_Memory.md
+```
+
+The build writes the HTML companion and the A4 PDF beside the manuscript. The PDF includes Figures 1–7 (the architecture, slot lifecycle, persistence path, and reported result plots) and the model descriptions and algorithms in Sections 3–5. The paper's modeled crash-image campaign is not hardware power-loss evidence, and an independent field cohort is not claimed; see `docs/independent-cohort-preregistration.md` for the frozen next validation gate.
