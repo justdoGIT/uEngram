@@ -1,0 +1,298 @@
+{
+  "checks": [
+    "TSB has no test-label model selection in the recorded protocol.",
+    "CMAPSS reports health discrimination, RUL error, and EOL retention together.",
+    "SKAB reports event detection and false-alarm burden together.",
+    "CMAPSS and SKAB teacher-transfer results remain an explicit follow-up gate."
+  ],
+  "datasets": {
+    "CMAPSS-FD001": {
+      "results": {
+        "protocol_rows": 60,
+        "selected": {
+          "cnn:uengram": {
+            "auroc": {
+              "ci95_normal_approx": 0.03194834582849979,
+              "mean": 0.6976731759673223,
+              "n": 5,
+              "sd": 0.03644830257203948
+            },
+            "eol_retention": {
+              "ci95_normal_approx": 0.0,
+              "mean": 1.0,
+              "n": 5,
+              "sd": 0.0
+            },
+            "health_auroc": {
+              "ci95_normal_approx": 0.0003457989670826691,
+              "mean": 0.9980296268863994,
+              "n": 5,
+              "sd": 0.0003945051004826839
+            },
+            "rul_rmse_health": {
+              "ci95_normal_approx": 0.57308661000628,
+              "mean": 26.438580244401148,
+              "n": 5,
+              "sd": 0.6538064372290578
+            }
+          },
+          "cnn:uengram_frozen": {
+            "auroc": {
+              "ci95_normal_approx": 0.04205873357296657,
+              "mean": 0.6642864710015675,
+              "n": 5,
+              "sd": 0.047982748630972384
+            },
+            "eol_retention": {
+              "ci95_normal_approx": 0.0,
+              "mean": 1.0,
+              "n": 5,
+              "sd": 0.0
+            },
+            "health_auroc": {
+              "ci95_normal_approx": 0.00036990698627505564,
+              "mean": 0.9982299787056754,
+              "n": 5,
+              "sd": 0.0004220087585015848
+            },
+            "rul_rmse_health": {
+              "ci95_normal_approx": 1.003833955686434,
+              "mean": 26.216257725591234,
+              "n": 5,
+              "sd": 1.1452249811415194
+            }
+          },
+          "dsp:uengram": {
+            "auroc": {
+              "ci95_normal_approx": 0.0,
+              "mean": 0.6840867289026848,
+              "n": 5,
+              "sd": 0.0
+            },
+            "eol_retention": {
+              "ci95_normal_approx": 0.0,
+              "mean": 1.0,
+              "n": 5,
+              "sd": 0.0
+            },
+            "health_auroc": {
+              "ci95_normal_approx": 0.0,
+              "mean": 0.9989709286177206,
+              "n": 5,
+              "sd": 0.0
+            },
+            "rul_rmse_health": {
+              "ci95_normal_approx": 0.0,
+              "mean": 25.450247312918755,
+              "n": 5,
+              "sd": 0.0
+            }
+          },
+          "dsp:uengram_frozen": {
+            "auroc": {
+              "ci95_normal_approx": 0.0,
+              "mean": 0.6148955654906685,
+              "n": 5,
+              "sd": 0.0
+            },
+            "eol_retention": {
+              "ci95_normal_approx": 0.0,
+              "mean": 1.0,
+              "n": 5,
+              "sd": 0.0
+            },
+            "health_auroc": {
+              "ci95_normal_approx": 0.0,
+              "mean": 0.9996449402833071,
+              "n": 5,
+              "sd": 0.0
+            },
+            "rul_rmse_health": {
+              "ci95_normal_approx": 0.0,
+              "mean": 24.452981486500505,
+              "n": 5,
+              "sd": 0.0
+            }
+          }
+        }
+      },
+      "role": "existing five-seed lifecycle and RUL gate",
+      "teacher_transfer": "not run under the MOMENT protocol"
+    },
+    "SKAB": {
+      "results": {
+        "events": 34,
+        "metrics": {
+          "alarm_time_share_clean": 0.013410218586562961,
+          "alerts_per_week": 324.42000804613116,
+          "ap": 0.4192044063879338,
+          "auroc": 0.5458055694765479,
+          "events_detected": 5.0,
+          "false_alarm_per_week": 135.17500335255465,
+          "health_ap": 0.45368352980624926,
+          "health_auroc": 0.538536254525743,
+          "lead_hours": -0.06777777777777778,
+          "notifications_per_week_all": 309.8978052321444,
+          "operator_events_per_week": 432.56001072817486
+        },
+        "run_meta": {
+          "bytes_written": 491520,
+          "commissioning_calibration_writes": 291,
+          "encoder": "dsp",
+          "events_retained": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33
+          ],
+          "index_bytes": 31968,
+          "input_hash": "099689a1ce3a289de69101671509aed2b44a2a1851041006d1d04495963b2ccf",
+          "items_end": 199,
+          "lat_p50_us": 158.959,
+          "lat_p99_us": 305.60612,
+          "method": "uengram",
+          "pinned_raw_bytes": 89600,
+          "seed": 0,
+          "step_calibration": {
+            "estimator": "commissioning_slot_innovations",
+            "inflation": [
+              4.452256749331104,
+              3.8310812879629506,
+              16.450568040135344,
+              14.134976043368033,
+              82.34795949166454,
+              2.271117717773138,
+              2.575179680819888,
+              28.385160892138106,
+              1.9534270757995533,
+              2.335717043871681,
+              1.90562834753708,
+              25.24627194031262,
+              2.9317032638230556,
+              5.192835160047041,
+              7.640084924155318,
+              6.412766608855635
+            ],
+            "runs": 1,
+            "warm_samples": 201
+          },
+          "steps_in_test": 0,
+          "stream": "skab",
+          "total_writes": 2060,
+          "write_reduction_pct": 52.47178936055884,
+          "writes": 1769
+        }
+      },
+      "role": "fresh frozen event-level validation",
+      "teacher_transfer": "not run under the MOMENT protocol"
+    },
+    "TSB-AD-U": {
+      "results": {
+        "baseline": {
+          "auroc": 0.9111216211939532,
+          "average_precision": 0.839694084939897,
+          "positive_windows": 251,
+          "windows": 2517
+        },
+        "dataset": {
+          "positive_windows": 251,
+          "series": {
+            "003_NAB_id_3_WebService_tr_1362_1st_1462.csv": {
+              "positive_windows": 54,
+              "test_windows": 471
+            },
+            "186_SMD_id_9_Facility_tr_5925_1st_17580.csv": {
+              "positive_windows": 7,
+              "test_windows": 464
+            },
+            "400_UCR_id_98_Environment_tr_2046_1st_5391.csv": {
+              "positive_windows": 2,
+              "test_windows": 169
+            },
+            "549_SMAP_id_19_Sensor_tr_1998_1st_2098.csv": {
+              "positive_windows": 10,
+              "test_windows": 234
+            },
+            "715_YAHOO_id_165_Synthetic_tr_500_1st_658.csv": {
+              "positive_windows": 4,
+              "test_windows": 32
+            },
+            "830_Exathlon_id_21_Facility_tr_10766_1st_12590.csv": {
+              "positive_windows": 174,
+              "test_windows": 1147
+            }
+          },
+          "test_windows": 2517,
+          "train_windows": 624
+        },
+        "role": "frozen cross-domain TSB-AD-U holdout; no test-label model selection",
+        "variants": [
+          {
+            "context_policy": "edge",
+            "include_instance_stats": false,
+            "macro_series_auroc": 0.6335522336488785,
+            "macro_series_average_precision": 0.4397261365195091,
+            "overall": {
+              "auroc": 0.9091331057060372,
+              "average_precision": 0.8397342537094347,
+              "positive_windows": 251,
+              "windows": 2517
+            },
+            "teacher_feature_dim": 512
+          },
+          {
+            "context_policy": "linear",
+            "include_instance_stats": true,
+            "macro_series_auroc": 0.6316425172984653,
+            "macro_series_average_precision": 0.4248691777075597,
+            "overall": {
+              "auroc": 0.9156665482817187,
+              "average_precision": 0.8350808538944372,
+              "positive_windows": 251,
+              "windows": 2517
+            },
+            "teacher_feature_dim": 514
+          }
+        ]
+      },
+      "role": "new MOMENT teacher-transfer holdout"
+    }
+  },
+  "gate": "stronger-frozen-cross-dataset",
+  "interpretation": "This gate checks reproducible protocol coverage and reports dataset-specific metrics. It is not a universal accuracy or production-certification claim.",
+  "limitations": [
+    "The datasets use different window sizes, labels, and operating assumptions.",
+    "The TSB collection mixes domains and includes only six selected series.",
+    "The normal-approximation intervals are descriptive with few seeds; bootstrap and asset-level confidence intervals are still needed."
+  ]
+}

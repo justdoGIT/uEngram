@@ -1,0 +1,93 @@
+diff --git a/bindings/python/src/edge_memory_gateway/binding.py b/bindings/python/src/edge_memory_gateway/binding.py
+--- a/bindings/python/src/edge_memory_gateway/binding.py
++++ b/bindings/python/src/edge_memory_gateway/binding.py
+@@ -422,7 +422,7 @@ class EdgeMemory:
+         candidate.source_id = self._new_view(source_id, keepalive)
+         candidate.trust_class = int(trust_class)
+         candidate.privacy_class = int(privacy_class)
+-        candidate.observed_at_ms = observed_at_ms or self._now_ms()
++        candidate.observed_at_ms = self._now_ms() if observed_at_ms is None else observed_at_ms
+         candidate.idempotency_key = self._new_view(idempotency_key, keepalive)
+         keyword_array = self._new_view_array(keywords, keepalive)
+         candidate.keywords = keyword_array
+@@ -470,6 +470,6 @@ class EdgeMemory:
+         query.keyword_count = len(keywords)
+         query.kind_mask = kind_mask
+-        query.now_ms = now_ms or self._now_ms()
++        query.now_ms = self._now_ms() if now_ms is None else now_ms
+         query.max_results = max_results
+         query.max_content_bytes = max_content_bytes
+         items: list[RecallItem] = []
+@@ -567,6 +567,6 @@ class EdgeMemory:
+         budget = self._ffi.new("edge_memory_tick_budget_t *")
+         self._lib.edge_memory_tick_budget_init(budget)
+-        budget.now_ms = now_ms or self._now_ms()
++        budget.now_ms = self._now_ms() if now_ms is None else now_ms
+         budget.max_rows = max_rows
+         result = self._ffi.new("edge_memory_maintenance_result_t *")
+         result.struct_size = self._ffi.sizeof("edge_memory_maintenance_result_t")
+diff --git a/bindings/python/tests/test_binding.py b/bindings/python/tests/test_binding.py
+--- a/bindings/python/tests/test_binding.py
++++ b/bindings/python/tests/test_binding.py
+@@ -6,3 +6,4 @@
+ import unittest
++from unittest.mock import patch
+ from pathlib import Path
+ 
+@@ -9,1 +10,1 @@
+-from edge_memory_gateway import Action, EdgeMemory, Kind, SourceClass
++from edge_memory_gateway import Action, EdgeMemory, EdgeMemoryError, Kind, SourceClass
+@@ -78,5 +79,31 @@ class EdgeMemoryBindingTest(unittest.TestCase):
+             self.assertEqual(reopened.forget(remembered_id), 1)
+             self.assertEqual(reopened.get_usage().scope_memory_count, 0)
+ 
++    def test_zero_timestamps_are_preserved(self) -> None:
++        with EdgeMemory(
++            library_path=self.library,
++            scope_id="user:zero-timestamps",
++            in_memory=True,
++        ) as memory:
++            with self.assertRaises(EdgeMemoryError):
++                memory.remember(
++                    "Zero observed time is invalid",
++                    observed_at_ms=0,
++                    keywords=("invalid",),
++                )
++
++            now_ms = time.time_ns() // 1_000_000
++            created = memory.remember(
++                "A note with deterministic timestamps",
++                observed_at_ms=now_ms,
++                keywords=("deterministic", "timestamps"),
++            )
++            self.assertEqual(created.action, Action.CREATED)
++
++            with patch.object(
++                memory, "_now_ms", side_effect=AssertionError("unexpected clock fallback")
++            ):
++                memory.recall(keywords=("deterministic",), now_ms=0)
++                memory.tick(now_ms=0)
+ 
+     def test_in_memory_expiry_and_tick(self) -> None:
+         now_ms = time.time_ns() // 1_000_000
+         with EdgeMemory(
+diff --git a/bindings/python/tests/test_autogen_memory.py b/bindings/python/tests/test_autogen_memory.py
+--- a/bindings/python/tests/test_autogen_memory.py
++++ b/bindings/python/tests/test_autogen_memory.py
+@@ -5,7 +5,12 @@ import tempfile
+ import unittest
+ from pathlib import Path
+ 
+-from autogen_agentchat.agents import AssistantAgent
+-from autogen_core.memory import MemoryContent, MemoryMimeType
+-from autogen_ext.models.replay import ReplayChatCompletionClient
++try:
++    from autogen_agentchat.agents import AssistantAgent
++    from autogen_core.memory import MemoryContent, MemoryMimeType
++    from autogen_ext.models.replay import ReplayChatCompletionClient
++except ModuleNotFoundError as error:
++    if not error.name.startswith(("autogen_agentchat", "autogen_core", "autogen_ext")):
++        raise
++    raise unittest.SkipTest("AutoGen test dependencies are not installed") from error
+ 
+ from edge_memory_gateway import AutoGenEdgeMemory, EdgeMemory

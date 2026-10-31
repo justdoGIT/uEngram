@@ -1,0 +1,216 @@
+{
+  "K": 10,
+  "protocol": "docs/validation-skab-protocol.md",
+  "rows": [
+    {
+      "encoder": "dsp",
+      "false_alarm_episodes": 5,
+      "method": "uengram",
+      "metrics": {
+        "alarm_time_share_clean": 0.013410218586562961,
+        "ap": 0.4192044063879338,
+        "auroc": 0.5458055694765479,
+        "events_detected": 5.0,
+        "false_alarm_per_week": 135.17500335255465
+      },
+      "n_events": 34,
+      "seed": 0
+    },
+    {
+      "encoder": "dsp",
+      "false_alarm_episodes": 5,
+      "method": "uengram",
+      "metrics": {
+        "alarm_time_share_clean": 0.013410218586562961,
+        "ap": 0.4192044063879338,
+        "auroc": 0.5458055694765479,
+        "events_detected": 5.0,
+        "false_alarm_per_week": 135.17500335255465
+      },
+      "n_events": 34,
+      "seed": 1
+    },
+    {
+      "encoder": "dsp",
+      "false_alarm_episodes": 5,
+      "method": "uengram",
+      "metrics": {
+        "alarm_time_share_clean": 0.013410218586562961,
+        "ap": 0.4192044063879338,
+        "auroc": 0.5458055694765479,
+        "events_detected": 5.0,
+        "false_alarm_per_week": 135.17500335255465
+      },
+      "n_events": 34,
+      "seed": 2
+    },
+    {
+      "encoder": "dsp",
+      "false_alarm_episodes": 5,
+      "method": "uengram",
+      "metrics": {
+        "alarm_time_share_clean": 0.013410218586562961,
+        "ap": 0.4192044063879338,
+        "auroc": 0.5458055694765479,
+        "events_detected": 5.0,
+        "false_alarm_per_week": 135.17500335255465
+      },
+      "n_events": 34,
+      "seed": 3
+    },
+    {
+      "encoder": "dsp",
+      "false_alarm_episodes": 5,
+      "method": "uengram",
+      "metrics": {
+        "alarm_time_share_clean": 0.013410218586562961,
+        "ap": 0.4192044063879338,
+        "auroc": 0.5458055694765479,
+        "events_detected": 5.0,
+        "false_alarm_per_week": 135.17500335255465
+      },
+      "n_events": 34,
+      "seed": 4
+    },
+    {
+      "encoder": "dsp",
+      "false_alarm_episodes": 0,
+      "method": "hst",
+      "metrics": {
+        "alarm_time_share_clean": 0.0008493138438156542,
+        "ap": 0.45187791878650835,
+        "auroc": 0.5215554493014503,
+        "events_detected": 4.0,
+        "false_alarm_per_week": 0.0
+      },
+      "n_events": 34,
+      "seed": 0
+    },
+    {
+      "encoder": "dsp",
+      "false_alarm_episodes": 1,
+      "method": "hst",
+      "metrics": {
+        "alarm_time_share_clean": 0.0012516204014125431,
+        "ap": 0.42431093810293247,
+        "auroc": 0.5087344283756418,
+        "events_detected": 4.0,
+        "false_alarm_per_week": 27.03500067051093
+      },
+      "n_events": 34,
+      "seed": 1
+    },
+    {
+      "encoder": "dsp",
+      "false_alarm_episodes": 0,
+      "method": "hst",
+      "metrics": {
+        "alarm_time_share_clean": 0.0004023065575968888,
+        "ap": 0.4395360807114626,
+        "auroc": 0.5112362118252296,
+        "events_detected": 5.0,
+        "false_alarm_per_week": 0.0
+      },
+      "n_events": 34,
+      "seed": 2
+    },
+    {
+      "encoder": "dsp",
+      "false_alarm_episodes": 0,
+      "method": "hst",
+      "metrics": {
+        "alarm_time_share_clean": 0.0004023065575968888,
+        "ap": 0.45147839832883346,
+        "auroc": 0.5391929027655614,
+        "events_detected": 2.0,
+        "false_alarm_per_week": 0.0
+      },
+      "n_events": 34,
+      "seed": 3
+    },
+    {
+      "encoder": "dsp",
+      "false_alarm_episodes": 1,
+      "method": "hst",
+      "metrics": {
+        "alarm_time_share_clean": 0.0016986276876313083,
+        "ap": 0.4458862773853228,
+        "auroc": 0.5128892586474932,
+        "events_detected": 3.0,
+        "false_alarm_per_week": 27.03500067051093
+      },
+      "n_events": 34,
+      "seed": 4
+    },
+    {
+      "encoder": "dsp",
+      "false_alarm_episodes": 0,
+      "method": "memstream",
+      "metrics": {
+        "alarm_time_share_clean": 0.0,
+        "ap": 0.4200332997947604,
+        "auroc": 0.5396921408043038,
+        "events_detected": 1.0,
+        "false_alarm_per_week": 0.0
+      },
+      "n_events": 34,
+      "seed": 0
+    },
+    {
+      "encoder": "dsp",
+      "false_alarm_episodes": 0,
+      "method": "memstream",
+      "metrics": {
+        "alarm_time_share_clean": 0.0004023065575968888,
+        "ap": 0.4127229317838664,
+        "auroc": 0.5354534116943155,
+        "events_detected": 1.0,
+        "false_alarm_per_week": 0.0
+      },
+      "n_events": 34,
+      "seed": 1
+    },
+    {
+      "encoder": "dsp",
+      "false_alarm_episodes": 0,
+      "method": "memstream",
+      "metrics": {
+        "alarm_time_share_clean": 0.0004023065575968888,
+        "ap": 0.37878097721766063,
+        "auroc": 0.5014349098431076,
+        "events_detected": 1.0,
+        "false_alarm_per_week": 0.0
+      },
+      "n_events": 34,
+      "seed": 2
+    },
+    {
+      "encoder": "dsp",
+      "false_alarm_episodes": 0,
+      "method": "memstream",
+      "metrics": {
+        "alarm_time_share_clean": 0.0,
+        "ap": 0.46930081349649144,
+        "auroc": 0.5758550969582916,
+        "events_detected": 1.0,
+        "false_alarm_per_week": 0.0
+      },
+      "n_events": 34,
+      "seed": 3
+    },
+    {
+      "encoder": "dsp",
+      "false_alarm_episodes": 0,
+      "method": "memstream",
+      "metrics": {
+        "alarm_time_share_clean": 0.0,
+        "ap": 0.4608679062997963,
+        "auroc": 0.5734979391249208,
+        "events_detected": 1.0,
+        "false_alarm_per_week": 0.0
+      },
+      "n_events": 34,
+      "seed": 4
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "protocol": "docs/validation-skab-protocol.md split; role-score screen",
+  "same_split": {
+    "fit_windows": 282,
+    "calibration_windows": 658,
+    "test_windows": 3722
+  },
+  "configuration": {
+    "encoder": "MultiScaleEncoder",
+    "dimension": 16,
+    "level_dimension": 8,
+    "dynamic_dimension": 8,
+    "alpha": 0.01,
+    "persistence": 3,
+    "channels": 8
+  },
+  "policies": {
+    "any": {
+      "window_auroc": 0.5466082268813586,
+      "window_average_precision": 0.38064605358105474,
+      "strict_event_recall": 0.20588235294117646,
+      "events_detected": 7,
+      "events_total": 34,
+      "events_warned_before_offset": 34,
+      "healthy_false_alarm_starts": 35,
+      "healthy_hours": 6.3052777777777775,
+      "false_alarms_per_hour": 5.550905326225825,
+      "persistent_starts": 43
+    },
+    "at_least_2": {
+      "window_auroc": 0.5466082268813586,
+      "window_average_precision": 0.38064605358105474,
+      "strict_event_recall": 0.29411764705882354,
+      "events_detected": 10,
+      "events_total": 34,
+      "events_warned_before_offset": 34,
+      "healthy_false_alarm_starts": 39,
+      "healthy_hours": 6.3052777777777775,
+      "false_alarms_per_hour": 6.18529450636592,
+      "persistent_starts": 50
+    },
+    "dynamic_health": {
+      "window_auroc": 0.5466082268813586,
+      "window_average_precision": 0.38064605358105474,
+      "strict_event_recall": 0.23529411764705882,
+      "events_detected": 8,
+      "events_total": 34,
+      "events_warned_before_offset": 10,
+      "healthy_false_alarm_starts": 10,
+      "healthy_hours": 6.3052777777777775,
+      "false_alarms_per_hour": 1.5859729503502358,
+      "persistent_starts": 26
+    },
+    "all": {
+      "window_auroc": 0.5466082268813586,
+      "window_average_precision": 0.38064605358105474,
+      "strict_event_recall": 0.20588235294117646,
+      "events_detected": 7,
+      "events_total": 34,
+      "events_warned_before_offset": 10,
+      "healthy_false_alarm_starts": 8,
+      "healthy_hours": 6.3052777777777775,
+      "false_alarms_per_hour": 1.2687783602801885,
+      "persistent_starts": 22
+    }
+  }
+}

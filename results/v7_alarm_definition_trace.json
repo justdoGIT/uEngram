@@ -1,0 +1,272 @@
+[
+  {
+    "stream": "metropt3",
+    "family": "dataset",
+    "alarm_index": 20,
+    "corroboration": {
+      "family": "dataset",
+      "min_errors": 1,
+      "lookback_h": 6
+    },
+    "events": [
+      {
+        "event": 0,
+        "report_hours": 23.983333333333334,
+        "lps_warning_h": null,
+        "first_uengram_error_h": 2.2144444444444447,
+        "first_corroboration_h": -14.559166666666666,
+        "first_corroborated_error_h": 2.2144444444444447,
+        "alarm_opened_h": 3.2058333333333335,
+        "first_alarm_h": 3.2058333333333335,
+        "standing_at_window_start": false
+      },
+      {
+        "event": 1,
+        "report_hours": 6.5,
+        "lps_warning_h": null,
+        "first_uengram_error_h": -21.4575,
+        "first_corroboration_h": null,
+        "first_corroborated_error_h": null,
+        "alarm_opened_h": null,
+        "first_alarm_h": null,
+        "standing_at_window_start": false
+      },
+      {
+        "event": 2,
+        "report_hours": 52.5,
+        "lps_warning_h": null,
+        "first_uengram_error_h": -8.374722222222223,
+        "first_corroboration_h": 34.033055555555556,
+        "first_corroborated_error_h": 34.85888888888889,
+        "alarm_opened_h": 45.22638888888889,
+        "first_alarm_h": 45.22638888888889,
+        "standing_at_window_start": false
+      },
+      {
+        "event": 3,
+        "report_hours": 4.5,
+        "lps_warning_h": null,
+        "first_uengram_error_h": null,
+        "first_corroboration_h": 3.238611111111111,
+        "first_corroborated_error_h": null,
+        "alarm_opened_h": null,
+        "first_alarm_h": null,
+        "standing_at_window_start": false
+      }
+    ]
+  },
+  {
+    "stream": "metropt3",
+    "family": "calibrated",
+    "alarm_index": 20,
+    "corroboration": {
+      "family": "calibrated",
+      "min_errors": 1,
+      "lookback_h": 24
+    },
+    "events": [
+      {
+        "event": 0,
+        "report_hours": 23.983333333333334,
+        "lps_warning_h": null,
+        "first_uengram_error_h": 2.2144444444444447,
+        "first_corroboration_h": -23.896944444444443,
+        "first_corroborated_error_h": 2.2144444444444447,
+        "alarm_opened_h": 3.2058333333333335,
+        "first_alarm_h": 3.2058333333333335,
+        "standing_at_window_start": false
+      },
+      {
+        "event": 1,
+        "report_hours": 6.5,
+        "lps_warning_h": null,
+        "first_uengram_error_h": -21.4575,
+        "first_corroboration_h": -23.890833333333333,
+        "first_corroborated_error_h": -21.4575,
+        "alarm_opened_h": 3.0125,
+        "first_alarm_h": 3.0125,
+        "standing_at_window_start": false
+      },
+      {
+        "event": 2,
+        "report_hours": 52.5,
+        "lps_warning_h": null,
+        "first_uengram_error_h": -8.374722222222223,
+        "first_corroboration_h": -23.904444444444444,
+        "first_corroborated_error_h": -8.374722222222223,
+        "alarm_opened_h": 14.258611111111112,
+        "first_alarm_h": 14.258611111111112,
+        "standing_at_window_start": false
+      },
+      {
+        "event": 3,
+        "report_hours": 4.5,
+        "lps_warning_h": null,
+        "first_uengram_error_h": null,
+        "first_corroboration_h": -16.704166666666666,
+        "first_corroborated_error_h": null,
+        "alarm_opened_h": null,
+        "first_alarm_h": null,
+        "standing_at_window_start": false
+      }
+    ]
+  },
+  {
+    "stream": "metropt2_jan",
+    "family": "dataset",
+    "alarm_index": 20,
+    "corroboration": {
+      "family": "dataset",
+      "min_errors": 1,
+      "lookback_h": 6
+    },
+    "events": [
+      {
+        "event": 0,
+        "report_hours": 4.116666666666666,
+        "lps_warning_h": null,
+        "first_uengram_error_h": null,
+        "first_corroboration_h": 1.113888888888889,
+        "first_corroborated_error_h": null,
+        "alarm_opened_h": null,
+        "first_alarm_h": null,
+        "standing_at_window_start": false
+      },
+      {
+        "event": 1,
+        "report_hours": 0.5,
+        "lps_warning_h": null,
+        "first_uengram_error_h": -15.73611111111111,
+        "first_corroboration_h": null,
+        "first_corroborated_error_h": null,
+        "alarm_opened_h": null,
+        "first_alarm_h": null,
+        "standing_at_window_start": false
+      },
+      {
+        "event": 2,
+        "report_hours": 66.3,
+        "lps_warning_h": null,
+        "first_uengram_error_h": -17.336111111111112,
+        "first_corroboration_h": null,
+        "first_corroborated_error_h": null,
+        "alarm_opened_h": null,
+        "first_alarm_h": null,
+        "standing_at_window_start": false
+      }
+    ]
+  },
+  {
+    "stream": "metropt2_jan",
+    "family": "calibrated",
+    "alarm_index": 20,
+    "corroboration": {
+      "family": "calibrated",
+      "min_errors": 1,
+      "lookback_h": 24
+    },
+    "events": [
+      {
+        "event": 0,
+        "report_hours": 4.116666666666666,
+        "lps_warning_h": null,
+        "first_uengram_error_h": null,
+        "first_corroboration_h": -23.886111111111113,
+        "first_corroborated_error_h": null,
+        "alarm_opened_h": null,
+        "first_alarm_h": null,
+        "standing_at_window_start": false
+      },
+      {
+        "event": 1,
+        "report_hours": 0.5,
+        "lps_warning_h": null,
+        "first_uengram_error_h": -15.73611111111111,
+        "first_corroboration_h": -23.90277777777778,
+        "first_corroborated_error_h": -15.73611111111111,
+        "alarm_opened_h": null,
+        "first_alarm_h": null,
+        "standing_at_window_start": false
+      },
+      {
+        "event": 2,
+        "report_hours": 66.3,
+        "lps_warning_h": null,
+        "first_uengram_error_h": -17.336111111111112,
+        "first_corroboration_h": -23.836111111111112,
+        "first_corroborated_error_h": -17.336111111111112,
+        "alarm_opened_h": null,
+        "first_alarm_h": null,
+        "standing_at_window_start": false
+      }
+    ]
+  },
+  {
+    "stream": "metropt2_apr",
+    "family": "dataset",
+    "alarm_index": 20,
+    "corroboration": {
+      "family": "dataset",
+      "min_errors": 1,
+      "lookback_h": 6
+    },
+    "events": [
+      {
+        "event": 0,
+        "report_hours": 4.054166666666666,
+        "lps_warning_h": 1.1102777777777777,
+        "first_uengram_error_h": null,
+        "first_corroboration_h": -1.9011111111111112,
+        "first_corroborated_error_h": null,
+        "alarm_opened_h": null,
+        "first_alarm_h": null,
+        "standing_at_window_start": false
+      },
+      {
+        "event": 1,
+        "report_hours": 72.19722222222222,
+        "lps_warning_h": 57.559444444444445,
+        "first_uengram_error_h": null,
+        "first_corroboration_h": -1.8355555555555556,
+        "first_corroborated_error_h": null,
+        "alarm_opened_h": null,
+        "first_alarm_h": null,
+        "standing_at_window_start": false
+      }
+    ]
+  },
+  {
+    "stream": "metropt2_apr",
+    "family": "calibrated",
+    "alarm_index": 20,
+    "corroboration": {
+      "family": "calibrated",
+      "min_errors": 1,
+      "lookback_h": 24
+    },
+    "events": [
+      {
+        "event": 0,
+        "report_hours": 4.054166666666666,
+        "lps_warning_h": 1.1102777777777777,
+        "first_uengram_error_h": null,
+        "first_corroboration_h": -19.567777777777778,
+        "first_corroborated_error_h": null,
+        "alarm_opened_h": null,
+        "first_alarm_h": null,
+        "standing_at_window_start": false
+      },
+      {
+        "event": 1,
+        "report_hours": 72.19722222222222,
+        "lps_warning_h": 57.559444444444445,
+        "first_uengram_error_h": null,
+        "first_corroboration_h": -23.857777777777777,
+        "first_corroborated_error_h": null,
+        "alarm_opened_h": null,
+        "first_alarm_h": null,
+        "standing_at_window_start": false
+      }
+    ]
+  }
+]

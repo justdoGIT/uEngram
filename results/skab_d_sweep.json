@@ -1,0 +1,107 @@
+{
+  "K": 10,
+  "protocol": "docs/validation-skab-protocol.md",
+  "rows": [
+    {
+      "detected_experiments": [
+        "other/5.csv",
+        "other/6.csv",
+        "other/7.csv",
+        "other/9.csv",
+        "other/12.csv"
+      ],
+      "encoder": "dsp_d16",
+      "false_alarm_episodes": 5,
+      "metrics": {
+        "alarm_time_share_clean": 0.013410218586562961,
+        "alerts_per_week": 324.42000804613116,
+        "ap": 0.4192044063879338,
+        "auroc": 0.5458055694765479,
+        "events_detected": 5.0,
+        "false_alarm_per_week": 135.17500335255465,
+        "health_ap": 0.45368352980624926,
+        "health_auroc": 0.538536254525743,
+        "lead_hours": -0.06777777777777778,
+        "notifications_per_week_all": 309.8978052321444,
+        "operator_events_per_week": 432.56001072817486
+      }
+    },
+    {
+      "detected_experiments": [
+        "other/5.csv",
+        "other/6.csv",
+        "other/7.csv",
+        "other/9.csv",
+        "other/12.csv"
+      ],
+      "encoder": "dsp_d24",
+      "false_alarm_episodes": 6,
+      "metrics": {
+        "alarm_time_share_clean": 0.02695453935899155,
+        "alerts_per_week": 270.3500067051093,
+        "ap": 0.4187128761392663,
+        "auroc": 0.5505684665657536,
+        "events_detected": 5.0,
+        "false_alarm_per_week": 162.21000402306558,
+        "health_ap": 0.4543230473579085,
+        "health_auroc": 0.5494894476036574,
+        "lead_hours": -0.08522222222222223,
+        "notifications_per_week_all": 258.24817102678696,
+        "operator_events_per_week": 378.490009387153
+      }
+    },
+    {
+      "detected_experiments": [
+        "other/5.csv",
+        "other/6.csv",
+        "other/7.csv",
+        "other/9.csv",
+        "other/12.csv"
+      ],
+      "encoder": "dsp_d32",
+      "false_alarm_episodes": 7,
+      "metrics": {
+        "alarm_time_share_clean": 0.061239998211970854,
+        "alerts_per_week": 243.31500603459838,
+        "ap": 0.414894567505171,
+        "auroc": 0.5752574176161351,
+        "events_detected": 5.0,
+        "false_alarm_per_week": 189.2450046935765,
+        "health_ap": 0.5541105860120134,
+        "health_auroc": 0.6401714668521283,
+        "lead_hours": -0.10727272727272727,
+        "notifications_per_week_all": 258.24817102678696,
+        "operator_events_per_week": 405.52501005766396
+      }
+    },
+    {
+      "detected_experiments": [
+        "other/5.csv",
+        "other/6.csv",
+        "other/7.csv",
+        "other/9.csv",
+        "other/10.csv",
+        "other/11.csv",
+        "other/12.csv",
+        "other/13.csv",
+        "other/14.csv"
+      ],
+      "encoder": "dsp_d48",
+      "false_alarm_episodes": 4,
+      "metrics": {
+        "alarm_time_share_clean": 0.18550802378078762,
+        "alerts_per_week": 135.17500335255465,
+        "ap": 0.44099503611292584,
+        "auroc": 0.5583645064127478,
+        "events_detected": 9.0,
+        "false_alarm_per_week": 108.14000268204371,
+        "health_ap": 0.6381155666231656,
+        "health_auroc": 0.6743222891566265,
+        "lead_hours": -0.12287878787878789,
+        "notifications_per_week_all": 154.9489026160722,
+        "operator_events_per_week": 189.2450046935765
+      }
+    }
+  ],
+  "seed": 0
+}

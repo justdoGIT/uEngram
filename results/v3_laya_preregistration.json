@@ -1,0 +1,166 @@
+{
+  "artifact": "preregistration",
+  "backend": "laya",
+  "baseline_freeze": {
+    "path": "results/v3_normal_freeze.json",
+    "sha256": "012274639d523d22d92d65c68ade7f24c87407f0eed6d39257c20098d3925bf8"
+  },
+  "caveats": [
+    "Laya (convaiinnovations/laya, English base, ModernBERT-large 421M) is a different model from TypeSafe Jev; nothing here is a Jev result.",
+    "Vendor typed-decisions benchmark: base English Laya 0.362 vs 0.766 fine-tuned; this checkpoint is the base model.",
+    "Compressor telemetry summaries are out-of-domain for Laya; probabilities are not claimed calibrated, and the checkpoint warns that some temperatures are invalid.",
+    "Brier/ECE use coarse window labels (event-interval overlap vs clean negatives) only.",
+    "All three recordings were consumed earlier; results are exploratory, not confirmatory."
+  ],
+  "code_sha256": {
+    "bench/advisory_eval.py": "512d821d4e22f18d39760479bfe13ac3cf24c8672ef8696c098928aac2f8889f",
+    "bench/advisory_experiment.py": "7cd73e2564e78b57c234e256c9f7ebccae26a976066059e2f6e23bf524364fb0",
+    "bench/laya_advisory.py": "46fe9da97eb58c76968cff2b7215b17c09d10338ff070ab6ab78fb5238597f43"
+  },
+  "created_utc": "2026-10-23T03:53:26+00:00",
+  "input_exclusions": {
+    "allowed_features": [
+      "load_share",
+      "comp_switches",
+      "motor_current_a",
+      "oil_temp_c",
+      "tp2_bar",
+      "tp3_bar",
+      "h1_bar",
+      "dv_pressure_bar",
+      "reservoirs_min_bar"
+    ],
+    "never_sent": [
+      "report labels",
+      "event/fault dates or IDs",
+      "stream/file/asset names",
+      "absolute timestamps",
+      "future or post-decision windows"
+    ],
+    "time": "hours since the flagged period began; window minutes",
+    "warning_channels": [
+      "lps_share",
+      "lps",
+      "oil_level",
+      "pressure_switch"
+    ]
+  },
+  "metrics": [
+    "events detected",
+    "false alarms/week",
+    "clean alarm share",
+    "notification episodes/week",
+    "window balanced accuracy/F1",
+    "per-event lead",
+    "coverage",
+    "latency p50/p95",
+    "Brier/ECE of P(condition=fault_consistent) and P(review) vs coarse labels"
+  ],
+  "model": {
+    "backend": "laya",
+    "device": "cpu",
+    "head_max_len": 192,
+    "laya_version": "0.4.13",
+    "load_warnings": [
+      "RuntimeWarning: laya: this checkpoint ships invalid temperatures or values outside [0.5, 5]; using choice:11+=0.10058280825614929 -> 0.5. Treat confidence from the affected entries as uncalibrated."
+    ],
+    "max_len": 512,
+    "model_id": "convaiinnovations/laya",
+    "revision": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851",
+    "snapshot_revision": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851",
+    "torch_threads": 2,
+    "torch_version": "2.14.1+cpu",
+    "weights_sha256": {
+      "encoder/config.json": "bf3ab80598fdccf414855a2ce80f22859e4492d06ca8a62ddd1cfb63972f8979",
+      "model.safetensors": "891102d372688fc2a094dac56a384bc537b87c63f21f9f3dac0be2b7cbc8d86c",
+      "rl_agent_config.json": "ae287b56bbcf5f8c4f4541ae9dfd00c914c4c48b940b8398c3058af37ba92bbd",
+      "tokenizer/tokenizer.json": "6c8aaa9a542084f2457eab775d4eeb51f92a70c0fd9de28d5edb0ddec3c08d30",
+      "tokenizer/tokenizer_config.json": "50044de60daaa73df97d262e15a40d4faf0160e7d742df64b377877a1320dd12"
+    }
+  },
+  "model_id": "convaiinnovations/laya",
+  "per_stream": {
+    "metropt2_apr": {
+      "assessments": 456,
+      "candidate_windows": 624,
+      "trace_sha256": "941dc9086261c6339e7a1d2eebc0bcf05762054bf5c7b4b76457a1c068875c05"
+    },
+    "metropt2_jan": {
+      "assessments": 304,
+      "candidate_windows": 393,
+      "trace_sha256": "a863250276c859f1cc50beab4f29a81e1460264eb6b6bd0c72675fa8f454edab"
+    },
+    "metropt3": {
+      "assessments": 1981,
+      "candidate_windows": 3631,
+      "trace_sha256": "dc48e3413e5678dd9502ab37eb9f15e4053a0712e162ff92f21ca240d7ab387b"
+    }
+  },
+  "prompt_hash": "70bf9db6afeac66520737efba873dbed0fd2c1e262be5c2cf556d3ab63b5ed3a",
+  "protocol": "v3-laya-fixed-candidate-triage",
+  "questions": {
+    "condition": {
+      "criteria": {
+        "expected": "Observed evidence is consistent with expected operation",
+        "fault_consistent": "Observed evidence supports an abnormal/fault-consistent condition",
+        "insufficient": "Available evidence cannot distinguish expected from abnormal"
+      },
+      "instructions": "Which condition best fits the provided current and prior window evidence?",
+      "type": "choice"
+    },
+    "evidence": {
+      "criteria": {
+        "insufficient": "Missing, unsupported, or conflicting evidence prevents an assessment",
+        "sufficient": "Enough relevant evidence to make an assessment"
+      },
+      "instructions": "Is the provided physical and numerical evidence sufficient to assess this window? Choose insufficient if key evidence is missing or conflicting.",
+      "type": "choice"
+    },
+    "review": {
+      "criteria": {
+        "no_review": "Evidence does not warrant operator review",
+        "review": "Evidence warrants operator review",
+        "uncertain": "Cannot determine whether review is warranted"
+      },
+      "instructions": "Should this candidate window receive operator review based only on the evidence shown?",
+      "type": "choice"
+    }
+  },
+  "recorded_before_model_answers_on_machine_cases": true,
+  "revision": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851",
+  "rule": {
+    "candidate_states": {
+      "alarm": 3,
+      "unresolved": 2
+    },
+    "elevate": "review.choice == 'review' AND P(review) >= 0.80 AND TypeSafe Choice confidence (p_max-1/n)/(1-1/n) of the review probabilities >= 0.50",
+    "fresh_seconds": 3600,
+    "interpretations": {
+      "advisory_assessment_only": "fresh elevation | (baseline & latest assessment unavailable)",
+      "conservative_preserve_baseline": "baseline | fresh elevation"
+    },
+    "laya_confidence_fields": "Laya `confidence` and `answer_confidence` are recorded descriptively and never used for decisions",
+    "reassess_seconds": 3600,
+    "review_confidence": 0.5,
+    "review_probability": 0.8,
+    "schedule": "assess on candidate entry, then at most once per observed hour while decision_state stays in {unresolved, alarm}; clean in-reference windows are never assessed (they appear only as previous-window context)",
+    "unavailable": "exception/invalid/truncated answer => explicit unavailable; never elevates and never suppresses a baseline alarm"
+  },
+  "state_format": "laya-state-1",
+  "synthetic_example_state": "Air compressor monitoring summary for one 10-minute window flagged by a numerical anomaly detector. Detector status: unresolved candidate (not an alarm). Hours since this flagged period began: 0.0. Operating mode: cycling load; its reference is calibrated from 500 reference windows. Novelty score 1.50 times its calibrated threshold. Health score 0.90 times its calibrated threshold (health is not used for alarms). Missing values: none. Current readings: loaded-time share 0.00 (recent normal 0.00); compressor on/off switches 1 (recent normal 1); motor current 2.00 A (recent normal 2.00); oil temperature 3.0 C (recent normal 3.0); TP2 pressure 4.00 bar (recent normal 4.00); TP3 pressure 5.00 bar (recent normal 5.00); H1 pressure 6.00 bar (recent normal 6.00); DV pressure 7.00 bar (recent normal 7.00); reservoir minimum pressure 8.00 bar (recent normal 8.00). Previous window: status normal reference; novelty 0.50 times threshold; readings: loaded-time share 0.00; compressor on/off switches 1; motor current 2.00 A; oil temperature 3.0 C; TP2 pressure 4.00 bar; TP3 pressure 5.00 bar; H1 pressure 6.00 bar; DV pressure 7.00 bar; reservoir minimum pressure 8.00 bar.",
+  "token_budget": {
+    "head_max_len": 192,
+    "head_tokens": {
+      "condition": 55,
+      "evidence": 53,
+      "review": 47
+    },
+    "head_truncated_questions": [],
+    "max_len": 512,
+    "max_sequence_tokens": 362,
+    "max_state_tokens": 306,
+    "requests": 2741,
+    "state_room": 456,
+    "truncated_requests": 0
+  }
+}

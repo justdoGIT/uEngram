@@ -1,0 +1,69 @@
+{
+  "freeze_commit": "cddfbf1",
+  "planned_tasks": 285,
+  "failed_tasks": 18,
+  "distinct_unscorable_datasets": 6,
+  "datasets": [
+    {
+      "stream": "care_A_10",
+      "prediction_rows": 1269,
+      "prediction_status_counts": {
+        "3": 1,
+        "4": 1268
+      },
+      "eligible_status0": 0,
+      "eligible_status0_or_2": 0
+    },
+    {
+      "stream": "care_A_22",
+      "prediction_rows": 1148,
+      "prediction_status_counts": {
+        "3": 144,
+        "4": 1004
+      },
+      "eligible_status0": 0,
+      "eligible_status0_or_2": 0
+    },
+    {
+      "stream": "care_A_45",
+      "prediction_rows": 1440,
+      "prediction_status_counts": {
+        "3": 1,
+        "4": 1439
+      },
+      "eligible_status0": 0,
+      "eligible_status0_or_2": 0
+    },
+    {
+      "stream": "care_A_68",
+      "prediction_rows": 2295,
+      "prediction_status_counts": {
+        "3": 281,
+        "4": 2014
+      },
+      "eligible_status0": 0,
+      "eligible_status0_or_2": 0
+    },
+    {
+      "stream": "care_A_73",
+      "prediction_rows": 1729,
+      "prediction_status_counts": {
+        "3": 289,
+        "4": 1440
+      },
+      "eligible_status0": 0,
+      "eligible_status0_or_2": 0
+    },
+    {
+      "stream": "care_A_84",
+      "prediction_rows": 1437,
+      "prediction_status_counts": {
+        "3": 145,
+        "4": 1292
+      },
+      "eligible_status0": 0,
+      "eligible_status0_or_2": 0
+    }
+  ],
+  "note": "No replacement scores, changed masks, dropped datasets or posthoc aggregate."
+}

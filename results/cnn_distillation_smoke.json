@@ -1,0 +1,33 @@
+{
+  "contract": {
+    "channels": 7,
+    "teacher_feature_dim": 16,
+    "teacher_weight": 0.25,
+    "window_size": 60
+  },
+  "role": "development smoke only; MetroPT-3 was previously consumed",
+  "student": {
+    "baseline": {
+      "auroc": 0.9878901079929722,
+      "average_precision": 0.47812921698005273,
+      "fit_seconds": 0.9544685360160656,
+      "positive_windows": 499,
+      "test_windows": 21556
+    },
+    "distilled": {
+      "auroc": 0.9909108238797965,
+      "average_precision": 0.5632682573185782,
+      "fit_seconds": 7.675032842991641,
+      "positive_windows": 499,
+      "test_windows": 21556
+    }
+  },
+  "teacher": {
+    "alignment": "right",
+    "causal": true,
+    "fit_seconds": 5.165198349975981,
+    "layer": "whitened-embedding",
+    "model_name": "local-cnn-teacher-smoke",
+    "model_version": "0.1"
+  }
+}

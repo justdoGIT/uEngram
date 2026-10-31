@@ -1,0 +1,216 @@
+{
+  "baseline": {
+    "fit_seconds": 2.082383278000634,
+    "overall": {
+      "auroc": 0.9111216211939532,
+      "average_precision": 0.839694084939897,
+      "positive_windows": 251,
+      "windows": 2517
+    },
+    "per_series": {
+      "003_NAB_id_3_WebService_tr_1362_1st_1462.csv": {
+        "auroc": 0.6020516919797495,
+        "average_precision": 0.33493742851431113,
+        "positive_windows": 54,
+        "windows": 471
+      },
+      "186_SMD_id_9_Facility_tr_5925_1st_17580.csv": {
+        "auroc": 0.8874648327602376,
+        "average_precision": 0.6764105642256902,
+        "positive_windows": 7,
+        "windows": 464
+      },
+      "400_UCR_id_98_Environment_tr_2046_1st_5391.csv": {
+        "auroc": 0.49101796407185627,
+        "average_precision": 0.017125292740046837,
+        "positive_windows": 2,
+        "windows": 169
+      },
+      "549_SMAP_id_19_Sensor_tr_1998_1st_2098.csv": {
+        "auroc": 0.49508928571428573,
+        "average_precision": 0.4227323414541023,
+        "positive_windows": 10,
+        "windows": 234
+      },
+      "715_YAHOO_id_165_Synthetic_tr_500_1st_658.csv": {
+        "auroc": 0.4107142857142857,
+        "average_precision": 0.12601502557544758,
+        "positive_windows": 4,
+        "windows": 32
+      },
+      "830_Exathlon_id_21_Facility_tr_10766_1st_12590.csv": {
+        "auroc": 0.9994152461282205,
+        "average_precision": 0.9967983734686245,
+        "positive_windows": 174,
+        "windows": 1147
+      }
+    }
+  },
+  "dataset": {
+    "positive_windows": 251,
+    "series": {
+      "003_NAB_id_3_WebService_tr_1362_1st_1462.csv": {
+        "positive_windows": 54,
+        "test_windows": 471
+      },
+      "186_SMD_id_9_Facility_tr_5925_1st_17580.csv": {
+        "positive_windows": 7,
+        "test_windows": 464
+      },
+      "400_UCR_id_98_Environment_tr_2046_1st_5391.csv": {
+        "positive_windows": 2,
+        "test_windows": 169
+      },
+      "549_SMAP_id_19_Sensor_tr_1998_1st_2098.csv": {
+        "positive_windows": 10,
+        "test_windows": 234
+      },
+      "715_YAHOO_id_165_Synthetic_tr_500_1st_658.csv": {
+        "positive_windows": 4,
+        "test_windows": 32
+      },
+      "830_Exathlon_id_21_Facility_tr_10766_1st_12590.csv": {
+        "positive_windows": 174,
+        "test_windows": 1147
+      }
+    },
+    "test_windows": 2517,
+    "train_windows": 624
+  },
+  "interpretation": "Development holdout across unrelated TSB-AD domains; not a universal accuracy claim.",
+  "protocol": {
+    "epochs": 5,
+    "git_commit": "a8d094a583c8d30c3fb087d8d3b790cb410e7752",
+    "healthy_train_fraction": 0.5,
+    "normalization": "per-series healthy-prefix mean and standard deviation",
+    "stride": 32,
+    "student_dimension": 16,
+    "teacher_weight": 0.25,
+    "window_size": 64
+  },
+  "role": "frozen cross-domain TSB-AD-U holdout; no test-label model selection",
+  "source": {
+    "archive_sha256": "0c47020d3423723c70773736dbd800369f2b487328becbf339450d1ae5020961",
+    "license_note": "TSB-AD curation is Apache-2.0; original series licenses must be checked individually",
+    "members": [
+      "003_NAB_id_3_WebService_tr_1362_1st_1462.csv",
+      "186_SMD_id_9_Facility_tr_5925_1st_17580.csv",
+      "400_UCR_id_98_Environment_tr_2046_1st_5391.csv",
+      "549_SMAP_id_19_Sensor_tr_1998_1st_2098.csv",
+      "715_YAHOO_id_165_Synthetic_tr_500_1st_658.csv",
+      "830_Exathlon_id_21_Facility_tr_10766_1st_12590.csv"
+    ],
+    "url": "https://www.thedatum.org/datasets/TSB-AD-U.zip"
+  },
+  "teacher": {
+    "model_id": "AutonLab/MOMENT-1-small",
+    "native_context": 512,
+    "revision": "411e288267f82cce86296dbe4d6c8bc533cc162f"
+  },
+  "variants": [
+    {
+      "context_policy": "edge",
+      "fit_seconds": 13.176478665001923,
+      "include_instance_stats": false,
+      "scores": {
+        "overall": {
+          "auroc": 0.9091331057060372,
+          "average_precision": 0.8397342537094347,
+          "positive_windows": 251,
+          "windows": 2517
+        },
+        "per_series": {
+          "003_NAB_id_3_WebService_tr_1362_1st_1462.csv": {
+            "auroc": 0.5785593747224442,
+            "average_precision": 0.332974622140306,
+            "positive_windows": 54,
+            "windows": 471
+          },
+          "186_SMD_id_9_Facility_tr_5925_1st_17580.csv": {
+            "auroc": 0.8830884651453579,
+            "average_precision": 0.7447444726350126,
+            "positive_windows": 7,
+            "windows": 464
+          },
+          "400_UCR_id_98_Environment_tr_2046_1st_5391.csv": {
+            "auroc": 0.45808383233532934,
+            "average_precision": 0.01583820662768031,
+            "positive_windows": 2,
+            "windows": 169
+          },
+          "549_SMAP_id_19_Sensor_tr_1998_1st_2098.csv": {
+            "auroc": 0.4625,
+            "average_precision": 0.4213914925181695,
+            "positive_windows": 10,
+            "windows": 234
+          },
+          "715_YAHOO_id_165_Synthetic_tr_500_1st_658.csv": {
+            "auroc": 0.41964285714285715,
+            "average_precision": 0.12648809523809523,
+            "positive_windows": 4,
+            "windows": 32
+          },
+          "830_Exathlon_id_21_Facility_tr_10766_1st_12590.csv": {
+            "auroc": 0.9994388725472824,
+            "average_precision": 0.996919929957791,
+            "positive_windows": 174,
+            "windows": 1147
+          }
+        }
+      },
+      "teacher_feature_dim": 512
+    },
+    {
+      "context_policy": "linear",
+      "fit_seconds": 12.634928927989677,
+      "include_instance_stats": true,
+      "scores": {
+        "overall": {
+          "auroc": 0.9156665482817187,
+          "average_precision": 0.8350808538944372,
+          "positive_windows": 251,
+          "windows": 2517
+        },
+        "per_series": {
+          "003_NAB_id_3_WebService_tr_1362_1st_1462.csv": {
+            "auroc": 0.5785149658051336,
+            "average_precision": 0.3131415843763551,
+            "positive_windows": 54,
+            "windows": 471
+          },
+          "186_SMD_id_9_Facility_tr_5925_1st_17580.csv": {
+            "auroc": 0.8708971553610503,
+            "average_precision": 0.6810009651359374,
+            "positive_windows": 7,
+            "windows": 464
+          },
+          "400_UCR_id_98_Environment_tr_2046_1st_5391.csv": {
+            "auroc": 0.47005988023952094,
+            "average_precision": 0.016539092400218697,
+            "positive_windows": 2,
+            "windows": 169
+          },
+          "549_SMAP_id_19_Sensor_tr_1998_1st_2098.csv": {
+            "auroc": 0.46964285714285714,
+            "average_precision": 0.4216648388785547,
+            "positive_windows": 10,
+            "windows": 234
+          },
+          "715_YAHOO_id_165_Synthetic_tr_500_1st_658.csv": {
+            "auroc": 0.4017857142857143,
+            "average_precision": 0.1234593837535014,
+            "positive_windows": 4,
+            "windows": 32
+          },
+          "830_Exathlon_id_21_Facility_tr_10766_1st_12590.csv": {
+            "auroc": 0.9989545309565155,
+            "average_precision": 0.9934092017007908,
+            "positive_windows": 174,
+            "windows": 1147
+          }
+        }
+      },
+      "teacher_feature_dim": 514
+    }
+  ]
+}

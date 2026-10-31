@@ -1,0 +1,78 @@
+{
+  "kind": "native-source-report-diagnostic-snapshots",
+  "note": "Exploratory report-triggered evidence; NOT predicted alarms or fresh confirmation.",
+  "snapshots": [
+    {
+      "stream": "metropt3",
+      "archive": "/home/kk/Backup/data/uengram/v3_native/metropt3_published_report_diagnostic.npz",
+      "archive_sha256": "3f1a5a95d4fb75ae8b4ea724a6a92e1de1192d17019c157340d3af83ab4b0190",
+      "source_sha256": "db30ccb4ea402e3c8bf2c99db06e288d4f2a772f6928f9dbe26a920d69793e24",
+      "native_row_count": 180,
+      "decision_timestamp_native": "2020-04-18T00:07:03.000000000",
+      "input_end_cached_seconds": "2020-04-18T00:07:03",
+      "final_sample_match": true,
+      "matching_final_native_rows": 1,
+      "causal_row_count": 180,
+      "post_decision_row_count": 0,
+      "missing_post_context": true,
+      "missing_requested_post_model_offsets": [
+        1,
+        2
+      ],
+      "context_gaps": [],
+      "trigger_type": "published_report_diagnostic",
+      "provenance": {
+        "source": "MetroPT-3 published failure report",
+        "report_index": 0,
+        "report_start": "2020-04-18T00:00:00",
+        "not_a_predicted_alarm": true
+      }
+    },
+    {
+      "stream": "metropt2_jan",
+      "archive": "/home/kk/Backup/data/uengram/v3_native/metropt2_jan_published_report_diagnostic.npz",
+      "archive_sha256": "f23940134b18e92f7a755f099c6aafec6173f73ea2b158161547bd1afc463a21",
+      "source_sha256": "3fd0788c1b8fb7753ac0a2047f487c87f59b8b36af2f5553e4990354ed86d168",
+      "native_row_count": 2991,
+      "decision_timestamp_native": "2022-02-28T21:59:50.000000000",
+      "input_end_cached_seconds": "2022-02-28T21:59:50",
+      "final_sample_match": true,
+      "matching_final_native_rows": 1,
+      "causal_row_count": 1791,
+      "post_decision_row_count": 1200,
+      "missing_post_context": false,
+      "missing_requested_post_model_offsets": [],
+      "context_gaps": [],
+      "trigger_type": "published_report_diagnostic",
+      "provenance": {
+        "source": "MetroPT2 January published failure report",
+        "report_index": 0,
+        "report_start": "2022-02-28T21:53:00",
+        "not_a_predicted_alarm": true
+      }
+    },
+    {
+      "stream": "metropt2_apr",
+      "archive": "/home/kk/Backup/data/uengram/v3_native/metropt2_apr_published_report_diagnostic.npz",
+      "archive_sha256": "5796b836c4b12b99b5ed69f5ab61c3719aa923c3515f5c9428e22766bccb97c7",
+      "source_sha256": "b62a95876d0d3f8d9250e62e218641125c56b01238bda42c6157fade319133f4",
+      "native_row_count": 3017,
+      "decision_timestamp_native": "2022-06-04T10:25:20.356000000",
+      "input_end_cached_seconds": "2022-06-04T10:25:20",
+      "final_sample_match": true,
+      "matching_final_native_rows": 1,
+      "causal_row_count": 1806,
+      "post_decision_row_count": 1211,
+      "missing_post_context": false,
+      "missing_requested_post_model_offsets": [],
+      "context_gaps": [],
+      "trigger_type": "published_report_diagnostic",
+      "provenance": {
+        "source": "MetroPT2 April published failure report",
+        "report_index": 0,
+        "report_start": "2022-06-04T10:19:24",
+        "not_a_predicted_alarm": true
+      }
+    }
+  ]
+}

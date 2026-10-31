@@ -1,0 +1,329 @@
+{
+  "dataset": {
+    "recordings": [
+      {
+        "asset_id": "healthy_0",
+        "fault_class": "healthy",
+        "fault_type": "normal",
+        "field_data": false,
+        "load_hp": 0,
+        "name": "97",
+        "sha256": "16bf48babcf1c7ac224bc1a81cd9eafdb27e42d5cf559761907e067e8eeadf3c",
+        "source_file": "97.mat",
+        "windows": 48
+      },
+      {
+        "asset_id": "healthy_1",
+        "fault_class": "healthy",
+        "fault_type": "normal",
+        "field_data": false,
+        "load_hp": 1,
+        "name": "98",
+        "sha256": "37e6612c05e65c415dcfa2ab27a3fda648a5863160fa898b884a14743044e045",
+        "source_file": "98.mat",
+        "windows": 48
+      },
+      {
+        "asset_id": "healthy_2",
+        "fault_class": "healthy",
+        "fault_type": "normal",
+        "field_data": false,
+        "load_hp": 2,
+        "name": "99",
+        "sha256": "4b97e6b5361f45efb6951dc3b1aebcdb3b89cb69d0f96d6f5c297dd9f45eee75",
+        "source_file": "99.mat",
+        "windows": 48
+      },
+      {
+        "asset_id": "healthy_3",
+        "fault_class": "healthy",
+        "fault_type": "normal",
+        "field_data": false,
+        "load_hp": 3,
+        "name": "100",
+        "sha256": "88a5990cb541320e91505a1d72139e1993500ffe6e292a451011667f4138ca78",
+        "source_file": "100.mat",
+        "windows": 48
+      },
+      {
+        "asset_id": "IR007",
+        "fault_class": "inner_race",
+        "fault_type": "fault",
+        "field_data": false,
+        "load_hp": 0,
+        "name": "105",
+        "sha256": "f80b0ea04fd06b372a0eaec7c056543ea37e4bb4727a5b173d2a5bacd2aa9cab",
+        "source_file": "105.mat",
+        "windows": 48
+      },
+      {
+        "asset_id": "IR007",
+        "fault_class": "inner_race",
+        "fault_type": "fault",
+        "field_data": false,
+        "load_hp": 1,
+        "name": "106",
+        "sha256": "e5cec7cdd138e6cd1deb9ed8634e5aaa9bc1bd7094ddc075bff606580eb6e883",
+        "source_file": "106.mat",
+        "windows": 48
+      },
+      {
+        "asset_id": "IR007",
+        "fault_class": "inner_race",
+        "fault_type": "fault",
+        "field_data": false,
+        "load_hp": 2,
+        "name": "107",
+        "sha256": "111ba8996a115684661a13c913bd74d8029a59294492f88aec7b03e175fdd388",
+        "source_file": "107.mat",
+        "windows": 48
+      },
+      {
+        "asset_id": "IR007",
+        "fault_class": "inner_race",
+        "fault_type": "fault",
+        "field_data": false,
+        "load_hp": 3,
+        "name": "108",
+        "sha256": "d415f0e65128bfa0b118c2051c988fb0dc6ce3e4c8aa45fdc5ad1d0967462e7d",
+        "source_file": "108.mat",
+        "windows": 48
+      },
+      {
+        "asset_id": "B007",
+        "fault_class": "rolling_element",
+        "fault_type": "fault",
+        "field_data": false,
+        "load_hp": 0,
+        "name": "118",
+        "sha256": "b00628f8dd8d1d930af77fa465d1e5cdb385fe259489053f91f3680bda7f640e",
+        "source_file": "118.mat",
+        "windows": 48
+      },
+      {
+        "asset_id": "B007",
+        "fault_class": "rolling_element",
+        "fault_type": "fault",
+        "field_data": false,
+        "load_hp": 1,
+        "name": "119",
+        "sha256": "bc72d9df7668219e004a0f711232b23ec0aed393eb9bd8f9f5483426f6b51330",
+        "source_file": "119.mat",
+        "windows": 48
+      },
+      {
+        "asset_id": "B007",
+        "fault_class": "rolling_element",
+        "fault_type": "fault",
+        "field_data": false,
+        "load_hp": 2,
+        "name": "120",
+        "sha256": "e0b7a584c49af52335ff0904a97d4afcf02d045625c582de63a7c85ce10b489c",
+        "source_file": "120.mat",
+        "windows": 48
+      },
+      {
+        "asset_id": "B007",
+        "fault_class": "rolling_element",
+        "fault_type": "fault",
+        "field_data": false,
+        "load_hp": 3,
+        "name": "121",
+        "sha256": "52f686e984ba8e9b04a047a57416271cdb322cee57ee105dce58926a24b966cb",
+        "source_file": "121.mat",
+        "windows": 48
+      },
+      {
+        "asset_id": "OR007_6",
+        "fault_class": "outer_race",
+        "fault_type": "fault",
+        "field_data": false,
+        "load_hp": 0,
+        "name": "130",
+        "sha256": "35a095307d0971477049b343a1b5981dde465a58fb7f233ad89b035068c1717d",
+        "source_file": "130.mat",
+        "windows": 48
+      },
+      {
+        "asset_id": "OR007_6",
+        "fault_class": "outer_race",
+        "fault_type": "fault",
+        "field_data": false,
+        "load_hp": 1,
+        "name": "131",
+        "sha256": "7883f7b83beadc54b2f301767f9145ce07055707182fb0278fdf0a6bb53ce3cb",
+        "source_file": "131.mat",
+        "windows": 48
+      },
+      {
+        "asset_id": "OR007_6",
+        "fault_class": "outer_race",
+        "fault_type": "fault",
+        "field_data": false,
+        "load_hp": 2,
+        "name": "132",
+        "sha256": "17a69ed5d2270b42532e678e35bbe2fa04a2cc413cf2bf9e88c7692de8662d18",
+        "source_file": "132.mat",
+        "windows": 48
+      },
+      {
+        "asset_id": "OR007_6",
+        "fault_class": "outer_race",
+        "fault_type": "fault",
+        "field_data": false,
+        "load_hp": 3,
+        "name": "133",
+        "sha256": "53f076cb0d905cf46bffaee7736abce8224ffed777deed03c0c863d762a90c71",
+        "source_file": "133.mat",
+        "windows": 48
+      }
+    ]
+  },
+  "limitations": [
+    "CWRU has explicit damaged-bearing groups, but the healthy files do not expose physical asset IDs.",
+    "The subset uses one fault size and one test-rig channel; it is not fleet-scale evidence.",
+    "There are no independently adjudicated fault-onset timestamps, so warning time is not claimed.",
+    "Teacher runtime is offline cost; only the student CNN is intended for edge deployment."
+  ],
+  "protocol": {
+    "epochs": 5,
+    "held_out_asset_ids": [
+      "B007",
+      "IR007",
+      "OR007_6"
+    ],
+    "normal_test_recording": "100",
+    "normalization": "training-normal mean and standard deviation only",
+    "sample_rate_hz": 12000.0,
+    "stride": 256,
+    "test_recordings": [
+      "100",
+      "105",
+      "106",
+      "107",
+      "108",
+      "118",
+      "119",
+      "120",
+      "121",
+      "130",
+      "131",
+      "132",
+      "133"
+    ],
+    "threshold": "99th percentile of training-normal latent distance",
+    "train_recordings": [
+      "97",
+      "98",
+      "99"
+    ],
+    "warning_time": "not applicable: CWRU files are static labelled recordings",
+    "window_size": 512,
+    "windows_per_recording_cap": 48
+  },
+  "resources": {
+    "process_peak_rss_mb": 1223.50390625
+  },
+  "results": {
+    "baseline_cnn": {
+      "edge_model_bytes": 46144,
+      "encode_test_ms_per_window": 0.06570480446755074,
+      "field_file_recall": null,
+      "file_auroc": 1.0,
+      "file_average_precision": 1.0,
+      "fit_seconds": 0.26218088300083764,
+      "normal_file_false_alarm_rate": 1.0,
+      "normal_files": 1,
+      "normal_files_flagged": 1,
+      "positive_file_recall": 1.0,
+      "test_rig_fault_file_recall": 1.0,
+      "test_windows": 624,
+      "threshold_train_p99": 2.2868503422304816,
+      "training_teacher_head_bytes": 0,
+      "window_auroc": 1.0,
+      "window_average_precision": 1.0
+    },
+    "chronos_student": {
+      "edge_model_bytes": 46144,
+      "encode_test_ms_per_window": 0.06395611858468515,
+      "field_file_recall": null,
+      "file_auroc": 1.0,
+      "file_average_precision": 1.0,
+      "fit_seconds": 7.958963896991918,
+      "normal_file_false_alarm_rate": 1.0,
+      "normal_files": 1,
+      "normal_files_flagged": 1,
+      "positive_file_recall": 1.0,
+      "test_rig_fault_file_recall": 1.0,
+      "test_windows": 624,
+      "threshold_train_p99": 2.466640845317162,
+      "training_teacher_head_bytes": 2176,
+      "window_auroc": 1.0,
+      "window_average_precision": 1.0
+    },
+    "moment_student": {
+      "edge_model_bytes": 46144,
+      "encode_test_ms_per_window": 0.060286004811179086,
+      "field_file_recall": null,
+      "file_auroc": 1.0,
+      "file_average_precision": 1.0,
+      "fit_seconds": 3.0326788850070443,
+      "normal_file_false_alarm_rate": 1.0,
+      "normal_files": 1,
+      "normal_files_flagged": 1,
+      "positive_file_recall": 1.0,
+      "test_rig_fault_file_recall": 1.0,
+      "test_windows": 624,
+      "threshold_train_p99": 2.143691809743303,
+      "training_teacher_head_bytes": 34952,
+      "window_auroc": 1.0,
+      "window_average_precision": 1.0
+    },
+    "two_teacher_student": {
+      "edge_model_bytes": 46144,
+      "encode_test_ms_per_window": 0.06346618750122172,
+      "field_file_recall": null,
+      "file_auroc": 1.0,
+      "file_average_precision": 1.0,
+      "fit_seconds": 10.267381810990628,
+      "normal_file_false_alarm_rate": 1.0,
+      "normal_files": 1,
+      "normal_files_flagged": 1,
+      "positive_file_recall": 1.0,
+      "test_rig_fault_file_recall": 1.0,
+      "test_windows": 624,
+      "threshold_train_p99": 2.7952441819514924,
+      "training_teacher_head_bytes": 37128,
+      "window_auroc": 1.0,
+      "window_average_precision": 1.0
+    }
+  },
+  "role": "untouched CWRU asset-disjoint fault holdout",
+  "source": {
+    "file_url": "https://engineering.case.edu/sites/default/files/{file}.mat",
+    "license_note": "Manifest license is unspecified; verify permission before commercial use.",
+    "manifest_url": "https://raw.githubusercontent.com/VictorBauler/BearingDatasets/main/src/bearing_datasets/datasets/cwru/files.csv"
+  },
+  "teachers": {
+    "chronos": {
+      "feature_dim": 32,
+      "license": "Apache-2.0",
+      "load_seconds": 53.73185774299782,
+      "model_id": "amazon/chronos-2",
+      "parameter_bytes": 477910656,
+      "parameter_count": 119477664,
+      "probe_ms_per_window": 49.1675331886654,
+      "revision": "29ec3766d36d6f73f0696f85560a422f50e8498c"
+    },
+    "moment": {
+      "feature_dim": 514,
+      "license": "MIT",
+      "load_seconds": 22.81881264000549,
+      "model_id": "AutonLab/MOMENT-1-small",
+      "parameter_bytes": 141349632,
+      "parameter_count": 35337408,
+      "probe_ms_per_window": 18.609096250656876,
+      "revision": "411e288267f82cce86296dbe4d6c8bc533cc162f"
+    }
+  }
+}

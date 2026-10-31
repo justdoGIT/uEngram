@@ -1,0 +1,955 @@
+{
+  "confirm_fraction": 0.25,
+  "max_offset": 6.0,
+  "runs": [
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9457122962962963,
+      "health_false_alarm_rate": 0.08422222222222223,
+      "health_fault_recall": 0.8106666666666666,
+      "novelty_false_alarm_rate": 0.005555555555555556,
+      "novelty_fault_recall": 0.005333333333333333,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 0
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9580162962962963,
+      "health_false_alarm_rate": 0.12866666666666668,
+      "health_fault_recall": 0.9,
+      "novelty_false_alarm_rate": 0.012666666666666666,
+      "novelty_fault_recall": 0.0,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 1
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9594951111111111,
+      "health_false_alarm_rate": 0.12244444444444444,
+      "health_fault_recall": 0.9,
+      "novelty_false_alarm_rate": 0.0071111111111111115,
+      "novelty_fault_recall": 0.0013333333333333333,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 2
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9898936296296297,
+      "health_false_alarm_rate": 0.06933333333333333,
+      "health_fault_recall": 0.9626666666666667,
+      "novelty_false_alarm_rate": 0.004666666666666667,
+      "novelty_fault_recall": 0.0013333333333333333,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 3
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.976690074074074,
+      "health_false_alarm_rate": 0.11222222222222222,
+      "health_fault_recall": 0.9346666666666666,
+      "novelty_false_alarm_rate": 0.004666666666666667,
+      "novelty_fault_recall": 0.0013333333333333333,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 4
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9340942222222223,
+      "health_false_alarm_rate": 0.05466666666666667,
+      "health_fault_recall": 0.7013333333333334,
+      "novelty_false_alarm_rate": 0.006,
+      "novelty_fault_recall": 0.0,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 5
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9047001481481481,
+      "health_false_alarm_rate": 0.12133333333333333,
+      "health_fault_recall": 0.7626666666666667,
+      "novelty_false_alarm_rate": 0.015555555555555555,
+      "novelty_fault_recall": 0.004,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 6
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9854755555555555,
+      "health_false_alarm_rate": 0.11688888888888889,
+      "health_fault_recall": 0.9706666666666667,
+      "novelty_false_alarm_rate": 0.011333333333333334,
+      "novelty_fault_recall": 0.005333333333333333,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 7
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9852447407407408,
+      "health_false_alarm_rate": 0.08422222222222223,
+      "health_fault_recall": 0.9506666666666667,
+      "novelty_false_alarm_rate": 0.011555555555555555,
+      "novelty_fault_recall": 0.004,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 8
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9556660740740741,
+      "health_false_alarm_rate": 0.07466666666666667,
+      "health_fault_recall": 0.8266666666666667,
+      "novelty_false_alarm_rate": 0.008444444444444444,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 9
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 4.197685465549817,
+      "health_auroc": 0.9909386666666666,
+      "health_false_alarm_rate": 0.0033333333333333335,
+      "health_fault_recall": 0.832,
+      "novelty_false_alarm_rate": 0.009333333333333334,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 0
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 4.344190828934418,
+      "health_auroc": 0.9943422222222222,
+      "health_false_alarm_rate": 0.004888888888888889,
+      "health_fault_recall": 0.9146666666666666,
+      "novelty_false_alarm_rate": 0.008,
+      "novelty_fault_recall": 0.0,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 1
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 4.016351199973115,
+      "health_auroc": 0.9951982222222222,
+      "health_false_alarm_rate": 0.0044444444444444444,
+      "health_fault_recall": 0.896,
+      "novelty_false_alarm_rate": 0.0044444444444444444,
+      "novelty_fault_recall": 0.0013333333333333333,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 2
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 3.9793220117701127,
+      "health_auroc": 0.994229037037037,
+      "health_false_alarm_rate": 0.003777777777777778,
+      "health_fault_recall": 0.8973333333333333,
+      "novelty_false_alarm_rate": 0.0035555555555555557,
+      "novelty_fault_recall": 0.004,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 3
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 4.125042042790665,
+      "health_auroc": 0.9923952592592593,
+      "health_false_alarm_rate": 0.004666666666666667,
+      "health_fault_recall": 0.8826666666666667,
+      "novelty_false_alarm_rate": 0.008666666666666666,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 4
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 3.895927003305772,
+      "health_auroc": 0.9900468148148148,
+      "health_false_alarm_rate": 0.00044444444444444447,
+      "health_fault_recall": 0.7226666666666667,
+      "novelty_false_alarm_rate": 0.006,
+      "novelty_fault_recall": 0.0,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 5
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 3.8360517480122667,
+      "health_auroc": 0.9885632592592593,
+      "health_false_alarm_rate": 0.006666666666666667,
+      "health_fault_recall": 0.8786666666666667,
+      "novelty_false_alarm_rate": 0.012222222222222223,
+      "novelty_fault_recall": 0.004,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 6
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 3.5093234763485595,
+      "health_auroc": 0.9947682962962963,
+      "health_false_alarm_rate": 0.009777777777777778,
+      "health_fault_recall": 0.912,
+      "novelty_false_alarm_rate": 0.006222222222222222,
+      "novelty_fault_recall": 0.009333333333333334,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 7
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 4.138050765798602,
+      "health_auroc": 0.992794074074074,
+      "health_false_alarm_rate": 0.004888888888888889,
+      "health_fault_recall": 0.8466666666666667,
+      "novelty_false_alarm_rate": 0.011333333333333334,
+      "novelty_fault_recall": 0.004,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 8
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 4.042708898066962,
+      "health_auroc": 0.9953191111111112,
+      "health_false_alarm_rate": 0.0026666666666666666,
+      "health_fault_recall": 0.8813333333333333,
+      "novelty_false_alarm_rate": 0.010666666666666666,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 9
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 3.648019822634841,
+      "health_auroc": 0.5013691851851851,
+      "health_false_alarm_rate": 0.025333333333333333,
+      "health_fault_recall": 0.004,
+      "novelty_false_alarm_rate": 0.004,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 3,
+      "scenario": "drift",
+      "seed": 0
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 4.2361993216224825,
+      "health_auroc": 0.5244352592592593,
+      "health_false_alarm_rate": 0.035111111111111114,
+      "health_fault_recall": 0.006666666666666667,
+      "novelty_false_alarm_rate": 0.0077777777777777776,
+      "novelty_fault_recall": 0.0,
+      "ramps_with_health_alarm": 4,
+      "scenario": "drift",
+      "seed": 1
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 3.609742471337376,
+      "health_auroc": 0.530442962962963,
+      "health_false_alarm_rate": 0.028888888888888888,
+      "health_fault_recall": 0.004,
+      "novelty_false_alarm_rate": 0.006222222222222222,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 3,
+      "scenario": "drift",
+      "seed": 2
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 3.870603168598212,
+      "health_auroc": 0.6094794074074074,
+      "health_false_alarm_rate": 0.026222222222222223,
+      "health_fault_recall": 0.04933333333333333,
+      "novelty_false_alarm_rate": 0.009777777777777778,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 4,
+      "scenario": "drift",
+      "seed": 3
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 3.7560687829377075,
+      "health_auroc": 0.5573715555555555,
+      "health_false_alarm_rate": 0.030444444444444444,
+      "health_fault_recall": 0.024,
+      "novelty_false_alarm_rate": 0.005111111111111111,
+      "novelty_fault_recall": 0.005333333333333333,
+      "ramps_with_health_alarm": 4,
+      "scenario": "drift",
+      "seed": 4
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 3.9640463347917856,
+      "health_auroc": 0.4961188148148148,
+      "health_false_alarm_rate": 0.025777777777777778,
+      "health_fault_recall": 0.0013333333333333333,
+      "novelty_false_alarm_rate": 0.004666666666666667,
+      "novelty_fault_recall": 0.0,
+      "ramps_with_health_alarm": 1,
+      "scenario": "drift",
+      "seed": 5
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 3.765057153400547,
+      "health_auroc": 0.5166343703703704,
+      "health_false_alarm_rate": 0.03155555555555556,
+      "health_fault_recall": 0.006666666666666667,
+      "novelty_false_alarm_rate": 0.006888888888888889,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 2,
+      "scenario": "drift",
+      "seed": 6
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 4.04744048072895,
+      "health_auroc": 0.572376,
+      "health_false_alarm_rate": 0.03133333333333333,
+      "health_fault_recall": 0.03866666666666667,
+      "novelty_false_alarm_rate": 0.006222222222222222,
+      "novelty_fault_recall": 0.006666666666666667,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 7
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 4.303839073582313,
+      "health_auroc": 0.6162850370370371,
+      "health_false_alarm_rate": 0.03111111111111111,
+      "health_fault_recall": 0.02666666666666667,
+      "novelty_false_alarm_rate": 0.012888888888888889,
+      "novelty_fault_recall": 0.0013333333333333333,
+      "ramps_with_health_alarm": 5,
+      "scenario": "drift",
+      "seed": 8
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 4.205476282156039,
+      "health_auroc": 0.5311250370370371,
+      "health_false_alarm_rate": 0.02711111111111111,
+      "health_fault_recall": 0.004,
+      "novelty_false_alarm_rate": 0.005555555555555556,
+      "novelty_fault_recall": 0.0013333333333333333,
+      "ramps_with_health_alarm": 3,
+      "scenario": "drift",
+      "seed": 9
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9946882962962963,
+      "health_false_alarm_rate": 0.004,
+      "health_fault_recall": 0.892,
+      "novelty_false_alarm_rate": 0.003777777777777778,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 0
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9946364444444444,
+      "health_false_alarm_rate": 0.00022222222222222223,
+      "health_fault_recall": 0.7946666666666666,
+      "novelty_false_alarm_rate": 0.005555555555555556,
+      "novelty_fault_recall": 0.0013333333333333333,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 1
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9948681481481482,
+      "health_false_alarm_rate": 0.003111111111111111,
+      "health_fault_recall": 0.8986666666666666,
+      "novelty_false_alarm_rate": 0.008666666666666666,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 2
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9942557037037038,
+      "health_false_alarm_rate": 0.002,
+      "health_fault_recall": 0.884,
+      "novelty_false_alarm_rate": 0.0071111111111111115,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 3
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9963294814814815,
+      "health_false_alarm_rate": 0.0057777777777777775,
+      "health_fault_recall": 0.916,
+      "novelty_false_alarm_rate": 0.007555555555555556,
+      "novelty_fault_recall": 0.004,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 4
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9947075555555556,
+      "health_false_alarm_rate": 0.003111111111111111,
+      "health_fault_recall": 0.8946666666666667,
+      "novelty_false_alarm_rate": 0.010222222222222223,
+      "novelty_fault_recall": 0.008,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 5
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9971288888888888,
+      "health_false_alarm_rate": 0.0044444444444444444,
+      "health_fault_recall": 0.932,
+      "novelty_false_alarm_rate": 0.008222222222222223,
+      "novelty_fault_recall": 0.004,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 6
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9928382222222222,
+      "health_false_alarm_rate": 0.00022222222222222223,
+      "health_fault_recall": 0.84,
+      "novelty_false_alarm_rate": 0.005555555555555556,
+      "novelty_fault_recall": 0.004,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 7
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.9907217777777778,
+      "health_false_alarm_rate": 0.0026666666666666666,
+      "health_fault_recall": 0.8186666666666667,
+      "novelty_false_alarm_rate": 0.009777777777777778,
+      "novelty_fault_recall": 0.004,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 8
+    },
+    {
+      "arm": "frozen",
+      "final_offset_norm": 0.0,
+      "health_auroc": 0.993325037037037,
+      "health_false_alarm_rate": 0.0011111111111111111,
+      "health_fault_recall": 0.868,
+      "novelty_false_alarm_rate": 0.004,
+      "novelty_fault_recall": 0.004,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 9
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 0.5449138610938297,
+      "health_auroc": 0.9934352592592592,
+      "health_false_alarm_rate": 0.004888888888888889,
+      "health_fault_recall": 0.892,
+      "novelty_false_alarm_rate": 0.004666666666666667,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 0
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 0.616852714000996,
+      "health_auroc": 0.9935822222222223,
+      "health_false_alarm_rate": 0.0006666666666666666,
+      "health_fault_recall": 0.7933333333333333,
+      "novelty_false_alarm_rate": 0.0057777777777777775,
+      "novelty_fault_recall": 0.0,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 1
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 0.6871796790784359,
+      "health_auroc": 0.993346074074074,
+      "health_false_alarm_rate": 0.004666666666666667,
+      "health_fault_recall": 0.8933333333333333,
+      "novelty_false_alarm_rate": 0.004888888888888889,
+      "novelty_fault_recall": 0.0013333333333333333,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 2
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 0.4306124717678712,
+      "health_auroc": 0.993576,
+      "health_false_alarm_rate": 0.0028888888888888888,
+      "health_fault_recall": 0.8866666666666667,
+      "novelty_false_alarm_rate": 0.014222222222222223,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 3
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 0.5946702628920643,
+      "health_auroc": 0.9930758518518519,
+      "health_false_alarm_rate": 0.008888888888888889,
+      "health_fault_recall": 0.8866666666666667,
+      "novelty_false_alarm_rate": 0.008222222222222223,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 4
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 0.7149465986477191,
+      "health_auroc": 0.9946260740740741,
+      "health_false_alarm_rate": 0.0044444444444444444,
+      "health_fault_recall": 0.912,
+      "novelty_false_alarm_rate": 0.011555555555555555,
+      "novelty_fault_recall": 0.010666666666666666,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 5
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 0.604722018149468,
+      "health_auroc": 0.9957991111111111,
+      "health_false_alarm_rate": 0.0077777777777777776,
+      "health_fault_recall": 0.924,
+      "novelty_false_alarm_rate": 0.012444444444444444,
+      "novelty_fault_recall": 0.004,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 6
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 0.5448291663880326,
+      "health_auroc": 0.9895991111111111,
+      "health_false_alarm_rate": 0.0008888888888888889,
+      "health_fault_recall": 0.82,
+      "novelty_false_alarm_rate": 0.006222222222222222,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 7
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 0.7766339901480749,
+      "health_auroc": 0.990456,
+      "health_false_alarm_rate": 0.004888888888888889,
+      "health_fault_recall": 0.8293333333333334,
+      "novelty_false_alarm_rate": 0.009111111111111111,
+      "novelty_fault_recall": 0.004,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 8
+    },
+    {
+      "arm": "gated",
+      "final_offset_norm": 0.6308440082249147,
+      "health_auroc": 0.9918918518518518,
+      "health_false_alarm_rate": 0.0015555555555555555,
+      "health_fault_recall": 0.8586666666666667,
+      "novelty_false_alarm_rate": 0.004222222222222222,
+      "novelty_fault_recall": 0.0026666666666666666,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 9
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 0.786101324380976,
+      "health_auroc": 0.5251045925925926,
+      "health_false_alarm_rate": 0.029111111111111112,
+      "health_fault_recall": 0.014666666666666666,
+      "novelty_false_alarm_rate": 0.004,
+      "novelty_fault_recall": 0.0013333333333333333,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 0
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 0.6305852867278066,
+      "health_auroc": 0.5289845925925926,
+      "health_false_alarm_rate": 0.028,
+      "health_fault_recall": 0.004,
+      "novelty_false_alarm_rate": 0.005111111111111111,
+      "novelty_fault_recall": 0.0013333333333333333,
+      "ramps_with_health_alarm": 2,
+      "scenario": "no_drift",
+      "seed": 1
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 0.6454598268729683,
+      "health_auroc": 0.5333220740740741,
+      "health_false_alarm_rate": 0.030444444444444444,
+      "health_fault_recall": 0.008,
+      "novelty_false_alarm_rate": 0.006888888888888889,
+      "novelty_fault_recall": 0.004,
+      "ramps_with_health_alarm": 4,
+      "scenario": "no_drift",
+      "seed": 2
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 0.4524655795453909,
+      "health_auroc": 0.553610962962963,
+      "health_false_alarm_rate": 0.03266666666666666,
+      "health_fault_recall": 0.006666666666666667,
+      "novelty_false_alarm_rate": 0.007333333333333333,
+      "novelty_fault_recall": 0.0,
+      "ramps_with_health_alarm": 3,
+      "scenario": "no_drift",
+      "seed": 3
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 0.7586988063101735,
+      "health_auroc": 0.5272420740740741,
+      "health_false_alarm_rate": 0.037333333333333336,
+      "health_fault_recall": 0.013333333333333334,
+      "novelty_false_alarm_rate": 0.008888888888888889,
+      "novelty_fault_recall": 0.008,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 4
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 0.549394900042673,
+      "health_auroc": 0.5349188148148148,
+      "health_false_alarm_rate": 0.033555555555555554,
+      "health_fault_recall": 0.010666666666666666,
+      "novelty_false_alarm_rate": 0.013333333333333334,
+      "novelty_fault_recall": 0.010666666666666666,
+      "ramps_with_health_alarm": 5,
+      "scenario": "no_drift",
+      "seed": 5
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 0.4605184539569342,
+      "health_auroc": 0.5096521481481482,
+      "health_false_alarm_rate": 0.035555555555555556,
+      "health_fault_recall": 0.016,
+      "novelty_false_alarm_rate": 0.008666666666666666,
+      "novelty_fault_recall": 0.004,
+      "ramps_with_health_alarm": 4,
+      "scenario": "no_drift",
+      "seed": 6
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 0.6118385300013918,
+      "health_auroc": 0.5135522962962963,
+      "health_false_alarm_rate": 0.024666666666666667,
+      "health_fault_recall": 0.006666666666666667,
+      "novelty_false_alarm_rate": 0.0064444444444444445,
+      "novelty_fault_recall": 0.006666666666666667,
+      "ramps_with_health_alarm": 3,
+      "scenario": "no_drift",
+      "seed": 7
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 1.0322161860280379,
+      "health_auroc": 0.4969285925925926,
+      "health_false_alarm_rate": 0.03955555555555555,
+      "health_fault_recall": 0.009333333333333334,
+      "novelty_false_alarm_rate": 0.017777777777777778,
+      "novelty_fault_recall": 0.005333333333333333,
+      "ramps_with_health_alarm": 4,
+      "scenario": "no_drift",
+      "seed": 8
+    },
+    {
+      "arm": "ungated",
+      "final_offset_norm": 0.24892859298589123,
+      "health_auroc": 0.5423339259259259,
+      "health_false_alarm_rate": 0.03,
+      "health_fault_recall": 0.008,
+      "novelty_false_alarm_rate": 0.005111111111111111,
+      "novelty_fault_recall": 0.004,
+      "ramps_with_health_alarm": 4,
+      "scenario": "no_drift",
+      "seed": 9
+    }
+  ],
+  "seeds": 10,
+  "summary": {
+    "drift": {
+      "frozen": {
+        "final_offset_norm": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0
+        },
+        "health_auroc": {
+          "max": 0.9898936296296297,
+          "mean": 0.9594988148148149,
+          "min": 0.9047001481481481
+        },
+        "health_false_alarm_rate": {
+          "max": 0.12866666666666668,
+          "mean": 0.09686666666666666,
+          "min": 0.05466666666666667
+        },
+        "health_fault_recall": {
+          "max": 0.9706666666666667,
+          "mean": 0.8720000000000001,
+          "min": 0.7013333333333334
+        },
+        "novelty_false_alarm_rate": {
+          "max": 0.015555555555555555,
+          "mean": 0.008755555555555556,
+          "min": 0.004666666666666667
+        },
+        "novelty_fault_recall": {
+          "max": 0.005333333333333333,
+          "mean": 0.002533333333333333,
+          "min": 0.0
+        },
+        "ramps_with_health_alarm": {
+          "max": 5.0,
+          "mean": 5.0,
+          "min": 5.0
+        }
+      },
+      "gated": {
+        "final_offset_norm": {
+          "max": 4.344190828934418,
+          "mean": 4.008465344055029,
+          "min": 3.5093234763485595
+        },
+        "health_auroc": {
+          "max": 0.9953191111111112,
+          "mean": 0.9928594962962964,
+          "min": 0.9885632592592593
+        },
+        "health_false_alarm_rate": {
+          "max": 0.009777777777777778,
+          "mean": 0.004555555555555556,
+          "min": 0.00044444444444444447
+        },
+        "health_fault_recall": {
+          "max": 0.9146666666666666,
+          "mean": 0.8664,
+          "min": 0.7226666666666667
+        },
+        "novelty_false_alarm_rate": {
+          "max": 0.012222222222222223,
+          "mean": 0.008044444444444444,
+          "min": 0.0035555555555555557
+        },
+        "novelty_fault_recall": {
+          "max": 0.009333333333333334,
+          "mean": 0.0030666666666666668,
+          "min": 0.0
+        },
+        "ramps_with_health_alarm": {
+          "max": 5.0,
+          "mean": 5.0,
+          "min": 5.0
+        }
+      },
+      "ungated": {
+        "final_offset_norm": {
+          "max": 4.303839073582313,
+          "mean": 3.9406492891790257,
+          "min": 3.609742471337376
+        },
+        "health_auroc": {
+          "max": 0.6162850370370371,
+          "mean": 0.5455637629629629,
+          "min": 0.4961188148148148
+        },
+        "health_false_alarm_rate": {
+          "max": 0.035111111111111114,
+          "mean": 0.029288888888888885,
+          "min": 0.025333333333333333
+        },
+        "health_fault_recall": {
+          "max": 0.04933333333333333,
+          "mean": 0.016533333333333334,
+          "min": 0.0013333333333333333
+        },
+        "novelty_false_alarm_rate": {
+          "max": 0.012888888888888889,
+          "mean": 0.006911111111111111,
+          "min": 0.004
+        },
+        "novelty_fault_recall": {
+          "max": 0.006666666666666667,
+          "mean": 0.002533333333333333,
+          "min": 0.0
+        },
+        "ramps_with_health_alarm": {
+          "max": 5.0,
+          "mean": 3.4,
+          "min": 1.0
+        }
+      }
+    },
+    "no_drift": {
+      "frozen": {
+        "final_offset_norm": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0
+        },
+        "health_auroc": {
+          "max": 0.9971288888888888,
+          "mean": 0.9943499555555555,
+          "min": 0.9907217777777778
+        },
+        "health_false_alarm_rate": {
+          "max": 0.0057777777777777775,
+          "mean": 0.002666666666666667,
+          "min": 0.00022222222222222223
+        },
+        "health_fault_recall": {
+          "max": 0.932,
+          "mean": 0.8738666666666667,
+          "min": 0.7946666666666666
+        },
+        "novelty_false_alarm_rate": {
+          "max": 0.010222222222222223,
+          "mean": 0.007044444444444445,
+          "min": 0.003777777777777778
+        },
+        "novelty_fault_recall": {
+          "max": 0.008,
+          "mean": 0.003733333333333333,
+          "min": 0.0013333333333333333
+        },
+        "ramps_with_health_alarm": {
+          "max": 5.0,
+          "mean": 5.0,
+          "min": 5.0
+        }
+      },
+      "gated": {
+        "final_offset_norm": {
+          "max": 0.7766339901480749,
+          "mean": 0.6146204770391407,
+          "min": 0.4306124717678712
+        },
+        "health_auroc": {
+          "max": 0.9957991111111111,
+          "mean": 0.9929387555555556,
+          "min": 0.9895991111111111
+        },
+        "health_false_alarm_rate": {
+          "max": 0.008888888888888889,
+          "mean": 0.004155555555555555,
+          "min": 0.0006666666666666666
+        },
+        "health_fault_recall": {
+          "max": 0.924,
+          "mean": 0.8695999999999999,
+          "min": 0.7933333333333333
+        },
+        "novelty_false_alarm_rate": {
+          "max": 0.014222222222222223,
+          "mean": 0.008133333333333334,
+          "min": 0.004222222222222222
+        },
+        "novelty_fault_recall": {
+          "max": 0.010666666666666666,
+          "mean": 0.003333333333333333,
+          "min": 0.0
+        },
+        "ramps_with_health_alarm": {
+          "max": 5.0,
+          "mean": 5.0,
+          "min": 5.0
+        }
+      },
+      "ungated": {
+        "final_offset_norm": {
+          "max": 1.0322161860280379,
+          "mean": 0.6176207486852243,
+          "min": 0.24892859298589123
+        },
+        "health_auroc": {
+          "max": 0.553610962962963,
+          "mean": 0.5265650074074074,
+          "min": 0.4969285925925926
+        },
+        "health_false_alarm_rate": {
+          "max": 0.03955555555555555,
+          "mean": 0.03208888888888889,
+          "min": 0.024666666666666667
+        },
+        "health_fault_recall": {
+          "max": 0.016,
+          "mean": 0.009733333333333333,
+          "min": 0.004
+        },
+        "novelty_false_alarm_rate": {
+          "max": 0.017777777777777778,
+          "mean": 0.008355555555555555,
+          "min": 0.004
+        },
+        "novelty_fault_recall": {
+          "max": 0.010666666666666666,
+          "mean": 0.004533333333333334,
+          "min": 0.0
+        },
+        "ramps_with_health_alarm": {
+          "max": 5.0,
+          "mean": 3.9,
+          "min": 2.0
+        }
+      }
+    }
+  }
+}

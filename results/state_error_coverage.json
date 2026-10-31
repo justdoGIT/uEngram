@@ -1,0 +1,26 @@
+{
+  "by_state": {
+    "0": {
+      "test_windows": 9219,
+      "windows_with_calibrated_error": 4598
+    },
+    "1": {
+      "test_windows": 10505,
+      "windows_with_calibrated_error": 6417
+    },
+    "2": {
+      "test_windows": 1832,
+      "windows_with_calibrated_error": 0
+    }
+  },
+  "error_channels": [
+    "motor_current_a",
+    "oil_temp_c",
+    "tp2_bar",
+    "tp3_bar",
+    "h1_bar",
+    "dv_pressure_bar",
+    "reservoirs_min_bar"
+  ],
+  "stream": "metropt3"
+}

@@ -1,0 +1,142 @@
+{
+  "caveats": [
+    "Report intervals are coarse maintenance/report intervals, not verified pointwise physical faults or operator-review labels.",
+    "All three MetroPT recordings were consumed earlier; asset independence is unknown and no split by file/window is valid evidence of asset independence.",
+    "Labels are development-only report-association proxies; they are not diagnostic truth, physical-health certification, or operator-review decisions."
+  ],
+  "code_sha256": {
+    "bench/advisory_eval.py": "512d821d4e22f18d39760479bfe13ac3cf24c8672ef8696c098928aac2f8889f",
+    "bench/domain_dataset.py": "e140ec5e019274e9bb36826ee66f433973a76ef3c39ecca6095a95c53d7daa36",
+    "bench/laya_advisory.py": "46fe9da97eb58c76968cff2b7215b17c09d10338ff070ab6ab78fb5238597f43",
+    "bench/streams.py": "09f7ad7f7f27b12d66ec358658bb5c19d46e14fa5e3276ef0c302ee0e9fd745b",
+    "src/uengram/metropt.py": "8b44b61f10cca31889adb36c1ffd7c96501781544312e41df88ba9b51eef0bc9",
+    "src/uengram/metropt2.py": "edafd9e72394388ceed54d27fecf3e66017e0fd5a9d81d3ab5e33a258a44ba3f"
+  },
+  "count_scope": "per-stream exported counts include all deduplicated source origins; rows and unique_class_counts count distinct inference inputs",
+  "dataset": "development_only_weak_report_association",
+  "evaluation_status": "no_independent_evaluation",
+  "excluded": {
+    "conflicting_identical_inputs": 0
+  },
+  "freeze_path": "results/v3_normal_freeze.json",
+  "freeze_sha256": "012274639d523d22d92d65c68ade7f24c87407f0eed6d39257c20098d3925bf8",
+  "independent_evaluation_eligible": false,
+  "input_resolution": "Existing decimated model-window summaries; not full native source-row snapshots.",
+  "labels": {
+    "outside_report_buffer": "current, previous, and all StateBuilder reference windows outside existing report margins",
+    "reported_fault": "full input window contained in a published report interval"
+  },
+  "missing_prerequisites": [
+    "Independent recordings/assets with verified asset identities and no overlap with consumed traces.",
+    "Independently adjudicated pointwise physical-fault labels and operator-review labels with reliable timestamps.",
+    "A preregistered independent validation/test design and untouched evaluation data."
+  ],
+  "outputs": {
+    "/home/kk/.local/state/uengram/domain_dataset/provenance.jsonl": "8a3970107206d53fb008ef8bfe7fc8f9df5ed654c5094c5e6872a3d02e84e03e",
+    "/home/kk/.local/state/uengram/domain_dataset/weak_development.jsonl": "f960c40636e9194ee5783ca95cccfacfb1f00ca3de33be3ced22d9f586c6bc55"
+  },
+  "per_stream": {
+    "metropt2_apr": {
+      "counts": {
+        "conflicting_input_excluded": 0,
+        "deduplicated": 0,
+        "excluded": {
+          "context_in_report_exclusion_buffer": 52
+        },
+        "exported_negative": 315,
+        "exported_positive": 89,
+        "scheduled": 456
+      },
+      "exclusion_buffer_hours": {
+        "after": 48,
+        "before": 24
+      },
+      "report_intervals": [
+        [
+          "2022-06-04T10:19:24",
+          "2022-06-04T14:22:39"
+        ],
+        [
+          "2022-07-11T10:10:18",
+          "2022-07-14T10:22:08"
+        ]
+      ],
+      "trace_sha256": "941dc9086261c6339e7a1d2eebc0bcf05762054bf5c7b4b76457a1c068875c05"
+    },
+    "metropt2_jan": {
+      "counts": {
+        "conflicting_input_excluded": 0,
+        "deduplicated": 0,
+        "excluded": {
+          "context_in_report_exclusion_buffer": 33,
+          "straddling_report_interval": 1
+        },
+        "exported_negative": 254,
+        "exported_positive": 16,
+        "scheduled": 304
+      },
+      "exclusion_buffer_hours": {
+        "after": 48,
+        "before": 24
+      },
+      "report_intervals": [
+        [
+          "2022-02-28T21:53",
+          "2022-03-01T02:00"
+        ],
+        [
+          "2022-03-23T14:54",
+          "2022-03-23T15:24"
+        ],
+        [
+          "2022-05-30T12:00",
+          "2022-06-02T06:18"
+        ]
+      ],
+      "trace_sha256": "a863250276c859f1cc50beab4f29a81e1460264eb6b6bd0c72675fa8f454edab"
+    },
+    "metropt3": {
+      "counts": {
+        "conflicting_input_excluded": 0,
+        "deduplicated": 0,
+        "excluded": {
+          "context_in_report_exclusion_buffer": 152
+        },
+        "exported_negative": 1758,
+        "exported_positive": 71,
+        "scheduled": 1981
+      },
+      "exclusion_buffer_hours": {
+        "after": 48,
+        "before": 24
+      },
+      "report_intervals": [
+        [
+          "2020-04-18T00:00",
+          "2020-04-18T23:59"
+        ],
+        [
+          "2020-05-29T23:30",
+          "2020-05-30T06:00"
+        ],
+        [
+          "2020-06-05T10:00",
+          "2020-06-07T14:30"
+        ],
+        [
+          "2020-07-15T14:30",
+          "2020-07-15T19:00"
+        ]
+      ],
+      "trace_sha256": "dc48e3413e5678dd9502ab37eb9f15e4053a0712e162ff92f21ca240d7ab387b"
+    }
+  },
+  "production_ready": false,
+  "provenance_rows": 2503,
+  "rows": 2503,
+  "schema": 1,
+  "unique_class_counts": {
+    "outside_report_buffer": 2327,
+    "reported_fault": 176
+  }
+}

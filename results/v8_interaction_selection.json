@@ -1,0 +1,144 @@
+{
+  "design_points": 1728,
+  "rows_meeting_budget": 0,
+  "rows_within_both_budgets": 1148,
+  "used": "fallback",
+  "selected": {
+    "stream": "metropt3",
+    "index": 36,
+    "levels": {
+      "alpha": 0.003,
+      "channels": "novelty",
+      "unbaselined": "global",
+      "veto": "normal",
+      "persistence": "ewma",
+      "k": 3,
+      "corroboration": "none",
+      "stale": 0
+    },
+    "changed": 1,
+    "metrics": {
+      "events_detected": 3.0,
+      "false_alarm_per_week": 0.8994441460372004,
+      "alarm_time_share_clean": 0.005382877878341991,
+      "events_warned_before_report": 0.0,
+      "hours_before_report": null,
+      "first_alarm_minus_report_h": 3.3012962962962966
+    },
+    "satisfies_recall_and_budget": false,
+    "events": [
+      {
+        "event": 0,
+        "detected": true,
+        "first_alarm_minus_report_h": 3.2058333333333335
+      },
+      {
+        "event": 1,
+        "detected": true,
+        "first_alarm_minus_report_h": 3.0125
+      },
+      {
+        "event": 2,
+        "detected": true,
+        "first_alarm_minus_report_h": 3.6855555555555557
+      },
+      {
+        "event": 3,
+        "detected": false,
+        "first_alarm_minus_report_h": null
+      }
+    ]
+  },
+  "most_early_warnings_within_budgets": {
+    "stream": "metropt3",
+    "index": 1064,
+    "levels": {
+      "alpha": 0.01,
+      "channels": "both",
+      "unbaselined": "commission",
+      "veto": "normal",
+      "persistence": "counter",
+      "k": 6,
+      "corroboration": "dataset",
+      "stale": 0
+    },
+    "changed": 5,
+    "metrics": {
+      "events_detected": 2.0,
+      "false_alarm_per_week": 0.15872543753597654,
+      "alarm_time_share_clean": 0.01978259234051785,
+      "events_warned_before_report": 1.0,
+      "hours_before_report": 13.353055555555555,
+      "first_alarm_minus_report_h": 10.752916666666668
+    },
+    "satisfies_recall_and_budget": false,
+    "events": [
+      {
+        "event": 0,
+        "detected": true,
+        "first_alarm_minus_report_h": -13.353055555555555
+      },
+      {
+        "event": 1,
+        "detected": false,
+        "first_alarm_minus_report_h": null
+      },
+      {
+        "event": 2,
+        "detected": true,
+        "first_alarm_minus_report_h": 34.85888888888889
+      },
+      {
+        "event": 3,
+        "detected": false,
+        "first_alarm_minus_report_h": null
+      }
+    ]
+  },
+  "default_row": {
+    "stream": "metropt3",
+    "index": 0,
+    "levels": {
+      "alpha": 0.003,
+      "channels": "novelty",
+      "unbaselined": "global",
+      "veto": "normal",
+      "persistence": "counter",
+      "k": 3,
+      "corroboration": "none",
+      "stale": 0
+    },
+    "changed": 0,
+    "metrics": {
+      "events_detected": 3.0,
+      "false_alarm_per_week": 0.7407187085012238,
+      "alarm_time_share_clean": 0.005996644230718761,
+      "events_warned_before_report": 0.0,
+      "hours_before_report": null,
+      "first_alarm_minus_report_h": 6.825648148148148
+    },
+    "satisfies_recall_and_budget": false,
+    "events": [
+      {
+        "event": 0,
+        "detected": true,
+        "first_alarm_minus_report_h": 3.2058333333333335
+      },
+      {
+        "event": 1,
+        "detected": true,
+        "first_alarm_minus_report_h": 3.0125
+      },
+      {
+        "event": 2,
+        "detected": true,
+        "first_alarm_minus_report_h": 14.258611111111112
+      },
+      {
+        "event": 3,
+        "detected": false,
+        "first_alarm_minus_report_h": null
+      }
+    ]
+  }
+}

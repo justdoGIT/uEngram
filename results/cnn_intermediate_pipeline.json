@@ -1,0 +1,3126 @@
+{
+  "datasets": {
+    "metropt3": {
+      "cnn": {
+        "d": 32,
+        "epochs": 90,
+        "ortho_beta": 0.05,
+        "pool": "maxavg",
+        "representation": "bottleneck or multiscale, as named"
+      },
+      "components": {
+        "cnn_middle30_seed0": {
+          "encode_seconds": 0.20856932699098252,
+          "encoder_bytes": 54144,
+          "epochs": 30,
+          "fit_seconds": 4.297526454000035,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 10,
+            "metrics": {
+              "alarm_time_share_clean": 0.016781733277578807,
+              "alerts_per_week": 19.25868642103182,
+              "ap": 0.6267665823690505,
+              "auroc": 0.9904760788981625,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 0.5290847917865884,
+              "health_ap": 0.6120125801111342,
+              "health_auroc": 0.9900916479606103,
+              "lead_hours": 3.4095138888888887,
+              "notifications_per_week_all": 18.776837188123416,
+              "operator_events_per_week": 19.25868642103182
+            }
+          },
+          "pool": "avg",
+          "representation": "middle",
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 21,
+            "metrics": {
+              "alarm_time_share_clean": 0.02901034549726797,
+              "alerts_per_week": 6.6135598973323555,
+              "ap": 0.6267665823690505,
+              "auroc": 0.9904760788981625,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 1.1110780627518357,
+              "health_ap": 0.6120125801111342,
+              "health_auroc": 0.9900916479606103,
+              "lead_hours": 0.6128472222222222,
+              "notifications_per_week_all": 6.836694565932115,
+              "operator_events_per_week": 6.6135598973323555
+            }
+          }
+        },
+        "cnn_middle30_seed1": {
+          "encode_seconds": 0.21958996399189346,
+          "encoder_bytes": 54144,
+          "epochs": 30,
+          "fit_seconds": 4.279333583981497,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2
+            ],
+            "false_alarm_episodes": 10,
+            "metrics": {
+              "alarm_time_share_clean": 0.019135320783899307,
+              "alerts_per_week": 21.269208629820856,
+              "ap": 0.5168973054321244,
+              "auroc": 0.9873149766649432,
+              "events_detected": 3.0,
+              "false_alarm_per_week": 0.5290847917865884,
+              "health_ap": 0.5705072626152584,
+              "health_auroc": 0.9888087535492041,
+              "lead_hours": 2.3097222222222222,
+              "notifications_per_week_all": 20.84710385245497,
+              "operator_events_per_week": 21.269208629820856
+            }
+          },
+          "pool": "avg",
+          "representation": "middle",
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 24,
+            "metrics": {
+              "alarm_time_share_clean": 0.029828729794087336,
+              "alerts_per_week": 6.6135598973323555,
+              "ap": 0.5168973054321244,
+              "auroc": 0.9873149766649432,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 1.2698035002878123,
+              "health_ap": 0.5705072626152584,
+              "health_auroc": 0.9888087535492041,
+              "lead_hours": 0.48895833333333333,
+              "notifications_per_week_all": 6.836694565932115,
+              "operator_events_per_week": 6.6135598973323555
+            }
+          }
+        },
+        "cnn_middle30_seed2": {
+          "encode_seconds": 0.2057742640026845,
+          "encoder_bytes": 54144,
+          "epochs": 30,
+          "fit_seconds": 4.4105885550088715,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2
+            ],
+            "false_alarm_episodes": 11,
+            "metrics": {
+              "alarm_time_share_clean": 0.019646646942628243,
+              "alerts_per_week": 20.898849275570242,
+              "ap": 0.5565244337597365,
+              "auroc": 0.9892960222358645,
+              "events_detected": 3.0,
+              "false_alarm_per_week": 0.5819932709652473,
+              "health_ap": 0.5606098340053116,
+              "health_auroc": 0.9888548873445002,
+              "lead_hours": 2.42,
+              "notifications_per_week_all": 20.55822943417615,
+              "operator_events_per_week": 20.898849275570242
+            }
+          },
+          "pool": "avg",
+          "representation": "middle",
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 24,
+            "metrics": {
+              "alarm_time_share_clean": 0.02998217138218153,
+              "alerts_per_week": 6.6135598973323555,
+              "ap": 0.5565244337597365,
+              "auroc": 0.9892960222358645,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 1.2698035002878123,
+              "health_ap": 0.5606098340053116,
+              "health_auroc": 0.9888548873445002,
+              "lead_hours": 0.48895833333333333,
+              "notifications_per_week_all": 6.836694565932115,
+              "operator_events_per_week": 6.6135598973323555
+            }
+          }
+        },
+        "cnn_middle30_seed3": {
+          "encode_seconds": 0.22201647999463603,
+          "encoder_bytes": 54144,
+          "epochs": 30,
+          "fit_seconds": 4.327459391992306,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2
+            ],
+            "false_alarm_episodes": 12,
+            "metrics": {
+              "alarm_time_share_clean": 0.02035611745542408,
+              "alerts_per_week": 21.53375102571415,
+              "ap": 0.6171655119660453,
+              "auroc": 0.990313777498684,
+              "events_detected": 3.0,
+              "false_alarm_per_week": 0.6349017501439062,
+              "health_ap": 0.571066206184023,
+              "health_auroc": 0.9888214585673217,
+              "lead_hours": 2.364814814814815,
+              "notifications_per_week_all": 21.184124007113596,
+              "operator_events_per_week": 21.586659504892808
+            }
+          },
+          "pool": "avg",
+          "representation": "middle",
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 27,
+            "metrics": {
+              "alarm_time_share_clean": 0.030907369920199875,
+              "alerts_per_week": 6.6135598973323555,
+              "ap": 0.6171655119660453,
+              "auroc": 0.990313777498684,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 1.4285289378237889,
+              "health_ap": 0.571066206184023,
+              "health_auroc": 0.9888214585673217,
+              "lead_hours": 0.48895833333333333,
+              "notifications_per_week_all": 6.9811317750715265,
+              "operator_events_per_week": 6.719376855689673
+            }
+          }
+        },
+        "cnn_middle30_seed4": {
+          "encode_seconds": 0.21020054197288118,
+          "encoder_bytes": 54144,
+          "epochs": 30,
+          "fit_seconds": 4.445118336006999,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 14,
+            "metrics": {
+              "alarm_time_share_clean": 0.01642349878313997,
+              "alerts_per_week": 21.745384942428785,
+              "ap": 0.6707139047785978,
+              "auroc": 0.9923228365931598,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 0.7407187085012238,
+              "health_ap": 0.5700223623123137,
+              "health_auroc": 0.9892222914749849,
+              "lead_hours": 3.450833333333333,
+              "notifications_per_week_all": 21.569289898152025,
+              "operator_events_per_week": 21.745384942428785
+            }
+          },
+          "pool": "avg",
+          "representation": "middle",
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 18,
+            "metrics": {
+              "alarm_time_share_clean": 0.02844758053933756,
+              "alerts_per_week": 6.6135598973323555,
+              "ap": 0.6707139047785978,
+              "auroc": 0.9923228365931598,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 0.9523526252158592,
+              "health_ap": 0.5700223623123137,
+              "health_auroc": 0.9892222914749849,
+              "lead_hours": 0.48895833333333333,
+              "notifications_per_week_all": 6.932986038691722,
+              "operator_events_per_week": 6.6135598973323555
+            }
+          }
+        },
+        "cnn_multiscale30_seed0": {
+          "encode_seconds": 0.25754685400170274,
+          "encoder_bytes": 54144,
+          "epochs": 30,
+          "fit_seconds": 4.299634686001809,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 17,
+            "metrics": {
+              "alarm_time_share_clean": 0.02492262309882023,
+              "alerts_per_week": 18.041791399922666,
+              "ap": 0.911962324723025,
+              "auroc": 0.9948928951351756,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 0.8994441460372004,
+              "health_ap": 0.5854466586693883,
+              "health_auroc": 0.989433486366318,
+              "lead_hours": 1.2738194444444444,
+              "notifications_per_week_all": 17.621339515008128,
+              "operator_events_per_week": 18.147608358279985
+            }
+          },
+          "pool": "avg",
+          "representation": "multiscale",
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 30,
+            "metrics": {
+              "alarm_time_share_clean": 0.03163669860887792,
+              "alerts_per_week": 6.6135598973323555,
+              "ap": 0.911962324723025,
+              "auroc": 0.9948928951351756,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 1.5872543753597652,
+              "health_ap": 0.5854466586693883,
+              "health_auroc": 0.989433486366318,
+              "lead_hours": 0.19993055555555553,
+              "notifications_per_week_all": 7.02927751145133,
+              "operator_events_per_week": 6.825193814046991
+            }
+          }
+        },
+        "cnn_multiscale30_seed1": {
+          "encode_seconds": 0.24206126100034453,
+          "encoder_bytes": 54144,
+          "epochs": 30,
+          "fit_seconds": 4.332432735012844,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 11,
+            "metrics": {
+              "alarm_time_share_clean": 0.015700906127690695,
+              "alerts_per_week": 17.45979812895742,
+              "ap": 0.6921134318164064,
+              "auroc": 0.9896285917060184,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 0.5819932709652473,
+              "health_ap": 0.5968882468288879,
+              "health_auroc": 0.9902769121182441,
+              "lead_hours": 0.778125,
+              "notifications_per_week_all": 17.332465096729305,
+              "operator_events_per_week": 17.45979812895742
+            }
+          },
+          "pool": "avg",
+          "representation": "multiscale",
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 24,
+            "metrics": {
+              "alarm_time_share_clean": 0.020942327308228634,
+              "alerts_per_week": 6.6135598973323555,
+              "ap": 0.6921134318164064,
+              "auroc": 0.9896285917060184,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 1.2698035002878123,
+              "health_ap": 0.5968882468288879,
+              "health_auroc": 0.9902769121182441,
+              "lead_hours": -0.04791666666666666,
+              "notifications_per_week_all": 6.932986038691722,
+              "operator_events_per_week": 6.719376855689673
+            }
+          }
+        },
+        "cnn_multiscale30_seed2": {
+          "encode_seconds": 0.22980744499363936,
+          "encoder_bytes": 54144,
+          "epochs": 30,
+          "fit_seconds": 4.369441595976241,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 12,
+            "metrics": {
+              "alarm_time_share_clean": 0.025012116111716675,
+              "alerts_per_week": 15.131825045096429,
+              "ap": 0.9556523483342158,
+              "auroc": 0.9960454069016366,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 0.6349017501439062,
+              "health_ap": 0.566917281374762,
+              "health_auroc": 0.9894195316742871,
+              "lead_hours": -0.3370833333333334,
+              "notifications_per_week_all": 14.973324014118928,
+              "operator_events_per_week": 15.131825045096429
+            }
+          },
+          "pool": "avg",
+          "representation": "multiscale",
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 27,
+            "metrics": {
+              "alarm_time_share_clean": 0.03127671449541862,
+              "alerts_per_week": 6.6135598973323555,
+              "ap": 0.9556523483342158,
+              "auroc": 0.9960454069016366,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 1.4285289378237889,
+              "health_ap": 0.566917281374762,
+              "health_auroc": 0.9894195316742871,
+              "lead_hours": -0.9565972222222223,
+              "notifications_per_week_all": 6.884840302311919,
+              "operator_events_per_week": 6.666468376511014
+            }
+          }
+        },
+        "cnn_multiscale30_seed3": {
+          "encode_seconds": 0.3028981600073166,
+          "encoder_bytes": 54144,
+          "epochs": 30,
+          "fit_seconds": 4.392836034006905,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 10,
+            "metrics": {
+              "alarm_time_share_clean": 0.025099247138935497,
+              "alerts_per_week": 19.893588171175725,
+              "ap": 0.5413216486208428,
+              "auroc": 0.9884534295998805,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 0.5290847917865884,
+              "health_ap": 0.5686257469255591,
+              "health_auroc": 0.9890270299260453,
+              "lead_hours": 1.9222916666666667,
+              "notifications_per_week_all": 19.691606179339683,
+              "operator_events_per_week": 19.99940512953304
+            }
+          },
+          "pool": "avg",
+          "representation": "multiscale",
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 19,
+            "metrics": {
+              "alarm_time_share_clean": 0.028885947584913384,
+              "alerts_per_week": 6.6135598973323555,
+              "ap": 0.5413216486208428,
+              "auroc": 0.9884534295998805,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 1.005261104394518,
+              "health_ap": 0.5686257469255591,
+              "health_auroc": 0.9890270299260453,
+              "lead_hours": 1.0672916666666667,
+              "notifications_per_week_all": 6.9811317750715265,
+              "operator_events_per_week": 6.719376855689673
+            }
+          }
+        },
+        "cnn_multiscale30_seed4": {
+          "encode_seconds": 0.25048041599802673,
+          "encoder_bytes": 54144,
+          "epochs": 30,
+          "fit_seconds": 4.555610870011151,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 8,
+            "metrics": {
+              "alarm_time_share_clean": 0.020049496722088764,
+              "alerts_per_week": 16.4545370245629,
+              "ap": 0.7733223275576022,
+              "auroc": 0.9920645185813494,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 0.42326783342927077,
+              "health_ap": 0.6905696564897716,
+              "health_auroc": 0.9911926106781511,
+              "lead_hours": 1.2738888888888888,
+              "notifications_per_week_all": 16.17696742361402,
+              "operator_events_per_week": 16.4545370245629
+            }
+          },
+          "pool": "avg",
+          "representation": "multiscale",
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 20,
+            "metrics": {
+              "alarm_time_share_clean": 0.026149368475014565,
+              "alerts_per_week": 6.6135598973323555,
+              "ap": 0.7733223275576022,
+              "auroc": 0.9920645185813494,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 1.0581695835731768,
+              "health_ap": 0.6905696564897716,
+              "health_auroc": 0.9911926106781511,
+              "lead_hours": 0.24118055555555554,
+              "notifications_per_week_all": 6.884840302311919,
+              "operator_events_per_week": 6.6135598973323555
+            }
+          }
+        },
+        "cnn_plain30_seed0": {
+          "encode_seconds": 0.20994872698793188,
+          "encoder_bytes": 54144,
+          "epochs": 30,
+          "fit_seconds": 4.873944425984519,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 20,
+            "metrics": {
+              "alarm_time_share_clean": 0.022264776844842037,
+              "alerts_per_week": 14.285289378237888,
+              "ap": 0.48545079086182313,
+              "auroc": 0.9870887856866516,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 1.0581695835731768,
+              "health_ap": 0.5663175637604354,
+              "health_auroc": 0.9893171625528964,
+              "lead_hours": -0.2544444444444445,
+              "notifications_per_week_all": 14.106700759282463,
+              "operator_events_per_week": 14.338197857416548
+            }
+          },
+          "pool": "avg",
+          "representation": "bottleneck",
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 33,
+            "metrics": {
+              "alarm_time_share_clean": 0.03021749514043317,
+              "alerts_per_week": 6.666468376511014,
+              "ap": 0.48545079086182313,
+              "auroc": 0.9870887856866516,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 1.7459798128957418,
+              "health_ap": 0.5663175637604354,
+              "health_auroc": 0.9893171625528964,
+              "lead_hours": -0.8327083333333334,
+              "notifications_per_week_all": 7.17371472059074,
+              "operator_events_per_week": 6.983919251582967
+            }
+          }
+        },
+        "cnn_plain30_seed1": {
+          "encode_seconds": 0.21723745099734515,
+          "encoder_bytes": 54144,
+          "epochs": 30,
+          "fit_seconds": 4.427652918995591,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 10,
+            "metrics": {
+              "alarm_time_share_clean": 0.01856581979274013,
+              "alerts_per_week": 16.137086149490948,
+              "ap": 0.9586160891615948,
+              "auroc": 0.9962492599587295,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 0.5290847917865884,
+              "health_ap": 0.5325342112690223,
+              "health_auroc": 0.9886549395183861,
+              "lead_hours": 0.2825694444444443,
+              "notifications_per_week_all": 15.79180153257559,
+              "operator_events_per_week": 16.189994628669606
+            }
+          },
+          "pool": "avg",
+          "representation": "bottleneck",
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 26,
+            "metrics": {
+              "alarm_time_share_clean": 0.024102751625833474,
+              "alerts_per_week": 6.666468376511014,
+              "ap": 0.9586160891615948,
+              "auroc": 0.9962492599587295,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 1.37562045864513,
+              "health_ap": 0.5325342112690223,
+              "health_auroc": 0.9886549395183861,
+              "lead_hours": -0.5848611111111112,
+              "notifications_per_week_all": 6.932986038691722,
+              "operator_events_per_week": 6.719376855689673
+            }
+          }
+        },
+        "cnn_plain30_seed2": {
+          "encode_seconds": 0.21465672898921184,
+          "encoder_bytes": 54144,
+          "epochs": 30,
+          "fit_seconds": 4.223062006989494,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 13,
+            "metrics": {
+              "alarm_time_share_clean": 0.02319496179706869,
+              "alerts_per_week": 16.137086149490948,
+              "ap": 0.5161496664040853,
+              "auroc": 0.9868578042916927,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 0.687810229322565,
+              "health_ap": 0.49752382188093625,
+              "health_auroc": 0.9870533782591105,
+              "lead_hours": 1.0258333333333334,
+              "notifications_per_week_all": 15.79180153257559,
+              "operator_events_per_week": 16.189994628669606
+            }
+          },
+          "pool": "avg",
+          "representation": "bottleneck",
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 28,
+            "metrics": {
+              "alarm_time_share_clean": 0.029265877355205906,
+              "alerts_per_week": 6.666468376511014,
+              "ap": 0.5161496664040853,
+              "auroc": 0.9868578042916927,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 1.4814374170024476,
+              "health_ap": 0.49752382188093625,
+              "health_auroc": 0.9870533782591105,
+              "lead_hours": -0.006597222222222199,
+              "notifications_per_week_all": 6.9811317750715265,
+              "operator_events_per_week": 6.772285334868332
+            }
+          }
+        },
+        "cnn_plain30_seed3": {
+          "encode_seconds": 0.223723475006409,
+          "encoder_bytes": 54144,
+          "epochs": 30,
+          "fit_seconds": 4.387277970003197,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2
+            ],
+            "false_alarm_episodes": 10,
+            "metrics": {
+              "alarm_time_share_clean": 0.018879613964059325,
+              "alerts_per_week": 17.03653029552815,
+              "ap": 0.6755798106410494,
+              "auroc": 0.9901886538981235,
+              "events_detected": 3.0,
+              "false_alarm_per_week": 0.5290847917865884,
+              "health_ap": 0.7065320964092139,
+              "health_auroc": 0.9912934177071504,
+              "lead_hours": 1.2632407407407407,
+              "notifications_per_week_all": 16.754716260171662,
+              "operator_events_per_week": 17.03653029552815
+            }
+          },
+          "pool": "avg",
+          "representation": "bottleneck",
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 21,
+            "metrics": {
+              "alarm_time_share_clean": 0.023331519561615457,
+              "alerts_per_week": 6.6135598973323555,
+              "ap": 0.6755798106410494,
+              "auroc": 0.9901886538981235,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 1.1110780627518357,
+              "health_ap": 0.7065320964092139,
+              "health_auroc": 0.9912934177071504,
+              "lead_hours": 0.5302777777777777,
+              "notifications_per_week_all": 6.836694565932115,
+              "operator_events_per_week": 6.6135598973323555
+            }
+          }
+        },
+        "cnn_plain30_seed4": {
+          "encode_seconds": 0.23659398598829284,
+          "encoder_bytes": 54144,
+          "epochs": 30,
+          "fit_seconds": 4.3417653409997,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 16,
+            "metrics": {
+              "alarm_time_share_clean": 0.023375260037126915,
+              "alerts_per_week": 16.189994628669606,
+              "ap": 0.6845460665759368,
+              "auroc": 0.9892839420547034,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 0.8465356668585415,
+              "health_ap": 0.5164058456613612,
+              "health_auroc": 0.9881068533679493,
+              "lead_hours": 1.025972222222222,
+              "notifications_per_week_all": 16.128821687234215,
+              "operator_events_per_week": 16.189994628669606
+            }
+          },
+          "pool": "avg",
+          "representation": "bottleneck",
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "false_alarm_episodes": 27,
+            "metrics": {
+              "alarm_time_share_clean": 0.028861277956724923,
+              "alerts_per_week": 6.6135598973323555,
+              "ap": 0.6845460665759368,
+              "auroc": 0.9892839420547034,
+              "events_detected": 4.0,
+              "false_alarm_per_week": 1.4285289378237889,
+              "health_ap": 0.5164058456613612,
+              "health_auroc": 0.9881068533679493,
+              "lead_hours": 0.1586111111111111,
+              "notifications_per_week_all": 6.932986038691722,
+              "operator_events_per_week": 6.719376855689673
+            }
+          }
+        },
+        "dsp_d42": {
+          "latent_dimension": 42,
+          "native": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0
+            ],
+            "false_alarm_episodes": 3,
+            "metrics": {
+              "alarm_time_share_clean": 0.000849789958236594,
+              "alerts_per_week": 18.78251010842389,
+              "ap": 0.5374210068153183,
+              "auroc": 0.9862458806321892,
+              "events_detected": 1.0,
+              "false_alarm_per_week": 0.15872543753597654,
+              "health_ap": 0.21499861107035548,
+              "health_auroc": 0.9565827875122168,
+              "lead_hours": -13.956111111111111,
+              "notifications_per_week_all": 18.391671297084986,
+              "operator_events_per_week": 18.835418587602547
+            }
+          },
+          "score_only": {
+            "clean_observed_hours": 3175.2944444444443,
+            "detected_events": [
+              0,
+              1,
+              2
+            ],
+            "false_alarm_episodes": 16,
+            "metrics": {
+              "alarm_time_share_clean": 0.022145015422891667,
+              "alerts_per_week": 6.825193814046991,
+              "ap": 0.5374210068153183,
+              "auroc": 0.9862458806321892,
+              "events_detected": 3.0,
+              "false_alarm_per_week": 0.8465356668585415,
+              "health_ap": 0.21499861107035548,
+              "health_auroc": 0.9565827875122168,
+              "lead_hours": -4.457314814814815,
+              "notifications_per_week_all": 7.17371472059074,
+              "operator_events_per_week": 6.983919251582967
+            }
+          }
+        }
+      },
+      "dsp_dimension": 42,
+      "fusions": {
+        "cnn_middle30_fisher": {
+          "clean_observed_hours": 3175.2944444444443,
+          "detected_events": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "false_alarm_episodes": 24,
+          "metrics": {
+            "alarm_time_share_clean": 0.029828729794087336,
+            "alerts_per_week": 6.6135598973323555,
+            "ap": 0.4391804767582356,
+            "auroc": 0.9819429409305176,
+            "events_detected": 4.0,
+            "false_alarm_per_week": 1.2698035002878123,
+            "health_ap": 0.6120125801111342,
+            "health_auroc": 0.9900916479606103,
+            "lead_hours": 0.48895833333333333,
+            "notifications_per_week_all": 6.836694565932115,
+            "operator_events_per_week": 6.6135598973323555
+          }
+        },
+        "cnn_middle30_median": {
+          "clean_observed_hours": 3175.2944444444443,
+          "detected_events": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "false_alarm_episodes": 24,
+          "metrics": {
+            "alarm_time_share_clean": 0.029828729794087336,
+            "alerts_per_week": 6.6135598973323555,
+            "ap": 0.4276247448861069,
+            "auroc": 0.9813786610889554,
+            "events_detected": 4.0,
+            "false_alarm_per_week": 1.2698035002878123,
+            "health_ap": 0.6120125801111342,
+            "health_auroc": 0.9900916479606103,
+            "lead_hours": 0.48895833333333333,
+            "notifications_per_week_all": 6.836694565932115,
+            "operator_events_per_week": 6.6135598973323555
+          }
+        },
+        "cnn_multiscale30_fisher": {
+          "clean_observed_hours": 3175.2944444444443,
+          "detected_events": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "false_alarm_episodes": 29,
+          "metrics": {
+            "alarm_time_share_clean": 0.0253309841781952,
+            "alerts_per_week": 6.6135598973323555,
+            "ap": 0.569283538006266,
+            "auroc": 0.9880982097900496,
+            "events_detected": 4.0,
+            "false_alarm_per_week": 1.5343458961811065,
+            "health_ap": 0.5854466586693883,
+            "health_auroc": 0.989433486366318,
+            "lead_hours": 0.19993055555555553,
+            "notifications_per_week_all": 6.932986038691722,
+            "operator_events_per_week": 6.719376855689673
+          }
+        },
+        "cnn_multiscale30_median": {
+          "clean_observed_hours": 3175.2944444444443,
+          "detected_events": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "false_alarm_episodes": 25,
+          "metrics": {
+            "alarm_time_share_clean": 0.028093282687694756,
+            "alerts_per_week": 6.6135598973323555,
+            "ap": 0.47187008512593326,
+            "auroc": 0.9833432526200194,
+            "events_detected": 4.0,
+            "false_alarm_per_week": 1.322711979466471,
+            "health_ap": 0.5854466586693883,
+            "health_auroc": 0.989433486366318,
+            "lead_hours": 0.19993055555555553,
+            "notifications_per_week_all": 6.932986038691722,
+            "operator_events_per_week": 6.719376855689673
+          }
+        },
+        "cnn_plain30_fisher": {
+          "clean_observed_hours": 3175.2944444444443,
+          "detected_events": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "false_alarm_episodes": 27,
+          "metrics": {
+            "alarm_time_share_clean": 0.025419602381581412,
+            "alerts_per_week": 6.666468376511014,
+            "ap": 0.5714885193948417,
+            "auroc": 0.9883037811487732,
+            "events_detected": 4.0,
+            "false_alarm_per_week": 1.4285289378237889,
+            "health_ap": 0.5663175637604354,
+            "health_auroc": 0.9893171625528964,
+            "lead_hours": -0.7913888888888889,
+            "notifications_per_week_all": 6.9811317750715265,
+            "operator_events_per_week": 6.772285334868332
+          }
+        },
+        "cnn_plain30_median": {
+          "clean_observed_hours": 3175.2944444444443,
+          "detected_events": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "false_alarm_episodes": 26,
+          "metrics": {
+            "alarm_time_share_clean": 0.0264049003329525,
+            "alerts_per_week": 6.666468376511014,
+            "ap": 0.4953442737411186,
+            "auroc": 0.984888526483454,
+            "events_detected": 4.0,
+            "false_alarm_per_week": 1.37562045864513,
+            "health_ap": 0.5663175637604354,
+            "health_auroc": 0.9893171625528964,
+            "lead_hours": -0.04791666666666666,
+            "notifications_per_week_all": 6.932986038691722,
+            "operator_events_per_week": 6.719376855689673
+          }
+        },
+        "dsp_plus_middle30_max": {
+          "clean_observed_hours": 3175.2944444444443,
+          "detected_events": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "false_alarm_episodes": 27,
+          "metrics": {
+            "alarm_time_share_clean": 0.030525078164229738,
+            "alerts_per_week": 6.6135598973323555,
+            "ap": 0.4176012637064221,
+            "auroc": 0.9804020409257793,
+            "events_detected": 4.0,
+            "false_alarm_per_week": 1.4285289378237889,
+            "health_ap": 0.6120125801111342,
+            "health_auroc": 0.9900916479606103,
+            "lead_hours": -3.264513888888889,
+            "notifications_per_week_all": 7.02927751145133,
+            "operator_events_per_week": 6.772285334868332
+          }
+        },
+        "dsp_plus_middle30_mean": {
+          "clean_observed_hours": 3175.2944444444443,
+          "detected_events": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "false_alarm_episodes": 27,
+          "metrics": {
+            "alarm_time_share_clean": 0.03067851975232393,
+            "alerts_per_week": 6.6135598973323555,
+            "ap": 0.5102688728488471,
+            "auroc": 0.9855150817416913,
+            "events_detected": 4.0,
+            "false_alarm_per_week": 1.4285289378237889,
+            "health_ap": 0.6120125801111342,
+            "health_auroc": 0.9900916479606103,
+            "lead_hours": 0.48895833333333333,
+            "notifications_per_week_all": 6.9811317750715265,
+            "operator_events_per_week": 6.772285334868332
+          }
+        },
+        "dsp_plus_multiscale30_max": {
+          "clean_observed_hours": 3175.2944444444443,
+          "detected_events": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "false_alarm_episodes": 28,
+          "metrics": {
+            "alarm_time_share_clean": 0.028227041061808792,
+            "alerts_per_week": 6.6135598973323555,
+            "ap": 0.4521379025719296,
+            "auroc": 0.9819328914694655,
+            "events_detected": 4.0,
+            "false_alarm_per_week": 1.4814374170024476,
+            "health_ap": 0.5854466586693883,
+            "health_auroc": 0.989433486366318,
+            "lead_hours": -3.553541666666667,
+            "notifications_per_week_all": 7.02927751145133,
+            "operator_events_per_week": 6.772285334868332
+          }
+        },
+        "dsp_plus_multiscale30_mean": {
+          "clean_observed_hours": 3175.2944444444443,
+          "detected_events": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "false_alarm_episodes": 28,
+          "metrics": {
+            "alarm_time_share_clean": 0.028011050593733215,
+            "alerts_per_week": 6.6135598973323555,
+            "ap": 0.5217068013254883,
+            "auroc": 0.9855856362480415,
+            "events_detected": 4.0,
+            "false_alarm_per_week": 1.4814374170024476,
+            "health_ap": 0.5854466586693883,
+            "health_auroc": 0.989433486366318,
+            "lead_hours": 0.19993055555555553,
+            "notifications_per_week_all": 6.9811317750715265,
+            "operator_events_per_week": 6.772285334868332
+          }
+        },
+        "dsp_plus_plain30_max": {
+          "clean_observed_hours": 3175.2944444444443,
+          "detected_events": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "false_alarm_episodes": 30,
+          "metrics": {
+            "alarm_time_share_clean": 0.02832904385070151,
+            "alerts_per_week": 6.666468376511014,
+            "ap": 0.4493284470987388,
+            "auroc": 0.9821395562928632,
+            "events_detected": 4.0,
+            "false_alarm_per_week": 1.5872543753597652,
+            "health_ap": 0.5663175637604354,
+            "health_auroc": 0.9893171625528964,
+            "lead_hours": -3.5948611111111113,
+            "notifications_per_week_all": 7.077423247831133,
+            "operator_events_per_week": 6.825193814046991
+          }
+        },
+        "dsp_plus_plain30_mean": {
+          "clean_observed_hours": 3175.2944444444443,
+          "detected_events": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "false_alarm_episodes": 30,
+          "metrics": {
+            "alarm_time_share_clean": 0.02751057207293112,
+            "alerts_per_week": 6.666468376511014,
+            "ap": 0.5558483776842672,
+            "auroc": 0.9873130500843269,
+            "events_detected": 4.0,
+            "false_alarm_per_week": 1.5872543753597652,
+            "health_ap": 0.5663175637604354,
+            "health_auroc": 0.9893171625528964,
+            "lead_hours": -3.7600694444444445,
+            "notifications_per_week_all": 7.077423247831133,
+            "operator_events_per_week": 6.825193814046991
+          }
+        }
+      },
+      "role": "consumed development data; not independent confirmation",
+      "score_only_config": {
+        "aci_gamma": 0.0,
+        "alpha": 0.003,
+        "health_needs_baseline": true,
+        "k_health": 0,
+        "k_novelty": 3,
+        "min_state_windows": 100,
+        "new_state_alert": false,
+        "per_state": true,
+        "shock_mult": 0.0
+      },
+      "shape": {
+        "calibration": 911,
+        "fit": 2658,
+        "test": 21556,
+        "windows": 25126
+      }
+    },
+    "skab": {
+      "cnn": {
+        "d": 32,
+        "epochs": 90,
+        "ortho_beta": 0.05,
+        "pool": "maxavg",
+        "representation": "bottleneck or multiscale, as named"
+      },
+      "components": {
+        "cnn_middle30_seed0": {
+          "encode_seconds": 0.014148179005132988,
+          "encoder_bytes": 54784,
+          "epochs": 30,
+          "fit_seconds": 0.3549036369950045,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/10.csv",
+              "valve1/11.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 9,
+            "metrics": {
+              "alarm_time_share_clean": 0.22529167225425775,
+              "alerts_per_week": 135.17500335255465,
+              "ap": 0.5381125036250949,
+              "auroc": 0.6595318029332952,
+              "events_detected": 22.0,
+              "false_alarm_per_week": 243.31500603459838,
+              "health_ap": 0.6394889504802674,
+              "health_auroc": 0.6728002843291673,
+              "lead_hours": -0.07746666666666666,
+              "notifications_per_week_all": 378.7639841726209,
+              "operator_events_per_week": 378.490009387153
+            }
+          },
+          "pool": "avg",
+          "representation": "middle",
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/10.csv",
+              "valve1/11.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 9,
+            "metrics": {
+              "alarm_time_share_clean": 0.22529167225425775,
+              "alerts_per_week": 0.0,
+              "ap": 0.5381125036250949,
+              "auroc": 0.6595318029332952,
+              "events_detected": 22.0,
+              "false_alarm_per_week": 243.31500603459838,
+              "health_ap": 0.6394889504802674,
+              "health_auroc": 0.6728002843291673,
+              "lead_hours": -0.07746666666666666,
+              "notifications_per_week_all": 361.5474394375018,
+              "operator_events_per_week": 243.31500603459838
+            }
+          }
+        },
+        "cnn_middle30_seed1": {
+          "encode_seconds": 0.022209290007594973,
+          "encoder_bytes": 54784,
+          "epochs": 30,
+          "fit_seconds": 0.4936381279840134,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 5,
+            "metrics": {
+              "alarm_time_share_clean": 0.4279200750972241,
+              "alerts_per_week": 162.21000402306558,
+              "ap": 0.5050362357240922,
+              "auroc": 0.5771450615705607,
+              "events_detected": 18.0,
+              "false_alarm_per_week": 135.17500335255465,
+              "health_ap": 0.5799764834307259,
+              "health_auroc": 0.645144670362264,
+              "lead_hours": -0.13114035087719297,
+              "notifications_per_week_all": 206.59853682142958,
+              "operator_events_per_week": 270.3500067051093
+            }
+          },
+          "pool": "avg",
+          "representation": "middle",
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 5,
+            "metrics": {
+              "alarm_time_share_clean": 0.4279200750972241,
+              "alerts_per_week": 0.0,
+              "ap": 0.5050362357240922,
+              "auroc": 0.5771450615705607,
+              "events_detected": 18.0,
+              "false_alarm_per_week": 135.17500335255465,
+              "health_ap": 0.5799764834307259,
+              "health_auroc": 0.645144670362264,
+              "lead_hours": -0.13114035087719297,
+              "notifications_per_week_all": 120.51581314583393,
+              "operator_events_per_week": 135.17500335255465
+            }
+          }
+        },
+        "cnn_middle30_seed2": {
+          "encode_seconds": 0.01587157798348926,
+          "encoder_bytes": 54784,
+          "epochs": 30,
+          "fit_seconds": 0.393183175008744,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/10.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 6,
+            "metrics": {
+              "alarm_time_share_clean": 0.47695677439542267,
+              "alerts_per_week": 135.17500335255465,
+              "ap": 0.5055623114962711,
+              "auroc": 0.5639900433653119,
+              "events_detected": 20.0,
+              "false_alarm_per_week": 162.21000402306558,
+              "health_ap": 0.6882383147232576,
+              "health_auroc": 0.7148609292859043,
+              "lead_hours": -0.14199494949494948,
+              "notifications_per_week_all": 206.59853682142958,
+              "operator_events_per_week": 297.3850073756202
+            }
+          },
+          "pool": "avg",
+          "representation": "middle",
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/10.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 6,
+            "metrics": {
+              "alarm_time_share_clean": 0.47695677439542267,
+              "alerts_per_week": 0.0,
+              "ap": 0.5055623114962711,
+              "auroc": 0.5639900433653119,
+              "events_detected": 20.0,
+              "false_alarm_per_week": 162.21000402306558,
+              "health_ap": 0.6882383147232576,
+              "health_auroc": 0.7148609292859043,
+              "lead_hours": -0.14199494949494948,
+              "notifications_per_week_all": 120.51581314583393,
+              "operator_events_per_week": 162.21000402306558
+            }
+          }
+        },
+        "cnn_middle30_seed3": {
+          "encode_seconds": 0.0165220920171123,
+          "encoder_bytes": 54784,
+          "epochs": 30,
+          "fit_seconds": 0.35429390901117586,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/13.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 10,
+            "metrics": {
+              "alarm_time_share_clean": 0.4400786732823745,
+              "alerts_per_week": 162.21000402306558,
+              "ap": 0.44845389984093564,
+              "auroc": 0.5396913417677501,
+              "events_detected": 19.0,
+              "false_alarm_per_week": 270.3500067051093,
+              "health_ap": 0.5803276126099499,
+              "health_auroc": 0.6439982127150368,
+              "lead_hours": -0.11873333333333333,
+              "notifications_per_week_all": 327.11434996726354,
+              "operator_events_per_week": 432.56001072817486
+            }
+          },
+          "pool": "avg",
+          "representation": "middle",
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/13.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 10,
+            "metrics": {
+              "alarm_time_share_clean": 0.4400786732823745,
+              "alerts_per_week": 0.0,
+              "ap": 0.44845389984093564,
+              "auroc": 0.5396913417677501,
+              "events_detected": 19.0,
+              "false_alarm_per_week": 270.3500067051093,
+              "health_ap": 0.5803276126099499,
+              "health_auroc": 0.6439982127150368,
+              "lead_hours": -0.11873333333333333,
+              "notifications_per_week_all": 241.03162629166786,
+              "operator_events_per_week": 270.3500067051093
+            }
+          }
+        },
+        "cnn_middle30_seed4": {
+          "encode_seconds": 0.021127394982613623,
+          "encoder_bytes": 54784,
+          "epochs": 30,
+          "fit_seconds": 0.3592874580062926,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/6.csv",
+              "valve1/8.csv",
+              "valve1/9.csv",
+              "valve1/10.csv",
+              "valve1/11.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/14.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "valve2/1.csv",
+              "valve2/2.csv",
+              "valve2/3.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 13,
+            "metrics": {
+              "alarm_time_share_clean": 0.6270171203790622,
+              "alerts_per_week": 81.10500201153279,
+              "ap": 0.48901362609390836,
+              "auroc": 0.570303390983288,
+              "events_detected": 29.0,
+              "false_alarm_per_week": 351.4550087166421,
+              "health_ap": 0.6427361753059008,
+              "health_auroc": 0.6743935632172152,
+              "lead_hours": -0.12620071684587814,
+              "notifications_per_week_all": 430.4136183779783,
+              "operator_events_per_week": 432.56001072817486
+            }
+          },
+          "pool": "avg",
+          "representation": "middle",
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/6.csv",
+              "valve1/8.csv",
+              "valve1/9.csv",
+              "valve1/10.csv",
+              "valve1/11.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/14.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "valve2/1.csv",
+              "valve2/2.csv",
+              "valve2/3.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 13,
+            "metrics": {
+              "alarm_time_share_clean": 0.6270171203790622,
+              "alerts_per_week": 0.0,
+              "ap": 0.48901362609390836,
+              "auroc": 0.570303390983288,
+              "events_detected": 29.0,
+              "false_alarm_per_week": 351.4550087166421,
+              "health_ap": 0.6427361753059008,
+              "health_auroc": 0.6743935632172152,
+              "lead_hours": -0.12620071684587814,
+              "notifications_per_week_all": 413.19707364285915,
+              "operator_events_per_week": 351.4550087166421
+            }
+          }
+        },
+        "cnn_multiscale30_seed0": {
+          "encode_seconds": 0.0427558189840056,
+          "encoder_bytes": 54784,
+          "epochs": 30,
+          "fit_seconds": 0.34384073299588636,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/9.csv",
+              "valve1/10.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "valve2/3.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/12.csv",
+              "other/13.csv"
+            ],
+            "false_alarm_episodes": 9,
+            "metrics": {
+              "alarm_time_share_clean": 0.17482454964015914,
+              "alerts_per_week": 108.14000268204371,
+              "ap": 0.5038295165764003,
+              "auroc": 0.6867163049481457,
+              "events_detected": 20.0,
+              "false_alarm_per_week": 243.31500603459838,
+              "health_ap": 0.48401031939800027,
+              "health_auroc": 0.6273354240391106,
+              "lead_hours": -0.06132575757575758,
+              "notifications_per_week_all": 361.5474394375018,
+              "operator_events_per_week": 351.4550087166421
+            }
+          },
+          "pool": "avg",
+          "representation": "multiscale",
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/9.csv",
+              "valve1/10.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "valve2/3.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/12.csv",
+              "other/13.csv"
+            ],
+            "false_alarm_episodes": 9,
+            "metrics": {
+              "alarm_time_share_clean": 0.17482454964015914,
+              "alerts_per_week": 0.0,
+              "ap": 0.5038295165764003,
+              "auroc": 0.6867163049481457,
+              "events_detected": 20.0,
+              "false_alarm_per_week": 243.31500603459838,
+              "health_ap": 0.48401031939800027,
+              "health_auroc": 0.6273354240391106,
+              "lead_hours": -0.06132575757575758,
+              "notifications_per_week_all": 327.11434996726354,
+              "operator_events_per_week": 243.31500603459838
+            }
+          }
+        },
+        "cnn_multiscale30_seed1": {
+          "encode_seconds": 0.05955139800789766,
+          "encoder_bytes": 54784,
+          "epochs": 30,
+          "fit_seconds": 0.34429178599384613,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/10.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 10,
+            "metrics": {
+              "alarm_time_share_clean": 0.3376246032810335,
+              "alerts_per_week": 135.17500335255465,
+              "ap": 0.5182045384879189,
+              "auroc": 0.5708058251682452,
+              "events_detected": 21.0,
+              "false_alarm_per_week": 270.3500067051093,
+              "health_ap": 0.5672989415114064,
+              "health_auroc": 0.6225440812485937,
+              "lead_hours": -0.10804347826086955,
+              "notifications_per_week_all": 327.11434996726354,
+              "operator_events_per_week": 378.490009387153
+            }
+          },
+          "pool": "avg",
+          "representation": "multiscale",
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/10.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 10,
+            "metrics": {
+              "alarm_time_share_clean": 0.3376246032810335,
+              "alerts_per_week": 0.0,
+              "ap": 0.5182045384879189,
+              "auroc": 0.5708058251682452,
+              "events_detected": 21.0,
+              "false_alarm_per_week": 270.3500067051093,
+              "health_ap": 0.5672989415114064,
+              "health_auroc": 0.6225440812485937,
+              "lead_hours": -0.10804347826086955,
+              "notifications_per_week_all": 258.24817102678696,
+              "operator_events_per_week": 270.3500067051093
+            }
+          }
+        },
+        "cnn_multiscale30_seed2": {
+          "encode_seconds": 0.03887492697685957,
+          "encoder_bytes": 54784,
+          "epochs": 30,
+          "fit_seconds": 0.3707902390160598,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve2/0.csv",
+              "other/1.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 5,
+            "metrics": {
+              "alarm_time_share_clean": 0.3101783559072013,
+              "alerts_per_week": 162.21000402306558,
+              "ap": 0.5149394788924849,
+              "auroc": 0.5701455013602799,
+              "events_detected": 13.0,
+              "false_alarm_per_week": 135.17500335255465,
+              "health_ap": 0.6047874289982044,
+              "health_auroc": 0.6571417247939125,
+              "lead_hours": -0.12828124999999999,
+              "notifications_per_week_all": 189.38199208631045,
+              "operator_events_per_week": 270.3500067051093
+            }
+          },
+          "pool": "avg",
+          "representation": "multiscale",
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve2/0.csv",
+              "other/1.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 5,
+            "metrics": {
+              "alarm_time_share_clean": 0.3101783559072013,
+              "alerts_per_week": 0.0,
+              "ap": 0.5149394788924849,
+              "auroc": 0.5701455013602799,
+              "events_detected": 13.0,
+              "false_alarm_per_week": 135.17500335255465,
+              "health_ap": 0.6047874289982044,
+              "health_auroc": 0.6571417247939125,
+              "lead_hours": -0.12828124999999999,
+              "notifications_per_week_all": 103.29926841071479,
+              "operator_events_per_week": 135.17500335255465
+            }
+          }
+        },
+        "cnn_multiscale30_seed3": {
+          "encode_seconds": 0.07592393300728872,
+          "encoder_bytes": 54784,
+          "epochs": 30,
+          "fit_seconds": 0.37388296899734996,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/12.csv",
+              "valve1/15.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 8,
+            "metrics": {
+              "alarm_time_share_clean": 0.26033704349380893,
+              "alerts_per_week": 162.21000402306558,
+              "ap": 0.4672402581183317,
+              "auroc": 0.5528012943113711,
+              "events_detected": 14.0,
+              "false_alarm_per_week": 216.28000536408743,
+              "health_ap": 0.6130272649853404,
+              "health_auroc": 0.6571704901098452,
+              "lead_hours": -0.11003472222222221,
+              "notifications_per_week_all": 223.8150815565487,
+              "operator_events_per_week": 297.3850073756202
+            }
+          },
+          "pool": "avg",
+          "representation": "multiscale",
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/12.csv",
+              "valve1/15.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 7,
+            "metrics": {
+              "alarm_time_share_clean": 0.26243797773903715,
+              "alerts_per_week": 0.0,
+              "ap": 0.4672402581183317,
+              "auroc": 0.5528012943113711,
+              "events_detected": 14.0,
+              "false_alarm_per_week": 189.2450046935765,
+              "health_ap": 0.6130272649853404,
+              "health_auroc": 0.6571704901098452,
+              "lead_hours": -0.11003472222222221,
+              "notifications_per_week_all": 172.16544735119132,
+              "operator_events_per_week": 189.2450046935765
+            }
+          }
+        },
+        "cnn_multiscale30_seed4": {
+          "encode_seconds": 0.034477218985557556,
+          "encoder_bytes": 54784,
+          "epochs": 30,
+          "fit_seconds": 0.34291338501498103,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/3.csv",
+              "valve1/4.csv",
+              "valve1/5.csv",
+              "valve1/6.csv",
+              "valve1/7.csv",
+              "valve1/8.csv",
+              "valve1/9.csv",
+              "valve1/10.csv",
+              "valve1/11.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/14.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "valve2/1.csv",
+              "valve2/2.csv",
+              "valve2/3.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 14,
+            "metrics": {
+              "alarm_time_share_clean": 0.5075767735014081,
+              "alerts_per_week": 54.07000134102186,
+              "ap": 0.5003070916195518,
+              "auroc": 0.6099311294413647,
+              "events_detected": 33.0,
+              "false_alarm_per_week": 378.490009387153,
+              "health_ap": 0.6732378354476072,
+              "health_auroc": 0.693834122568372,
+              "lead_hours": -0.09676767676767677,
+              "notifications_per_week_all": 413.19707364285915,
+              "operator_events_per_week": 432.56001072817486
+            }
+          },
+          "pool": "avg",
+          "representation": "multiscale",
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/3.csv",
+              "valve1/4.csv",
+              "valve1/5.csv",
+              "valve1/6.csv",
+              "valve1/7.csv",
+              "valve1/8.csv",
+              "valve1/9.csv",
+              "valve1/10.csv",
+              "valve1/11.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/14.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "valve2/1.csv",
+              "valve2/2.csv",
+              "valve2/3.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 14,
+            "metrics": {
+              "alarm_time_share_clean": 0.5075767735014081,
+              "alerts_per_week": 0.0,
+              "ap": 0.5003070916195518,
+              "auroc": 0.6099311294413647,
+              "events_detected": 33.0,
+              "false_alarm_per_week": 378.490009387153,
+              "health_ap": 0.6732378354476072,
+              "health_auroc": 0.693834122568372,
+              "lead_hours": -0.09676767676767677,
+              "notifications_per_week_all": 413.19707364285915,
+              "operator_events_per_week": 378.490009387153
+            }
+          }
+        },
+        "cnn_plain30_seed0": {
+          "encode_seconds": 0.02066043100785464,
+          "encoder_bytes": 54784,
+          "epochs": 30,
+          "fit_seconds": 2.3708425970107783,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/3.csv",
+              "valve1/4.csv",
+              "valve1/5.csv",
+              "valve1/6.csv",
+              "valve1/7.csv",
+              "valve1/8.csv",
+              "valve1/9.csv",
+              "valve1/10.csv",
+              "valve1/11.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/14.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "valve2/1.csv",
+              "valve2/2.csv",
+              "valve2/3.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 5,
+            "metrics": {
+              "alarm_time_share_clean": 0.8270081802333378,
+              "alerts_per_week": 162.21000402306558,
+              "ap": 0.5110046973388641,
+              "auroc": 0.5757122292224927,
+              "events_detected": 33.0,
+              "false_alarm_per_week": 135.17500335255465,
+              "health_ap": 0.6417507391573031,
+              "health_auroc": 0.6864820274306053,
+              "lead_hours": -0.14412457912457916,
+              "notifications_per_week_all": 223.8150815565487,
+              "operator_events_per_week": 243.31500603459838
+            }
+          },
+          "pool": "avg",
+          "representation": "bottleneck",
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/3.csv",
+              "valve1/4.csv",
+              "valve1/5.csv",
+              "valve1/6.csv",
+              "valve1/7.csv",
+              "valve1/8.csv",
+              "valve1/9.csv",
+              "valve1/10.csv",
+              "valve1/11.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/14.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "valve2/1.csv",
+              "valve2/2.csv",
+              "valve2/3.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 6,
+            "metrics": {
+              "alarm_time_share_clean": 0.8282598006347504,
+              "alerts_per_week": 0.0,
+              "ap": 0.5110046973388641,
+              "auroc": 0.5757122292224927,
+              "events_detected": 33.0,
+              "false_alarm_per_week": 162.21000402306558,
+              "health_ap": 0.6417507391573031,
+              "health_auroc": 0.6864820274306053,
+              "lead_hours": -0.14412457912457916,
+              "notifications_per_week_all": 223.8150815565487,
+              "operator_events_per_week": 162.21000402306558
+            }
+          }
+        },
+        "cnn_plain30_seed1": {
+          "encode_seconds": 0.014880520000588149,
+          "encoder_bytes": 54784,
+          "epochs": 30,
+          "fit_seconds": 0.3679604179924354,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/9.csv",
+              "valve1/10.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 13,
+            "metrics": {
+              "alarm_time_share_clean": 0.4227347905770864,
+              "alerts_per_week": 81.10500201153279,
+              "ap": 0.45837296745815964,
+              "auroc": 0.6229512702763516,
+              "events_detected": 23.0,
+              "false_alarm_per_week": 351.4550087166421,
+              "health_ap": 0.49936445820779235,
+              "health_auroc": 0.6408432967864668,
+              "lead_hours": -0.11329365079365077,
+              "notifications_per_week_all": 327.11434996726354,
+              "operator_events_per_week": 432.56001072817486
+            }
+          },
+          "pool": "avg",
+          "representation": "bottleneck",
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/9.csv",
+              "valve1/10.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 14,
+            "metrics": {
+              "alarm_time_share_clean": 0.42398641097849893,
+              "alerts_per_week": 0.0,
+              "ap": 0.45837296745815964,
+              "auroc": 0.6229512702763516,
+              "events_detected": 23.0,
+              "false_alarm_per_week": 378.490009387153,
+              "health_ap": 0.49936445820779235,
+              "health_auroc": 0.6408432967864668,
+              "lead_hours": -0.11329365079365077,
+              "notifications_per_week_all": 309.8978052321444,
+              "operator_events_per_week": 378.490009387153
+            }
+          }
+        },
+        "cnn_plain30_seed2": {
+          "encode_seconds": 0.013066954008536413,
+          "encoder_bytes": 54784,
+          "epochs": 30,
+          "fit_seconds": 0.35325269898748957,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/3.csv",
+              "valve1/4.csv",
+              "valve1/5.csv",
+              "valve1/6.csv",
+              "valve1/7.csv",
+              "valve1/8.csv",
+              "valve1/9.csv",
+              "valve1/10.csv",
+              "valve1/11.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/14.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "valve2/1.csv",
+              "valve2/2.csv",
+              "valve2/3.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 2,
+            "metrics": {
+              "alarm_time_share_clean": 0.8945062804523713,
+              "alerts_per_week": 108.14000268204371,
+              "ap": 0.5849666973316511,
+              "auroc": 0.674506706793217,
+              "events_detected": 34.0,
+              "false_alarm_per_week": 54.07000134102186,
+              "health_ap": 0.5849666973316511,
+              "health_auroc": 0.674506706793217,
+              "lead_hours": -0.14703431372549022,
+              "notifications_per_week_all": 86.08272367559566,
+              "operator_events_per_week": 135.17500335255465
+            }
+          },
+          "pool": "avg",
+          "representation": "bottleneck",
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/2.csv",
+              "valve1/3.csv",
+              "valve1/4.csv",
+              "valve1/5.csv",
+              "valve1/6.csv",
+              "valve1/7.csv",
+              "valve1/8.csv",
+              "valve1/9.csv",
+              "valve1/10.csv",
+              "valve1/11.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/14.csv",
+              "valve1/15.csv",
+              "valve2/0.csv",
+              "valve2/1.csv",
+              "valve2/2.csv",
+              "valve2/3.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 2,
+            "metrics": {
+              "alarm_time_share_clean": 0.8945062804523713,
+              "alerts_per_week": 0.0,
+              "ap": 0.5849666973316511,
+              "auroc": 0.674506706793217,
+              "events_detected": 34.0,
+              "false_alarm_per_week": 54.07000134102186,
+              "health_ap": 0.5849666973316511,
+              "health_auroc": 0.674506706793217,
+              "lead_hours": -0.14703431372549022,
+              "notifications_per_week_all": 86.08272367559566,
+              "operator_events_per_week": 54.07000134102186
+            }
+          }
+        },
+        "cnn_plain30_seed3": {
+          "encode_seconds": 0.011954401998082176,
+          "encoder_bytes": 54784,
+          "epochs": 30,
+          "fit_seconds": 0.36859478597762063,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/10.csv",
+              "valve1/12.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 8,
+            "metrics": {
+              "alarm_time_share_clean": 0.48030932904206336,
+              "alerts_per_week": 135.17500335255465,
+              "ap": 0.4406950845795462,
+              "auroc": 0.4800928033014912,
+              "events_detected": 18.0,
+              "false_alarm_per_week": 216.28000536408743,
+              "health_ap": 0.7182778798894214,
+              "health_auroc": 0.7212580159347066,
+              "lead_hours": -0.13336956521739127,
+              "notifications_per_week_all": 258.24817102678696,
+              "operator_events_per_week": 351.4550087166421
+            }
+          },
+          "pool": "avg",
+          "representation": "bottleneck",
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/10.csv",
+              "valve1/12.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/8.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 8,
+            "metrics": {
+              "alarm_time_share_clean": 0.48030932904206336,
+              "alerts_per_week": 0.0,
+              "ap": 0.4406950845795462,
+              "auroc": 0.4800928033014912,
+              "events_detected": 18.0,
+              "false_alarm_per_week": 216.28000536408743,
+              "health_ap": 0.7182778798894214,
+              "health_auroc": 0.7212580159347066,
+              "lead_hours": -0.13336956521739127,
+              "notifications_per_week_all": 154.9489026160722,
+              "operator_events_per_week": 216.28000536408743
+            }
+          }
+        },
+        "cnn_plain30_seed4": {
+          "encode_seconds": 0.011742681002942845,
+          "encoder_bytes": 54784,
+          "epochs": 30,
+          "fit_seconds": 0.3589970229950268,
+          "latent_dimension": 32,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/10.csv",
+              "valve1/11.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/15.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 7,
+            "metrics": {
+              "alarm_time_share_clean": 0.23879129229806445,
+              "alerts_per_week": 135.17500335255465,
+              "ap": 0.5346631181908095,
+              "auroc": 0.6658170244645816,
+              "events_detected": 20.0,
+              "false_alarm_per_week": 189.2450046935765,
+              "health_ap": 0.6624978723993958,
+              "health_auroc": 0.6871954072657352,
+              "lead_hours": -0.06990740740740742,
+              "notifications_per_week_all": 275.4647157619061,
+              "operator_events_per_week": 324.42000804613116
+            }
+          },
+          "pool": "avg",
+          "representation": "bottleneck",
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "valve1/0.csv",
+              "valve1/1.csv",
+              "valve1/10.csv",
+              "valve1/11.csv",
+              "valve1/12.csv",
+              "valve1/13.csv",
+              "valve1/15.csv",
+              "other/1.csv",
+              "other/2.csv",
+              "other/3.csv",
+              "other/4.csv",
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 7,
+            "metrics": {
+              "alarm_time_share_clean": 0.23923829958428322,
+              "alerts_per_week": 0.0,
+              "ap": 0.5346631181908095,
+              "auroc": 0.6658170244645816,
+              "events_detected": 20.0,
+              "false_alarm_per_week": 189.2450046935765,
+              "health_ap": 0.6624978723993958,
+              "health_auroc": 0.6871954072657352,
+              "lead_hours": -0.06990740740740742,
+              "notifications_per_week_all": 258.24817102678696,
+              "operator_events_per_week": 189.2450046935765
+            }
+          }
+        },
+        "dsp_d48": {
+          "latent_dimension": 48,
+          "native": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 4,
+            "metrics": {
+              "alarm_time_share_clean": 0.18550802378078762,
+              "alerts_per_week": 135.17500335255465,
+              "ap": 0.44099503611292584,
+              "auroc": 0.5583645064127478,
+              "events_detected": 9.0,
+              "false_alarm_per_week": 108.14000268204371,
+              "health_ap": 0.6381155666231656,
+              "health_auroc": 0.6743222891566265,
+              "lead_hours": -0.12287878787878789,
+              "notifications_per_week_all": 154.9489026160722,
+              "operator_events_per_week": 189.2450046935765
+            }
+          },
+          "score_only": {
+            "clean_observed_hours": 6.214166666666666,
+            "detected_events": [
+              "other/5.csv",
+              "other/6.csv",
+              "other/7.csv",
+              "other/9.csv",
+              "other/10.csv",
+              "other/11.csv",
+              "other/12.csv",
+              "other/13.csv",
+              "other/14.csv"
+            ],
+            "false_alarm_episodes": 4,
+            "metrics": {
+              "alarm_time_share_clean": 0.18550802378078762,
+              "alerts_per_week": 0.0,
+              "ap": 0.44099503611292584,
+              "auroc": 0.5583645064127478,
+              "events_detected": 9.0,
+              "false_alarm_per_week": 108.14000268204371,
+              "health_ap": 0.6381155666231656,
+              "health_auroc": 0.6743222891566265,
+              "lead_hours": -0.12287878787878789,
+              "notifications_per_week_all": 120.51581314583393,
+              "operator_events_per_week": 108.14000268204371
+            }
+          }
+        }
+      },
+      "dsp_dimension": 48,
+      "fusions": {
+        "cnn_middle30_fisher": {
+          "clean_observed_hours": 6.214166666666666,
+          "detected_events": [
+            "valve1/0.csv",
+            "valve1/1.csv",
+            "valve1/2.csv",
+            "valve1/10.csv",
+            "valve1/11.csv",
+            "valve1/12.csv",
+            "valve1/13.csv",
+            "valve1/15.csv",
+            "valve2/0.csv",
+            "valve2/1.csv",
+            "other/1.csv",
+            "other/2.csv",
+            "other/3.csv",
+            "other/4.csv",
+            "other/5.csv",
+            "other/6.csv",
+            "other/7.csv",
+            "other/9.csv",
+            "other/10.csv",
+            "other/11.csv",
+            "other/12.csv",
+            "other/13.csv",
+            "other/14.csv"
+          ],
+          "false_alarm_episodes": 15,
+          "metrics": {
+            "alarm_time_share_clean": 0.32211345044924233,
+            "alerts_per_week": 0.0,
+            "ap": 0.45439636011942025,
+            "auroc": 0.6024626945813816,
+            "events_detected": 23.0,
+            "false_alarm_per_week": 405.52501005766396,
+            "health_ap": 0.6394889504802674,
+            "health_auroc": 0.6728002843291673,
+            "lead_hours": -0.09734567901234567,
+            "notifications_per_week_all": 395.98052890774005,
+            "operator_events_per_week": 405.52501005766396
+          }
+        },
+        "cnn_middle30_median": {
+          "clean_observed_hours": 6.214166666666666,
+          "detected_events": [
+            "valve1/0.csv",
+            "valve1/1.csv",
+            "valve1/2.csv",
+            "valve1/10.csv",
+            "valve1/12.csv",
+            "valve1/13.csv",
+            "valve1/15.csv",
+            "valve2/0.csv",
+            "other/1.csv",
+            "other/2.csv",
+            "other/3.csv",
+            "other/4.csv",
+            "other/5.csv",
+            "other/6.csv",
+            "other/7.csv",
+            "other/8.csv",
+            "other/9.csv",
+            "other/10.csv",
+            "other/11.csv",
+            "other/12.csv",
+            "other/13.csv",
+            "other/14.csv"
+          ],
+          "false_alarm_episodes": 7,
+          "metrics": {
+            "alarm_time_share_clean": 0.45921058513253765,
+            "alerts_per_week": 0.0,
+            "ap": 0.3797815798642349,
+            "auroc": 0.5454472814858756,
+            "events_detected": 22.0,
+            "false_alarm_per_week": 189.2450046935765,
+            "health_ap": 0.6394889504802674,
+            "health_auroc": 0.6728002843291673,
+            "lead_hours": -0.1211226851851852,
+            "notifications_per_week_all": 189.38199208631045,
+            "operator_events_per_week": 189.2450046935765
+          }
+        },
+        "cnn_multiscale30_fisher": {
+          "clean_observed_hours": 6.214166666666666,
+          "detected_events": [
+            "valve1/0.csv",
+            "valve1/1.csv",
+            "valve1/12.csv",
+            "valve1/15.csv",
+            "valve2/0.csv",
+            "other/1.csv",
+            "other/2.csv",
+            "other/5.csv",
+            "other/6.csv",
+            "other/7.csv",
+            "other/9.csv",
+            "other/10.csv",
+            "other/11.csv",
+            "other/12.csv",
+            "other/13.csv",
+            "other/14.csv"
+          ],
+          "false_alarm_episodes": 11,
+          "metrics": {
+            "alarm_time_share_clean": 0.07062715122256492,
+            "alerts_per_week": 0.0,
+            "ap": 0.5148166223213896,
+            "auroc": 0.6020511907562338,
+            "events_detected": 16.0,
+            "false_alarm_per_week": 297.3850073756202,
+            "health_ap": 0.48401031939800027,
+            "health_auroc": 0.6273354240391106,
+            "lead_hours": -0.07026143790849673,
+            "notifications_per_week_all": 309.8978052321444,
+            "operator_events_per_week": 297.3850073756202
+          }
+        },
+        "cnn_multiscale30_median": {
+          "clean_observed_hours": 6.214166666666666,
+          "detected_events": [
+            "valve1/0.csv",
+            "valve1/1.csv",
+            "valve1/2.csv",
+            "valve1/10.csv",
+            "valve1/12.csv",
+            "valve1/13.csv",
+            "valve1/15.csv",
+            "valve2/0.csv",
+            "other/1.csv",
+            "other/2.csv",
+            "other/4.csv",
+            "other/5.csv",
+            "other/6.csv",
+            "other/7.csv",
+            "other/9.csv",
+            "other/10.csv",
+            "other/11.csv",
+            "other/12.csv",
+            "other/13.csv",
+            "other/14.csv"
+          ],
+          "false_alarm_episodes": 9,
+          "metrics": {
+            "alarm_time_share_clean": 0.2868892762952036,
+            "alerts_per_week": 0.0,
+            "ap": 0.39010732230160733,
+            "auroc": 0.5431140947491153,
+            "events_detected": 20.0,
+            "false_alarm_per_week": 243.31500603459838,
+            "health_ap": 0.48401031939800027,
+            "health_auroc": 0.6273354240391106,
+            "lead_hours": -0.09034391534391535,
+            "notifications_per_week_all": 258.24817102678696,
+            "operator_events_per_week": 243.31500603459838
+          }
+        },
+        "cnn_plain30_fisher": {
+          "clean_observed_hours": 6.214166666666666,
+          "detected_events": [
+            "valve1/0.csv",
+            "valve1/1.csv",
+            "valve1/2.csv",
+            "valve1/5.csv",
+            "valve1/9.csv",
+            "valve1/10.csv",
+            "valve1/11.csv",
+            "valve1/12.csv",
+            "valve1/13.csv",
+            "valve1/15.csv",
+            "other/1.csv",
+            "other/2.csv",
+            "other/3.csv",
+            "other/4.csv",
+            "other/5.csv",
+            "other/6.csv",
+            "other/7.csv",
+            "other/9.csv",
+            "other/10.csv",
+            "other/11.csv",
+            "other/12.csv",
+            "other/13.csv",
+            "other/14.csv"
+          ],
+          "false_alarm_episodes": 14,
+          "metrics": {
+            "alarm_time_share_clean": 0.3383398149389835,
+            "alerts_per_week": 0.0,
+            "ap": 0.45560316888822994,
+            "auroc": 0.6270778146542025,
+            "events_detected": 23.0,
+            "false_alarm_per_week": 378.490009387153,
+            "health_ap": 0.6417507391573031,
+            "health_auroc": 0.6864820274306053,
+            "lead_hours": -0.10563034188034187,
+            "notifications_per_week_all": 361.5474394375018,
+            "operator_events_per_week": 378.490009387153
+          }
+        },
+        "cnn_plain30_median": {
+          "clean_observed_hours": 6.214166666666666,
+          "detected_events": [
+            "valve1/0.csv",
+            "valve1/1.csv",
+            "valve1/2.csv",
+            "valve1/9.csv",
+            "valve1/10.csv",
+            "valve1/12.csv",
+            "valve1/13.csv",
+            "valve1/15.csv",
+            "valve2/0.csv",
+            "other/1.csv",
+            "other/2.csv",
+            "other/3.csv",
+            "other/4.csv",
+            "other/5.csv",
+            "other/6.csv",
+            "other/7.csv",
+            "other/8.csv",
+            "other/9.csv",
+            "other/10.csv",
+            "other/11.csv",
+            "other/12.csv",
+            "other/13.csv",
+            "other/14.csv"
+          ],
+          "false_alarm_episodes": 13,
+          "metrics": {
+            "alarm_time_share_clean": 0.40378168164141076,
+            "alerts_per_week": 0.0,
+            "ap": 0.4302187460646413,
+            "auroc": 0.6192750629001575,
+            "events_detected": 23.0,
+            "false_alarm_per_week": 351.4550087166421,
+            "health_ap": 0.6417507391573031,
+            "health_auroc": 0.6864820274306053,
+            "lead_hours": -0.10393849206349205,
+            "notifications_per_week_all": 309.8978052321444,
+            "operator_events_per_week": 351.4550087166421
+          }
+        },
+        "dsp_plus_middle30_max": {
+          "clean_observed_hours": 6.214166666666666,
+          "detected_events": [
+            "valve1/0.csv",
+            "valve1/1.csv",
+            "valve1/2.csv",
+            "valve1/10.csv",
+            "valve1/12.csv",
+            "valve1/13.csv",
+            "valve1/15.csv",
+            "valve2/0.csv",
+            "other/1.csv",
+            "other/2.csv",
+            "other/3.csv",
+            "other/4.csv",
+            "other/5.csv",
+            "other/6.csv",
+            "other/7.csv",
+            "other/8.csv",
+            "other/9.csv",
+            "other/10.csv",
+            "other/11.csv",
+            "other/12.csv",
+            "other/13.csv",
+            "other/14.csv"
+          ],
+          "false_alarm_episodes": 7,
+          "metrics": {
+            "alarm_time_share_clean": 0.4613562201063877,
+            "alerts_per_week": 0.0,
+            "ap": 0.3774806908513425,
+            "auroc": 0.5396064840857487,
+            "events_detected": 22.0,
+            "false_alarm_per_week": 189.2450046935765,
+            "health_ap": 0.6394889504802674,
+            "health_auroc": 0.6728002843291673,
+            "lead_hours": -0.1211226851851852,
+            "notifications_per_week_all": 189.38199208631045,
+            "operator_events_per_week": 189.2450046935765
+          }
+        },
+        "dsp_plus_middle30_mean": {
+          "clean_observed_hours": 6.214166666666666,
+          "detected_events": [
+            "valve1/13.csv",
+            "valve1/15.csv",
+            "valve2/0.csv",
+            "other/1.csv",
+            "other/5.csv",
+            "other/6.csv",
+            "other/7.csv",
+            "other/8.csv",
+            "other/9.csv",
+            "other/10.csv",
+            "other/11.csv",
+            "other/12.csv",
+            "other/13.csv",
+            "other/14.csv"
+          ],
+          "false_alarm_episodes": 6,
+          "metrics": {
+            "alarm_time_share_clean": 0.25220151088462744,
+            "alerts_per_week": 0.0,
+            "ap": 0.40001920291686066,
+            "auroc": 0.5642067420786713,
+            "events_detected": 14.0,
+            "false_alarm_per_week": 162.21000402306558,
+            "health_ap": 0.6394889504802674,
+            "health_auroc": 0.6728002843291673,
+            "lead_hours": -0.09916666666666667,
+            "notifications_per_week_all": 189.38199208631045,
+            "operator_events_per_week": 162.21000402306558
+          }
+        },
+        "dsp_plus_multiscale30_max": {
+          "clean_observed_hours": 6.214166666666666,
+          "detected_events": [
+            "valve1/0.csv",
+            "valve1/1.csv",
+            "valve1/2.csv",
+            "valve1/10.csv",
+            "valve1/12.csv",
+            "valve1/13.csv",
+            "valve1/15.csv",
+            "valve2/0.csv",
+            "other/1.csv",
+            "other/2.csv",
+            "other/4.csv",
+            "other/5.csv",
+            "other/6.csv",
+            "other/7.csv",
+            "other/9.csv",
+            "other/10.csv",
+            "other/11.csv",
+            "other/12.csv",
+            "other/13.csv",
+            "other/14.csv"
+          ],
+          "false_alarm_episodes": 9,
+          "metrics": {
+            "alarm_time_share_clean": 0.2868892762952036,
+            "alerts_per_week": 0.0,
+            "ap": 0.39043368223228625,
+            "auroc": 0.5460766026755579,
+            "events_detected": 20.0,
+            "false_alarm_per_week": 243.31500603459838,
+            "health_ap": 0.48401031939800027,
+            "health_auroc": 0.6273354240391106,
+            "lead_hours": -0.09034391534391535,
+            "notifications_per_week_all": 258.24817102678696,
+            "operator_events_per_week": 243.31500603459838
+          }
+        },
+        "dsp_plus_multiscale30_mean": {
+          "clean_observed_hours": 6.214166666666666,
+          "detected_events": [
+            "valve1/13.csv",
+            "valve1/15.csv",
+            "valve2/0.csv",
+            "other/1.csv",
+            "other/5.csv",
+            "other/6.csv",
+            "other/7.csv",
+            "other/9.csv",
+            "other/10.csv",
+            "other/11.csv",
+            "other/12.csv",
+            "other/13.csv",
+            "other/14.csv"
+          ],
+          "false_alarm_episodes": 5,
+          "metrics": {
+            "alarm_time_share_clean": 0.24160743820124267,
+            "alerts_per_week": 0.0,
+            "ap": 0.3962717945765459,
+            "auroc": 0.5511744558880683,
+            "events_detected": 13.0,
+            "false_alarm_per_week": 135.17500335255465,
+            "health_ap": 0.48401031939800027,
+            "health_auroc": 0.6273354240391106,
+            "lead_hours": -0.10105555555555555,
+            "notifications_per_week_all": 189.38199208631045,
+            "operator_events_per_week": 135.17500335255465
+          }
+        },
+        "dsp_plus_plain30_max": {
+          "clean_observed_hours": 6.214166666666666,
+          "detected_events": [
+            "valve1/0.csv",
+            "valve1/1.csv",
+            "valve1/2.csv",
+            "valve1/9.csv",
+            "valve1/10.csv",
+            "valve1/12.csv",
+            "valve1/13.csv",
+            "valve1/15.csv",
+            "valve2/0.csv",
+            "other/1.csv",
+            "other/2.csv",
+            "other/3.csv",
+            "other/4.csv",
+            "other/5.csv",
+            "other/6.csv",
+            "other/7.csv",
+            "other/8.csv",
+            "other/9.csv",
+            "other/10.csv",
+            "other/11.csv",
+            "other/12.csv",
+            "other/13.csv",
+            "other/14.csv"
+          ],
+          "false_alarm_episodes": 12,
+          "metrics": {
+            "alarm_time_share_clean": 0.4479013007912029,
+            "alerts_per_week": 0.0,
+            "ap": 0.4113164392033443,
+            "auroc": 0.5939727713911673,
+            "events_detected": 23.0,
+            "false_alarm_per_week": 324.42000804613116,
+            "health_ap": 0.6417507391573031,
+            "health_auroc": 0.6864820274306053,
+            "lead_hours": -0.11224206349206348,
+            "notifications_per_week_all": 292.6812604970252,
+            "operator_events_per_week": 324.42000804613116
+          }
+        },
+        "dsp_plus_plain30_mean": {
+          "clean_observed_hours": 6.214166666666666,
+          "detected_events": [
+            "valve1/13.csv",
+            "valve1/15.csv",
+            "valve2/0.csv",
+            "other/1.csv",
+            "other/5.csv",
+            "other/6.csv",
+            "other/7.csv",
+            "other/8.csv",
+            "other/9.csv",
+            "other/10.csv",
+            "other/11.csv",
+            "other/12.csv",
+            "other/13.csv",
+            "other/14.csv"
+          ],
+          "false_alarm_episodes": 6,
+          "metrics": {
+            "alarm_time_share_clean": 0.21769254838853874,
+            "alerts_per_week": 0.0,
+            "ap": 0.4301642939716289,
+            "auroc": 0.5994356245014012,
+            "events_detected": 14.0,
+            "false_alarm_per_week": 162.21000402306558,
+            "health_ap": 0.6417507391573031,
+            "health_auroc": 0.6864820274306053,
+            "lead_hours": -0.09388888888888888,
+            "notifications_per_week_all": 189.38199208631045,
+            "operator_events_per_week": 162.21000402306558
+          }
+        }
+      },
+      "role": "consumed development data; not independent confirmation",
+      "score_only_config": {
+        "aci_gamma": 0.0,
+        "alpha": 0.003,
+        "health_needs_baseline": true,
+        "k_health": 0,
+        "k_novelty": 3,
+        "min_state_windows": 100,
+        "new_state_alert": false,
+        "per_state": true,
+        "shock_mult": 0.0
+      },
+      "shape": {
+        "calibration": 658,
+        "fit": 282,
+        "test": 3722,
+        "windows": 4662
+      }
+    }
+  },
+  "protocol": {
+    "component_p_values": "empirical upper-tail ranks on the existing calibration split",
+    "fusion": "combined scores are recalibrated on the same calibration split; no independence guarantee claimed",
+    "selection": "exploratory; all reported variants retained",
+    "variants": {
+      "actcorr": "base plus off-diagonal activation-correlation penalty",
+      "base": "production maxavg plus orthogonal-weight CNN",
+      "middle30": "first-convolution readout at d=32 and 30 epochs",
+      "multiscale": "pooled first- and second-convolution activations projected without test-label layer selection",
+      "multiscale30": "first- and second-convolution readout at d=32 and 30 epochs",
+      "plain": "average-pooled bottleneck CNN at d=32 and 90 epochs",
+      "plain30": "average-pooled bottleneck CNN at d=32 and 30 epochs",
+      "plain_multiscale": "plain CNN using pooled first- and second-convolution activations",
+      "swa": "base plus arithmetic mean of encoder weights from epochs 60 through 90; SWA-inspired, not a canonical SWA schedule"
+    }
+  },
+  "study": "CNN internal representations, stability, ensembling, and DSP fusion"
+}

@@ -1,0 +1,53 @@
+{
+  "contract": {
+    "channels": 7,
+    "epochs": 5,
+    "student_dimension": 16,
+    "teacher_weight": 0.25,
+    "window_size": 512
+  },
+  "role": "development transfer check; MetroPT-3 was previously consumed",
+  "student": {
+    "baseline": {
+      "auroc": 0.975578605701383,
+      "average_precision": 0.6224804221511903,
+      "events_retained": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "fit_seconds": 1.43328605699935,
+      "positive_windows": 60,
+      "test_windows": 2422,
+      "writes": 2007
+    },
+    "distilled": {
+      "auroc": 0.9750564493367203,
+      "average_precision": 0.5846259233356418,
+      "events_retained": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "fit_seconds": 42.72395228699315,
+      "positive_windows": 60,
+      "test_windows": 2422,
+      "writes": 2810
+    }
+  },
+  "synthetic": null,
+  "teacher": {
+    "alignment": "right",
+    "causal": true,
+    "context_length": 512,
+    "context_policy": "linear",
+    "feature_dim": 526,
+    "include_instance_stats": true,
+    "layer": "embedding-mean-patches+instance-stats",
+    "license": "MIT (verify upstream revision before deployment)",
+    "model_id": "AutonLab/MOMENT-1-small",
+    "model_version": "411e288267f82cce86296dbe4d6c8bc533cc162f"
+  }
+}

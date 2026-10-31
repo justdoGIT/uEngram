@@ -1,0 +1,444 @@
+{
+ "selection_rule": "bench/alarm_dev.py docstring",
+ "iterations": [
+  {
+   "iteration": 1,
+   "change": "policy as first written: counters without a cap",
+   "method": "hst",
+   "configurations": 624,
+   "within_budget": 294,
+   "invalid_calibration": 0,
+   "selected": {
+    "method": "hst",
+    "encoder": "dsp",
+    "seed": 0,
+    "config": {
+     "alpha": 0.01,
+     "k_novelty": 2,
+     "k_health": 0,
+     "per_state": false,
+     "min_state_windows": 100,
+     "new_state_alert": false,
+     "aci_gamma": 0.005
+    },
+    "metrics": {
+     "events_detected": 3.0,
+     "false_alarm_per_week": 0.47043604353192786,
+     "lead_hours": 0.3269444444444444,
+     "alerts_per_week": 0.0,
+     "alarm_time_share_clean": 0.001629576819269746
+    },
+    "detected": [
+     true,
+     true,
+     true,
+     false
+    ]
+   }
+  },
+  {
+   "iteration": 1,
+   "change": "policy as first written: counters without a cap",
+   "method": "memstream",
+   "configurations": 624,
+   "within_budget": 254,
+   "invalid_calibration": 0,
+   "selected": {
+    "method": "memstream",
+    "encoder": "dsp",
+    "seed": 0,
+    "config": {
+     "alpha": 0.003,
+     "k_novelty": 2,
+     "k_health": 0,
+     "per_state": false,
+     "min_state_windows": 100,
+     "new_state_alert": false,
+     "aci_gamma": 0.005
+    },
+    "metrics": {
+     "events_detected": 0.0,
+     "false_alarm_per_week": 0.0,
+     "lead_hours": NaN,
+     "alerts_per_week": 0.0,
+     "alarm_time_share_clean": 0.0
+    },
+    "detected": [
+     false,
+     false,
+     false,
+     false
+    ]
+   }
+  },
+  {
+   "iteration": 1,
+   "change": "policy as first written: counters without a cap",
+   "method": "uengram",
+   "configurations": 624,
+   "within_budget": 0,
+   "invalid_calibration": 0,
+   "selected": null
+  },
+  {
+   "iteration": 2,
+   "change": "counters capped at k (fixed off-delay); health_needs_baseline option",
+   "method": "hst",
+   "configurations": 1248,
+   "within_budget": 928,
+   "invalid_calibration": 0,
+   "selected": {
+    "method": "hst",
+    "encoder": "dsp",
+    "seed": 0,
+    "config": {
+     "alpha": 0.01,
+     "k_novelty": 2,
+     "k_health": 0,
+     "per_state": false,
+     "min_state_windows": 100,
+     "new_state_alert": false,
+     "aci_gamma": 0.005,
+     "health_needs_baseline": false
+    },
+    "metrics": {
+     "events_detected": 3.0,
+     "false_alarm_per_week": 0.3658947005248328,
+     "lead_hours": 0.3269444444444444,
+     "alerts_per_week": 0.0,
+     "alarm_time_share_clean": 0.0011203340632479502
+    },
+    "detected": [
+     true,
+     true,
+     true,
+     false
+    ]
+   }
+  },
+  {
+   "iteration": 2,
+   "change": "counters capped at k (fixed off-delay); health_needs_baseline option",
+   "method": "memstream",
+   "configurations": 1248,
+   "within_budget": 548,
+   "invalid_calibration": 0,
+   "selected": {
+    "method": "memstream",
+    "encoder": "dsp",
+    "seed": 0,
+    "config": {
+     "alpha": 0.01,
+     "k_novelty": 3,
+     "k_health": 0,
+     "per_state": false,
+     "min_state_windows": 100,
+     "new_state_alert": false,
+     "aci_gamma": 0.005,
+     "health_needs_baseline": false
+    },
+    "metrics": {
+     "events_detected": 3.0,
+     "false_alarm_per_week": 0.2613533575177377,
+     "lead_hours": 0.29935185185185187,
+     "alerts_per_week": 0.0,
+     "alarm_time_share_clean": 0.016499465295106177
+    },
+    "detected": [
+     false,
+     true,
+     true,
+     true
+    ]
+   }
+  },
+  {
+   "iteration": 2,
+   "change": "counters capped at k (fixed off-delay); health_needs_baseline option",
+   "method": "uengram",
+   "configurations": 1248,
+   "within_budget": 32,
+   "invalid_calibration": 0,
+   "selected": {
+    "method": "uengram",
+    "encoder": "dsp",
+    "seed": 0,
+    "config": {
+     "alpha": 0.01,
+     "k_novelty": 0,
+     "k_health": 3,
+     "per_state": true,
+     "min_state_windows": 100,
+     "new_state_alert": false,
+     "aci_gamma": 0.0,
+     "health_needs_baseline": true
+    },
+    "metrics": {
+     "events_detected": 1.0,
+     "false_alarm_per_week": 0.20908268601419017,
+     "lead_hours": -13.956111111111111,
+     "alerts_per_week": 6.58610460944699,
+     "alarm_time_share_clean": 0.016805010948719255
+    },
+    "detected": [
+     true,
+     false,
+     false,
+     false
+    ]
+   }
+  },
+  {
+   "iteration": 3,
+   "change": "untrusted health no longer vetoes new-state alerts (uEngram only)",
+   "method": "uengram",
+   "configurations": 1248,
+   "within_budget": 96,
+   "invalid_calibration": 0,
+   "selected": {
+    "method": "uengram",
+    "encoder": "dsp",
+    "seed": 0,
+    "config": {
+     "alpha": 0.003,
+     "k_novelty": 3,
+     "k_health": 0,
+     "per_state": true,
+     "min_state_windows": 100,
+     "new_state_alert": true,
+     "aci_gamma": 0.0,
+     "health_needs_baseline": true
+    },
+    "metrics": {
+     "events_detected": 3.0,
+     "false_alarm_per_week": 0.7317894010496656,
+     "lead_hours": 6.825648148148148,
+     "alerts_per_week": 39.77798101419968,
+     "alarm_time_share_clean": 0.006110913072261547
+    },
+    "detected": [
+     true,
+     true,
+     true,
+     false
+    ]
+   }
+  },
+  {
+   "iteration": 4,
+   "change": "disabled channels fixed; eligibility and duration-weighted exposure corrected",
+   "method": "hst",
+   "configurations": 1248,
+   "within_budget": 800,
+   "invalid_calibration": 0,
+   "selected": {
+    "method": "hst",
+    "encoder": "dsp",
+    "seed": 0,
+    "config": {
+     "alpha": 0.01,
+     "k_novelty": 2,
+     "k_health": 0,
+     "per_state": false,
+     "min_state_windows": 100,
+     "new_state_alert": false,
+     "aci_gamma": 0.005,
+     "health_needs_baseline": false
+    },
+    "metrics": {
+     "events_detected": 3.0,
+     "false_alarm_per_week": 0.3703593542506119,
+     "lead_hours": 0.3269444444444444,
+     "alerts_per_week": 0.0,
+     "alarm_time_share_clean": 0.0011254424349097984
+    },
+    "detected": [
+     true,
+     true,
+     true,
+     false
+    ]
+   }
+  },
+  {
+   "iteration": 4,
+   "change": "disabled channels fixed; eligibility and duration-weighted exposure corrected",
+   "method": "memstream",
+   "configurations": 1248,
+   "within_budget": 420,
+   "invalid_calibration": 0,
+   "selected": {
+    "method": "memstream",
+    "encoder": "dsp",
+    "seed": 0,
+    "config": {
+     "alpha": 0.01,
+     "k_novelty": 3,
+     "k_health": 0,
+     "per_state": false,
+     "min_state_windows": 100,
+     "new_state_alert": false,
+     "aci_gamma": 0.005,
+     "health_needs_baseline": false
+    },
+    "metrics": {
+     "events_detected": 3.0,
+     "false_alarm_per_week": 0.2645423958932942,
+     "lead_hours": 0.29935185185185187,
+     "alerts_per_week": 0.0,
+     "alarm_time_share_clean": 0.01997190111853144
+    },
+    "detected": [
+     false,
+     true,
+     true,
+     true
+    ]
+   }
+  },
+  {
+   "iteration": 4,
+   "change": "disabled channels fixed; eligibility and duration-weighted exposure corrected",
+   "method": "uengram",
+   "configurations": 1248,
+   "within_budget": 87,
+   "invalid_calibration": 0,
+   "selected": {
+    "method": "uengram",
+    "encoder": "dsp",
+    "seed": 0,
+    "config": {
+     "alpha": 0.003,
+     "k_novelty": 3,
+     "k_health": 0,
+     "per_state": true,
+     "min_state_windows": 100,
+     "new_state_alert": true,
+     "aci_gamma": 0.0,
+     "health_needs_baseline": true
+    },
+    "metrics": {
+     "events_detected": 3.0,
+     "false_alarm_per_week": 0.7407187085012238,
+     "lead_hours": 6.825648148148148,
+     "alerts_per_week": 40.263352654959384,
+     "alarm_time_share_clean": 0.005996644230718761
+    },
+    "detected": [
+     true,
+     true,
+     true,
+     false
+    ]
+   }
+  },
+  {
+   "iteration": 5,
+   "change": "unavailable enabled-channel calibration is explicitly invalid",
+   "method": "hst",
+   "configurations": 1248,
+   "within_budget": 800,
+   "invalid_calibration": 128,
+   "selected": {
+    "method": "hst",
+    "encoder": "dsp",
+    "seed": 0,
+    "config": {
+     "alpha": 0.01,
+     "k_novelty": 2,
+     "k_health": 0,
+     "per_state": false,
+     "min_state_windows": 100,
+     "new_state_alert": false,
+     "aci_gamma": 0.005,
+     "health_needs_baseline": false
+    },
+    "metrics": {
+     "events_detected": 3.0,
+     "false_alarm_per_week": 0.3703593542506119,
+     "lead_hours": 0.3269444444444444,
+     "alerts_per_week": 0.0,
+     "alarm_time_share_clean": 0.0011254424349097984
+    },
+    "detected": [
+     true,
+     true,
+     true,
+     false
+    ]
+   }
+  },
+  {
+   "iteration": 5,
+   "change": "unavailable enabled-channel calibration is explicitly invalid",
+   "method": "memstream",
+   "configurations": 1248,
+   "within_budget": 420,
+   "invalid_calibration": 128,
+   "selected": {
+    "method": "memstream",
+    "encoder": "dsp",
+    "seed": 0,
+    "config": {
+     "alpha": 0.01,
+     "k_novelty": 3,
+     "k_health": 0,
+     "per_state": false,
+     "min_state_windows": 100,
+     "new_state_alert": false,
+     "aci_gamma": 0.005,
+     "health_needs_baseline": false
+    },
+    "metrics": {
+     "events_detected": 3.0,
+     "false_alarm_per_week": 0.2645423958932942,
+     "lead_hours": 0.29935185185185187,
+     "alerts_per_week": 0.0,
+     "alarm_time_share_clean": 0.01997190111853144
+    },
+    "detected": [
+     false,
+     true,
+     true,
+     true
+    ]
+   }
+  },
+  {
+   "iteration": 5,
+   "change": "unavailable enabled-channel calibration is explicitly invalid",
+   "method": "uengram",
+   "configurations": 1248,
+   "within_budget": 87,
+   "invalid_calibration": 0,
+   "selected": {
+    "method": "uengram",
+    "encoder": "dsp",
+    "seed": 0,
+    "config": {
+     "alpha": 0.003,
+     "k_novelty": 3,
+     "k_health": 0,
+     "per_state": true,
+     "min_state_windows": 100,
+     "new_state_alert": true,
+     "aci_gamma": 0.0,
+     "health_needs_baseline": true
+    },
+    "metrics": {
+     "events_detected": 3.0,
+     "false_alarm_per_week": 0.7407187085012238,
+     "lead_hours": 6.825648148148148,
+     "alerts_per_week": 40.263352654959384,
+     "alarm_time_share_clean": 0.005996644230718761
+    },
+    "detected": [
+     true,
+     true,
+     true,
+     false
+    ]
+   }
+  }
+ ]
+}

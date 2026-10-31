@@ -1,0 +1,137 @@
+{
+  "groups": {
+    "all": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "no_band_energy": [
+      0,
+      1
+    ],
+    "no_log_std": [
+      0,
+      2,
+      3,
+      4,
+      5
+    ],
+    "no_mean": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "results": {
+    "all": {
+      "cmapss_fd001": {
+        "eol_retention": 1.0,
+        "health_auroc": 0.9989709286177206,
+        "rul_rmse": 42.05087414353777,
+        "write_reduction_pct": 96.70076213397513
+      },
+      "cmapss_fd003": {
+        "eol_retention": 1.0,
+        "health_auroc": 0.9873605653292492,
+        "rul_rmse": 41.90118095699412,
+        "write_reduction_pct": 95.63779961428965
+      },
+      "skab_seed0": {
+        "ap": 0.4192044063879338,
+        "auroc": 0.5458055694765479,
+        "events_detected": 5.0,
+        "false_alarm_episodes": 5,
+        "n_events": 34
+      },
+      "synthetic": {
+        "ap": 0.9954855125353594,
+        "event_recall": 1.0,
+        "write_reduction_pct": 86.1895
+      }
+    },
+    "no_band_energy": {
+      "cmapss_fd001": {
+        "eol_retention": 1.0,
+        "health_auroc": 0.9987396228744252,
+        "rul_rmse": 42.7050398354594,
+        "write_reduction_pct": 95.38708383473727
+      },
+      "cmapss_fd003": {
+        "eol_retention": 0.98,
+        "health_auroc": 0.9898990387521915,
+        "rul_rmse": 41.298485720758066,
+        "write_reduction_pct": 91.50518872256406
+      },
+      "skab_seed0": {
+        "ap": 0.47429201079290684,
+        "auroc": 0.5717522040624297,
+        "events_detected": 9.0,
+        "false_alarm_episodes": 9,
+        "n_events": 34
+      },
+      "synthetic": {
+        "ap": 0.4756829721377744,
+        "event_recall": 0.789169172717715,
+        "write_reduction_pct": 69.9505
+      }
+    },
+    "no_log_std": {
+      "cmapss_fd001": {
+        "eol_retention": 1.0,
+        "health_auroc": 0.9998793321606024,
+        "rul_rmse": 42.747458539617305,
+        "write_reduction_pct": 97.44283995186522
+      },
+      "cmapss_fd003": {
+        "eol_retention": 0.66,
+        "health_auroc": 0.9836828352444095,
+        "rul_rmse": 30.48483659753011,
+        "write_reduction_pct": 90.55928000734687
+      },
+      "skab_seed0": {
+        "ap": 0.42292100507453934,
+        "auroc": 0.5537646127804938,
+        "events_detected": 5.0,
+        "false_alarm_episodes": 6,
+        "n_events": 34
+      },
+      "synthetic": {
+        "ap": 0.9908837715061083,
+        "event_recall": 1.0,
+        "write_reduction_pct": 88.989
+      }
+    },
+    "no_mean": {
+      "cmapss_fd001": {
+        "eol_retention": 1.0,
+        "health_auroc": 0.7481540289479369,
+        "rul_rmse": 42.741227970457636,
+        "write_reduction_pct": 97.78379462494986
+      },
+      "cmapss_fd003": {
+        "eol_retention": 1.0,
+        "health_auroc": 0.8591698741846858,
+        "rul_rmse": 43.547430040554154,
+        "write_reduction_pct": 97.6673707411149
+      },
+      "skab_seed0": {
+        "ap": 0.3610998847895253,
+        "auroc": 0.5059854230163439,
+        "events_detected": 0.0,
+        "false_alarm_episodes": 0,
+        "n_events": 34
+      },
+      "synthetic": {
+        "ap": 0.9953809834494688,
+        "event_recall": 1.0,
+        "write_reduction_pct": 86.309
+      }
+    }
+  },
+  "seeds": "0-9"
+}

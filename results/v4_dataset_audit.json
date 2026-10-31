@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "audit_scope": {
+    "purpose": "Assess public datasets as independent evidence for Laya compressor-health summaries; no training, score claims, or production-readiness claim.",
+    "search_scope": "Primary official repository/publisher records and dataset papers, with targeted web search for multi-asset compressor data. This is not a universal absence search.",
+    "independent_evaluation_status": "NO_GO",
+    "independent_evaluation_available": false,
+    "production_readiness": false,
+    "boolean_status_convention": "Status fields use yes/no/unknown; unknown means not established by sources reviewed, not a claim of absence. Boolean availability/verification fields are true/false where established and null when unknown.",
+    "reason": "No reviewed source is established here as an independent, compressor-semantics-matched, asset-disjoint evaluation set with verified pointwise physical-fault labels. MetroPT3 and MetroPT2 were already consumed and independence of the recordings/assets is unverified. Other candidates have modality/equipment/task mismatch or weak/coarse/non-pointwise labels.",
+    "download_policy": "Only public landing pages and HTTP headers/redirects were checked; no large archive was downloaded, and no terms accepted or login performed."
+  },
+  "candidates": [
+    {
+      "id": "iitk_air_compressor_acoustic",
+      "name": "IIT Kanpur Air Compressor Health State Dataset",
+      "source_url": "https://www.iitk.ac.in/idea/datasets/",
+      "citation": "N. K. Verma, R. K. Sevakula, S. Dixit and A. Salour, Intelligent Condition Based Monitoring using Acoustic Signals for Air Compressors, IEEE Transactions on Reliability 65(1), 291-309 (2016).",
+      "setting": "lab_seeded_faults",
+      "data_form": "acoustic_recordings",
+      "compressor_semantics_match": true,
+      "physical_asset_ids_available": false,
+      "physical_asset_ids_status": "unknown",
+      "asset_independence_verified": false,
+      "asset_independence_status": "no",
+      "fault_labels_pointwise_verified": false,
+      "fault_labels_pointwise_status": "no",
+      "license_status": "unspecified_on_source_page",
+      "independent_evaluation_fit": false,
+      "blockers": ["One reciprocating compressor only; no evidence of independent fleet assets.", "Fault conditions were deliberately seeded; does not establish field-fleet transfer.", "Acoustic-only, unlike compressor pressure/state summaries.", "Landing page links to Google Drive, but no explicit license is stated.", "State-level condition labels do not provide verified pointwise physical fault intervals."],
+      "evidence": [
+        {"extract": "Acoustic dataset was collected on a single stage reciprocating type air compressor", "url": "https://www.iitk.ac.in/idea/datasets/"},
+        {"extract": "Dataset comprises of 8 states which includes healthy state and 7 faulty states", "url": "https://www.iitk.ac.in/idea/datasets/"},
+        {"extract": "faults were seeded into the air compressor", "url": "https://www.iitk.ac.in/idea/datasets/"}
+      ],
+      "access_check": {"method": "HTTP HEAD/redirect inspection", "result": "Google Drive landing endpoint returned HTTP 307 redirect to public file-view page; bytes/access to dataset not verified; no download attempted.", "url": "https://drive.google.com/open?id=1TLbsjInxkjWoLnEEcDwrPEHsirV8KfEf"}
+    },
+    {
+      "id": "mendeley_rotating_machine",
+      "name": "Vibration, Acoustic, Temperature, and Motor Current Dataset of Rotating Machine Under Varying Load Conditions for Fault Diagnosis",
+      "source_url": "https://data.mendeley.com/datasets/ztmf3m7h5x/6",
+      "doi": "10.17632/ztmf3m7h5x.6",
+      "setting": "controlled_testbench_fault_conditions",
+      "data_form": "time_series_vibration_acoustic_temperature_current",
+      "compressor_semantics_match": false,
+      "physical_asset_ids_available": null,
+      "physical_asset_ids_status": "unknown",
+      "asset_independence_verified": false,
+      "asset_independence_status": "no",
+      "fault_labels_pointwise_verified": false,
+      "fault_labels_pointwise_status": "no",
+      "license_status": "verified_CC_BY_4.0",
+      "independent_evaluation_fit": false,
+      "blockers": ["Rotating machinery testbench, not a compressed-air system or compressor-reservoir telemetry.", "Page describes conditions and load but does not establish unique machine IDs or asset-independent partition.", "Fault condition keyed by files/condition descriptions, not verified pointwise field fault chronology."],
+      "evidence": [
+        {"extract": "conditions of the rotating machine include normal, bearing inner race faults, bearing outer race faults, shaft misalignment, and rotor unbalance", "url": "https://data.mendeley.com/datasets/ztmf3m7h5x/6"},
+        {"extract": "Licence CC BY 4.0", "url": "https://data.mendeley.com/datasets/ztmf3m7h5x/6"}
+      ],
+      "access_check": {"method": "public record read", "result": "Landing page and dataset description readable; Download All link visible; actual archive access/size not verified; no download attempted."}
+    },
+    {
+      "id": "metropt3_uci791",
+      "name": "MetroPT-3 Dataset",
+      "source_url": "https://archive.ics.uci.edu/dataset/791/metropt+3+dataset",
+      "doi": "10.24432/C5VW3R",
+      "setting": "operational_train_compressor_report_associated",
+      "data_form": "multivariate_time_series",
+      "compressor_semantics_match": true,
+      "physical_asset_ids_available": null,
+      "physical_asset_ids_status": "unknown",
+      "asset_independence_verified": false,
+      "asset_independence_status": "no",
+      "fault_labels_pointwise_verified": false,
+      "fault_labels_pointwise_status": "no",
+      "license_status": "verified_CC_BY_4.0",
+      "consumed_by_current_work": true,
+      "independent_evaluation_fit": false,
+      "blockers": ["Already consumed in current work; cannot serve as independent evaluation.", "UCI states one train compressor/APU context; record identifiers (#1, #3, #4) are not proof of four independent compressor assets.", "Dataset is explicitly described as unlabeled and relies on company failure reports; intervals are reported proxy, not verified pointwise physical-fault truth.", "Research source states acquisition was from the compressor of a train, so years/recording spans cannot be counted as new independent assets."],
+      "evidence": [
+        {"extract": "readings ... were collected from a compressor's Air Production Unit (APU)", "url": "https://archive.ics.uci.edu/dataset/791/metropt+3+dataset"},
+        {"extract": "The dataset is unlabeled, but the failure reports provided by the company are available", "url": "https://archive.ics.uci.edu/dataset/791/metropt+3+dataset"},
+        {"extract": "Copyright ... Creative Commons Attribution 4.0 International", "url": "https://archive.ics.uci.edu/dataset/791/metropt+3+dataset"},
+        {"extract": "A signal acquisition system was installed ... of a train", "url": "https://www.nature.com/articles/s41597-022-01877-3"}
+      ],
+      "access_check": {"method": "HTTP HEAD", "result": "UCI archive endpoint returned HTTP 200; no body downloaded.", "url": "https://archive.ics.uci.edu/static/public/791/metropt+3+dataset.zip"}
+    },
+    {
+      "id": "metropt2_zenodo7766691",
+      "name": "MetroPT-2 Dataset",
+      "source_url": "https://zenodo.org/records/7766691",
+      "setting": "operational_train_compressor_report_associated",
+      "data_form": "multivariate_time_series",
+      "compressor_semantics_match": true,
+      "physical_asset_ids_available": null,
+      "physical_asset_ids_status": "unknown",
+      "asset_independence_verified": false,
+      "asset_independence_status": "no",
+      "fault_labels_pointwise_verified": false,
+      "fault_labels_pointwise_status": "no",
+      "license_status": "unknown_in_this_audit",
+      "consumed_by_current_work": true,
+      "independent_evaluation_fit": false,
+      "blockers": ["Already consumed in current work; cannot serve as independent evaluation.", "Same MetroPT research/source context cannot be presumed a distinct compressor asset absent verified asset identity.", "Report/maintenance-derived condition windows are not verified pointwise physical-fault labels.", "Zenodo record page returned HTTP 403 to this read client; record metadata/download access could not be confirmed in this audit."],
+      "evidence": [
+        {"extract": "Zenodo record page could not be fetched by audit reader (HTTP 403); no source claims verified here.", "url": "https://zenodo.org/records/7766691"}
+      ],
+      "access_check": {"method": "record page read", "result": "HTTP 403 in audit reader; no archive download attempted."}
+    },
+    {
+      "id": "scania_aps_uci421",
+      "name": "APS Failure at Scania Trucks",
+      "source_url": "https://archive.ics.uci.edu/dataset/421/aps+failure+at+scania+trucks",
+      "doi": "10.24432/C51S51",
+      "setting": "operational_fleet_snapshot",
+      "data_form": "anonymized_rowwise_tabular_snapshot",
+      "compressor_semantics_match": false,
+      "physical_asset_ids_available": false,
+      "physical_asset_ids_status": "no",
+      "asset_independence_verified": false,
+      "asset_independence_status": "no",
+      "fault_labels_pointwise_verified": false,
+      "fault_labels_pointwise_status": "no",
+      "license_status": "verified_CC_BY_4.0",
+      "independent_evaluation_fit": false,
+      "blockers": ["Concerns truck air-pressure system and selected component failure class, not compressor sensor time series/pressure state.", "Rows are snapshot classification examples, no temporal sequences or machine identity key established for asset grouping.", "Feature names are anonymized; class label is component failure versus truck with unrelated failure, not pointwise compressor health."],
+      "evidence": [
+        {"extract": "data collected from heavy Scania trucks in everyday usage", "url": "https://archive.ics.uci.edu/dataset/421/aps+failure+at+scania+trucks"},
+        {"extract": "attribute names ... have been anonymized for proprietary reasons", "url": "https://archive.ics.uci.edu/dataset/421/aps+failure+at+scania+trucks"},
+        {"extract": "positive class consists of component failures for a specific component of the APS system", "url": "https://archive.ics.uci.edu/dataset/421/aps+failure+at+scania+trucks"}
+      ],
+      "access_check": {"method": "official landing page read", "result": "UCI landing page lists a 54 MB downloadable archive; no archive downloaded."}
+    },
+    {
+      "id": "scania_component_x_snd",
+      "name": "SCANIA Component X Dataset",
+      "source_url": "https://www.nature.com/articles/s41597-025-04802-6",
+      "data_repository_url": "https://doi.org/10.5878/jvb5-d390",
+      "setting": "operational_fleet_repair_records_and_readouts",
+      "data_form": "multivariate_time_series_plus_repair_records",
+      "compressor_semantics_match": false,
+      "physical_asset_ids_available": true,
+      "physical_asset_ids_status": "yes_anonymized",
+      "asset_ids_anonymized": true,
+      "asset_independence_verified": true,
+      "asset_independence_status": "yes",
+      "asset_independence_basis": "Paper specifies disjoint vehicle allocation across train/validation/test (70/15/15) and persistent anonymous vehicle IDs; Component X is an anonymized engine component and is not established as compressor/APU.",
+      "fault_labels_pointwise_verified": false,
+      "fault_labels_pointwise_status": "no",
+      "independent_evaluation_fit": false,
+      "potential_transfer_use": "Independent numeric fleet/time-series robustness benchmark only if approved separately; cannot support compressor-specific semantic correctness because component and feature identities are anonymized.",
+      "blockers": ["Component X is an anonymized engine component; no evidence it is an air compressor.", "Operational feature identities are anonymized counters/histograms; physical semantics unavailable.", "Repair/replacement event is operational label, not time-local verified physical fault onset."],
+      "license_status": "verified_CC_BY_4.0",
+      "evidence": [
+        {"extract": "collected exclusively from a single anonymized engine component (Component X) across a fleet of SCANIA trucks", "url": "https://www.nature.com/articles/s41597-025-04802-6"},
+        {"extract": "14 attributes are selected and anonymized in the operational data", "url": "https://www.nature.com/articles/s41597-025-04802-6"},
+        {"extract": "70%, 15%, and 15% of vehicles to the training, validation, and testing sets", "url": "https://www.nature.com/articles/s41597-025-04802-6"},
+        {"extract": "If the components have been changed or marked as repaired, they will be considered as failed", "url": "https://www.nature.com/articles/s41597-025-04802-6"}
+      ],
+      "access_check": {"method": "paper page read", "result": "Paper readable and names Swedish National Data Service repository; dataset archive not accessed or downloaded."}
+    },
+    {
+      "id": "skab_skoltech",
+      "name": "Skoltech Anomaly Benchmark (SKAB) v0.9",
+      "source_url": "https://github.com/waico/skab",
+      "setting": "controlled_testbed_anomaly_experiments",
+      "data_form": "multivariate_sensor_time_series",
+      "compressor_semantics_match": false,
+      "physical_asset_ids_available": null,
+      "physical_asset_ids_status": "unknown",
+      "asset_independence_verified": false,
+      "asset_independence_status": "no",
+      "fault_labels_pointwise_verified": false,
+      "fault_labels_pointwise_status": "no",
+      "license_status": "verified_GPL_3.0",
+      "independent_evaluation_fit": false,
+      "blockers": ["Water-pump circulation testbed, not an air compressor/reservoir system.", "Files represent experiments; file count is not asset count and does not establish independently held-out machines.", "Benchmark anomaly/changepoint labels describe experimental anomalies, not verified compressor physical failures.", "Repository says current corpus v0.9 includes 34 datasets and that testbed collection is under repair; 35-file statement applies to its corpus description and must not be treated as 35 machines."],
+      "evidence": [
+        {"extract": "Each dataset represents a single experiment and contains a single anomaly", "url": "https://github.com/waico/skab"},
+        {"extract": "Pressure ... in the loop after the water pump (Bar)", "url": "https://github.com/waico/skab"},
+        {"extract": "current version of SKAB (v0.9) contains 34 datasets with collective anomalies", "url": "https://github.com/waico/skab"}
+      ],
+      "access_check": {"method": "public GitHub repository listing", "result": "Repository files and README accessible; no data archive download needed or attempted."}
+    }
+  ],
+  "additional_candidate_search": {
+    "performed": true,
+    "scope": "Targeted search for public multi-asset/operational air-compressor fault datasets, supplemented by official dataset and paper pages.",
+    "result": "No additional, clearly independent, publicly documented compressor fleet cohort with verified asset identifiers and pointwise physical fault labels was established in this limited search. SCANIA Component X was surfaced as an additional real-world multi-vehicle predictive-maintenance cohort, but is not established to concern compressors and has anonymized component/features.",
+    "not_a_universal_absence_claim": true
+  },
+  "go_no_go": {
+    "independent_evaluation": "NO-GO",
+    "basis": ["MetroPT2 and MetroPT3 already consumed and asset independence unresolved.", "IITK has one seeded-fault compressor and acoustic-only conditions; no independently held-out physical asset.", "Remaining sources mismatch compressor semantics, represent experiment/testbench files rather than proven distinct machines, or provide only anonymized component snapshots.", "Reported maintenance intervals are not pointwise verified physical-fault labels."],
+    "development_weak_supervision": "GO only for explicitly development-only MetroPT report-associated proxy labels, kept distinct from physical-health certification and with all provenance outside inference state.",
+    "production_readiness": "NO-GO"
+  }
+}

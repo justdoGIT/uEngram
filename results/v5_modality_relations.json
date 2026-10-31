@@ -1,0 +1,544 @@
+{
+  "metropt3": {
+    "role": "development",
+    "longest_event_run_windows": {
+      "0": 154,
+      "1": 41,
+      "2": 182,
+      "3": 34
+    },
+    "clean_runs_longest_first": [
+      309,
+      129,
+      124,
+      71,
+      70,
+      68,
+      32,
+      27,
+      10,
+      8,
+      8,
+      7
+    ],
+    "clean_run_count": 153,
+    "by_k_hold": [
+      {
+        "k_hold": 1,
+        "predicted": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.058752731592695694,
+          "lead_hours": -11.523611111111112
+        },
+        "harness_duty_only": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.058752731592695694,
+          "lead_hours": -11.523611111111112
+        }
+      },
+      {
+        "k_hold": 2,
+        "predicted": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.05100734315102887,
+          "lead_hours": -3.3113194444444445
+        },
+        "harness_duty_only": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.05100734315102887,
+          "lead_hours": -3.3113194444444445
+        }
+      },
+      {
+        "k_hold": 3,
+        "predicted": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.04909212269028419,
+          "lead_hours": -1.5349305555555557
+        },
+        "harness_duty_only": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.04909212269028419,
+          "lead_hours": -1.5349305555555557
+        }
+      },
+      {
+        "k_hold": 6,
+        "predicted": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.04559717121596772,
+          "lead_hours": 0.28263888888888883
+        },
+        "harness_duty_only": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.04559717121596772,
+          "lead_hours": 0.28263888888888883
+        }
+      },
+      {
+        "k_hold": 10,
+        "predicted": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.042796643530871155,
+          "lead_hours": 0.9434027777777777
+        },
+        "harness_duty_only": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.042796643530871155,
+          "lead_hours": 0.9434027777777777
+        }
+      },
+      {
+        "k_hold": 15,
+        "predicted": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.0405879244794446,
+          "lead_hours": 1.7695833333333333
+        },
+        "harness_duty_only": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.0405879244794446,
+          "lead_hours": 1.7695833333333333
+        }
+      },
+      {
+        "k_hold": 20,
+        "predicted": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.03843029430341543,
+          "lead_hours": 2.5956944444444443
+        },
+        "harness_duty_only": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.03843029430341543,
+          "lead_hours": 2.5956944444444443
+        }
+      },
+      {
+        "k_hold": 25,
+        "predicted": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.036272489165484215,
+          "lead_hours": 3.421666666666667
+        },
+        "harness_duty_only": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.036272489165484215,
+          "lead_hours": 3.421666666666667
+        }
+      },
+      {
+        "k_hold": 30,
+        "predicted": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.034217999030711065,
+          "lead_hours": 4.247847222222222
+        },
+        "harness_duty_only": {
+          "events_detected": 4.0,
+          "alarm_time_share_clean": 0.034217999030711065,
+          "lead_hours": 4.247847222222222
+        }
+      },
+      {
+        "k_hold": 35,
+        "predicted": {
+          "events_detected": 3.0,
+          "alarm_time_share_clean": 0.0324417858011418,
+          "lead_hours": 5.779351851851852
+        },
+        "harness_duty_only": {
+          "events_detected": 3.0,
+          "alarm_time_share_clean": 0.0324417858011418,
+          "lead_hours": 5.779351851851852
+        }
+      },
+      {
+        "k_hold": 40,
+        "predicted": {
+          "events_detected": 3.0,
+          "alarm_time_share_clean": 0.03085129463059419,
+          "lead_hours": 6.605277777777778
+        },
+        "harness_duty_only": {
+          "events_detected": 3.0,
+          "alarm_time_share_clean": 0.03085129463059419,
+          "lead_hours": 6.605277777777778
+        }
+      },
+      {
+        "k_hold": 50,
+        "predicted": {
+          "events_detected": 2.0,
+          "alarm_time_share_clean": 0.027670487251401008,
+          "lead_hours": 8.401388888888889
+        },
+        "harness_duty_only": {
+          "events_detected": 2.0,
+          "alarm_time_share_clean": 0.027670487251401008,
+          "lead_hours": 8.401388888888889
+        }
+      }
+    ]
+  },
+  "metropt2_jan": {
+    "role": "posthoc diagnostic (not used for selection)",
+    "longest_event_run_windows": {
+      "0": 23,
+      "1": 1,
+      "2": 1
+    },
+    "clean_runs_longest_first": [
+      37,
+      3,
+      3,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "clean_run_count": 102,
+    "by_k_hold": [
+      {
+        "k_hold": 1,
+        "predicted": {
+          "events_detected": 3.0,
+          "alarm_time_share_clean": 0.011793870192307692,
+          "lead_hours": 2.5555555555555554
+        },
+        "harness_duty_only": {
+          "events_detected": 3.0,
+          "alarm_time_share_clean": 0.011793870192307692,
+          "lead_hours": 2.5555555555555554
+        }
+      },
+      {
+        "k_hold": 2,
+        "predicted": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.004131610576923077,
+          "lead_hours": 0.6138888888888889
+        },
+        "harness_duty_only": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.004131610576923077,
+          "lead_hours": 0.6138888888888889
+        }
+      },
+      {
+        "k_hold": 3,
+        "predicted": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0027794471153846155,
+          "lead_hours": 0.7805555555555556
+        },
+        "harness_duty_only": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0027794471153846155,
+          "lead_hours": 0.7805555555555556
+        }
+      },
+      {
+        "k_hold": 6,
+        "predicted": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.002403846153846154,
+          "lead_hours": 1.2805555555555554
+        },
+        "harness_duty_only": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.002403846153846154,
+          "lead_hours": 1.2805555555555554
+        }
+      },
+      {
+        "k_hold": 10,
+        "predicted": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0021033653846153845,
+          "lead_hours": 1.9472222222222222
+        },
+        "harness_duty_only": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0021033653846153845,
+          "lead_hours": 1.9472222222222222
+        }
+      },
+      {
+        "k_hold": 15,
+        "predicted": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.001727764423076923,
+          "lead_hours": 2.7805555555555554
+        },
+        "harness_duty_only": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.001727764423076923,
+          "lead_hours": 2.7805555555555554
+        }
+      },
+      {
+        "k_hold": 20,
+        "predicted": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0013521634615384615,
+          "lead_hours": 3.613888888888889
+        },
+        "harness_duty_only": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0013521634615384615,
+          "lead_hours": 3.613888888888889
+        }
+      },
+      {
+        "k_hold": 25,
+        "predicted": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0009765625,
+          "lead_hours": null
+        },
+        "harness_duty_only": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0009765625,
+          "lead_hours": null
+        }
+      },
+      {
+        "k_hold": 30,
+        "predicted": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0006009615384615385,
+          "lead_hours": null
+        },
+        "harness_duty_only": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0006009615384615385,
+          "lead_hours": null
+        }
+      },
+      {
+        "k_hold": 35,
+        "predicted": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.00022536057692307694,
+          "lead_hours": null
+        },
+        "harness_duty_only": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.00022536057692307694,
+          "lead_hours": null
+        }
+      },
+      {
+        "k_hold": 40,
+        "predicted": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": null
+        },
+        "harness_duty_only": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": null
+        }
+      },
+      {
+        "k_hold": 50,
+        "predicted": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": null
+        },
+        "harness_duty_only": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": null
+        }
+      }
+    ]
+  },
+  "metropt2_apr": {
+    "role": "posthoc diagnostic (not used for selection)",
+    "longest_event_run_windows": {
+      "0": 26,
+      "1": 1
+    },
+    "clean_runs_longest_first": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "clean_run_count": 11,
+    "by_k_hold": [
+      {
+        "k_hold": 1,
+        "predicted": {
+          "events_detected": 2.0,
+          "alarm_time_share_clean": 0.0015687393040501997,
+          "lead_hours": 2.5483333333333333
+        },
+        "harness_duty_only": {
+          "events_detected": 2.0,
+          "alarm_time_share_clean": 0.0015687393040501997,
+          "lead_hours": 2.5483333333333333
+        }
+      },
+      {
+        "k_hold": 2,
+        "predicted": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": 0.7655555555555555
+        },
+        "harness_duty_only": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": 0.7655555555555555
+        }
+      },
+      {
+        "k_hold": 3,
+        "predicted": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": 0.9322222222222222
+        },
+        "harness_duty_only": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": 0.9322222222222222
+        }
+      },
+      {
+        "k_hold": 6,
+        "predicted": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": 1.4322222222222223
+        },
+        "harness_duty_only": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": 1.4322222222222223
+        }
+      },
+      {
+        "k_hold": 10,
+        "predicted": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": 2.098888888888889
+        },
+        "harness_duty_only": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": 2.098888888888889
+        }
+      },
+      {
+        "k_hold": 15,
+        "predicted": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": 2.9322222222222223
+        },
+        "harness_duty_only": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": 2.9322222222222223
+        }
+      },
+      {
+        "k_hold": 20,
+        "predicted": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": 3.7655555555555558
+        },
+        "harness_duty_only": {
+          "events_detected": 1.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": 3.7655555555555558
+        }
+      },
+      {
+        "k_hold": 25,
+        "predicted": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": null
+        },
+        "harness_duty_only": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": null
+        }
+      },
+      {
+        "k_hold": 30,
+        "predicted": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": null
+        },
+        "harness_duty_only": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": null
+        }
+      },
+      {
+        "k_hold": 35,
+        "predicted": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": null
+        },
+        "harness_duty_only": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": null
+        }
+      },
+      {
+        "k_hold": 40,
+        "predicted": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": null
+        },
+        "harness_duty_only": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": null
+        }
+      },
+      {
+        "k_hold": 50,
+        "predicted": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": null
+        },
+        "harness_duty_only": {
+          "events_detected": 0.0,
+          "alarm_time_share_clean": 0.0,
+          "lead_hours": null
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "protocol": "docs/validation-scania-protocol.md",
+  "rcond": 0.0001,
+  "rows": [
+    {
+      "encoder": "tab_d16",
+      "metrics": {
+        "alarm_vehicles": 1186,
+        "final_row_novelty_ap": 0.03156442385788575,
+        "final_row_novelty_auroc": 0.5402524859230862,
+        "healthy_alarm_rate": 0.23319755600814665,
+        "near_failure_recall": 0.3014705882352941,
+        "recall_by_class": {
+          "0": 0.23319755600814665,
+          "1": 0.1875,
+          "2": 0.42857142857142855,
+          "3": 0.26666666666666666,
+          "4": 0.3157894736842105
+        },
+        "vehicles": 5046
+      },
+      "seconds": 459.8,
+      "status": "ok"
+    },
+    {
+      "encoder": "tab_d32",
+      "metrics": {
+        "alarm_vehicles": 223,
+        "final_row_novelty_ap": 0.03300821726397083,
+        "final_row_novelty_auroc": 0.5657601533485085,
+        "healthy_alarm_rate": 0.043584521384928715,
+        "near_failure_recall": 0.0661764705882353,
+        "recall_by_class": {
+          "0": 0.043584521384928715,
+          "1": 0.0,
+          "2": 0.14285714285714285,
+          "3": 0.06666666666666667,
+          "4": 0.06578947368421052
+        },
+        "vehicles": 5046
+      },
+      "seconds": 521.6,
+      "status": "ok"
+    },
+    {
+      "encoder": "tab_d48",
+      "metrics": {
+        "alarm_vehicles": 2,
+        "final_row_novelty_ap": 0.03300230927051319,
+        "final_row_novelty_auroc": 0.5618890020366599,
+        "healthy_alarm_rate": 0.0004073319755600815,
+        "near_failure_recall": 0.0,
+        "recall_by_class": {
+          "0": 0.0004073319755600815,
+          "1": 0.0,
+          "2": 0.0,
+          "3": 0.0,
+          "4": 0.0
+        },
+        "vehicles": 5046
+      },
+      "seconds": 583.1,
+      "status": "ok"
+    }
+  ]
+}

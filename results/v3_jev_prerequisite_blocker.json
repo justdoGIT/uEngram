@@ -1,0 +1,32 @@
+{
+  "artifact": "prerequisite-blocker",
+  "status": "blocked: no real Jev responses obtainable",
+  "recorded": "2026-10-23",
+  "blocked_reason": "OpenRouter account never purchased credits; direct TypeSafe API key absent from Kepr store",
+  "evidence": {
+    "route_correct": {
+      "endpoint": "POST https://openrouter.ai/api/alpha/decisions",
+      "model": "typesafe/jev-1.14",
+      "source": "https://openrouter.ai/docs/guides/community/jev and /jev-tutorial and /docs/guides/community/typesafe-sdk"
+    },
+    "synthetic_smoke_result": {
+      "http_status": 402,
+      "code": 402,
+      "provider_message": "Insufficient credits. This account never purchased credits. Make sure your key is on the correct account or org, and if so, purchase more at https://openrouter.ai/settings/credits",
+      "request": "synthetic arithmetic statement only; no benchmark data"
+    },
+    "attempted_and_excluded_routes": [
+      "POST /api/v1/chat/completions model=typesafe/jev-1.14 -> HTTP 400 (chat completions is not the Jev surface; Decisions/System One API required)",
+      "GET /api/v1/models/typesafe/jev-1.14 -> HTTP 404 (not a valid list-models subroute)",
+      "POST /api/v1/chat/completions model=typesafe/jev-router -> HTTP 402 (jev-router is a DIFFERENT routing product, not a substitute for Jev)",
+      "http://127.0.0.1:8710/v1/systemone -> ECONNREFUSED (no documented local Jev model)"
+    ],
+    "credentials_present": "OPENROUTER_API_KEY (Kepr); TYPESAFE_API_KEY absent"
+  },
+  "safe_activation_steps": [
+    "Option A: add prepaid credits to the existing OpenRouter account (https://openrouter.ai/settings/credits); no code change needed, OPENROUTER_API_KEY already in Kepr.",
+    "Option B: obtain a TypeSafe API key and store it in Kepr via `kepr set TYPESAFE_API_KEY` (interactive masked input), then run with `kepr exec --env TYPESAFE_API_KEY -- ...` against https://api.typesafe.ai/v1/systemone with model jev-latest."
+  ],
+  "no_fabrication": "No experiment outputs, metrics, or scores are fabricated. No other model is substituted for Jev. No offline heuristic is used as a fallback.",
+  "run_without_access": "bench/jev_experiment.py --normal-frozen emits an explicit unavailable result per candidate and request_failures>=0; it never reports healthy on failure. See tests/test_jev_advisory.py for the fail-closed behavior."
+}

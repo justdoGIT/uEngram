@@ -1,0 +1,127 @@
+{
+  "post_confirmation": true,
+  "no_retuning": true,
+  "freeze_commit": "cddfbf1",
+  "events": [
+    {
+      "stream": "metropt2_jan",
+      "event": 0,
+      "eligible_windows": 25,
+      "v1_raw_exceedances": 0,
+      "v2_raw_exceedances": 0,
+      "v2_exceedances_vetoed_as_new_state": 0,
+      "v2_health_exceedances": 0,
+      "max_novelty_counter": 0,
+      "alarm_windows": 0,
+      "first_report_window_time": "2022-02-28T21:59:50",
+      "first_report_window_snapshot": {
+        "load_share": 0.1666666716337204,
+        "comp_switches": 2.0,
+        "lps_share": 0.0,
+        "motor_current_a": 3.2470831871032715,
+        "oil_temp_c": 71.06916809082031,
+        "tp2_bar": 1.4483001232147217,
+        "tp3_bar": 9.22126579284668,
+        "h1_bar": 7.741034030914307,
+        "dv_pressure_bar": -0.02276666834950447,
+        "reservoirs_min_bar": 1.7259999513626099
+      }
+    },
+    {
+      "stream": "metropt2_jan",
+      "event": 1,
+      "eligible_windows": 4,
+      "v1_raw_exceedances": 0,
+      "v2_raw_exceedances": 0,
+      "v2_exceedances_vetoed_as_new_state": 0,
+      "v2_health_exceedances": 0,
+      "max_novelty_counter": 0,
+      "alarm_windows": 0,
+      "first_report_window_time": "2022-03-23T14:59:50",
+      "first_report_window_snapshot": {
+        "load_share": 0.1666666716337204,
+        "comp_switches": 2.0,
+        "lps_share": 0.0,
+        "motor_current_a": 3.3592495918273926,
+        "oil_temp_c": 63.98792266845703,
+        "tp2_bar": 1.6066333055496216,
+        "tp3_bar": 9.252934455871582,
+        "h1_bar": 7.65440034866333,
+        "dv_pressure_bar": 0.08090002089738846,
+        "reservoirs_min_bar": 1.5880000591278076
+      }
+    },
+    {
+      "stream": "metropt2_jan",
+      "event": 2,
+      "eligible_windows": 323,
+      "v1_raw_exceedances": 0,
+      "v2_raw_exceedances": 0,
+      "v2_exceedances_vetoed_as_new_state": 0,
+      "v2_health_exceedances": 0,
+      "max_novelty_counter": 0,
+      "alarm_windows": 0,
+      "first_report_window_time": "2022-05-30T12:09:50",
+      "first_report_window_snapshot": {
+        "load_share": 0.0,
+        "comp_switches": 0.0,
+        "lps_share": 0.0,
+        "motor_current_a": 2.2455835342407227,
+        "oil_temp_c": 67.21707916259766,
+        "tp2_bar": -0.007633333094418049,
+        "tp3_bar": 9.231432914733887,
+        "h1_bar": 8.953200340270996,
+        "dv_pressure_bar": -0.031166665256023407,
+        "reservoirs_min_bar": 1.4620000123977661
+      }
+    },
+    {
+      "stream": "metropt2_apr",
+      "event": 0,
+      "eligible_windows": 25,
+      "v1_raw_exceedances": 13,
+      "v2_raw_exceedances": 3,
+      "v2_exceedances_vetoed_as_new_state": 3,
+      "v2_health_exceedances": 0,
+      "max_novelty_counter": 0,
+      "alarm_windows": 0,
+      "first_report_window_time": "2022-06-04T10:25:20",
+      "first_report_window_snapshot": {
+        "load_share": 0.0,
+        "comp_switches": 0.0,
+        "lps_share": 0.0,
+        "motor_current_a": -0.0038333325646817684,
+        "oil_temp_c": 66.65416717529297,
+        "tp2_bar": -0.004433333873748779,
+        "tp3_bar": 8.514599800109863,
+        "h1_bar": 8.52769947052002,
+        "dv_pressure_bar": -0.022833330556750298,
+        "reservoirs_min_bar": 8.191339492797852
+      }
+    },
+    {
+      "stream": "metropt2_apr",
+      "event": 1,
+      "eligible_windows": 357,
+      "v1_raw_exceedances": 7,
+      "v2_raw_exceedances": 3,
+      "v2_exceedances_vetoed_as_new_state": 1,
+      "v2_health_exceedances": 9,
+      "max_novelty_counter": 1,
+      "alarm_windows": 0,
+      "first_report_window_time": "2022-07-11T10:20:10",
+      "first_report_window_snapshot": {
+        "load_share": 0.0,
+        "comp_switches": 0.0,
+        "lps_share": 0.0,
+        "motor_current_a": 1.5225831270217896,
+        "oil_temp_c": 65.61917114257812,
+        "tp2_bar": -0.00699999975040555,
+        "tp3_bar": 9.068567276000977,
+        "h1_bar": 8.831132888793945,
+        "dv_pressure_bar": 0.037999995052814484,
+        "reservoirs_min_bar": 8.681257247924805
+      }
+    }
+  ]
+}

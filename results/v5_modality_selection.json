@@ -1,0 +1,140 @@
+{
+  "selection_rule": "events_detected==4 AND alarm_time_share_clean<=0.02 AND false_alarm_per_week<=1; then min alarm_time_share_clean, min lead_hours (earliest first alarm), min k_hold",
+  "fallback_rule": "if no row meets SELECTION_RULE: among rows with events_detected==4 and false_alarm_per_week<=1, min alarm_time_share_clean, then earliest alarm, shorter hold, OR over modalities, fewer channels, state conditioning, larger alpha; the result fails the clean-time budget and is replayed only to test transfer",
+  "used": "fallback",
+  "candidate_files": [
+    "results/v5_modality_ofat_metropt3.jsonl",
+    "results/v5_modality_pairwise_alpha_hold_metropt3.jsonl",
+    "results/v5_modality_pairwise_loaded_all_metropt3.jsonl",
+    "results/v5_modality_pairwise_loaded_pneumatic_metropt3.jsonl"
+  ],
+  "candidates": 159,
+  "budget_satisfying_candidates": 0,
+  "selected": {
+    "stream": "metropt3",
+    "varied": {
+      "k_hold": 40,
+      "min_modalities": 1,
+      "fixed": {
+        "conditioning": "loaded"
+      }
+    },
+    "config": {
+      "alpha": 0.05,
+      "correction": "bonferroni",
+      "calibration": "conformal",
+      "per_state": true,
+      "min_state_windows": 100,
+      "reference": "cal",
+      "unbaselined": "ignore",
+      "duty": true,
+      "min_modalities": 1,
+      "k_hold": 40,
+      "k_release": 1,
+      "channels": [
+        "motor_current_a",
+        "oil_temp_c",
+        "tp2_bar",
+        "tp3_bar",
+        "h1_bar",
+        "dv_pressure_bar",
+        "reservoirs_min_bar"
+      ],
+      "conditioning": "loaded"
+    },
+    "metrics": {
+      "events_detected": 4.0,
+      "false_alarm_per_week": 0.3174508750719531,
+      "alarm_time_share_clean": 0.031055912575036787,
+      "lead_hours": 2.388888888888889,
+      "window_sensitivity": 0.7636363636363637,
+      "window_specificity": 0.9718026702407341,
+      "window_precision": 0.40864864864864864,
+      "notifications_per_week_all": 0.52960310017784,
+      "hold_minutes": 390.0
+    },
+    "events": [
+      {
+        "event": 0,
+        "detected": true,
+        "lead_hours": 7.170555555555556,
+        "alarm_windows": 103,
+        "windows": 143
+      },
+      {
+        "event": 1,
+        "detected": true,
+        "lead_hours": 6.316666666666666,
+        "alarm_windows": 2,
+        "windows": 41
+      },
+      {
+        "event": 2,
+        "detected": true,
+        "lead_hours": 6.328611111111111,
+        "alarm_windows": 247,
+        "windows": 285
+      },
+      {
+        "event": 3,
+        "detected": true,
+        "lead_hours": -10.260277777777778,
+        "alarm_windows": 26,
+        "windows": 26
+      }
+    ],
+    "opening_modalities": {
+      "event": {
+        "oil_temp_c+dv_pressure_bar+sustained_load": 1,
+        "motor_current_a+oil_temp_c+dv_pressure_bar+sustained_load": 1,
+        "motor_current_a+oil_temp_c+tp3_bar+dv_pressure_bar+reservoirs_min_bar+sustained_load": 1
+      },
+      "clean": {
+        "oil_temp_c+dv_pressure_bar+sustained_load": 3,
+        "motor_current_a+oil_temp_c+tp2_bar+tp3_bar+dv_pressure_bar+reservoirs_min_bar+sustained_load": 1,
+        "motor_current_a+oil_temp_c+tp3_bar+dv_pressure_bar+reservoirs_min_bar+sustained_load": 1,
+        "motor_current_a+oil_temp_c+sustained_load": 1
+      },
+      "other": {
+        "motor_current_a+oil_temp_c+tp2_bar+h1_bar+sustained_load": 1,
+        "oil_temp_c": 1
+      }
+    },
+    "reference_windows": {
+      "-1": 334
+    },
+    "judgeable_channels": {
+      "-1": [
+        "motor_current_a",
+        "oil_temp_c",
+        "tp2_bar",
+        "tp3_bar",
+        "h1_bar",
+        "dv_pressure_bar",
+        "reservoirs_min_bar"
+      ]
+    },
+    "per_channel_level": 0.0071428571428571435,
+    "clean_error_rate": {
+      "motor_current_a": 0.04025980720655704,
+      "oil_temp_c": 0.31491313985256975,
+      "tp2_bar": 0.014382184648693232,
+      "tp3_bar": 0.01541316562709418,
+      "h1_bar": 0.002525903397082324,
+      "dv_pressure_bar": 0.07191092324346615,
+      "reservoirs_min_bar": 0.01582555801845456,
+      "sustained_load": 0.055312129491210886
+    },
+    "event_error_rate": {
+      "motor_current_a": 0.7131313131313132,
+      "oil_temp_c": 0.9959595959595959,
+      "tp2_bar": 0.050505050505050504,
+      "tp3_bar": 0.3373737373737374,
+      "h1_bar": 0.03838383838383838,
+      "dv_pressure_bar": 0.9959595959595959,
+      "reservoirs_min_bar": 0.3373737373737374,
+      "sustained_load": 0.9939393939393939
+    },
+    "satisfies_recall_and_budget": false
+  }
+}

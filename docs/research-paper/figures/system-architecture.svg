@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 722 250" role="img" aria-label="arch" font-family="'Noto Sans', 'DejaVu Sans', sans-serif">
+<defs><marker id="arch-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#64748b"/></marker></defs>
+<rect width="722" height="250" fill="#ffffff"/>
+<rect x="16.0" y="34.0" width="133.5" height="63.2" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.0"/>
+<text x="82.7" y="54.9" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Sensor window</text>
+<text x="82.7" y="70.0" font-size="10.5" fill="#475569" text-anchor="middle">C channels</text>
+<text x="82.7" y="84.2" font-size="10.5" fill="#475569" text-anchor="middle">× K samples</text>
+<rect x="175.5" y="34.0" width="129.2" height="63.2" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.0"/>
+<text x="240.1" y="54.9" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Encoder</text>
+<text x="240.1" y="70.0" font-size="10.5" fill="#475569" text-anchor="middle">DSP · CNN · roles</text>
+<text x="240.1" y="84.2" font-size="10.5" fill="#475569" text-anchor="middle">PCA + noise whitening</text>
+<rect x="330.7" y="34.0" width="136.9" height="63.2" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.0"/>
+<text x="399.2" y="54.9" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">uEngram slots</text>
+<text x="399.2" y="70.0" font-size="10.5" fill="#475569" text-anchor="middle">semantic</text>
+<text x="399.2" y="84.2" font-size="10.5" fill="#475569" text-anchor="middle">candidate · episodic</text>
+<rect x="493.6" y="34.0" width="101.3" height="63.2" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.0"/>
+<text x="544.3" y="54.9" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Event store</text>
+<text x="544.3" y="70.0" font-size="10.5" fill="#475569" text-anchor="middle">event records</text>
+<text x="544.3" y="84.2" font-size="10.5" fill="#475569" text-anchor="middle">raw-window pins</text>
+<rect x="620.9" y="34.0" width="84.8" height="63.2" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.0"/>
+<text x="663.3" y="54.9" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Operator</text>
+<text x="663.3" y="70.0" font-size="10.5" fill="#475569" text-anchor="middle">optional LLM</text>
+<text x="663.3" y="84.2" font-size="10.5" fill="#475569" text-anchor="middle">after retrieval</text>
+<rect x="16.0" y="171.2" width="133.5" height="63.2" rx="7" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.0" stroke-dasharray="4 3"/>
+<text x="82.7" y="192.1" font-size="12.5" font-weight="700" fill="#4c1d95" text-anchor="middle">Pre-fit diagnostics</text>
+<text x="82.7" y="207.3" font-size="10.5" fill="#475569" text-anchor="middle">rank · condition</text>
+<text x="82.7" y="221.4" font-size="10.5" fill="#475569" text-anchor="middle">sentinel rates</text>
+<rect x="175.5" y="171.2" width="129.2" height="63.2" rx="7" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.0" stroke-dasharray="4 3"/>
+<text x="240.1" y="192.1" font-size="12.5" font-weight="700" fill="#4c1d95" text-anchor="middle">Fit encoder</text>
+<text x="240.1" y="207.3" font-size="10.5" fill="#475569" text-anchor="middle">PCA + MAD</text>
+<text x="240.1" y="221.4" font-size="10.5" fill="#475569" text-anchor="middle">noise covariance N</text>
+<rect x="330.7" y="171.2" width="136.9" height="63.2" rx="7" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.0" stroke-dasharray="4 3"/>
+<text x="399.2" y="192.1" font-size="12.5" font-weight="700" fill="#4c1d95" text-anchor="middle">Teacher distillation</text>
+<text x="399.2" y="207.3" font-size="10.5" fill="#475569" text-anchor="middle">optional, offline</text>
+<text x="399.2" y="221.4" font-size="10.5" fill="#475569" text-anchor="middle">→ 46 KB student</text>
+<text x="16.0" y="22.0" font-size="11" font-weight="700" fill="#475569" text-anchor="start">EDGE PATH · PER WINDOW, DETERMINISTIC</text>
+<text x="16.0" y="161.2" font-size="11" font-weight="700" fill="#6d28d9" text-anchor="start">COMMISSIONING · OFFLINE</text>
+<path d="M 149.5 65.6 L 175.5 65.6" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#arch-arrow)"/>
+<path d="M 304.7 65.6 L 330.7 65.6" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#arch-arrow)"/>
+<path d="M 467.6 65.6 L 493.6 65.6" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#arch-arrow)"/>
+<path d="M 594.9 65.6 L 620.9 65.6" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#arch-arrow)"/>
+<path d="M 149.5 202.8 L 175.5 202.8" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#arch-arrow)"/>
+<path d="M 330.7 202.8 L 304.7 202.8" fill="none" stroke="#64748b" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#arch-arrow)"/>
+<path d="M 240.1 171.2 L 240.1 97.2" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#arch-arrow)"/>
+<rect x="197.9" y="112.7" width="84.4" height="12.8" rx="3" fill="#ffffff" stroke="none" stroke-width="1.0"/>
+<text x="240.1" y="122.4" font-size="9.5" fill="#475569" text-anchor="middle">frozen parameters</text>
+</svg>

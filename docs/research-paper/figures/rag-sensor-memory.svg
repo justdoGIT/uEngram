@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 622 248" role="img" aria-label="rag" font-family="'Noto Sans', 'DejaVu Sans', sans-serif">
+<defs><marker id="rag-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#64748b"/></marker></defs>
+<rect width="622" height="248" fill="#ffffff"/>
+<rect x="16.0" y="34.0" width="122.5" height="63.2" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.0"/>
+<text x="77.2" y="54.9" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="middle">Chunks</text>
+<text x="77.2" y="70.0" font-size="10.5" fill="#475569" text-anchor="middle">documents / chat</text>
+<text x="77.2" y="84.2" font-size="10.5" fill="#475569" text-anchor="middle">split into chunks</text>
+<rect x="168.5" y="34.0" width="113.9" height="63.2" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.0"/>
+<text x="225.4" y="54.9" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="middle">Embed</text>
+<text x="225.4" y="70.0" font-size="10.5" fill="#475569" text-anchor="middle">vector</text>
+<text x="225.4" y="84.2" font-size="10.5" fill="#475569" text-anchor="middle">+ metadata</text>
+<rect x="312.3" y="34.0" width="107.6" height="63.2" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.0"/>
+<text x="366.1" y="54.9" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="middle">Retrieve</text>
+<text x="366.1" y="70.0" font-size="10.5" fill="#475569" text-anchor="middle">related facts</text>
+<text x="366.1" y="84.2" font-size="10.5" fill="#475569" text-anchor="middle">and episodes</text>
+<rect x="449.9" y="34.0" width="156.4" height="63.2" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.0"/>
+<text x="528.1" y="54.9" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="middle">LLM answer</text>
+<text x="528.1" y="70.0" font-size="10.5" fill="#475569" text-anchor="middle">grounded in evidence;</text>
+<text x="528.1" y="84.2" font-size="10.5" fill="#475569" text-anchor="middle">memory merges / ages facts</text>
+<rect x="16.0" y="151.2" width="122.5" height="63.2" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.0"/>
+<text x="77.2" y="172.1" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Sensor windows</text>
+<text x="77.2" y="187.3" font-size="10.5" fill="#475569" text-anchor="middle">aligned channels</text>
+<text x="77.2" y="201.4" font-size="10.5" fill="#475569" text-anchor="middle">raw stream retained</text>
+<rect x="168.5" y="151.2" width="113.9" height="63.2" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.0"/>
+<text x="225.4" y="172.1" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Features</text>
+<text x="225.4" y="187.3" font-size="10.5" fill="#475569" text-anchor="middle">deterministic vector</text>
+<text x="225.4" y="201.4" font-size="10.5" fill="#475569" text-anchor="middle">+ time / asset ID</text>
+<rect x="312.3" y="151.2" width="107.6" height="63.2" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.0"/>
+<text x="366.1" y="172.1" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Retrieve</text>
+<text x="366.1" y="187.3" font-size="10.5" fill="#475569" text-anchor="middle">similar episodes</text>
+<text x="366.1" y="201.4" font-size="10.5" fill="#475569" text-anchor="middle">+ current baseline</text>
+<rect x="449.9" y="151.2" width="156.4" height="63.2" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.0"/>
+<text x="528.1" y="172.1" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Diagnostic view</text>
+<text x="528.1" y="187.3" font-size="10.5" fill="#475569" text-anchor="middle">why now, what changed,</text>
+<text x="528.1" y="201.4" font-size="10.5" fill="#475569" text-anchor="middle">which raw slice proves it</text>
+<text x="16.0" y="22.0" font-size="11" font-weight="700" fill="#475569" text-anchor="start">TEXT RAG + MEMORY LAYER</text>
+<text x="16.0" y="139.2" font-size="11" font-weight="700" fill="#475569" text-anchor="start">SENSOR-STATE MEMORY (PROPOSED DB CAPABILITY)</text>
+<path d="M 138.5 65.6 L 168.5 65.6" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#rag-arrow)"/>
+<path d="M 282.3 65.6 L 312.3 65.6" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#rag-arrow)"/>
+<path d="M 419.9 65.6 L 449.9 65.6" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#rag-arrow)"/>
+<path d="M 138.5 182.8 L 168.5 182.8" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#rag-arrow)"/>
+<path d="M 282.3 182.8 L 312.3 182.8" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#rag-arrow)"/>
+<path d="M 419.9 182.8 L 449.9 182.8" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#rag-arrow)"/>
+<text x="16.0" y="238.4" font-size="10" font-style="italic" fill="#475569" text-anchor="start">Sensor baselines update only under a safe admission rule; the sensor-state DBMS is proposed, not implemented.</text>
+</svg>

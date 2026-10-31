@@ -1,0 +1,681 @@
+{
+  "metropt3": {
+    "states": {
+      "fit": [
+        1699,
+        933,
+        0
+      ],
+      "cal": [
+        572,
+        333,
+        1
+      ],
+      "test": [
+        9156,
+        10396,
+        1744
+      ]
+    },
+    "rates": {
+      "clean/state0": {
+        "windows": 8600,
+        "own_reference": 1.0,
+        "novelty_above": 0.0026,
+        "health_above": 0.0038,
+        "new_memory_state": 0.0027,
+        "low_pressure": 0.0,
+        "oil_departed": 0.132
+      },
+      "clean/state1": {
+        "windows": 9726,
+        "own_reference": 1.0,
+        "novelty_above": 0.0077,
+        "health_above": 0.012,
+        "new_memory_state": 0.0218,
+        "low_pressure": 0.0005,
+        "oil_departed": 0.1342
+      },
+      "clean/state2": {
+        "windows": 1073,
+        "own_reference": 0.0,
+        "novelty_above": 0.5825,
+        "health_above": 0.8723,
+        "new_memory_state": 0.2181,
+        "low_pressure": 0.0298,
+        "oil_departed": 0.3318
+      },
+      "pre24h/state0": {
+        "windows": 224,
+        "own_reference": 1.0,
+        "novelty_above": 0.0,
+        "health_above": 0.0045,
+        "new_memory_state": 0.0045,
+        "low_pressure": 0.0,
+        "oil_departed": 0.3259
+      },
+      "pre24h/state1": {
+        "windows": 193,
+        "own_reference": 1.0,
+        "novelty_above": 0.0155,
+        "health_above": 0.0207,
+        "new_memory_state": 0.0,
+        "low_pressure": 0.0,
+        "oil_departed": 0.0
+      },
+      "pre24h/state2": {
+        "windows": 53,
+        "own_reference": 0.0,
+        "novelty_above": 0.0566,
+        "health_above": 0.0566,
+        "new_memory_state": 0.0566,
+        "low_pressure": 0.0,
+        "oil_departed": 0.0
+      },
+      "event/state0": {
+        "windows": 2,
+        "own_reference": 1.0,
+        "novelty_above": 0.0,
+        "health_above": 0.0,
+        "new_memory_state": 0.0,
+        "low_pressure": 0.0,
+        "oil_departed": 0.5
+      },
+      "event/state1": {
+        "windows": 1,
+        "own_reference": 1.0,
+        "novelty_above": 0.0,
+        "health_above": 0.0,
+        "new_memory_state": 0.0,
+        "low_pressure": 0.0,
+        "oil_departed": 0.0
+      },
+      "event/state2": {
+        "windows": 492,
+        "own_reference": 0.0,
+        "novelty_above": 0.9492,
+        "health_above": 0.9695,
+        "new_memory_state": 0.0955,
+        "low_pressure": 0.0224,
+        "oil_departed": 0.0
+      }
+    },
+    "clustering": {
+      "counted_exceedances": {
+        "p": 0.02680550543842466,
+        "a": 0.009001285897985427,
+        "b": 0.6821705426356589,
+        "pairs": 19180
+      },
+      "clean_weeks": 18.90056216931217,
+      "observed_openings_per_week": 0.5819932709652473,
+      "predicted_triggers_per_week_k3": {
+        "counter": {
+          "independent": 0.019740264130114867,
+          "markov": 4.23905094255993
+        },
+        "consecutive": {
+          "independent": 0.019239094654679163,
+          "markov": 4.23514645923473
+        },
+        "m_of_n": {
+          "independent": 0.17256127722176318,
+          "markov": 4.280320109611598
+        },
+        "ewma": {
+          "independent": 0.06170205578394384,
+          "markov": 4.261992436579491
+        }
+      }
+    },
+    "phi_with_sustained_load": {
+      "clean": {
+        "novelty_above": 0.697,
+        "health_above": 0.859,
+        "new_memory_state": 0.305,
+        "low_pressure": 0.155,
+        "oil_departed": 0.129
+      },
+      "event": {
+        "novelty_above": 0.319,
+        "health_above": 0.402,
+        "new_memory_state": 0.025,
+        "low_pressure": 0.012,
+        "oil_departed": -0.576
+      }
+    },
+    "separability": {
+      "state2": {
+        "novelty": {
+          "clean_vs_event": 0.8007599693890695,
+          "clean_vs_pre24h": 0.34911814872777786
+        },
+        "health": {
+          "clean_vs_event": 0.838345494358951,
+          "clean_vs_pre24h": 0.07281647294659656
+        }
+      }
+    },
+    "physics": {
+      "fill_windows": 1,
+      "oil_departed_by_state": [
+        0.1322,
+        0.127,
+        0.2592
+      ],
+      "oil_temp_median_departed_vs_not": [
+        65.14999389648438,
+        64.09833145141602
+      ],
+      "event_low_pressure": [
+        {
+          "event": 0,
+          "windows": 0,
+          "eligible_windows": 0
+        },
+        {
+          "event": 1,
+          "windows": 0,
+          "eligible_windows": 0
+        },
+        {
+          "event": 2,
+          "windows": 5,
+          "eligible_windows": 3,
+          "first_minutes_into_segment": 9.75,
+          "cut_in_reached_before_first": false,
+          "cut_in_reached_in_segment_until_first": false
+        },
+        {
+          "event": 3,
+          "windows": 9,
+          "eligible_windows": 8,
+          "first_minutes_into_segment": 9.75,
+          "cut_in_reached_before_first": false,
+          "cut_in_reached_in_segment_until_first": false
+        }
+      ]
+    },
+    "v5_hold": {
+      "reset": {
+        "events_detected": 4.0,
+        "false_alarm_per_week": 0.3174508750719531,
+        "alarm_time_share_clean": 0.031055912575036787
+      },
+      "hold": {
+        "events_detected": 4.0,
+        "false_alarm_per_week": 1.1110780627518357,
+        "alarm_time_share_clean": 0.06637800868860806
+      },
+      "hold_stale36": {
+        "events_detected": 4.0,
+        "false_alarm_per_week": 1.1110780627518357,
+        "alarm_time_share_clean": 0.06637800868860806
+      },
+      "judged_clean_condition_true": 0.6265394943976295,
+      "dominant_channel": "oil_temp_c",
+      "dominant_monthly_error_share": {
+        "2020-03": 0.4343687374749499,
+        "2020-04": 0.1905564924114671,
+        "2020-05": 0.543217665615142,
+        "2020-06": 0.7387533875338753,
+        "2020-07": 0.7574683544303797,
+        "2020-08": 0.5869565217391305,
+        "2020-09": 0.0
+      }
+    }
+  },
+  "metropt2_jan": {
+    "states": {
+      "fit": [
+        979,
+        1475,
+        29
+      ],
+      "cal": [
+        376,
+        449,
+        7
+      ],
+      "test": [
+        4276,
+        10005,
+        202
+      ]
+    },
+    "rates": {
+      "clean/state0": {
+        "windows": 3811,
+        "own_reference": 1.0,
+        "novelty_above": 0.0,
+        "health_above": 0.001,
+        "new_memory_state": 0.0129,
+        "low_pressure": 0.0003,
+        "oil_departed": 0.0
+      },
+      "clean/state1": {
+        "windows": 9344,
+        "own_reference": 1.0,
+        "novelty_above": 0.0001,
+        "health_above": 0.0002,
+        "new_memory_state": 0.0119,
+        "low_pressure": 0.004,
+        "oil_departed": 0.0
+      },
+      "clean/state2": {
+        "windows": 157,
+        "own_reference": 0.0,
+        "novelty_above": 0.0,
+        "health_above": 0.0,
+        "new_memory_state": 0.2803,
+        "low_pressure": 0.6369,
+        "oil_departed": 0.0
+      },
+      "pre24h/state0": {
+        "windows": 165,
+        "own_reference": 1.0,
+        "novelty_above": 0.0,
+        "health_above": 0.0,
+        "new_memory_state": 0.0061,
+        "low_pressure": 0.0,
+        "oil_departed": 0.0
+      },
+      "pre24h/state1": {
+        "windows": 192,
+        "own_reference": 1.0,
+        "novelty_above": 0.0,
+        "health_above": 0.0,
+        "new_memory_state": 0.0208,
+        "low_pressure": 0.0,
+        "oil_departed": 0.0
+      },
+      "event/state0": {
+        "windows": 137,
+        "own_reference": 1.0,
+        "novelty_above": 0.0,
+        "health_above": 0.0,
+        "new_memory_state": 0.0292,
+        "low_pressure": 0.0,
+        "oil_departed": 0.0
+      },
+      "event/state1": {
+        "windows": 184,
+        "own_reference": 1.0,
+        "novelty_above": 0.0,
+        "health_above": 0.0,
+        "new_memory_state": 0.0054,
+        "low_pressure": 0.0054,
+        "oil_departed": 0.0
+      },
+      "event/state2": {
+        "windows": 31,
+        "own_reference": 0.0,
+        "novelty_above": 0.0,
+        "health_above": 0.0,
+        "new_memory_state": 0.3226,
+        "low_pressure": 0.6129,
+        "oil_departed": 0.0
+      }
+    },
+    "clustering": {
+      "counted_exceedances": {
+        "p": 7.512019230769231e-05,
+        "a": 7.578628268283441e-05,
+        "b": 0.0,
+        "pairs": 13196
+      },
+      "clean_weeks": 12.986243386243386,
+      "observed_openings_per_week": 0.0,
+      "predicted_triggers_per_week_k3": {
+        "counter": {
+          "independent": 4.3455758803967926e-10,
+          "markov": 0.0
+        },
+        "consecutive": {
+          "independent": 4.345249502094803e-10,
+          "markov": 0.0
+        },
+        "m_of_n": {
+          "independent": 4.343786422320541e-09,
+          "markov": 1.3382207448516316e-09
+        },
+        "ewma": {
+          "independent": 1.3038335191066848e-09,
+          "markov": 0.0
+        }
+      }
+    },
+    "phi_with_sustained_load": {
+      "clean": {
+        "novelty_above": -0.001,
+        "health_above": -0.002,
+        "new_memory_state": 0.236,
+        "low_pressure": 0.676,
+        "oil_departed": null
+      },
+      "event": {
+        "novelty_above": null,
+        "health_above": null,
+        "new_memory_state": 0.431,
+        "low_pressure": 0.746,
+        "oil_departed": null
+      }
+    },
+    "separability": {
+      "state0": {
+        "novelty": {
+          "clean_vs_event": 0.4808133198750448,
+          "clean_vs_pre24h": 0.5745473628968775
+        },
+        "health": {
+          "clean_vs_event": 0.7720314035245649,
+          "clean_vs_pre24h": 0.5077121251878534
+        }
+      },
+      "state1": {
+        "novelty": {
+          "clean_vs_event": 0.4498707610556879,
+          "clean_vs_pre24h": 0.57638201430508
+        },
+        "health": {
+          "clean_vs_event": 0.5833358537447886,
+          "clean_vs_pre24h": 0.4169604157748288
+        }
+      },
+      "state2": {
+        "novelty": {
+          "clean_vs_event": 0.5818779535648243,
+          "clean_vs_pre24h": null
+        },
+        "health": {
+          "clean_vs_event": 0.7396753647010479,
+          "clean_vs_pre24h": null
+        }
+      }
+    },
+    "physics": {
+      "fill_windows": 1,
+      "oil_departed_by_state": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "oil_temp_median_departed_vs_not": [
+        null,
+        68.17708587646484
+      ],
+      "event_low_pressure": [
+        {
+          "event": 0,
+          "windows": 19,
+          "eligible_windows": 19,
+          "first_minutes_into_segment": 1019.8333333333334,
+          "cut_in_reached_before_first": true,
+          "cut_in_reached_in_segment_until_first": true
+        },
+        {
+          "event": 1,
+          "windows": 0,
+          "eligible_windows": 0
+        },
+        {
+          "event": 2,
+          "windows": 1,
+          "eligible_windows": 1,
+          "first_minutes_into_segment": 19.833333333333332,
+          "cut_in_reached_before_first": true,
+          "cut_in_reached_in_segment_until_first": true
+        }
+      ]
+    },
+    "v5_hold": {
+      "reset": {
+        "events_detected": 0.0,
+        "false_alarm_per_week": 0.385022816166884,
+        "alarm_time_share_clean": 0.011568509615384616
+      },
+      "hold": {
+        "events_detected": 1.0,
+        "false_alarm_per_week": 0.0770045632333768,
+        "alarm_time_share_clean": 0.54296875
+      },
+      "hold_stale36": {
+        "events_detected": 1.0,
+        "false_alarm_per_week": 0.0770045632333768,
+        "alarm_time_share_clean": 0.54296875
+      },
+      "judged_clean_condition_true": 0.6162509209556889,
+      "dominant_channel": "reservoirs_min_bar",
+      "dominant_monthly_error_share": {
+        "2022-01": 0.0,
+        "2022-02": 0.0157600406710727,
+        "2022-03": 0.11352785145888594,
+        "2022-04": 1.0,
+        "2022-05": 1.0
+      }
+    }
+  },
+  "metropt2_apr": {
+    "states": {
+      "fit": [
+        1569,
+        1080,
+        6
+      ],
+      "cal": [
+        525,
+        344,
+        0
+      ],
+      "test": [
+        4802,
+        3244,
+        44
+      ]
+    },
+    "rates": {
+      "clean/state0": {
+        "windows": 4224,
+        "own_reference": 1.0,
+        "novelty_above": 0.0,
+        "health_above": 0.0002,
+        "new_memory_state": 0.0137,
+        "low_pressure": 0.0,
+        "oil_departed": 0.0
+      },
+      "clean/state1": {
+        "windows": 2777,
+        "own_reference": 1.0,
+        "novelty_above": 0.0112,
+        "health_above": 0.0022,
+        "new_memory_state": 0.1012,
+        "low_pressure": 0.0,
+        "oil_departed": 0.0
+      },
+      "clean/state2": {
+        "windows": 11,
+        "own_reference": 0.0,
+        "novelty_above": 0.0,
+        "health_above": 0.0,
+        "new_memory_state": 0.8182,
+        "low_pressure": 0.0,
+        "oil_departed": 0.0
+      },
+      "pre24h/state0": {
+        "windows": 155,
+        "own_reference": 1.0,
+        "novelty_above": 0.0,
+        "health_above": 0.0,
+        "new_memory_state": 0.0452,
+        "low_pressure": 0.0,
+        "oil_departed": 0.0774
+      },
+      "pre24h/state1": {
+        "windows": 83,
+        "own_reference": 1.0,
+        "novelty_above": 0.012,
+        "health_above": 0.012,
+        "new_memory_state": 0.1928,
+        "low_pressure": 0.0,
+        "oil_departed": 0.1446
+      },
+      "event/state0": {
+        "windows": 150,
+        "own_reference": 1.0,
+        "novelty_above": 0.0,
+        "health_above": 0.0,
+        "new_memory_state": 0.3733,
+        "low_pressure": 0.0,
+        "oil_departed": 1.0
+      },
+      "event/state1": {
+        "windows": 203,
+        "own_reference": 1.0,
+        "novelty_above": 0.0099,
+        "health_above": 0.0443,
+        "new_memory_state": 0.6108,
+        "low_pressure": 0.0148,
+        "oil_departed": 1.0
+      },
+      "event/state2": {
+        "windows": 29,
+        "own_reference": 0.0,
+        "novelty_above": 0.1379,
+        "health_above": 0.0,
+        "new_memory_state": 0.6207,
+        "low_pressure": 0.6552,
+        "oil_departed": 1.0
+      }
+    },
+    "clustering": {
+      "counted_exceedances": {
+        "p": 0.0017113519680547634,
+        "a": 0.0017266187050359713,
+        "b": 0.0,
+        "pairs": 6962
+      },
+      "clean_weeks": 6.840410052910053,
+      "observed_openings_per_week": 0.0,
+      "predicted_triggers_per_week_k3": {
+        "counter": {
+          "independent": 5.137776868322548e-06,
+          "markov": 0.0
+        },
+        "consecutive": {
+          "independent": 5.129014392172534e-06,
+          "markov": 0.0
+        },
+        "m_of_n": {
+          "independent": 5.0939802356684316e-05,
+          "markov": 1.573872980713638e-05
+        },
+        "ewma": {
+          "independent": 1.5465362489995582e-05,
+          "markov": 9.188910633671844e-09
+        }
+      }
+    },
+    "phi_with_sustained_load": {
+      "clean": {
+        "novelty_above": -0.003,
+        "health_above": -0.001,
+        "new_memory_state": 0.14,
+        "low_pressure": null,
+        "oil_departed": null
+      },
+      "event": {
+        "novelty_above": 0.282,
+        "health_above": -0.045,
+        "new_memory_state": 0.059,
+        "low_pressure": 0.735,
+        "oil_departed": null
+      }
+    },
+    "separability": {
+      "state0": {
+        "novelty": {
+          "clean_vs_event": 0.8220770202020202,
+          "clean_vs_pre24h": 0.567181390518084
+        },
+        "health": {
+          "clean_vs_event": 0.9946306818181818,
+          "clean_vs_pre24h": 0.3418820259042033
+        }
+      },
+      "state1": {
+        "novelty": {
+          "clean_vs_event": 0.7250177833044484,
+          "clean_vs_pre24h": 0.6383763357354517
+        },
+        "health": {
+          "clean_vs_event": 0.9327870917157297,
+          "clean_vs_pre24h": 0.49688274162548646
+        }
+      },
+      "state2": {
+        "novelty": {
+          "clean_vs_event": 0.890282131661442,
+          "clean_vs_pre24h": null
+        },
+        "health": {
+          "clean_vs_event": 0.9529780564263323,
+          "clean_vs_pre24h": null
+        }
+      }
+    },
+    "physics": {
+      "fill_windows": 1,
+      "oil_departed_by_state": [
+        0.0356,
+        0.0697,
+        0.75
+      ],
+      "oil_temp_median_departed_vs_not": [
+        66.23645782470703,
+        56.475830078125
+      ],
+      "event_low_pressure": [
+        {
+          "event": 0,
+          "windows": 18,
+          "eligible_windows": 18,
+          "first_minutes_into_segment": 1269.7,
+          "cut_in_reached_before_first": true,
+          "cut_in_reached_in_segment_until_first": true
+        },
+        {
+          "event": 1,
+          "windows": 4,
+          "eligible_windows": 4,
+          "first_minutes_into_segment": 2339.8,
+          "cut_in_reached_before_first": true,
+          "cut_in_reached_in_segment_until_first": true
+        }
+      ]
+    },
+    "v5_hold": {
+      "reset": {
+        "events_detected": 0.0,
+        "false_alarm_per_week": 0.0,
+        "alarm_time_share_clean": 0.0
+      },
+      "hold": {
+        "events_detected": 1.0,
+        "false_alarm_per_week": 0.0,
+        "alarm_time_share_clean": 0.0
+      },
+      "hold_stale36": {
+        "events_detected": 1.0,
+        "false_alarm_per_week": 0.0,
+        "alarm_time_share_clean": 0.0
+      },
+      "judged_clean_condition_true": 0.02582496413199426,
+      "dominant_channel": "motor_current_a",
+      "dominant_monthly_error_share": {
+        "2022-05": 0.01749271137026239,
+        "2022-06": 0.010702341137123745,
+        "2022-07": 0.008421052631578947
+      }
+    }
+  }
+}
