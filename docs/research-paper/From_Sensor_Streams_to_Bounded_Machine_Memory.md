@@ -6,7 +6,7 @@ Independent Researcher · ORCID https://orcid.org/0009-0002-9009-1972
 
 **Keywords:** Bounded edge memory · Streaming anomaly detection · Noise whitening · Time-series foundation models · Knowledge distillation · Telemetry databases
 
-Preprint · October 30, 2026
+Preprint · November 2, 2026 · DOI [10.5281/zenodo.23893969](https://doi.org/10.5281/zenodo.23893969)
 
 ## Abstract
 

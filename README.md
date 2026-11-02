@@ -12,13 +12,15 @@ A reference implementation and benchmark of a deterministic, fixed-budget memory
 
 ## Paper and project metadata
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23893969.svg)](https://doi.org/10.5281/zenodo.23893969)
+
+- DOI: [10.5281/zenodo.23893969](https://doi.org/10.5281/zenodo.23893969).
 - License: [MIT](LICENSE).
 - Citation metadata: [CITATION.cff](CITATION.cff).
 - Paper source: [`docs/research-paper/From_Sensor_Streams_to_Bounded_Machine_Memory.md`](docs/research-paper/From_Sensor_Streams_to_Bounded_Machine_Memory.md); PDF: [`docs/research-paper/From_Sensor_Streams_to_Bounded_Machine_Memory.pdf`](docs/research-paper/From_Sensor_Streams_to_Bounded_Machine_Memory.pdf).
 - Supplementary results: [generated results ledger](docs/results-ledger.md).
 - Reproduction commands and data layout: [reproducing the paper](docs/reproducing-the-paper.md).
 - Audit changes and corrections: [paper corrections](docs/paper-corrections.md).
-
 ## Environment
 
 `/home` is small on the development machine, so the uv cache and venv live on `/home/kk/Backup`:

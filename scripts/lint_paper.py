@@ -11,7 +11,7 @@ REPOSITORY_LEAKAGE_RULES = [
     ("repository paths", re.compile(r"(?<![\w.-])(?:src|bench|scripts|results|tests|docs)/", re.I)),
     ("repository file extensions", re.compile(r"\.(?:py|json|jsonl|csv|cff|toml)\b", re.I)),
     ("line-range citations", re.compile(r"(?<!\d):\d+(?:-\d+)?\b")),
-    ("commit hashes", re.compile(r"\b(?:commit(?:ted)?\s+)?[0-9a-f]{7,40}\b", re.I)),
+    ("commit hashes", re.compile(r"(?<!zenodo\.)\b(?:commit(?:ted)?\s+)?[0-9a-f]{7,40}\b", re.I)),
     ("internal labels", re.compile(r"\[INFERENCE\]|\bTODO\b|v2_|\bv8\b|\bTable A\d+\b", re.I)),
     ("repository terminology", re.compile(r"\b(?:repository|untracked)\b", re.I)),
     ("backticked Python identifiers", re.compile(r"`[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9_]*`")),
