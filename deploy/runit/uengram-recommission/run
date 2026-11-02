@@ -1,0 +1,71 @@
+#!/bin/sh
+# uengram-recommission: periodically checks whether the deployed uEngram
+# model matches the running kernel, and recommissions it once there is
+# enough same-kernel spool data (default 24 h, see `autocommission --help`).
+# Runs as root (like runit itself) so it can stop/start uengram-hostd without
+# a stored password; the commission computation drops to kk, same as
+# uengram-hostd's own run script.
+#
+# The swap is stop -> wait for full exit -> replace -> start, never a plain
+# `sv restart`: the daemon saves its in-memory model on any exit (`daemon.py`
+# run()'s `finally: node.save(model)`), so swapping the file while the old
+# process is still alive races its shutdown save and can silently clobber
+# the new model with the stale one. This cost a manual recommission run
+# exactly that corruption before the wait loop below existed.
+exec 2>&1
+# shellcheck source=/dev/null
+[ -r /etc/default/uengram-hostd ] && . /etc/default/uengram-hostd
+user="${UENGRAM_USER:-kk}"
+home="/home/$user"
+src="${UENGRAM_SRC:-$home/.local/share/uengram-host/src}"
+state="${UENGRAM_STATE:-$home/.local/state/uengram-host}"
+check_interval_s="${UENGRAM_RECOMMISSION_CHECK_S:-3600}"
+min_hours="${UENGRAM_RECOMMISSION_MIN_HOURS:-24}"
+stop_wait_s="${UENGRAM_RECOMMISSION_STOP_WAIT_S:-30}"
+host="$(hostname)"
+model="$state/model-$host.pkl"
+staged="$state/model-$host.pkl.staging"
+
+log() { echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ') uengram-recommission: $*"; }
+
+run_as_user() {
+	setpriv --reuid="$user" --regid="$user" --init-groups \
+		-- env HOME="$home" PYTHONPATH="$src" "$@"
+}
+
+while :; do
+	rm -f "$staged"
+	running_kernel="$(uname -r)"
+	status="$(run_as_user python3 -m uengram.host autocommission \
+		--model "$model" --spool "$state/spool" --kernel "$running_kernel" \
+		--min-hours "$min_hours" --out "$staged" 2>&1)"
+	rc=$?
+	if [ "$rc" -ne 0 ]; then
+		log "check failed (rc=$rc): $status"
+	elif [ -s "$staged" ]; then
+		log "deploying recommissioned model for kernel $running_kernel"
+		sv stop uengram-hostd
+		waited=0
+		while pgrep -f 'uengram\.host run' >/dev/null && [ "$waited" -lt "$stop_wait_s" ]; do
+			sleep 1
+			waited=$((waited + 1))
+		done
+		if pgrep -f 'uengram\.host run' >/dev/null; then
+			log "uengram-hostd did not stop within ${stop_wait_s}s, skipping this cycle to avoid a race"
+		else
+			if [ -f "$model" ]; then
+				backup="$state/model-$host.pkl.$(date -u +%Y%m%dT%H%M%S)"
+				cp "$model" "$backup"
+				log "previous model kept at $backup"
+			fi
+			mv "$staged" "$model"
+			chown "$user:$user" "$model"
+			log "deployed: $status"
+		fi
+		sv start uengram-hostd
+	fi
+	# Poll hourly by default rather than once a day: a node with a gap in its
+	# spool (a reboot, a long outage) becomes eligible mid-cycle, and the next
+	# check picks it up within the hour instead of waiting for a fixed time.
+	sleep "$check_interval_s"
+done

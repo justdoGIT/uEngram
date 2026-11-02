@@ -1,0 +1,80 @@
+"""uengram-host command line.
+
+  probe                       check every source and print one tick
+  record  [--out F | --spool D] [--seconds]   write ticks to a JSONL file or a daily spool (stdlib only)
+  commission --ticks F... --model M   fit encoder, seed memory, calibrate alarms and the step test
+  autocommission --model M --spool D  recommission once the running kernel has --min-hours of its
+                                       own spool data; writes --out, a no-op otherwise (used by
+                                       the uengram-recommission service)
+  run     --model M [--spool D]  online: tick, window, encode, remember; state file, events, stream socket
+  replay  --model M --ticks F  offline: feed recorded ticks through a commissioned model
+  status  [--state F]          print a node state file
+  follow                      relay this node's state stream to stdout (read by the hub over ssh)
+  hub     --nodes ...          follow every node's stream; keep the cluster snapshot (runs on msi)
+  cluster                     print the hub's cluster view and placement order
+  tune    --node N --knob K --values ...   measure a power/scheduler knob on a fixed build (uengram.host.tune)
+  campaign plan|tick|status|report --dir D   validation campaign (uengram.host.campaign)
+  dataset export|validate|split  export data, check integrity, or create chronological splits
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import socket
+import sys
+
+DEFAULT_DIR = os.path.expanduser("~/.local/state/uengram-host")
+
+
+def _probe(args) -> int:
+    from .collector import host_meta, open_collector
+    from .perf import PerfUnavailable
+    try:
+        ticker = open_collector(pmu=True)
+    except PerfUnavailable as e:
+        print(f"PMU: {e}", file=sys.stderr)
+        return 2
+    import time
+    time.sleep(1.0)
+    print(json.dumps({"meta": host_meta(ticker, 1.0), "tick": ticker.tick()}, indent=1))
+    return 0
+
+
+def _record(args) -> int:
+    from .collector import AsyncWriter, JsonlSink, SpoolSink, host_meta, open_collector, tick_loop
+    ticker = open_collector(pmu=True)
+    meta = host_meta(ticker, args.period)
+    if args.spool:
+        sink, where = SpoolSink(os.path.expanduser(args.spool), meta), args.spool
+    else:
+        where = args.out or os.path.join(DEFAULT_DIR, f"ticks-{socket.gethostname()}.jsonl")
+        sink = JsonlSink(where, meta)
+    print(f"recording to {where}", file=sys.stderr, flush=True)
+    writer = AsyncWriter()
+    try:
+        tick_loop(ticker, lambda t, tick: writer.submit(sink, t, tick), args.period, args.seconds)
+    finally:
+        writer.close()
+        sink.close()
+    return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    p = argparse.ArgumentParser(prog="uengram-host", description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = p.add_subparsers(dest="cmd", required=True)
+    sub.add_parser("probe")
+    r = sub.add_parser("record")
+    r.add_argument("--out")
+    r.add_argument("--spool", help="directory of daily tick files (replaces --out)")
+    r.add_argument("--seconds", type=float)
+    r.add_argument("--period", type=float, default=1.0)
+    from .cli_model import add_model_commands
+    handlers = {"probe": _probe, "record": _record, **add_model_commands(sub)}
+    args = p.parse_args(argv)
+    return handlers[args.cmd](args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

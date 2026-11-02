@@ -7,6 +7,7 @@ A reference implementation and benchmark of a deterministic, fixed-budget memory
 - `docs/RESULTS.md`: benchmark tables and findings; its v1–v3 material and `results/v1/`, `results/v2/` references are historical context.
 - `docs/IMPROVEMENT-ANALYSIS.md`: the diagnostics that motivated v2; v3's are in `docs/EXPLAINED.md` sections 7c and 10c.
 - `docs/research-*.md`: literature notes (machine-state mathematics, anomaly-detection evaluation, condition-monitoring features, CMAPSS practice).
+- `docs/HOST-TELEMETRY.md`: uEngram on running Linux hosts (the Void cluster): the 1 Hz snapshot, the attribute schema with one owner per measured field, the per-signal mathematics, deployment, and cluster results; `docs/research-host-state.md` is its literature note.
 - `docs/trading-regime-monitor.md`: bounded market-regime/risk monitor; not a trading strategy or order executor.
 
 ## Paper and project metadata
@@ -61,11 +62,53 @@ uv run python -m bench.report --out docs/RESULTS.md
 
 Use `--jobs 2` as a conservative default. CARE workers materialize full datasets and embeddings; measure RAM headroom before increasing concurrency.
 
+## Host telemetry (cluster nodes)
+
+```bash
+# probe all sources on this node (needs CAP_PERFMON + CAP_DAC_READ_SEARCH, see docs/HOST-TELEMETRY.md)
+python3 -m uengram.host probe
+# record (a single file, or daily spool files), commission, replay
+python3 -m uengram.host record --spool ~/.local/state/uengram-host/spool
+uv run python -m uengram.host commission --ticks ~/.local/state/uengram-host/spool/ticks-*.jsonl* --model model.pkl
+uv run python -m uengram.host replay --model model.pkl --ticks more.jsonl --events events.jsonl
+# on msi: follow every node's pushed state (the uengram-hub service), print the cluster view
+python3 -m uengram.host hub --nodes msi-worker hp asus-worker lenovo-worker gigabyte-worker
+python3 -m uengram.host cluster
+# on msi, outside the campaign: measure a power/scheduler knob on one node's reference build
+python3 -m uengram.host tune --node asus-worker --knob pl1 --values 40 30
+# synthetic validation of the host pipeline
+uv run python -m bench.run_host_synth --seeds 0-19 --jobs 2 --out results/host_synth.jsonl
+# install the runit service on nodes (sudo via kepr); --campaign and --hub add the campaign runner and
+# the hub (msi only); --recommission adds uengram-recommission (every node)
+deploy/install-node.sh --numpy --recommission NODE...
+# 14-day live validation campaign: record a clean week, commission on it, fault week, report
+python3 -m uengram.host campaign plan --dir ~/Backup/uengram-host/campaign
+python3 -m uengram.host campaign status --dir ~/Backup/uengram-host/campaign
+
+# create a replayable single-host dataset; predictions stay separate from labels
+python3 -m uengram.host dataset export \
+  --ticks ~/.local/state/uengram-host/spool/ticks-$(hostname)-*.jsonl* \
+  --model ~/.local/state/uengram-host/model-$(hostname).pkl \
+  --out ~/datasets/host-$(hostname)
+
+# validate structure, time ordering, kernels, labels, and prediction separation
+python3 -m uengram.host dataset validate \
+  --dataset ~/datasets/host-$(hostname) --report ~/datasets/host-$(hostname)/validation.json
+# create chronological commission/calibration/test/holdout metadata with boundary gaps
+python3 -m uengram.host dataset split \
+  --dataset ~/datasets/host-$(hostname)
+
+# create one dataset from all collected campaign nodes
+python3 -m uengram.host dataset export \
+  --campaign ~/Backup/uengram-host/campaign --out ~/datasets/cluster-campaign
+
 ## Layout
 
 ```
 src/uengram/   library: alarm, baselines, reference_baseline, cmapss, encoders, encoder_{cnn,cnn2,cnn3,ctx,tab}, engine, health, ledger, lifecycle, metrics, metropt, metropt2, persistence, skab, stats, store, stream_baselines, synth
-bench/         harness: advisory_{experiment,eval,report}, alarm_{components,definition,definition_sweep,dev,eval,interaction,math,sensitivity}, care_score, colab_train, common, cnn3_experiment, domain_dataset, encoding_cache, encoder_gate, error_gated_{alarm,sweep}, evaluate, followup_{experiment,policy}, freeze_frames, jev_{advisory,experiment}, laya_{advisory,hosts,http}, leak_duty, metropt_{calibration,eval}, modality_{alarm,sweep}, native_snapshots, physical_residuals, provenance, report, report_{followup,v2}, run_{cmapss,metropt,synth,v2}, stream_{care,scania,skab}, streams, v2_scoring, validate_{scania,skab}
+src/uengram/host/  host telemetry: schema, perf, sources, collector, stream, hub, cluster, psi (stdlib); features, encoder, events, stepcal, node, daemon, synth (numpy); campaign, campaign_exec, tune, knob.sh, validate, validate_criteria, validate_variants, validate_signals, cli, cli_model
+bench/         harness: advisory_{experiment,eval,report}, alarm_{components,definition,definition_sweep,dev,eval,interaction,math,sensitivity}, care_score, colab_train, common, cnn3_experiment, domain_dataset, encoding_cache, encoder_gate, error_gated_{alarm,sweep}, evaluate, followup_{experiment,policy}, freeze_frames, jev_{advisory,experiment}, laya_{advisory,hosts,http}, leak_duty, metropt_{calibration,eval}, modality_{alarm,sweep}, native_snapshots, physical_residuals, provenance, report, report_{followup,v2}, run_{cmapss,metropt,synth,v2}, run_host_synth, stream_{care,scania,skab}, streams, v2_scoring, validate_{scania,skab}
+deploy/        runit services (uengram-hostd, uengram-campaign, uengram-hub, uengram-recommission) and the node installer
 tests/         unit and behaviour tests
 results/       committed run outputs (JSONL)
 docs/          plan, explainer, results, improvement analysis, research notes, architecture notes

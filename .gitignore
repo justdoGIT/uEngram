@@ -1,7 +1,8 @@
 data/
+*.html
+*.pkl
+*.pyc
 __pycache__/
 .pytest_cache/
-*.pyc
-*.html
-.venv/
 results/scania_scores.npz
+.venv/
